@@ -5,16 +5,16 @@ if __name__ == '__main__':
     exit(1)
 
 import os
-inc = os.environ['MRB_INSTALL']+'/sbncode/'+os.environ['SBNCODE_VERSION']+'/include/'
+inc = os.environ['MRB_INSTALL']+'/sbnana/'+os.environ['SBNCODE_VERSION']+'/include/'
 os.environ['ROOT_INCLUDE_PATH'] = \
   ':'.join([inc,
             inc+'sbncode',
-            inc+'sbncode/CAFAna',
+            inc+'sbnana/CAFAna',
             os.environ['SRPROXY_INC']])
 
 import ROOT
 
-ROOT.gApplication.ExecuteFile('$MRB_BUILDDIR/sbncode/bin/rootlogon.C')
+ROOT.gApplication.ExecuteFile('$MRB_BUILDDIR/sbnana/bin/rootlogon.C')
 print('  in python')
 ROOT.gROOT.ForceStyle()
 

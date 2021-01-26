@@ -17,7 +17,7 @@
 cmake_minimum_required (VERSION 3.12)
 #cmake_minimum_required (VERSION 3.12...3.14 FATAL_ERROR)
 
-project(sbncode)
+project(sbnana)
 
 message(STATUS "\n\n  ==========================   ${PROJECT_NAME}   ==========================")
 
@@ -52,20 +52,16 @@ cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
 find_ups_product(cetbuildtools v05_14_00)
-find_ups_product(larsoft v09_00_00)
-find_ups_product(artdaq_core v3_06_01)
-find_ups_product(sbnobj v09_09_00)
-#find_ups_product(sbndcode v06_67_00)
-#find_ups_product(uboonecode v06_67_00)
+find_ups_product(sbncode v09_14_00)
+find_ups_product(sbnanaobj v09_14_00)
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
 include(ArtMake)
 include(BuildPlugins)
 
-add_subdirectory(sbncode)
+add_subdirectory(sbnana)
 add_subdirectory(ups)
-add_subdirectory(fcl)
 
 # packaging utility
 include(UseCPack)

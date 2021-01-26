@@ -14,11 +14,11 @@
 // ---------------------------------------
 
 
-#include "sbncode/CAFMaker/CAFMakerParams.h"
-#include "sbncode/CAFMaker/FillFlashMatch.h"
-#include "sbncode/CAFMaker/FillTrue.h"
-#include "sbncode/CAFMaker/FillReco.h"
-#include "sbncode/CAFMaker/Utils.h"
+#include "sbnana/CAFMaker/CAFMakerParams.h"
+#include "sbnana/CAFMaker/FillFlashMatch.h"
+#include "sbnana/CAFMaker/FillTrue.h"
+#include "sbnana/CAFMaker/FillReco.h"
+#include "sbnana/CAFMaker/Utils.h"
 
 // C/C++ includes
 #include <fenv.h>
@@ -95,11 +95,11 @@
 #include "larcoreobj/SummaryData/POTSummary.h"
 
 // StandardRecord
-#include "sbncode/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/StandardRecord.h"
 
 // // CAFMaker
-#include "sbncode/CAFMaker/AssociationUtil.h"
-// #include "sbncode/CAFMaker/Blinding.h"
+#include "sbnana/CAFMaker/AssociationUtil.h"
+// #include "sbnana/CAFMaker/Blinding.h"
 
 namespace caf {
 

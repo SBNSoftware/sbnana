@@ -2,7 +2,7 @@
 // srproxy package doesn't include binaries).
 #include "SRProxy/BasicTypesProxy.cxx"
 
-#include "sbncode/StandardRecord/SREnums.h"
+#include "sbnanaobj/StandardRecord/SREnums.h"
 
 // But this also gives us an opportunity to instantiate the template for
 // various sbncode-specific enums that would otherwise be missing symbols.

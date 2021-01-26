@@ -1,5 +1,0 @@
-#include "prodgenie_bnb_nu_sbn_uboone.fcl"
-
-outputs.out1.fileName: "prodgenie_bnb_intrinsic_nue_sbn_uboone_%tc_gen.root"
-physics.producers.generator.GenFlavors: [12,-12]
-

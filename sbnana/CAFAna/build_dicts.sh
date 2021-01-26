@@ -1,11 +1,11 @@
 #!/bin/bash
 
-INCS="-I$MRB_INSTALL/sbncode/$SBNCODE_VERSION/include/
-      -I$MRB_INSTALL/sbncode/$SBNCODE_VERSION/include/sbncode/
-      -I$MRB_INSTALL/sbncode/$SBNCODE_VERSION/include/sbncode/CAFAna
+INCS="-I$MRB_INSTALL/sbnana/$SBNCODE_VERSION/include/
+      -I$MRB_INSTALL/sbnana/$SBNCODE_VERSION/include/sbnana/
+      -I$MRB_INSTALL/sbnana/$SBNCODE_VERSION/include/sbnana/CAFAna
       -I$SRPROXY_INC"
 
-LIBDIR=$MRB_INSTALL/sbncode/$SBNCODE_VERSION/${CET_SUBDIR}.${MRB_QUALS/:/.}/lib/
+LIBDIR=$MRB_INSTALL/sbnana/$SBNCODE_VERSION/${CET_SUBDIR}.${MRB_QUALS/:/.}/lib/
 #LIBS="-L$LIBDIR -lCAFAnaCore"
 
 DIRS="Analysis Core Cuts Experiment Extrap Prediction Systs Vars"
@@ -19,6 +19,6 @@ genreflex classes.h \
     --interpreteronly \
     $INCS
 
-g++ CAFAna_dict.cc `root-config --cflags --libs` $INCS $LIBS --shared -fPIC -o $MRB_BUILDDIR/sbncode/lib/libCAFAna_dict.so
+g++ CAFAna_dict.cc `root-config --cflags --libs` $INCS $LIBS --shared -fPIC -o $MRB_BUILDDIR/sbnana/lib/libCAFAna_dict.so
 
-cp $MRB_BUILDDIR/sbncode/lib/libCAFAna_dict.so $LIBDIR
+cp $MRB_BUILDDIR/sbnana/lib/libCAFAna_dict.so $LIBDIR

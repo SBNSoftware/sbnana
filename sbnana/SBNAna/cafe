@@ -54,7 +54,7 @@ def makeParser():
 
 
 def libsPath():
-    return os.environ['MRB_BUILDDIR']+'/sbncode/bin/load_cafana_libs.C'
+    return os.environ['MRB_BUILDDIR']+'/sbnana/bin/load_cafana_libs.C'
 
 
 def escapeArg(arg):
@@ -156,7 +156,7 @@ if __name__ == '__main__':
             ROOT.gROOT.SetBatch(True)
 
         # Add cafana.py to the path
-        sys.path.append(os.environ['MRB_BUILDDIR']+'/sbncode/bin/')
+        sys.path.append(os.environ['MRB_BUILDDIR']+'/sbnana/bin/')
 
         sys.argv = args
         exec(open(script).read())
