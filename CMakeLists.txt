@@ -33,7 +33,6 @@ set(CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules
 
 include(CetCMakeEnv)
 cet_cmake_env()
-
 set_install_root()
 
 # The specification of the C++ standard is required because CET macros
@@ -52,8 +51,10 @@ cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
 find_ups_product(cetbuildtools v05_14_00)
+find_ups_product(larsoft v09_00_00)
 find_ups_product(sbncode v09_14_00)
 find_ups_product(sbnanaobj v09_14_00)
+find_ups_product(root v6_00_00)
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)

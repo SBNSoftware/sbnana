@@ -1,4 +1,4 @@
-#include "sbnana/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/StandardRecord.h"
 
 #include "sbnana/FlatMaker/FlatRecord.h"
 
