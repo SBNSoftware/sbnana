@@ -5,10 +5,10 @@ if __name__ == '__main__':
     exit(1)
 
 import os
-inc = os.environ['MRB_INSTALL']+'/sbnana/'+os.environ['SBNCODE_VERSION']+'/include/'
+inc = os.environ['MRB_INSTALL']+'/sbnana/'+os.environ['SBNANA_VERSION']+'/include/'
 os.environ['ROOT_INCLUDE_PATH'] = \
   ':'.join([inc,
-            inc+'sbncode',
+            inc+'sbnana',
             inc+'sbnana/CAFAna',
             os.environ['SRPROXY_INC']])
 

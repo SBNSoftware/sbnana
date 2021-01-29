@@ -1,11 +1,11 @@
 #!/bin/bash
 
-INCS="-I$MRB_INSTALL/sbnana/$SBNCODE_VERSION/include/
-      -I$MRB_INSTALL/sbnana/$SBNCODE_VERSION/include/sbnana/
-      -I$MRB_INSTALL/sbnana/$SBNCODE_VERSION/include/sbnana/CAFAna
+INCS="-I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/
+      -I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/sbnana/
+      -I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/sbnana/CAFAna
       -I$SRPROXY_INC"
 
-LIBDIR=$MRB_INSTALL/sbnana/$SBNCODE_VERSION/${CET_SUBDIR}.${MRB_QUALS/:/.}/lib/
+LIBDIR=$MRB_INSTALL/sbnana/$SBNANA_VERSION/${CET_SUBDIR}.${MRB_QUALS/:/.}/lib/
 #LIBS="-L$LIBDIR -lCAFAnaCore"
 
 DIRS="Analysis Core Cuts Experiment Extrap Prediction Systs Vars"
