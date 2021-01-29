@@ -44,16 +44,16 @@ void load_cafana_libs()
     std::cout << "$MRB_INSTALL is not set" << std::endl;
     exit(1);
   }
-  char* sbnv = getenv("SBNCODE_VERSION");
+  char* sbnv = getenv("SBNANA_VERSION");
   if(!sbnv){
-    std::cout << "$SBNCODE_VERSION is not set" << std::endl;
+    std::cout << "$SBNANA_VERSION is not set" << std::endl;
     exit(1);
   }
 
   const std::string incdir = std::string(mrbi)+"/sbnana/"+std::string(sbnv)+"/include/";
 
   // Include path - have to include CAFAna/ to allow looking up StandardRecord directly
-  TString includes = "-I"+incdir+" -I"+incdir+"/sbncode -I"+incdir+"sbnana/CAFAna/ -I$ROOTSYS/include -I$NUTOOLS_INC -I$GENIE_INC/GENIE/ -I$SRPROXY_INC";
+  TString includes = "-I"+incdir+" -I"+incdir+"/sbnana -I"+incdir+"sbnana/CAFAna/ -I$ROOTSYS/include -I$NUTOOLS_INC -I$GENIE_INC/GENIE/ -I$SRPROXY_INC";
 
   // List of libraries to load. Dependency order.
   const std::vector<std::string> libs =
