@@ -12,12 +12,12 @@ add_custom_command(# Rebuild if anything in StandardRecord/ changes
 
 include_directories($ENV{SRPROXY_INC})
 
-art_make_library(LIBRARY_NAME FlatMaker
+cet_make_library(LIBRARY_NAME FlatMaker
                  SOURCE       FlatRecord.cxx
                  LIBRARIES    ${ROOT_BASIC_LIB_LIST} ${ROOT_TREEPLAYER} # CAFAnaCore
                  )
 
-art_make_exec(NAME flatten_caf
+cet_make_exec(flatten_caf
               SOURCE flatten_caf.cc
               LIBRARIES FlatMaker CAFAnaCore
                         ${ROOT_BASIC_LIB_LIST})

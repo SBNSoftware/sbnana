@@ -27,8 +27,7 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
-set(CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules
-                      $ENV{CETBUILDTOOLS_DIR}/Modules
+set(CMAKE_MODULE_PATH $ENV{CETBUILDTOOLS_DIR}/Modules
                       ${CMAKE_MODULE_PATH})
 
 include(CetCMakeEnv)
@@ -51,15 +50,8 @@ cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
 find_ups_product(cetbuildtools v05_14_00)
-find_ups_product(larsoft v09_00_00)
-find_ups_product(sbncode v09_14_00)
 find_ups_product(sbnanaobj v09_14_00)
-find_ups_product(root v6_00_00)
-
-# macros for dictionary and simple_plugin
-include(ArtDictionary)
-include(ArtMake)
-include(BuildPlugins)
+find_ups_root(v6_00_00)
 
 add_subdirectory(sbnana)
 add_subdirectory(ups)

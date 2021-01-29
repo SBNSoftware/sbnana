@@ -15,7 +15,7 @@ include_directories($ENV{SRPROXY_INC})
 # This is a very picky error buried inside template instantiations
 #add_definitions(-Wno-int-in-bool-context)
 
-art_make_library(LIBRARY_NAME StandardRecordProxy
+cet_make_library(LIBRARY_NAME StandardRecordProxy
                  SOURCE       SRProxy.cxx Instantiations.cxx
                  LIBRARIES    ${ROOT_BASIC_LIB_LIST} ${ROOT_TREEPLAYER})
 

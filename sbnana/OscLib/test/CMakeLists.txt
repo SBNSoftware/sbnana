@@ -1,12 +1,12 @@
-art_make_exec( NAME testEarthModel
+cet_make_exec( testEarthModel
                SOURCE testEarthModel.cc
                LIBRARIES OscLibFunc
 	     )
-art_make_exec( NAME testOsc
+cet_make_exec( testOsc
                SOURCE testOsc.cc
                LIBRARIES OscLibFunc
 	     )
-art_make_exec( NAME testOscRndm
+cet_make_exec( testOscRndm
                SOURCE testOscRndm.cc
                LIBRARIES OscLibFunc
 	     )
