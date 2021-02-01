@@ -5,7 +5,7 @@
 
 #include "StandardRecord/Proxy/SRProxy.h"
 
-#include "StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/StandardRecord.h"
 
 #include <cassert>
 #include <iostream>

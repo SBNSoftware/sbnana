@@ -2,9 +2,13 @@
 include_directories(..)
 
 # But we also want to find the generated SRProxy.h under "StandardRecord/Proxy"
-include_directories($ENV{MRB_BUILDDIR}/sbncode/sbncode/CAFAna/)
+include_directories($ENV{MRB_BUILDDIR}/sbnana/sbnana/CAFAna/)
 
-# And expects assert() to still function even in the prof build
+include_directories($ENV{SRPROXY_INC})
+
+include_directories($ENV{EIGEN_INC})
+
+# CAFAna expects assert() to still function even in the prof build
 add_definitions(-UNDEBUG)
 
 # All variable length arrays

@@ -5,16 +5,16 @@ include_directories(..)
 
 include_directories($ENV{OSCLIB_INC})
 
-art_make(LIBRARY_NAME CAFAnaCore
-         LIB_LIBRARIES StandardRecordProxy
-                       StandardRecord
-                       # TODO how am I supposed to link to an external library?
-#                       ${OSCLIB}
-                       -L$ENV{OSCLIB_LIB}
-                       OscLib
-                       pthread
-                       ${ROOT_BASIC_LIB_LIST}
-                       ${IFDH}
+cet_make(LIBRARY_NAME CAFAnaCore
+         LIBRARIES StandardRecordProxy
+                   StandardRecord
+                   # TODO how am I supposed to link to an external library?
+#                  ${OSCLIB}
+                   -L$ENV{OSCLIB_LIB}
+                   OscLib
+                   pthread
+                   ${ROOT_BASIC_LIB_LIST}
+                   ${IFDH}
         )
 
 install_headers()

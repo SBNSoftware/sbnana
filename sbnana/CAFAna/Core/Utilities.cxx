@@ -547,7 +547,7 @@ namespace ana
   //----------------------------------------------------------------------
   std::string FindCAFAnaDir()
   {
-    return std::string(getenv("MRB_SOURCE"))+"/sbncode/sbncode/CAFAna";
+    return std::string(getenv("MRB_SOURCE"))+"/sbnana/sbnana/CAFAna";
   }
 
   //----------------------------------------------------------------------
