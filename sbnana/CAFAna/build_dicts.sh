@@ -3,7 +3,10 @@
 INCS="-I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/
       -I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/sbnana/
       -I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/sbnana/CAFAna
-      -I$SRPROXY_INC"
+      -I$MRB_INSTALL/sbnanaobj/$SBNANAOBJ_VERSION/include/
+      -I$SRPROXY_INC
+      -I$EIGEN_INC
+      -I$OSCLIB_INC"
 
 LIBDIR=$MRB_INSTALL/sbnana/$SBNANA_VERSION/${CET_SUBDIR}.${MRB_QUALS/:/.}/lib/
 #LIBS="-L$LIBDIR -lCAFAnaCore"

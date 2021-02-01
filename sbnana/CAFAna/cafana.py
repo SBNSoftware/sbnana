@@ -6,10 +6,14 @@ if __name__ == '__main__':
 
 import os
 inc = os.environ['MRB_INSTALL']+'/sbnana/'+os.environ['SBNANA_VERSION']+'/include/'
+sao_inc = os.environ['MRB_INSTALL']+'/sbnanaobj/'+os.environ['SBNANAOBJ_VERSION']+'/include/'
 os.environ['ROOT_INCLUDE_PATH'] = \
   ':'.join([inc,
             inc+'sbnana',
             inc+'sbnana/CAFAna',
+            sao_inc,
+            os.environ['EIGEN_INC'],
+            os.environ['OSCLIB_INC'],
             os.environ['SRPROXY_INC']])
 
 import ROOT
