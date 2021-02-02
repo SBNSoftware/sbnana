@@ -52,7 +52,13 @@ cet_report_compiler_flags()
 # these are minimum required versions, not the actual product versions
 find_ups_product(cetbuildtools v05_14_00)
 find_ups_product(sbnanaobj v09_15_00)
+find_ups_boost()
 find_ups_root(v6_00_00)
+find_ups_product(ifdhc)
+
+#ifdhc
+cet_find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB   NO_DEFAULT_PATH )
+
 
 add_subdirectory(sbnana)
 add_subdirectory(ups)

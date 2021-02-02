@@ -1,10 +1,10 @@
 # Allow "StandardRecord/" to find the right directory
 include_directories(..)
 
-art_make(LIBRARY_NAME SBNAnaCuts
-         LIB_LIBRARIES CAFAnaCore
-                       SBNAnaVars
-                       StandardRecordProxy
+cet_make(LIBRARY_NAME SBNAnaCuts
+         LIBRARIES CAFAnaCore
+                   SBNAnaVars
+                   StandardRecordProxy
         )
 
 install_headers()
