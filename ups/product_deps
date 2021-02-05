@@ -36,7 +36,7 @@ fwdir   product_dir scripts
 product          version
 sbnanaobj        v09_16_00
 #SAM tools?
-ifdhc            v2_5_7
+ifdhc            v2_5_10
 # For CAFAna
 srproxy          v00.20
 osclib           v00.09
