@@ -1,9 +1,18 @@
-FILE(GLOB SR_DEPENDENCIES $ENV{SBNANAOBJ_INC}/sbnana/StandardRecord/*.h)
+SET(INC_DIR $ENV{SBNANAOBJ_INC})
+IF(DEFINED ENV{SBNANAOBJ_INC})
+  # We are building with sbnanaobj as an external UPS product
+  SET(INC_DIR $ENV{SBNANAOBJ_INC})
+ELSE()
+  # sbnanaobj is checked out in the mrb area with us
+  SET(INC_DIR $ENV{SBNANAOBJ_DIR})
+ENDIF()
+
+FILE(GLOB SR_DEPENDENCIES $INC_DIR/sbnanaobj/StandardRecord/*.h)
 
 add_custom_command(# Rebuild if anything in StandardRecord/ changes
                    DEPENDS ${SR_DEPENDENCIES}
                    OUTPUT FlatRecord.cxx FlatRecord.h FwdDeclare.h
-                   COMMAND gen_srproxy --flat -i sbnanaobj/StandardRecord/StandardRecord.h -o FlatRecord --target caf::StandardRecord --include-path $ENV{SBNANAOBJ_INC}:$ENV{ROOT_INC} -op sbnana/FlatMaker --prolog $ENV{SBNANA_DIR}/sbnana/FlatMaker/Prolog.h --extra-cflags ' -D_Float16=short'
+                   COMMAND gen_srproxy --flat -i sbnanaobj/StandardRecord/StandardRecord.h -o FlatRecord --target caf::StandardRecord --include-path ${INC_DIR}:$ENV{ROOT_INC} -op sbnana/FlatMaker --prolog $ENV{SBNANA_DIR}/sbnana/FlatMaker/Prolog.h --extra-cflags ' -D_Float16=short'
                    # Couldn't figure out how to make install() install the
                    # headers so do it directly here
                    COMMAND mkdir -p $ENV{MRB_INSTALL}/sbnana/$ENV{SBNANA_VERSION}/include/FlatMaker/
