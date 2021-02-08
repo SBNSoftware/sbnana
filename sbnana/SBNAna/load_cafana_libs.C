@@ -53,7 +53,7 @@ void load_cafana_libs()
   const std::string incdir = std::string(mrbi)+"/sbnana/"+std::string(sbnv)+"/include/";
 
   // Include path - have to include CAFAna/ to allow looking up StandardRecord directly
-  TString includes = "-I"+incdir+" -I"+incdir+"/sbnana -I"+incdir+"sbnana/CAFAna/ -I$ROOTSYS/include -I$NUTOOLS_INC -I$GENIE_INC/GENIE/ -I$SRPROXY_INC -I$OSCLIB_INC";
+  TString includes = "-I"+incdir+" -I"+incdir+"/sbnana -I"+incdir+"sbnana/CAFAna/ -I$ROOTSYS/include -I$SRPROXY_INC -I$OSCLIB_INC";
 
   // List of libraries to load. Dependency order.
   const std::vector<std::string> libs =
