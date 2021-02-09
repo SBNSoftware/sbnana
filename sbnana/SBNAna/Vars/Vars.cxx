@@ -83,37 +83,37 @@ namespace ana
   // // For when we have spill beam mode info
   // const SpillCut kIsRHC([](const caf::SRProxy* sr) {return sr->spill.isRHC;});
 
-  const Var kSlcVtxX([](const caf::SRSliceProxy *slc)
+  const Var kSlcVtxX([](const caf::SRSliceProxy *slc) -> double
        {
          return slc->vertex.x;
        });
 
-  const Var kSlcVtxY([](const caf::SRSliceProxy *slc)
+  const Var kSlcVtxY([](const caf::SRSliceProxy *slc) -> double
        {
          return slc->vertex.y;
        });
 
-  const Var kSlcVtxZ([](const caf::SRSliceProxy *slc)
+  const Var kSlcVtxZ([](const caf::SRSliceProxy *slc) -> double
        {
          return slc->vertex.z;
        });
 
-  const Var kSlcNuScore([](const caf::SRSliceProxy *slc)
+  const Var kSlcNuScore([](const caf::SRSliceProxy *slc) -> double
        {
          return slc->nu_score;
        });
 
-  const Var kSlcHasFlash([](const caf::SRSliceProxy *slc)
+  const Var kSlcHasFlash([](const caf::SRSliceProxy *slc) -> double
        {
          return slc->fmatch.present;
        });
 
-  const Var kSlcFlashScore([](const caf::SRSliceProxy *slc)
+  const Var kSlcFlashScore([](const caf::SRSliceProxy *slc) -> double
        {
          return ((bool)kSlcHasFlash(slc) ? (float)slc->fmatch.score : -5.f);
        });
 
-  const Var kSlcIsRecoNu([](const caf::SRSliceProxy *slc)
+  const Var kSlcIsRecoNu([](const caf::SRSliceProxy *slc) -> double
        {
          return !slc->is_clear_cosmic;
        });

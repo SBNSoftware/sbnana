@@ -23,9 +23,9 @@
 namespace ana
 {
   // Duplicate here because we can't include Vars.h
-  const Var kTrueE([](const caf::SRSliceProxy* slc){return slc->truth.E;});
+  const Var kTrueE([](const caf::SRSliceProxy* slc) -> double {return slc->truth.E;});
 
-  const Var kBaseline([](const caf::SRSliceProxy* slc){return slc->truth.baseline;});
+  const Var kBaseline([](const caf::SRSliceProxy* slc) -> double {return slc->truth.baseline;});
 
   const Var kTrueLOverE = kBaseline / kTrueE;
 

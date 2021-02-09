@@ -21,12 +21,12 @@ void ana01()
 
   // ---- VARS -----
   // A Var returns a number per slice, a.k.a. variables to plot
-  const Var kNTrk       ([](const caf::SRSliceProxy* slc)
+  const Var kNTrk       ([](const caf::SRSliceProxy* slc) -> double
                          {
                            return slc->reco.ntrk;
                          });
 
-  const Var kTrkLen   ([](const caf::SRSliceProxy* slc)
+  const Var kTrkLen   ([](const caf::SRSliceProxy* slc) -> double
 		       { //length of 1st track
 			 double len = -5.0;
 			 if (slc->reco.ntrk > 0)
