@@ -5,8 +5,17 @@ if __name__ == '__main__':
     exit(1)
 
 import os
-inc = os.environ['MRB_INSTALL']+'/sbnana/'+os.environ['SBNANA_VERSION']+'/include/'
-sao_inc = os.environ['MRB_INSTALL']+'/sbnanaobj/'+os.environ['SBNANAOBJ_VERSION']+'/include/'
+
+if 'SBNANA_INC' in os.environ:
+    inc = os.environ['SBNANA_INC']
+else:
+    inc = os.environ['MRB_INSTALL']+'/sbnana/'+os.environ['SBNANA_VERSION']+'/include/'
+
+if 'SBNANAOBJ_INC' in os.environ:
+    sao_inc = os.environ['SBNANAOBJ_INC']
+else:
+    sao_inc = os.environ['MRB_INSTALL']+'/sbnanaobj/'+os.environ['SBNANAOBJ_VERSION']+'/include/'
+
 os.environ['ROOT_INCLUDE_PATH'] = \
   ':'.join([inc,
             inc+'sbnana',
@@ -18,7 +27,10 @@ os.environ['ROOT_INCLUDE_PATH'] = \
 
 import ROOT
 
-ROOT.gApplication.ExecuteFile('$MRB_BUILDDIR/sbnana/bin/rootlogon.C')
+if 'SBNANA_FQ_DIR' in os.environ:
+    ROOT.gApplication.ExecuteFile('${SBNANA_FQ_DIR}/bin/rootlogon.C')
+else:
+    ROOT.gApplication.ExecuteFile('$MRB_BUILDDIR/sbnana/bin/rootlogon.C')
 print('  in python')
 ROOT.gROOT.ForceStyle()
 
