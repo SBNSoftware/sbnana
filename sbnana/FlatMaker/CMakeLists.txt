@@ -7,7 +7,7 @@ ELSE()
   SET(INC_DIR $ENV{SBNANAOBJ_DIR})
 ENDIF()
 
-FILE(GLOB SR_DEPENDENCIES $INC_DIR/sbnanaobj/StandardRecord/*.h)
+FILE(GLOB SR_DEPENDENCIES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${INC_DIR}/sbnanaobj/StandardRecord/*.h)
 
 add_custom_command(# Rebuild if anything in StandardRecord/ changes
                    DEPENDS ${SR_DEPENDENCIES}
