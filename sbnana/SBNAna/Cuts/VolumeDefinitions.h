@@ -49,9 +49,13 @@ const FidVol avfd_cryo1{ -400.,  -50.,  // x
                          -200., +150.,  // y
                          -1000., +1000.}; // z
 
-// icarus active volume cryo 2 same as cryo 1 atm
-const FidVol fvfd_cryo2 = fvfd_cryo1;
-const FidVol avfd_cryo2 = avfd_cryo1;
+// icarus active volume cryo 2 same as cryo 1 atm (but reflecting x so it's positive)
+const FidVol fvfd_cryo2{ +71.94,  +368.49,  // x
+                         -181.86, +134.96,  // y
+                         -894.95, +894.85}; // z
+const FidVol avfd_cryo2{ +50.,   +400.,   // x
+                         -200.,  +150.,   // y
+                         -1000., +1000.}; // z
 
 // not a fiducial volume but for plotting CRT hit positions
 const FidVol crtfd{ -600,   0.,  // x
