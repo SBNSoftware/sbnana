@@ -7,7 +7,7 @@ namespace ana
 {
 
 
-  const Var kPrimMuonIdx([](const caf::SRSliceProxy *slc)
+  const Var kPrimMuonIdx([](const caf::SRSliceProxy *slc) -> double
                         {       //Find the most muon-like track
 			  if( (int)slc->reco.ntrk == 0 ) return -5.0;
 
@@ -32,7 +32,7 @@ namespace ana
 
 
   const Var kPrimTrkLen(
-			[](const caf::SRSliceProxy *slc)
+			[](const caf::SRSliceProxy *slc) -> double
 			{
 			  double len = -5.0;
 			  if ( slc->reco.ntrk > 0 ){

@@ -2,7 +2,7 @@
 include_directories(..)
 
 cet_make(LIBRARY_NAME CAFAnaExtrap
-         LIBRARIES CAFAnaCore
+         LIBRARIES CAFAnaCore CAFAnaCuts
         )
 
 install_headers()

@@ -1,16 +1,12 @@
 #pragma once
 
 #include "CAFAna/Core/ISyst.h"
-#include "StandardRecord/Proxy/SRProxy.h"
-#include "CAFAna/Core/Utilities.h"
-
-#include "TFile.h"
-#include "TH1.h"
-
-#include <cassert>
 
 namespace ana
 { 
+  // *** If these systs are reinstated their definition should be in the .cxx
+  // *** file ***
+
  //  // Slope energy scale systematics
  //  // Affect ND only
  //  class UncorrNDHadLinSyst: public ISyst

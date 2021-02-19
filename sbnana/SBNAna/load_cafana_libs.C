@@ -38,22 +38,29 @@ void load_cafana_libs()
   gSystem->SetFlagsDebug(TString(gSystem->GetFlagsDebug())+" -fdiagnostics-color=auto");
   gSystem->SetFlagsOpt(TString(gSystem->GetFlagsOpt())+" -fdiagnostics-color=auto -UNDEBUG"); // match gcc's maxopt behaviour of retaining assert()
 
-
-  char* mrbi = getenv("MRB_INSTALL");
-  if(!mrbi){
-    std::cout << "$MRB_INSTALL is not set" << std::endl;
-    exit(1);
+  std::string incdir;
+  if(getenv("SBNANA_INC")){
+    // ups product
+    incdir = std::string(getenv("SBNANA_INC"));
   }
-  char* sbnv = getenv("SBNANA_VERSION");
-  if(!sbnv){
-    std::cout << "$SBNANA_VERSION is not set" << std::endl;
-    exit(1);
-  }
+  else{
+    // local mrb checkout
+    char* mrbi = getenv("MRB_INSTALL");
+    if(!mrbi){
+      std::cout << "$MRB_INSTALL is not set" << std::endl;
+      exit(1);
+    }
+    char* sbnv = getenv("SBNANA_VERSION");
+    if(!sbnv){
+      std::cout << "$SBNANA_VERSION is not set" << std::endl;
+      exit(1);
+    }
 
-  const std::string incdir = std::string(mrbi)+"/sbnana/"+std::string(sbnv)+"/include/";
+    incdir = std::string(mrbi)+"/sbnana/"+std::string(sbnv)+"/include/";
+  }
 
   // Include path - have to include CAFAna/ to allow looking up StandardRecord directly
-  TString includes = "-I"+incdir+" -I"+incdir+"/sbnana -I"+incdir+"sbnana/CAFAna/ -I$ROOTSYS/include -I$NUTOOLS_INC -I$GENIE_INC/GENIE/ -I$SRPROXY_INC -I$OSCLIB_INC";
+  TString includes = "-I"+incdir+" -I"+incdir+"/sbnana -I"+incdir+"sbnana/CAFAna/ -I$ROOTSYS/include -I$SRPROXY_INC -I$OSCLIB_INC";
 
   // List of libraries to load. Dependency order.
   const std::vector<std::string> libs =
@@ -87,7 +94,12 @@ void load_cafana_libs()
   //  gSystem->Setenv("IFDH_DEBUG", "0"); // shut ifdh up
 
   // Pick up standard style
-  gROOT->Macro("${MRB_BUILDDIR}/sbnana/bin/rootlogon.C");
+  if(getenv("SBNANA_FQ_DIR")){
+    gROOT->Macro("${SBNANA_FQ_DIR}/bin/rootlogon.C");
+  }
+  else{
+    gROOT->Macro("${MRB_BUILDDIR}/sbnana/bin/rootlogon.C");
+  }
   gROOT->ForceStyle();
 
   TRint* rint = dynamic_cast<TRint*>(gApplication);

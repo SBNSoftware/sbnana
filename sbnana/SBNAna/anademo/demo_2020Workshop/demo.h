@@ -16,7 +16,7 @@ const Var kCounting([](const caf::SRSliceProxy *slc)
 		    });
 
 // Costh of the numu primary track (See Vars/NumuVars.cxx)
-const Var kPrimTrkCosth([](const caf::SRSliceProxy *slc)
+const Var kPrimTrkCosth([](const caf::SRSliceProxy *slc) -> double
 			{
 			  int muIdx = kPrimMuonIdx(slc);
 			  if( muIdx < 0 ) return -5.;
@@ -25,17 +25,17 @@ const Var kPrimTrkCosth([](const caf::SRSliceProxy *slc)
 			});
 
 // Slice Vertex position
-const Var kSlcVtxX([](const caf::SRSliceProxy *slc)
+const Var kSlcVtxX([](const caf::SRSliceProxy *slc) -> double
 		   {
 		     return slc->slc.vertex.x;
 		   });
 
-const Var kSlcVtxY([](const caf::SRSliceProxy *slc)
+const Var kSlcVtxY([](const caf::SRSliceProxy *slc) -> double
 		   {
 		     return slc->slc.vertex.y;
 		   });
 
-const Var kSlcVtxZ([](const caf::SRSliceProxy *slc)
+const Var kSlcVtxZ([](const caf::SRSliceProxy *slc) -> double
 		   {
 		     return slc->slc.vertex.z;
 		   });

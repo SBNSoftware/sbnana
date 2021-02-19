@@ -1,13 +1,12 @@
 #pragma once
 
 #include "CAFAna/Core/ISyst.h"
-#include "CAFAna/Core/GenieWeightList.h"
-#include "StandardRecord/Proxy/SRProxy.h"
-#include <cmath>
-#include <cassert>
 
 namespace ana
 {
+  // *** If these systs are reinstated their definition should be in the .cxx
+  // *** file ***
+
   // class GenieSyst: public ISyst
   // {
   // public:

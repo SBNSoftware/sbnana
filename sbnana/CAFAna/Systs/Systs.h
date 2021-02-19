@@ -1,14 +1,12 @@
 #pragma once
 
 #include "CAFAna/Core/ISyst.h"
-#include "StandardRecord/Proxy/SRProxy.h"
-#include "CAFAna/Core/Utilities.h"
-
-#include "TFile.h"
-#include "TH1.h"
 
 namespace ana
 {
+  // *** If these systs are reinstated their definition should be in the .cxx
+  // *** file ***
+
   // ///ETW Rework of Normalization Systematics
 
   // //Signal normalization

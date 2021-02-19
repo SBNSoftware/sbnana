@@ -1,24 +1,18 @@
 #pragma once
 
-#include <cassert>
 #include "CAFAna/Core/Cut.h"
-#include "StandardRecord/Proxy/SRProxy.h"
+
+#include "StandardRecord/Proxy/FwdDeclare.h"
 
 namespace ana
 {
-  const Cut kHasMatchedNu([](const caf::SRSliceProxy* slc)
-                          {
-                            return slc->truth.index >= 0;
-                          });
+  extern const Cut kHasMatchedNu;
 
   /// \brief Is this a Neutral %Current event?
   ///
   /// In this case the selection function is simple enough that we can include
   /// it inline as a lambda function.
-  const Cut kIsNC([](const caf::SRSliceProxy* slc)
-                  {
-                    return !slc->truth.iscc;
-                  });
+  extern const Cut kIsNC;
 
   //----------------------------------------------------------------------
   /// Helper for defining true CC event cuts
@@ -29,13 +23,7 @@ namespace ana
     {
     }
 
-    bool operator()(const caf::SRSliceProxy* slc) const
-    {
-      return kHasMatchedNu(slc) &&
-        slc->truth.iscc &&
-        abs(slc->truth.initpdg) == fPdgOrig &&
-        abs(slc->truth.pdg) == fPdg;
-    }
+    bool operator()(const caf::SRSliceProxy* slc) const;
   protected:
     int fPdg, fPdgOrig;
   };
@@ -48,10 +36,7 @@ namespace ana
     {
     }
 
-    bool operator()(const caf::SRSliceProxy* slc) const
-    {
-      return kHasMatchedNu(slc) && slc->truth.isnc && abs(slc->truth.initpdg) == fPdgOrig;
-    }
+    bool operator()(const caf::SRSliceProxy* slc) const;
   protected:
     int fPdgOrig;
   };
@@ -80,8 +65,5 @@ namespace ana
   const Cut kIsNCFromNue(NCFlavOrig(12));
 
   /// Is this truly an antineutrino?
-  const Cut kIsAntiNu([](const caf::SRSliceProxy* slc)
-                      {
-                        return kHasMatchedNu(slc) && slc->truth.pdg < 0;
-                      });
+  extern const Cut kIsAntiNu;
 }
