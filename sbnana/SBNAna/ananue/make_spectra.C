@@ -14,7 +14,7 @@ void make_spectra()
   //
   // Environment variables and wildcards work as arguments to
   // SpectrumLoader. As do SAM datasets.
-  const std::string fname = "/pnfs/icarus/persistent/users/dmendez/SBNAnaFiles/test/icarus/gen-prodcorsika_genie_nooverburden__nuetest.caf.root";
+  const std::string fname = "/pnfs/icarus/persistent/users/dmendez/SBNAnaFiles/Nov2020CAFs/hadded_1_nuecosmics.caf.root";
 
   // Source of events
   SpectrumLoader loader(fname);
