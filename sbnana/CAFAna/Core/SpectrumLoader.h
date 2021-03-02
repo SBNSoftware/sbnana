@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
 class TFile;
 

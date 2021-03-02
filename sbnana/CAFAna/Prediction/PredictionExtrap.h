@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Prediction/IPrediction.h"
+#include "sbnana/CAFAna/Prediction/IPrediction.h"
 
 namespace ana
 {

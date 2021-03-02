@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Experiment/IExperiment.h"
+#include "sbnana/CAFAna/Experiment/IExperiment.h"
 
 #include "TMath.h"
 

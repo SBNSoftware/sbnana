@@ -1,4 +1,4 @@
-#include "CAFAna/Core/GenieWeightList.h"
+#include "sbnana/CAFAna/Core/GenieWeightList.h"
 
 #include <algorithm>
 #include <iostream>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Var.h"
 
 namespace ana
 {

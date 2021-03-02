@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CAFAna/Core/SystShifts.h"
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include <unordered_map>
 

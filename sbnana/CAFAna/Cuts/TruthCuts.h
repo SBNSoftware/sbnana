@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/Cut.h"
 
-#include "StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
 
 namespace ana
 {

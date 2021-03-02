@@ -7,7 +7,7 @@
 #include <set>
 #include <string>
 
-#include "CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Var.h"
 
 namespace caf{class StandardRecord; class SRSpill; class SRSpillTruthBranch; class SRSlice;}
 

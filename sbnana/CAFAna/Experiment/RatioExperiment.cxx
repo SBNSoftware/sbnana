@@ -1,10 +1,10 @@
-#include "CAFAna/Experiment/RatioExperiment.h"
+#include "sbnana/CAFAna/Experiment/RatioExperiment.h"
 
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
 
-#include "CAFAna/Prediction/IPrediction.h"
+#include "sbnana/CAFAna/Prediction/IPrediction.h"
 
 #include "TDirectory.h"
 #include "TObjString.h"

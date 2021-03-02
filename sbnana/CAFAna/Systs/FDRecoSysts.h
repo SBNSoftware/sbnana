@@ -3,7 +3,7 @@
 // Use make_FD_reco_systs.C to make the histograms
 #pragma once
 
-#include "CAFAna/Core/ISyst.h"
+#include "sbnana/CAFAna/Core/ISyst.h"
 
 namespace ana {
 

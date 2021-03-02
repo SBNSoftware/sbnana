@@ -1,4 +1,4 @@
-#include "CAFAna/Core/SystRegistry.h"
+#include "sbnana/CAFAna/Core/SystRegistry.h"
 
 #include <cxxabi.h>
 

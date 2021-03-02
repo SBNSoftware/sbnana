@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "helper_nuesel_icarus.h"
 #include "tools_nuesel_icarus.h"

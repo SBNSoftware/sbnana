@@ -1,6 +1,6 @@
-#include "CAFAna/Experiment/MultiExperiment.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "TDirectory.h"
 #include "TObjString.h"

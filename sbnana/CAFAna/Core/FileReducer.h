@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CAFAna/Core/Var.h"
-#include "CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
 #include <set>
 

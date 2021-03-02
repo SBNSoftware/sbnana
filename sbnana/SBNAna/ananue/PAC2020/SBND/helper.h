@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/Cut.h"
-#include "CAFAna/Core/Ratio.h"
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "SBNAna/Cuts/Cuts.h"
 #include "SBNAna/Cuts/NueCuts.h"

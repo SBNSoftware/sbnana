@@ -1,8 +1,8 @@
-#include "CAFAna/Experiment/SingleSampleExperiment.h"
+#include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
 
-#include "CAFAna/Core/HistCache.h"
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "OscLib/IOscCalc.h"
 

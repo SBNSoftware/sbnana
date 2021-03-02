@@ -1,6 +1,6 @@
-#include "CAFAna/Core/WildcardSource.h"
+#include "sbnana/CAFAna/Core/WildcardSource.h"
 
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "ifdh.h"
 

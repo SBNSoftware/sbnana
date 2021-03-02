@@ -2,8 +2,8 @@
 
 #if 0 // temporarily disabled. None of this exists in the CAFs at present
 
-#include "CAFAna/Core/ISyst.h"
-#include "CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/ISyst.h"
+#include "sbnana/CAFAna/Core/Var.h"
 
 #include <vector>
 #include <unordered_map>

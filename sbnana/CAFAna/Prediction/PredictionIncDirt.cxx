@@ -1,6 +1,6 @@
-#include "CAFAna/Prediction/PredictionIncDirt.h"
+#include "sbnana/CAFAna/Prediction/PredictionIncDirt.h"
 
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "TDirectory.h"
 #include "TObjString.h"

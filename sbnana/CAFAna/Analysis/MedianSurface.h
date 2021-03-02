@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Analysis/Surface.h"
+#include "sbnana/CAFAna/Analysis/Surface.h"
 
 #include <vector>
 

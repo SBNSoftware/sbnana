@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/OscillatableSpectrum.h"
+#include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
 
 namespace ana
 {

@@ -1,12 +1,12 @@
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Cuts/TruthCuts.h"
-#include "CAFAna/Systs/DUNEFluxSysts.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Systs/DUNEFluxSysts.h"
 using namespace ana;
 
 #include "Utilities/rootlogon.C"
 
-#include "StandardRecord/StandardRecord.h"
+#include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
 
 #include "TCanvas.h"
 #include "TH1.h"

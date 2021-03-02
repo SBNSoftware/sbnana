@@ -1,7 +1,7 @@
-#include "CAFAna/Core/SAMQuerySource.h"
+#include "sbnana/CAFAna/Core/SAMQuerySource.h"
 
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Progress.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "ifdh.h"
 

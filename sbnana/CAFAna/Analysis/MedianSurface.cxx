@@ -1,6 +1,6 @@
-#include "CAFAna/Analysis/MedianSurface.h"
+#include "sbnana/CAFAna/Analysis/MedianSurface.h"
 
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "TDirectory.h"
 #include "TGraph.h"

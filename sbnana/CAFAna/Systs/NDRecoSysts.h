@@ -2,7 +2,7 @@
 // Systematics to simulate reconstruction systematics in the ND
 #pragma once
 
-#include "CAFAna/Core/ISyst.h"
+#include "sbnana/CAFAna/Core/ISyst.h"
 
 namespace ana {
 

@@ -2,16 +2,16 @@
 // cafe demo0b.C
 
 // Includes from demo0.C
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/Var.h"
-#include "CAFAna/Analysis/ExpInfo.h"
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Analysis/ExpInfo.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 // New includes
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Cuts/TruthCuts.h" // for kIsNC
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h" // for kIsNC
 
 using namespace ana;
 

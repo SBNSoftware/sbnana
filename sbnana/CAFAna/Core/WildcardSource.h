@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/FileListSource.h"
+#include "sbnana/CAFAna/Core/FileListSource.h"
 
 namespace ana
 {

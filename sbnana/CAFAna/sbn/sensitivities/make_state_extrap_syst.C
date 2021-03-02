@@ -1,21 +1,21 @@
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/Var.h"
-#include "CAFAna/Cuts/TruthCuts.h"
-#include "CAFAna/Prediction/PredictionNoExtrap.h"
-#include "CAFAna/Prediction/PredictionInterp.h"
-#include "StandardRecord/Proxy/SRProxy.h"
-#include "CAFAna/Core/Loaders.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
 #include "TFile.h"
-#include "CAFAna/Analysis/ExpInfo.h"
+#include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
-#include "CAFAna/Systs/SBNWeightSysts.h"
-#include "CAFAna/Systs/SBNFluxSysts.h"
+#include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
+#include "sbnana/CAFAna/Systs/SBNFluxSysts.h"
 
 #include "OscLib/IOscCalc.h"
 
-#include "CAFAna/Prediction/PredictionSBNExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionSBNExtrap.h"
 
 using namespace ana;
 

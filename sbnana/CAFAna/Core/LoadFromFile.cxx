@@ -1,6 +1,6 @@
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
-#include "CAFAna/Core/OscCalcSterileApprox.h"
+#include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 
 #include "OscLib/OscCalc.h"
 #include "OscLib/OscCalcDumb.h"

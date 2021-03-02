@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Extrap/IExtrap.h"
+#include "sbnana/CAFAna/Extrap/IExtrap.h"
 
 namespace ana
 {

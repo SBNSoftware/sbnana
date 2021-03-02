@@ -1,6 +1,6 @@
-#include "CAFAna/Analysis/CalcsNuFit_cdr.h"
+#include "sbnana/CAFAna/Analysis/CalcsNuFit_cdr.h"
 
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 #include "OscLib/OscCalcPMNSOpt.h"
 

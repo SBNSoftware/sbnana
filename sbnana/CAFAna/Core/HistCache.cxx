@@ -1,6 +1,6 @@
-#include "CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
 
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TH2.h"
 

@@ -1,6 +1,6 @@
 #include "SBNAna/Vars/NueVars.h"
-#include "CAFAna/Core/Utilities.h"
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 #include <cassert>
 
 namespace ana {
