@@ -1,6 +1,6 @@
-#include "CAFAna/Core/OscCalcSterileApprox.h"
+#include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 #include "TMath.h"
 

@@ -1,10 +1,10 @@
-#include "CAFAna/Prediction/PredictionScaleComp.h"
+#include "sbnana/CAFAna/Prediction/PredictionScaleComp.h"
 
-#include "CAFAna/Core/Cut.h"
-#include "CAFAna/Core/HistCache.h"
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Prediction/PredictionNoOsc.h"
-#include "CAFAna/Prediction/PredictionNoExtrap.h"
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoOsc.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
 
 #include "TDirectory.h"
 #include "TObjString.h"

@@ -1,6 +1,6 @@
-#include "CAFAna/Vars/FitVarsSterileApprox.h"
+#include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
 
-#include "CAFAna/Core/OscCalcSterileApprox.h"
+#include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 
 namespace ana
 {

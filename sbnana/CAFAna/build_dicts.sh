@@ -1,8 +1,8 @@
 #!/bin/bash
 
 INCS="-I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/
-      -I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/sbnana/
-      -I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/sbnana/CAFAna
+#      -I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/sbnana/
+#      -I$MRB_INSTALL/sbnana/$SBNANA_VERSION/include/sbnana/CAFAna
       -I$MRB_INSTALL/sbnanaobj/$SBNANAOBJ_VERSION/include/
       -I$SRPROXY_INC
       -I$EIGEN_INC
@@ -13,7 +13,7 @@ LIBDIR=$MRB_INSTALL/sbnana/$SBNANA_VERSION/${CET_SUBDIR}.${MRB_QUALS/:/.}/lib/
 
 DIRS="Analysis Core Cuts Experiment Extrap Prediction Systs Vars"
 
-find $DIRS -name '*.h' | grep -v CalcsNuFit_cdr.h | grep -v Prolog.h | grep -v EpilogFwd.h | sed 's:\(.*\):#include "CAFAna/\1":' > classes.h
+find $DIRS -name '*.h' | grep -v CalcsNuFit_cdr.h | grep -v Prolog.h | grep -v EpilogFwd.h | sed 's:\(.*\):#include "sbnana/CAFAna/\1":' > classes.h
 
 genreflex classes.h \
     -s classes_def.xml \

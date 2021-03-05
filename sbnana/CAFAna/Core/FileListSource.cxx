@@ -1,6 +1,6 @@
-#include "CAFAna/Core/FileListSource.h"
+#include "sbnana/CAFAna/Core/FileListSource.h"
 
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TFile.h"
 

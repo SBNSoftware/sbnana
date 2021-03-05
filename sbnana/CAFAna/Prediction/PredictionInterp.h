@@ -1,10 +1,10 @@
 #pragma once
 
-#include "CAFAna/Prediction/IPrediction.h"
-#include "CAFAna/Prediction/PredictionGenerator.h"
+#include "sbnana/CAFAna/Prediction/IPrediction.h"
+#include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
 
 #include <map>
 #include <memory>

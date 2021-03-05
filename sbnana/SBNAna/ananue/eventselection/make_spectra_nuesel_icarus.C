@@ -9,8 +9,8 @@
 // containing the resulted histograms                                //
 ///////////////////////////////////////////////////////////////////////
 
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
 
 #include "helper_nuesel_icarus.h"
 

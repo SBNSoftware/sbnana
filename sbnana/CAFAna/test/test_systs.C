@@ -1,18 +1,18 @@
-#include "CAFAna/Systs/GenieSysts.h"
+#include "sbnana/CAFAna/Systs/GenieSysts.h"
 
-#include "CAFAna/Analysis/TDRLoaders.h"
-#include "CAFAna/Analysis/CalcsNuFit.h"
+#include "sbnana/CAFAna/Analysis/TDRLoaders.h"
+#include "sbnana/CAFAna/Analysis/CalcsNuFit.h"
 
-#include "CAFAna/Prediction/PredictionNoExtrap.h"
-#include "CAFAna/Prediction/PredictionInterp.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 
-#include "CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
 
-#include "CAFAna/Cuts/AnaCuts.h"
-#include "CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Cuts/AnaCuts.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
 
-#include "CAFAna/Systs/DUNEFluxSysts.h"
-#include "CAFAna/Systs/EnergySysts.h"
+#include "sbnana/CAFAna/Systs/DUNEFluxSysts.h"
+#include "sbnana/CAFAna/Systs/EnergySysts.h"
 
 #include "OscLib/IOscCalc.h"
 

@@ -1,6 +1,6 @@
 #include "SBNAna/Cuts/TimingCuts.h"
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 /// Beam spill duration is 1.6 microseconds
 /// TO DO: Change numbers to reflect reality:

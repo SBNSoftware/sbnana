@@ -1,8 +1,8 @@
 #pragma once 
 
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/Cut.h"
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "SBNAna/Vars/Binnings.h"
 #include "SBNAna/Vars/NueVars.h"

@@ -1,9 +1,9 @@
-#include "CAFAna/Experiment/CountingExperiment.h"
+#include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 
-#include "CAFAna/Prediction/IPrediction.h"
+#include "sbnana/CAFAna/Prediction/IPrediction.h"
 
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "OscLib/IOscCalc.h"
 

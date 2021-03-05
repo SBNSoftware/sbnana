@@ -22,13 +22,6 @@ int main(int argc, char** argv)
   const std::string inname = argv[1];
   const std::string outname = argv[2];
 
-  //Find out if "proposal" appears in input string
-  bool is_proposal_flag = false;
-  if (inname.find("Proposal") || inname.find("proposal")) {
-    is_proposal_flag = true;
-    std::cout << "Setting proposal flag to true: SBND baseline will be adjusted" << std::endl;
-  }
-
   TFile* fin = TFile::Open(inname.c_str());
 
   TTree* tr = (TTree*)fin->Get("recTree");
@@ -58,10 +51,6 @@ int main(int argc, char** argv)
     prog.SetProgress(double(i)/tr->GetEntries());
 
     tr->GetEntry(i);
-    if(is_proposal_flag && !event->mc.nu.empty()){
-      const float bl = event->mc.nu[0].baseline;
-      if(bl < 150) event->mc.nu[0].baseline -= 10;
-    }
 
     rec.Clear();
     rec.Fill(*event);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/Cut.h"
 
 namespace ana
 {

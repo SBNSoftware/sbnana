@@ -1,14 +1,14 @@
-#include "CAFAna/Core/OscillatableSpectrum.h"
+#include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
 
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/HistCache.h"
-#include "CAFAna/Core/OscCurve.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/OscCurve.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
-#include "CAFAna/Analysis/ExpInfo.h"
+#include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "OscLib/IOscCalc.h"
 

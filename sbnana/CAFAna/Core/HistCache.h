@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-#include "CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Binning.h"
 
 class TAxis;
 class TH1D;

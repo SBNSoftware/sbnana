@@ -1,6 +1,6 @@
-#include "CAFAna/Extrap/IExtrap.h"
+#include "sbnana/CAFAna/Extrap/IExtrap.h"
 
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "TDirectory.h"
 #include "TObjString.h"
@@ -8,7 +8,7 @@
 #include <iostream>
 
 // To implement LoadFrom()
-#include "CAFAna/Extrap/TrivialExtrap.h"
+#include "sbnana/CAFAna/Extrap/TrivialExtrap.h"
 
 namespace ana
 {

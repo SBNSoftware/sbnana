@@ -1,7 +1,7 @@
 // Make a few spectra with different cuts.
 
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
 
 #include "helper_eff_spill.h"
 

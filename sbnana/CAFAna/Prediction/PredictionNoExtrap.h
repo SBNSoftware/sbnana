@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CAFAna/Prediction/PredictionExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionExtrap.h"
 
-#include "CAFAna/Prediction/PredictionGenerator.h"
+#include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 
 namespace ana
 {

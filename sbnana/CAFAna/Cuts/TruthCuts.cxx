@@ -1,6 +1,6 @@
-#include "CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana
 {

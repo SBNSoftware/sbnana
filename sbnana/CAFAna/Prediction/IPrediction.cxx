@@ -1,6 +1,6 @@
-#include "CAFAna/Prediction/IPrediction.h"
+#include "sbnana/CAFAna/Prediction/IPrediction.h"
 
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "OscLib/IOscCalc.h"
 
@@ -11,13 +11,13 @@
 #include "TObjString.h"
 
 // To implement LoadFrom()
-#include "CAFAna/Prediction/PredictionNoExtrap.h"
-#include "CAFAna/Prediction/PredictionInterp.h"
-#include "CAFAna/Prediction/PredictionLinFit.h"
-#include "CAFAna/Prediction/PredictionNoOsc.h"
-#include "CAFAna/Prediction/PredictionScaleComp.h"
-#include "CAFAna/Prediction/PredictionIncDirt.h"
-#include "CAFAna/Prediction/PredictionSBNExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
+#include "sbnana/CAFAna/Prediction/PredictionLinFit.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoOsc.h"
+#include "sbnana/CAFAna/Prediction/PredictionScaleComp.h"
+#include "sbnana/CAFAna/Prediction/PredictionIncDirt.h"
+#include "sbnana/CAFAna/Prediction/PredictionSBNExtrap.h"
 
 namespace ana
 {

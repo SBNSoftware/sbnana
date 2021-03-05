@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Prediction/IPrediction.h"
-#include "CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Prediction/IPrediction.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
 
 #include "Math/Minimizer.h"
 

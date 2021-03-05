@@ -7,9 +7,9 @@
 #include <set>
 #include <string>
 
-#include "CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Binning.h"
 
-#include "StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
 
 namespace caf{class SRSpill; class SRSpillTruthBranch; class SRSlice;}
 

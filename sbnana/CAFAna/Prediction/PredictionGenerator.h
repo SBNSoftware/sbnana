@@ -2,12 +2,12 @@
 
 #include <memory>
 
-#include "CAFAna/Core/Cut.h"
-#include "CAFAna/Core/HistAxis.h"
-#include "CAFAna/Core/Var.h"
-//#include "CAFAna/Vars/GenieWeights.h"
-#include "CAFAna/Core/SystShifts.h"
-#include "CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "sbnana/CAFAna/Core/Var.h"
+//#include "sbnana/CAFAna/Vars/GenieWeights.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
 
 namespace ana
 {

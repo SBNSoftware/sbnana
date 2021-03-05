@@ -1,8 +1,8 @@
-#include "CAFAna/Experiment/GaussianConstraint.h"
+#include "sbnana/CAFAna/Experiment/GaussianConstraint.h"
 
-#include "CAFAna/Vars/FitVars.h"
+#include "sbnana/CAFAna/Vars/FitVars.h"
 
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 namespace ana
 {

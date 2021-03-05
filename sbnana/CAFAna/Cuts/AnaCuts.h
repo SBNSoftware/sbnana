@@ -2,8 +2,8 @@
 #pragma once
 
 #include <cassert>
-#include "CAFAna/Core/Cut.h"
-#include "StandardRecord/StandardRecord.h"
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
 
 namespace ana
 {

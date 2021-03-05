@@ -1,5 +1,5 @@
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "eventsel.h"
 

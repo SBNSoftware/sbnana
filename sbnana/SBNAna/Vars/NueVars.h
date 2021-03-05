@@ -1,7 +1,7 @@
 #pragma once
 // Specific variables for the Nue event selection.
 
-#include "CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Var.h"
 
 namespace ana
 {

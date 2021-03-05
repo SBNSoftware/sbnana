@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CAFAna/Experiment/IExperiment.h"
-#include "CAFAna/Core/IFitVar.h"
+#include "sbnana/CAFAna/Experiment/IExperiment.h"
+#include "sbnana/CAFAna/Core/IFitVar.h"
 
 #include "TMath.h"
 

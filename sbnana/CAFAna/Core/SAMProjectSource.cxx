@@ -1,6 +1,6 @@
-#include "CAFAna/Core/SAMProjectSource.h"
+#include "sbnana/CAFAna/Core/SAMProjectSource.h"
 
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "ifdh.h"
 

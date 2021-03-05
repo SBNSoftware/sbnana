@@ -2,21 +2,21 @@
 
 #if 0
 
-#include "CAFAna/Prediction/PredictionLinFit.h"
+#include "sbnana/CAFAna/Prediction/PredictionLinFit.h"
 
-#include "CAFAna/Core/HistCache.h"
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/MathUtil.h"
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/SystRegistry.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/Progress.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/SystRegistry.h"
 
-#include "CAFAna/Prediction/PredictionGenerator.h"
+#include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 
-#include "CAFAna/Prediction/IncrementalCholeskyDecomp.h"
+#include "sbnana/CAFAna/Prediction/IncrementalCholeskyDecomp.h"
 
-#include "CAFAna/Systs/SBNWeightSysts.h"
-#include "CAFAna/Systs/UniverseOracle.h"
+#include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
+#include "sbnana/CAFAna/Systs/UniverseOracle.h"
 
 #include "OscLib/IOscCalc.h"
 
