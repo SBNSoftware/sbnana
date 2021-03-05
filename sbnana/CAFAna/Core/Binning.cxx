@@ -1,4 +1,4 @@
-#include "CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Binning.h"
 
 #include "TDirectory.h"
 #include "TH1.h"

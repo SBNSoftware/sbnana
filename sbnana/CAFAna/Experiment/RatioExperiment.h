@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
 
-#include "CAFAna/Experiment/IExperiment.h"
-#include "CAFAna/Analysis/ExpInfo.h"
+#include "sbnana/CAFAna/Experiment/IExperiment.h"
+#include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
 #include "OscLib/IOscCalc.h"
 

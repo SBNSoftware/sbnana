@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "CAFAna/Core/HistAxis.h"
-#include "CAFAna/Core/OscillatableSpectrum.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
 class TDirectory;
 class TH1;

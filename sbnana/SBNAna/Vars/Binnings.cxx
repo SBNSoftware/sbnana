@@ -1,4 +1,4 @@
-#include "CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Binning.h"
 #include "SBNAna/Vars/Binnings.h"
 
 #include "SBNAna/Cuts/VolumeDefinitions.h"

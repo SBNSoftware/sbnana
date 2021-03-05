@@ -1,4 +1,4 @@
-#include "CAFAna/Systs/SystComponentScale.h"
+#include "sbnana/CAFAna/Systs/SystComponentScale.h"
 
 #include "TObjString.h"
 #include "TDirectory.h"

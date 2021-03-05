@@ -1,7 +1,7 @@
-#include "CAFAna/Vars/FitVars.h"
+#include "sbnana/CAFAna/Vars/FitVars.h"
 
 #include "OscLib/IOscCalc.h"
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 #include <cassert>
 #include <cmath>

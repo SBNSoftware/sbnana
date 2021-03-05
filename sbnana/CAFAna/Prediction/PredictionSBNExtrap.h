@@ -1,10 +1,10 @@
 #pragma once
 
-#include "CAFAna/Prediction/IPrediction.h"
+#include "sbnana/CAFAna/Prediction/IPrediction.h"
 
-#include "CAFAna/Prediction/PredictionNoExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
 
-#include "CAFAna/Core/Loaders.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
 
 namespace ana
 {

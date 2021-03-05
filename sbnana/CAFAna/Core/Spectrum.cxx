@@ -1,9 +1,9 @@
-#include "CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
 
-#include "CAFAna/Core/HistCache.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/Utilities.h"
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 #include "TDirectory.h"
 #include "TH2.h"

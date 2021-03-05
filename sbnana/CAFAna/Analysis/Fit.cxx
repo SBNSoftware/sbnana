@@ -1,13 +1,13 @@
-#include "CAFAna/Analysis/Fit.h"
+#include "sbnana/CAFAna/Analysis/Fit.h"
 
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Core/IFitVar.h"
-#include "CAFAna/Core/Utilities.h"
-#include "CAFAna/Experiment/IExperiment.h"
-#include "CAFAna/Analysis/GradientDescent.h"
+#include "sbnana/CAFAna/Core/Progress.h"
+#include "sbnana/CAFAna/Core/IFitVar.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Experiment/IExperiment.h"
+#include "sbnana/CAFAna/Analysis/GradientDescent.h"
 
 #include "OscLib/IOscCalc.h"
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 #include "TError.h"
 #include "TGraph.h"

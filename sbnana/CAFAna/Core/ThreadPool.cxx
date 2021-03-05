@@ -1,6 +1,6 @@
-#include "CAFAna/Core/ThreadPool.h"
+#include "sbnana/CAFAna/Core/ThreadPool.h"
 
-#include "CAFAna/Core/Progress.h"
+#include "sbnana/CAFAna/Core/Progress.h"
 
 #include <cassert>
 #include <unistd.h>

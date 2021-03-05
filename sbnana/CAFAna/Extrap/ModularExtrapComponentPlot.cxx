@@ -1,9 +1,9 @@
 #if 0
 // Currently dead code
 
-#include "CAFAna/Extrap/ModularExtrapComponent.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Extrap/ModularExtrapComponent.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TCanvas.h"
 #include "TDirectory.h"

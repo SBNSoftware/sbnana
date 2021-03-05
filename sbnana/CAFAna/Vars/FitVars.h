@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/IFitVar.h"
+#include "sbnana/CAFAna/Core/IFitVar.h"
 
 #include <limits>
 

@@ -1,4 +1,4 @@
-#include "CAFAna/Systs/GenieSysts.h"
+#include "sbnana/CAFAna/Systs/GenieSysts.h"
 
 namespace ana
 {

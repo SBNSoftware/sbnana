@@ -1,4 +1,4 @@
-#include "CAFAna/Core/WildcardSource.h"
+#include "sbnana/CAFAna/Core/WildcardSource.h"
 
 namespace ana
 {

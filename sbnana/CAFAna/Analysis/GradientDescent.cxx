@@ -1,4 +1,4 @@
-#include "CAFAna/Analysis/GradientDescent.h"
+#include "sbnana/CAFAna/Analysis/GradientDescent.h"
 
 #include "Minuit2/FCNGradientBase.h"
 #include "Minuit2/FunctionMinimum.h"

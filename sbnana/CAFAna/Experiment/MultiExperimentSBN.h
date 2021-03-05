@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CAFAna/Experiment/IExperiment.h"
+#include "sbnana/CAFAna/Experiment/IExperiment.h"
 #include "OscLib/IOscCalc.h"
-#include "CAFAna/Analysis/ExpInfo.h"
+#include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
 #include <memory>
 #include <vector>

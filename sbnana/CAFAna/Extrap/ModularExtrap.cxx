@@ -1,10 +1,10 @@
 #if 0
 // Currently dead code
 
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Extrap/ModularExtrap.h"
-#include "CAFAna/Core/Loaders.h"
-#include "CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Extrap/ModularExtrap.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
 #include "TObjString.h"
 #include "TDirectory.h"
 

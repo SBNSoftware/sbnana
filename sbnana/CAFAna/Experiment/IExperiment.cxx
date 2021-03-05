@@ -1,6 +1,6 @@
-#include "CAFAna/Experiment/IExperiment.h"
+#include "sbnana/CAFAna/Experiment/IExperiment.h"
 
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TFile.h"
 #include "TObjString.h"
@@ -9,11 +9,11 @@
 #include <iostream>
 
 // To implement LoadFrom()
-#include "CAFAna/Experiment/CountingExperiment.h"
-#include "CAFAna/Experiment/SingleSampleExperiment.h"
-#include "CAFAna/Experiment/SolarConstraints.h"
-#include "CAFAna/Experiment/MultiExperiment.h"
-#include "CAFAna/Experiment/ReactorExperiment.h"
+#include "sbnana/CAFAna/Experiment/CountingExperiment.h"
+#include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
+#include "sbnana/CAFAna/Experiment/SolarConstraints.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
+#include "sbnana/CAFAna/Experiment/ReactorExperiment.h"
 
 namespace ana
 {

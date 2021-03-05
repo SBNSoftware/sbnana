@@ -1,11 +1,11 @@
 #pragma once
 
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/Var.h"
-#include "CAFAna/Core/Cut.h"
-#include "CAFAna/Core/HistAxis.h"
-#include "CAFAna/Core/SpectrumLoaderBase.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TAttLine.h"
 #include "THnSparse.h"

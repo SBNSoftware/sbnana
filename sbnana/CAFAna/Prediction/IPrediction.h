@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
 
-#include "CAFAna/Core/OscillatableSpectrum.h"
+#include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
 
 class TDirectory;
 

@@ -1,12 +1,12 @@
 #if 0
 // Currently dead code
 
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Extrap/ModularExtrapComponent.h"
-#include "CAFAna/Core/SpectrumLoaderBase.h"
-#include "CAFAna/Decomp/IDecomp.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Extrap/ModularExtrapComponent.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Decomp/IDecomp.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TH1.h"
 #include "TDirectory.h"

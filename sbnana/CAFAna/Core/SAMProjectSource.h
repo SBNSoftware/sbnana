@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
 
-#include "CAFAna/Core/IFileSource.h"
+#include "sbnana/CAFAna/Core/IFileSource.h"
 
 /// IFDH interface (data handling)
 namespace ifdh_ns {

@@ -1,12 +1,12 @@
-#include "CAFAna/Analysis/Surface.h"
+#include "sbnana/CAFAna/Analysis/Surface.h"
 
-#include "CAFAna/Experiment/IExperiment.h"
-#include "CAFAna/Analysis/Fit.h"
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/IFitVar.h"
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Core/ThreadPool.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Experiment/IExperiment.h"
+#include "sbnana/CAFAna/Analysis/Fit.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/IFitVar.h"
+#include "sbnana/CAFAna/Core/Progress.h"
+#include "sbnana/CAFAna/Core/ThreadPool.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "OscLib/IOscCalc.h"
 

@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
 
 namespace ana
 {

@@ -1,9 +1,9 @@
-#include "CAFAna/Prediction/PredictionInterp.h"
-#include "CAFAna/Core/HistCache.h"
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/SystRegistry.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/SystRegistry.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TDirectory.h"
 #include "TH2.h"
@@ -16,9 +16,9 @@
 #include "TCanvas.h"
 
 #include "OscLib/IOscCalc.h"
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
-#include "CAFAna/Core/Loaders.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
 
 #include <algorithm>
 #include <malloc.h>

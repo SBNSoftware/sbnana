@@ -7,11 +7,11 @@
 #include <string>
 #include <vector>
 
-#include "CAFAna/Core/Cut.h"
-#include "CAFAna/Core/IFileSource.h"
-#include "CAFAna/Core/MultiVar.h"
-#include "CAFAna/Core/SystShifts.h"
-#include "CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/IFileSource.h"
+#include "sbnana/CAFAna/Core/MultiVar.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Core/Var.h"
 
 namespace caf{class StandardRecord;}
 

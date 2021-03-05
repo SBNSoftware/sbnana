@@ -1,9 +1,9 @@
-#include "CAFAna/Core/FileReducer.h"
+#include "sbnana/CAFAna/Core/FileReducer.h"
 
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Progress.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "sbnanaobj/StandardRecord/StandardRecord.h"
 

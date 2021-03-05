@@ -1,10 +1,10 @@
-#include "CAFAna/Analysis/CalcsNuFit.h"
+#include "sbnana/CAFAna/Analysis/CalcsNuFit.h"
 
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 #include "OscLib/OscCalcPMNSOpt.h"
 
-#include "CAFAna/Vars/FitVars.h"
+#include "sbnana/CAFAna/Vars/FitVars.h"
 
 namespace ana
 {

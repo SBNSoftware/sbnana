@@ -1,6 +1,6 @@
 #include "SBNAna/Cuts/VolumeDefinitions.h"
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include <cmath>
 

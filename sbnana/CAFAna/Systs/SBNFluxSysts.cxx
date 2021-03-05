@@ -1,8 +1,8 @@
-#include "CAFAna/Systs/SBNFluxSysts.h"
+#include "sbnana/CAFAna/Systs/SBNFluxSysts.h"
 
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "TFile.h"
 #include "TH1.h"

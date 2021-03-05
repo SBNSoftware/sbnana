@@ -1,10 +1,10 @@
 #pragma once
 
-#include "CAFAna/Core/ISyst.h"
-#include "CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Core/ISyst.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
 
-#include "CAFAna/Analysis/Fit.h"
-#include "CAFAna/Analysis/FitAxis.h"
+#include "sbnana/CAFAna/Analysis/Fit.h"
+#include "sbnana/CAFAna/Analysis/FitAxis.h"
 
 #include "Rtypes.h"
 #include "TAttMarker.h"

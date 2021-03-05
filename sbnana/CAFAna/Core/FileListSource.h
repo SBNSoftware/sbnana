@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/IFileSource.h"
+#include "sbnana/CAFAna/Core/IFileSource.h"
 
 #include <string>
 #include <vector>

@@ -1,8 +1,8 @@
-#include "CAFAna/Extrap/TrivialExtrap.h"
+#include "sbnana/CAFAna/Extrap/TrivialExtrap.h"
 
-#include "CAFAna/Cuts/TruthCuts.h"
-#include "CAFAna/Core/Loaders.h"
-#include "CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
 
 #include "TDirectory.h"
 #include "TObjString.h"

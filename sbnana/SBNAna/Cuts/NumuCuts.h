@@ -1,5 +1,5 @@
 #pragma once
-#include "CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/Cut.h"
 #include "SBNAna/Vars/NumuVars.h"
 
 namespace ana
