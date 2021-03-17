@@ -66,5 +66,26 @@ int main(int argc, char** argv)
   hPOT->Write("TotalPOT");
   hEvts->Write("TotalEvents");
 
+  TTree* metain = (TTree*)fin->Get("metadata/metatree");
+  if(metain){
+    TDirectory* metadir = fout.mkdir("metadata");
+    metadir->cd();
+    std::string key, value;
+    std::string *pkey = &key, *pvalue = &value;
+    TTree* metaout = new TTree("metatree", "metatree");
+    metaout->Branch("key", &key);
+    metaout->Branch("value", &value);
+    metain->SetBranchAddress("key", &pkey);
+    metain->SetBranchAddress("value", &pvalue);
+    for(int i = 0; i < metain->GetEntries(); ++i){
+      metain->GetEntry(i);
+
+      if(key == "data_tier") value = "\"flat"+value.substr(1);
+
+      metaout->Fill();
+    }
+    metaout->Write();
+  }
+
   return 0;
 }
