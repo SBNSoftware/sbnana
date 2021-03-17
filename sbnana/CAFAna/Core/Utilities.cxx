@@ -13,6 +13,7 @@
 #include "TMatrixD.h"
 #include "TObjString.h"
 #include "TString.h"
+#include "TTree.h"
 #include "TVector3.h"
 #include "TVectorD.h"
 
@@ -574,18 +575,21 @@ namespace ana
   {
     std::map<std::string, std::string> ret;
 
-    TIter next(dir->GetListOfKeys());
-    while(TObject* key = next()){
-      TObject* obj = dir->Get(key->GetName());
-      assert(obj);
+    TTree* tr = (TTree*)dir->Get("metatree");
+    if(!tr){
+      std::cout << "Failed to find metadata tree in input CAF. Metadata will be blank." << std::endl;
+      return ret;
+    }
 
-      const TString className = obj->ClassName();
-      if(className == "TObjString"){
-        ret[key->GetName()] = ((TObjString*)obj)->GetString();
-      }
-      else{
-        std::cerr << "Unexpected object " << key->GetName() << " of type " << className << " while looking for metadata. Ignoring" << std::endl;
-      }
+    std::string key, value;
+    std::string* pkey = &key;
+    std::string* pvalue = &value;
+    tr->SetBranchAddress("key", &pkey);
+    tr->SetBranchAddress("value", &pvalue);
+
+    for(int i = 0; i < tr->GetEntries(); ++i){
+      tr->GetEntry(i);
+      ret[key] = value;
     }
 
     return ret;
@@ -599,7 +603,7 @@ namespace ana
     for(auto it: add){
       const std::string& key = it.first;
 
-      // Needs special handling anyway, leave it blank.
+      // Needs special handling anyway, skip it
       if(key == "parents") continue;
 
       // Accumulate the runs list
@@ -650,10 +654,16 @@ namespace ana
     TDirectory* tmp = gDirectory;
     dir->cd();
 
-    for(auto it: meta){
-      TObjString str(it.second.c_str());
-      str.Write(it.first.c_str());
+    TTree* trmeta = new TTree("metatree", "metatree");
+    std::string key, value;
+    trmeta->Branch("key", &key);
+    trmeta->Branch("value", &value);
+    for(const auto& keyval: meta){
+      key = keyval.first;
+      value = keyval.second;
+      trmeta->Fill();
     }
+    trmeta->Write();
 
     dir->Save();
 
