@@ -238,6 +238,7 @@ namespace ana
       meta.erase(m);
     }
 
+    /*
     // change caf -> decaf in the metadata field, if parents have data_tier
     if(meta.find("data_tier") != meta.end()){
       std::string decaf_tier = meta["data_tier"];
@@ -249,6 +250,7 @@ namespace ana
         decaf_tier.replace(decaf_tier.size()-4,3,"decaf");
       meta["data_tier"] = decaf_tier;
     }
+    */
 
     std::string parents = "[";
     for(const std::string& f: fnames){

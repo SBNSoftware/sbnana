@@ -80,7 +80,8 @@ int main(int argc, char** argv)
     for(int i = 0; i < metain->GetEntries(); ++i){
       metain->GetEntry(i);
 
-      if(key == "data_tier") value = "\"flat"+value.substr(1);
+      if(key == "data_tier") value = "\"flat_caf\"";
+      if(key == "file_format") value = "\"flat_caf\"";
 
       metaout->Fill();
     }
