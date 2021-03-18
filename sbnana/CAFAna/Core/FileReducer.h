@@ -42,7 +42,8 @@ namespace ana
     /// Override any metadata key in the output file
     void SetMetadata(const std::string& key, const std::string& val)
     {
-      fMetaMap[key] = val;
+      // Let's assume the user is just setting string keys
+      fMetaMap[key] = "\""+val+"\"";
     }
 
     virtual void Go() override;

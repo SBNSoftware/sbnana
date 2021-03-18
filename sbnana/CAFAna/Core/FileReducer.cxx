@@ -254,9 +254,9 @@ namespace ana
 
     std::string parents = "[";
     for(const std::string& f: fnames){
-      parents += "{\"file_name\":\""+std::string(basename((char *)f.c_str()))+"\"},";
+      parents += "{\"file_name\": \""+std::string(basename((char *)f.c_str()))+"\"}, ";
     }
-    if(parents[parents.size()-1] == ',') parents.resize(parents.size()-1);
+    if(!fnames.empty()) parents.resize(parents.size()-2); // drop trailing ", "
     parents += "]";
 
     meta["parents"] = parents;
