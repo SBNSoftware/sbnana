@@ -5,11 +5,9 @@ using namespace ana;
 #include <string>
 #include <vector>
 
-template<class... T> void concat_cafs(T... args)
+int main(int argc, char** argv)
 {
-  std::vector<std::string> infiles = {args...};
-
-  if(infiles.size() < 2){
+  if(argc < 3){
     std::cout << "usage: cafe -bq concat_cafs INFILES    OUTFILE\n"
               << "       cafe -bq concat_cafs INFILES... OUTFILE\n"
               << "       cafe -bq concat_cafs 'WILDCARD' OUTFILE\n"
@@ -19,8 +17,9 @@ template<class... T> void concat_cafs(T... args)
     exit(1);
   }
 
-  const std::string outfile = infiles.back();
-  infiles.pop_back();
+  std::vector<std::string> infiles;
+  for(int i = 1; i < argc-1; ++i) infiles.push_back(argv[i]);
+  const std::string outfile = argv[argc-1];
 
   FileReducer* reducer = 0;
   if(infiles.size() == 1){
