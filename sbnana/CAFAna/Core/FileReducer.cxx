@@ -219,10 +219,10 @@ namespace ana
           // Copy globalTree verbatim from input to output
           caf::SRGlobal global;
           caf::SRGlobal* pglobal = &global;
-          globalIn->SetBranchAddress("global", &global);
+          globalIn->SetBranchAddress("global", &pglobal);
           fout.cd();
           TTree globalOut("globalTree", "globalTree");
-          globalOut.Branch("global", "caf::SRGlobal", &pglobal);
+          globalOut.Branch("global", "caf::SRGlobal", &global);
           assert(globalIn->GetEntries() == 1);
           // TODO check that the globalTree is the same in every file
           globalIn->GetEntry(0);

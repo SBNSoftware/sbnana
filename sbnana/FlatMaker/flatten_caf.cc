@@ -1,4 +1,5 @@
 #include "sbnanaobj/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/SRGlobal.h"
 
 #include "sbnana/FlatMaker/FlatRecord.h"
 
@@ -59,6 +60,23 @@ int main(int argc, char** argv)
   prog.Done();
 
   trout->Write();
+
+  // Don't bother with a flat version for now, this info is tiny and read once
+  TTree* globalIn = (TTree*)fin->Get("globalTree");
+  if(globalIn){
+    // Copy globalTree verbatim from input to output
+    caf::SRGlobal global;
+    caf::SRGlobal* pglobal = &global;
+    globalIn->SetBranchAddress("global", &pglobal);
+    fout.cd();
+    TTree globalOut("globalTree", "globalTree");
+    globalOut.Branch("global", "caf::SRGlobal", &global);
+    assert(globalIn->GetEntries() == 1);
+    // TODO check that the globalTree is the same in every file
+    globalIn->GetEntry(0);
+    globalOut.Fill();
+    globalOut.Write();
+  }
 
   TH1* hPOT = (TH1*)fin->Get("TotalPOT");
   TH1* hEvts = (TH1*)fin->Get("TotalEvents");
