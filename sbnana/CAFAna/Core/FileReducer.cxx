@@ -261,14 +261,9 @@ namespace ana
 
     meta["parents"] = parents;
 
-    // if there's one more than one parent, this is a concat.
-    // then we need "sumcaf", "sumdecaf", etc. as appropriate
+    // if there's one more than one parent, this is a concat
     if(fnames.size() > 1 && meta.find("data_tier") != meta.end()){
-      auto & tier = meta["data_tier"];
-      // if it ends with 'caf' and doesn't start with 'sum',
-      // it should now start with 'sum'
-      if (tier.substr(tier.size()-4, 3) == "caf" && tier.substr(1, 3) != "sum")
-        tier = "\"sum" + tier.substr(1);
+      meta["data_tier"] = "\"concat_caf\"";
     }
 
     // Allow user to override any metadata
