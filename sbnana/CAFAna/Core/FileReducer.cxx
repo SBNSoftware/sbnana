@@ -6,6 +6,7 @@
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "sbnanaobj/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/SRGlobal.h"
 
 #include <cassert>
 #include <iostream>
@@ -211,6 +212,24 @@ namespace ana
         if(n%100 == 0 && Nfiles == 1 && prog)
           prog->SetProgress(double(n)/Nentries);
       } // end for n
+
+      if(fileIdx == 0){
+        TTree* globalIn = (TTree*)f->Get("globalTree");
+        if(globalIn){
+          // Copy globalTree verbatim from input to output
+          caf::SRGlobal global;
+          caf::SRGlobal* pglobal = &global;
+          globalIn->SetBranchAddress("global", &global);
+          fout.cd();
+          TTree globalOut("globalTree", "globalTree");
+          globalOut.Branch("global", "caf::SRGlobal", &pglobal);
+          assert(globalIn->GetEntries() == 1);
+          // TODO check that the globalTree is the same in every file
+          globalIn->GetEntry(0);
+          globalOut.Fill();
+          globalOut.Write();
+        }
+      }
 
       if(prog) prog->SetProgress((fileIdx+1.)/Nfiles);
     } // end while GetNextFile
