@@ -15,7 +15,7 @@
 int main(int argc, char** argv)
 {
   if(argc != 3){
-    std::cout << "Usage: convert_to_flat input.events.root output.flat.root"
+    std::cout << "Usage: flatten_caf input.events.root output.flat.root"
               << std::endl;
     return 1;
   }
