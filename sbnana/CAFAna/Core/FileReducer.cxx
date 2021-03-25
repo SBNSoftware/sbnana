@@ -32,8 +32,7 @@ namespace ana
                            const std::string& outfile)
     : SpectrumLoaderBase(wildcard),
       fOutfile(outfile),
-      fSpillCut(nullptr), fSliceCut(nullptr),
-      fCopyMetadata(false)
+      fSpillCut(nullptr), fSliceCut(nullptr)
   {
   }
 
@@ -43,8 +42,7 @@ namespace ana
     : SpectrumLoaderBase(fnames),
       fOutfile(outfile),
       fSpillCut(nullptr),
-      fSliceCut(nullptr),
-      fCopyMetadata(false)
+      fSliceCut(nullptr)
   {
   }
 
@@ -123,8 +121,8 @@ namespace ana
 
     std::vector<std::string> fnames;
 
-    //    std::map<std::string, std::string> meta;
-    //    std::set<std::string> meta_mask;
+    std::map<std::string, std::string> meta;
+    std::set<std::string> meta_mask;
 
     caf::StandardRecord* oldsr = 0;
 
@@ -144,13 +142,9 @@ namespace ana
 
       fnames.push_back(f->GetName());
 
-      /*
-      if(fCopyMetadata){
-        TDirectory* meta_dir = (TDirectory*)f->Get("metadata");
-        assert(meta_dir);
-        CombineMetadata(meta, GetCAFMetadata(meta_dir), meta_mask);
-      }
-      */
+      TDirectory* meta_dir = (TDirectory*)f->Get("metadata");
+      assert(meta_dir);
+      CombineMetadata(meta, GetCAFMetadata(meta_dir), meta_mask);
 
       TH1* hEvents = (TH1*)f->Get("TotalEvents");
       assert(hEvents);
@@ -220,8 +214,8 @@ namespace ana
     hPOTOut->Write();
     hEventsOut->Write();
 
-    //    UpdateMetadata(meta, meta_mask, fnames);
-    //    WriteCAFMetadata(fout.mkdir("metadata"), meta);
+    UpdateMetadata(meta, meta_mask, fnames);
+    WriteCAFMetadata(fout.mkdir("metadata"), meta);
 
     fout.Close();
 
@@ -235,7 +229,6 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  /*
   void FileReducer::UpdateMetadata(std::map<std::string, std::string>& meta,
                                    const std::set<std::string>& mask,
                                    const std::vector<std::string>& fnames) const
@@ -245,47 +238,36 @@ namespace ana
       meta.erase(m);
     }
 
-    // change caf -> decaf in the metadata field,
-    // if we actually reduced anything
-    // and if parents have data_tier
-    if ( (!fReductionFuncs.empty() || !fReductionFuncsWithProxy.empty())
-        && meta.find("data_tier") != meta.end())
-    {
+    /*
+    // change caf -> decaf in the metadata field, if parents have data_tier
+    if(meta.find("data_tier") != meta.end()){
       std::string decaf_tier = meta["data_tier"];
       assert(decaf_tier.size() >= 3);
-      assert(decaf_tier.substr(decaf_tier.size()-3,3) == "caf");
+      // For indexing: note that all of this is surrounded by quotes
+      assert(decaf_tier.substr(decaf_tier.size()-4,3) == "caf");
       // don't make 'decaf' into 'dedecaf', however
-      if (decaf_tier.size() < 5 || decaf_tier.substr(decaf_tier.size()-5,5) != "decaf")
-        decaf_tier.replace(decaf_tier.size()-3,3,"decaf");
+      if (decaf_tier.size() < 6 || decaf_tier.substr(decaf_tier.size()-6,5) != "decaf")
+        decaf_tier.replace(decaf_tier.size()-4,3,"decaf");
       meta["data_tier"] = decaf_tier;
     }
-
-    const char* rel = getenv("SRT_BASE_RELEASE");
-    if(rel) meta["decaf.base_release"] = rel;
+    */
 
     std::string parents = "[";
     for(const std::string& f: fnames){
-      parents += "{\"file_name\":\""+std::string(basename((char *)f.c_str()))+"\"},";
+      parents += "{\"file_name\": \""+std::string(basename((char *)f.c_str()))+"\"}, ";
     }
-    if(parents[parents.size()-1] == ',') parents.resize(parents.size()-1);
+    if(!fnames.empty()) parents.resize(parents.size()-2); // drop trailing ", "
     parents += "]";
 
     meta["parents"] = parents;
 
-    // if there's one more than one parent, this is a concat.
-    // then we need "sumcaf", "sumdecaf", etc. as appropriate
-    if (fnames.size() > 1 && meta.find("data_tier") != meta.end())
-    {
-      auto & tier = meta["data_tier"];
-      // if it ends with 'caf' and doesn't start with 'sum',
-      // it should now start with 'sum'
-      if (tier.substr(tier.size()-3, 3) == "caf" && tier.substr(0, 3) != "sum")
-        tier = "sum" + tier;
+    // if there's one more than one parent, this is a concat
+    if(fnames.size() > 1 && meta.find("data_tier") != meta.end()){
+      meta["data_tier"] = "\"concat_caf\"";
     }
 
     // Allow user to override any metadata
     for(auto it: fMetaMap) meta[it.first] = it.second;
   }
-  */
 
 } // namespace
