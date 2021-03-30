@@ -3,7 +3,7 @@
 
 #include "sbnana/FlatMaker/FlatRecord.h"
 
-#include "sbnana/CAFAna/Core/Progress.h"
+#include "CAFAna/Core/Progress.h"
 
 #include "TFile.h"
 #include "TH1.h"

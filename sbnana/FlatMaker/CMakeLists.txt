@@ -23,7 +23,10 @@ include_directories($ENV{SRPROXY_INC})
 
 cet_make_library(LIBRARY_NAME FlatMaker
                  SOURCE       FlatRecord.cxx
-                 LIBRARIES    ${ROOT_BASIC_LIB_LIST} ${ROOT_TREEPLAYER} # CAFAnaCore
+                 LIBRARIES    ${ROOT_BASIC_LIB_LIST}
+                              ${ROOT_TREEPLAYER}
+                              -L$ENV{CAFANACORE_LIB}
+                              CAFAnaCoreExt
                  )
 
 cet_make_exec(flatten_caf

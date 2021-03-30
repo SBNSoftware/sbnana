@@ -57,6 +57,8 @@ find_ups_root(v6_00_00)
 find_ups_product(ifdhc)
 find_ups_product( srproxy )
 find_ups_product( osclib )
+find_ups_product( cafanacore )
+find_ups_product( stan_math )
 
 #ifdhc
 cet_find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB   NO_DEFAULT_PATH )

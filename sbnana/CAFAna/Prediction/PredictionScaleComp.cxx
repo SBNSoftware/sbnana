@@ -1,7 +1,6 @@
 #include "sbnana/CAFAna/Prediction/PredictionScaleComp.h"
 
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnana/CAFAna/Core/HistCache.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoOsc.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
