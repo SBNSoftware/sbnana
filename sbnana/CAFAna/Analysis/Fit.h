@@ -3,8 +3,11 @@
 #include "sbnana/CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Prediction/IPrediction.h"
 #include "sbnana/CAFAna/Core/SystShifts.h"
+#include "CAFAna/Core/Utilities.h"
 
 #include "Math/Minimizer.h"
+
+#include "TMatrixDSym.h"
 
 #include <memory>
 

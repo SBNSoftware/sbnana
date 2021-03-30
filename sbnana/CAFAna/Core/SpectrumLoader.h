@@ -19,19 +19,17 @@ namespace ana
   class SpectrumLoader: public SpectrumLoaderBase
   {
   public:
-    SpectrumLoader(const std::string& wildcard, DataSource src = kBeam, int max = 0);
-    SpectrumLoader(const std::vector<std::string>& fnames,
-                   DataSource src = kBeam, int max = 0);
+    SpectrumLoader(const std::string& wildcard, int max = 0);
+    SpectrumLoader(const std::vector<std::string>& fnames, int max = 0);
     /// Named constructor for SAM projects
     static SpectrumLoader FromSAMProject(const std::string& proj,
-					 DataSource src = kBeam,
 					 int fileLimit = -1);
     virtual ~SpectrumLoader();
 
     virtual void Go() override;
 
   protected:
-    SpectrumLoader(DataSource src = kBeam);
+    SpectrumLoader();
 
     // Move operations
     SpectrumLoader(SpectrumLoader&&) = default;
@@ -41,7 +39,7 @@ namespace ana
     SpectrumLoader(const SpectrumLoader&) = delete;
     SpectrumLoader& operator=(const SpectrumLoader&) = delete;
 
-    void AccumulateExposures(const caf::SRSpill* spill) override;
+    //    void AccumulateExposures(const caf::SRSpill* spill) override;
 
     virtual void HandleFile(TFile* f, Progress* prog = 0);
 
