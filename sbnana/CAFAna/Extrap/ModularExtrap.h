@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "CAFAna/Core/HistAxis.h"
-#include "CAFAna/Extrap/IExtrap.h"
-#include "CAFAna/Extrap/ModularExtrapComponent.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "sbnana/CAFAna/Extrap/IExtrap.h"
+#include "sbnana/CAFAna/Extrap/ModularExtrapComponent.h"
 #include <memory>
 
 class TDirectory;

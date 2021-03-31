@@ -1,4 +1,4 @@
-#include "CAFAna/Systs/UniverseOracle.h"
+#include "sbnana/CAFAna/Systs/UniverseOracle.h"
 
 #include <cassert>
 #include <cmath>

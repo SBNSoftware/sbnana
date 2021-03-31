@@ -1,4 +1,4 @@
-#include "CAFAna/Analysis/Calcs.h"
+#include "sbnana/CAFAna/Analysis/Calcs.h"
 
 #include "OscLib/OscCalcPMNSOpt.h"
 #include "OscLib/OscCalcSterile.h"

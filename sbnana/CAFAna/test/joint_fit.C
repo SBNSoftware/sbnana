@@ -1,22 +1,22 @@
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
 
-#include "CAFAna/Systs/DUNEXSecSysts.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/SystShifts.h"
-#include "CAFAna/Experiment/SingleSampleExperiment.h"
-#include "CAFAna/Experiment/MultiExperiment.h"
-#include "CAFAna/Analysis/Calcs.h"
-#include "CAFAna/Analysis/Fit.h"
-#include "CAFAna/Analysis/Plots.h"
-#include "CAFAna/Vars/FitVars.h"
+#include "sbnana/CAFAna/Systs/DUNEXSecSysts.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
+#include "sbnana/CAFAna/Analysis/Calcs.h"
+#include "sbnana/CAFAna/Analysis/Fit.h"
+#include "sbnana/CAFAna/Analysis/Plots.h"
+#include "sbnana/CAFAna/Vars/FitVars.h"
 
 using namespace ana;
 
 #include "Utilities/rootlogon.C"
 
-#include "StandardRecord/StandardRecord.h"
+#include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
 
 #include "TCanvas.h"
 #include "TH1.h"

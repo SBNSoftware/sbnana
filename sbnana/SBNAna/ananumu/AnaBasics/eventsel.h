@@ -1,5 +1,5 @@
-#include "CAFAna/Core/Binning.h"
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "SBNAna/Vars/Vars.h"
 #include "SBNAna/Vars/NumuVars.h"

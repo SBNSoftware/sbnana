@@ -3,11 +3,11 @@
 
 #if 0
 
-#include "CAFAna/Systs/SBNWeightSysts.h"
+#include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
 
-#include "CAFAna/Systs/UniverseOracle.h"
+#include "sbnana/CAFAna/Systs/UniverseOracle.h"
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include <cassert>
 #include <iostream>

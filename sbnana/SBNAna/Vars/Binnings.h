@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Binning.h"
 
 namespace ana
 {

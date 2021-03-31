@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CAFAna/Core/ISyst.h"
-#include "CAFAna/Core/SystShifts.h"
-#include "CAFAna/Prediction/IPrediction.h"
-#include "CAFAna/Systs/SystComponentScale.h"
+#include "sbnana/CAFAna/Core/ISyst.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Prediction/IPrediction.h"
+#include "sbnana/CAFAna/Systs/SystComponentScale.h"
 
 #include "OscLib/IOscCalc.h"
 

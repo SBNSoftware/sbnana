@@ -1,10 +1,10 @@
 #pragma once
 
-#include "CAFAna/Core/ReweightableSpectrum.h"
+#include "sbnana/CAFAna/Core/ReweightableSpectrum.h"
 
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
 #include <string>
 

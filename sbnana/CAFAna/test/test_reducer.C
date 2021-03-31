@@ -1,4 +1,4 @@
-#include "CAFAna/Core/FileReducer.h"
+#include "sbnana/CAFAna/Core/FileReducer.h"
 
 #include "SBNAna/Cuts/Cuts.h"
 

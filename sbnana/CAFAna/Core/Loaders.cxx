@@ -1,7 +1,7 @@
-#include "CAFAna/Core/Loaders.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
 
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include <cassert>
 #include <iostream>

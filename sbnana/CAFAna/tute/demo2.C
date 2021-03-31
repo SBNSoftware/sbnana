@@ -1,26 +1,26 @@
 // Exercise the fitter
 // cafe demo2.C
 
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/Var.h"
-#include "CAFAna/Cuts/TruthCuts.h"
-#include "CAFAna/Core/OscCalcSterileApprox.h"
-#include "CAFAna/Prediction/PredictionNoExtrap.h"
-#include "CAFAna/Analysis/ExpInfo.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
+#include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
 // New includes required
-#include "CAFAna/Experiment/SingleSampleExperiment.h"
-#include "CAFAna/Analysis/Fit.h"
-#include "CAFAna/Analysis/FitAxis.h"
-#include "CAFAna/Analysis/Surface.h"
-#include "CAFAna/Vars/FitVarsSterileApprox.h"
-#include "CAFAna/Experiment/MultiExperimentSBN.h"
+#include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
+#include "sbnana/CAFAna/Analysis/Fit.h"
+#include "sbnana/CAFAna/Analysis/FitAxis.h"
+#include "sbnana/CAFAna/Analysis/Surface.h"
+#include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
+#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
 
 using namespace ana;
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "TCanvas.h"
 #include "TH1.h"

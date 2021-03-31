@@ -1,10 +1,10 @@
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/OscillatableSpectrum.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/OscCalcSterileApprox.h"
-#include "CAFAna/Cuts/TruthCuts.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
+#include "sbnana/CAFAna/Cuts/TruthCuts.h"
 
-#include "CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 using namespace ana;
 

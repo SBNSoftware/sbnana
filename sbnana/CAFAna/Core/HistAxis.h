@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/Var.h"
 
 #include <string>
 

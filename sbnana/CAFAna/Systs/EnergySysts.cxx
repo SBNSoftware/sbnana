@@ -1,4 +1,4 @@
-#include "CAFAna/Systs/EnergySysts.h"
+#include "sbnana/CAFAna/Systs/EnergySysts.h"
 
 namespace ana {
   // const eScaleMuLArSyst keScaleMuLArSyst;

@@ -1,18 +1,18 @@
-#include "CAFAna/Analysis/Fit.h"
-#include "CAFAna/Analysis/CalcsNuFit.h"
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Loaders.h"
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Experiment/MultiExperiment.h"
-#include "CAFAna/Experiment/SingleSampleExperiment.h"
-#include "CAFAna/Prediction/PredictionNoExtrap.h"
-#include "CAFAna/Prediction/PredictionInterp.h"
-#include "CAFAna/Prediction/PredictionXSecDiag.h"
-#include "CAFAna/Systs/DUNEFluxSysts.h"
-#include "CAFAna/Systs/DUNEXSecSysts.h"
-#include "CAFAna/Systs/Systs.h"
-#include "CAFAna/Vars/FitVars.h"
+#include "sbnana/CAFAna/Analysis/Fit.h"
+#include "sbnana/CAFAna/Analysis/CalcsNuFit.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
+#include "sbnana/CAFAna/Core/Progress.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
+#include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
+#include "sbnana/CAFAna/Prediction/PredictionXSecDiag.h"
+#include "sbnana/CAFAna/Systs/DUNEFluxSysts.h"
+#include "sbnana/CAFAna/Systs/DUNEXSecSysts.h"
+#include "sbnana/CAFAna/Systs/Systs.h"
+#include "sbnana/CAFAna/Vars/FitVars.h"
 
 using namespace ana;
 
@@ -20,7 +20,7 @@ using namespace ana;
 
 #include "OscLib/IOscCalc.h"
 
-#include "StandardRecord/StandardRecord.h"
+#include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
 
 #include "TCanvas.h"
 #include "TFile.h"

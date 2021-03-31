@@ -1,6 +1,6 @@
-#include "CAFAna/Prediction/IncrementalCholeskyDecomp.h"
+#include "sbnana/CAFAna/Prediction/IncrementalCholeskyDecomp.h"
 
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 #include <cmath>
 #include <iostream>

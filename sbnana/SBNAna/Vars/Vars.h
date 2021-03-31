@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CAFAna/Core/MultiVar.h"
-#include "CAFAna/Core/Var.h"
-#include "CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/MultiVar.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Cut.h"
 
 namespace ana
 {

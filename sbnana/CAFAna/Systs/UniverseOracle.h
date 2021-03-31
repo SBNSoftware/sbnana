@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/SystShifts.h"
+#include "sbnana/CAFAna/Core/SystShifts.h"
 
 #include <map>
 #include <string>

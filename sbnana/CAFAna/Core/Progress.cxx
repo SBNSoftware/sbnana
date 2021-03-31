@@ -1,4 +1,4 @@
-#include "CAFAna/Core/Progress.h"
+#include "sbnana/CAFAna/Core/Progress.h"
 
 #include "sys/stat.h"
 

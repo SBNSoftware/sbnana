@@ -1,5 +1,5 @@
-#include "CAFAna/Prediction/PredictionGenerator.h"
-#include "CAFAna/Prediction/PredictionNoExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
+#include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
 
 namespace ana
 {

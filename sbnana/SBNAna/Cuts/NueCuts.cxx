@@ -1,7 +1,7 @@
 #include "SBNAna/Cuts/NueCuts.h"
 #include "SBNAna/Vars/NueVars.h"
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "SBNAna/Cuts/VolumeDefinitions.h"
 

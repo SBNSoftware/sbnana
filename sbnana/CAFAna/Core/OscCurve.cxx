@@ -1,8 +1,8 @@
-#include "CAFAna/Core/OscCurve.h"
+#include "sbnana/CAFAna/Core/OscCurve.h"
 
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/HistCache.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "OscLib/IOscCalc.h"
 
@@ -12,7 +12,7 @@
 
 #include "TH1.h"
 
-#include "CAFAna/Core/OscCalcSterileApprox.h"
+#include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 
 namespace
 {

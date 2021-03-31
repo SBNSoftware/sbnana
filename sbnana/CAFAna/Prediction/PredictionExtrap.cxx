@@ -1,7 +1,7 @@
-#include "CAFAna/Prediction/PredictionExtrap.h"
+#include "sbnana/CAFAna/Prediction/PredictionExtrap.h"
 
-#include "CAFAna/Extrap/IExtrap.h"
-#include "CAFAna/Core/LoadFromFile.h"
+#include "sbnana/CAFAna/Extrap/IExtrap.h"
+#include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "TDirectory.h"
 #include "TObjString.h"

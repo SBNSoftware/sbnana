@@ -1,14 +1,14 @@
 // Introduction to systematics
 // cafe demo3.C
 
-#include "CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Analysis/ExpInfo.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
 using namespace ana;
 
-#include "StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include "TCanvas.h"
 #include "TH1.h"

@@ -1,11 +1,11 @@
-#include "CAFAna/Core/ReweightableSpectrum.h"
+#include "sbnana/CAFAna/Core/ReweightableSpectrum.h"
 
-#include "CAFAna/Core/Binning.h"
-#include "CAFAna/Core/HistCache.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/Var.h"
-#include "CAFAna/Core/SpectrumLoaderBase.h"
-#include "CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/HistCache.h"
+#include "sbnana/CAFAna/Core/Ratio.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TDirectory.h"
 #include "TH2.h"

@@ -1,4 +1,5 @@
 #include "sbnanaobj/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/SRGlobal.h"
 
 #include "sbnana/FlatMaker/FlatRecord.h"
 
@@ -14,20 +15,13 @@
 int main(int argc, char** argv)
 {
   if(argc != 3){
-    std::cout << "Usage: convert_to_flat input.events.root output.flat.root"
+    std::cout << "Usage: flatten_caf input.events.root output.flat.root"
               << std::endl;
     return 1;
   }
 
   const std::string inname = argv[1];
   const std::string outname = argv[2];
-
-  //Find out if "proposal" appears in input string
-  bool is_proposal_flag = false;
-  if (inname.find("Proposal") || inname.find("proposal")) {
-    is_proposal_flag = true;
-    std::cout << "Setting proposal flag to true: SBND baseline will be adjusted" << std::endl;
-  }
 
   TFile* fin = TFile::Open(inname.c_str());
 
@@ -58,10 +52,6 @@ int main(int argc, char** argv)
     prog.SetProgress(double(i)/tr->GetEntries());
 
     tr->GetEntry(i);
-    if(is_proposal_flag && !event->mc.nu.empty()){
-      const float bl = event->mc.nu[0].baseline;
-      if(bl < 150) event->mc.nu[0].baseline -= 10;
-    }
 
     rec.Clear();
     rec.Fill(*event);
@@ -71,11 +61,50 @@ int main(int argc, char** argv)
 
   trout->Write();
 
+  // Don't bother with a flat version for now, this info is tiny and read once
+  TTree* globalIn = (TTree*)fin->Get("globalTree");
+  if(globalIn){
+    // Copy globalTree verbatim from input to output
+    caf::SRGlobal global;
+    caf::SRGlobal* pglobal = &global;
+    globalIn->SetBranchAddress("global", &pglobal);
+    fout.cd();
+    TTree globalOut("globalTree", "globalTree");
+    globalOut.Branch("global", "caf::SRGlobal", &global);
+    assert(globalIn->GetEntries() == 1);
+    // TODO check that the globalTree is the same in every file
+    globalIn->GetEntry(0);
+    globalOut.Fill();
+    globalOut.Write();
+  }
+
   TH1* hPOT = (TH1*)fin->Get("TotalPOT");
   TH1* hEvts = (TH1*)fin->Get("TotalEvents");
   fout.cd();
   hPOT->Write("TotalPOT");
   hEvts->Write("TotalEvents");
+
+  TTree* metain = (TTree*)fin->Get("metadata/metatree");
+  if(metain){
+    TDirectory* metadir = fout.mkdir("metadata");
+    metadir->cd();
+    std::string key, value;
+    std::string *pkey = &key, *pvalue = &value;
+    TTree* metaout = new TTree("metatree", "metatree");
+    metaout->Branch("key", &key);
+    metaout->Branch("value", &value);
+    metain->SetBranchAddress("key", &pkey);
+    metain->SetBranchAddress("value", &pvalue);
+    for(int i = 0; i < metain->GetEntries(); ++i){
+      metain->GetEntry(i);
+
+      if(key == "data_tier") value = "\"flat_caf\"";
+      if(key == "file_format") value = "\"flat_caf\"";
+
+      metaout->Fill();
+    }
+    metaout->Write();
+  }
 
   return 0;
 }

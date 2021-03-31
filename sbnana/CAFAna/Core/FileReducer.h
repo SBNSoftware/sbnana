@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CAFAna/Core/Var.h"
-#include "CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
 #include <set>
 
@@ -40,14 +40,11 @@ namespace ana
     //    void AddReductionStep(const std::function<ReductionFuncWithProxy> &f) {fReductionFuncsWithProxy.push_back(f);}
 
     /// Override any metadata key in the output file
-    /*
     void SetMetadata(const std::string& key, const std::string& val)
     {
-      fMetaMap[key] = val;
+      // Let's assume the user is just setting string keys
+      fMetaMap[key] = "\""+val+"\"";
     }
-    */
-
-    //    void CopyMetadata(bool copy=true){fCopyMetadata = copy;};
 
     virtual void Go() override;
 
@@ -55,9 +52,9 @@ namespace ana
     virtual void AccumulateExposures(const caf::SRSpill* spill) override {};
 
   protected:
-    //    void UpdateMetadata(std::map<std::string, std::string>& meta,
-    //                        const std::set<std::string>& mask,
-    //                        const std::vector<std::string>& fnames) const;
+    void UpdateMetadata(std::map<std::string, std::string>& meta,
+                        const std::set<std::string>& mask,
+                        const std::vector<std::string>& fnames) const;
 
     std::string fOutfile;
     SpillCut*   fSpillCut;
@@ -69,6 +66,5 @@ namespace ana
     //    std::vector<std::function<ReductionFuncWithProxy>> fReductionFuncsWithProxy;
 
     std::map<std::string, std::string> fMetaMap;
-    bool        fCopyMetadata;
   };
 }
