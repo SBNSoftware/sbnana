@@ -620,7 +620,7 @@ namespace ana
         if (r1.find(r2tmp) != std::string::npos){
           std::cout << "Found files with duplicate run/subrun metadata: " << r2tmp << std::endl;
 
-          assert(false);
+          abort();
         } 
 
         if(r1.empty()){
