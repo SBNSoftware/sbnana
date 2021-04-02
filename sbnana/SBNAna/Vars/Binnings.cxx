@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Core/Binning.h"
-#include "SBNAna/Vars/Binnings.h"
+#include "sbnana/SBNAna/Vars/Binnings.h"
 
-#include "SBNAna/Cuts/VolumeDefinitions.h"
+#include "sbnana/SBNAna/Cuts/VolumeDefinitions.h"
 
 namespace ana
 {
