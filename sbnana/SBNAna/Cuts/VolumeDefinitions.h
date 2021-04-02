@@ -50,6 +50,9 @@ const FidVol avfd_cryo1{ -400.,  -50.,  // x
                          -1000., +1000.}; // z
 
 // icarus active volume cryo 2 same as cryo 1 atm (but reflecting x so it's positive)
+// NB: Depending on how your sample was generated and where the particles are, you will want to pay attention
+//     to what is going into fiducial/active volume cuts using this. In versions v09_19_00 and before cryo2
+//     was set to be the same positions as cryo1.
 const FidVol fvfd_cryo2{ +71.94,  +368.49,  // x
                          -181.86, +134.96,  // y
                          -894.95, +894.85}; // z
