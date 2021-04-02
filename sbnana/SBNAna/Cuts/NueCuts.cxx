@@ -1,9 +1,9 @@
-#include "SBNAna/Cuts/NueCuts.h"
-#include "SBNAna/Vars/NueVars.h"
+#include "sbnana/SBNAna/Cuts/NueCuts.h"
+#include "sbnana/SBNAna/Vars/NueVars.h"
 
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
-#include "SBNAna/Cuts/VolumeDefinitions.h"
+#include "sbnana/SBNAna/Cuts/VolumeDefinitions.h"
 
 namespace ana{
 

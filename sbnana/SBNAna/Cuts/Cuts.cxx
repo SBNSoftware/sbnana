@@ -1,6 +1,6 @@
-#include "SBNAna/Cuts/Cuts.h"
-#include "SBNAna/Vars/Vars.h"
-#include "SBNAna/Cuts/VolumeDefinitions.h"
+#include "sbnana/SBNAna/Cuts/Cuts.h"
+#include "sbnana/SBNAna/Vars/Vars.h"
+#include "sbnana/SBNAna/Cuts/VolumeDefinitions.h"
 
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
