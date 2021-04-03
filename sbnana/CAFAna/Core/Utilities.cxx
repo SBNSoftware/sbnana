@@ -613,6 +613,16 @@ namespace ana
 
         assert(!r2.empty());
 
+        // Strip the outermost enclosing []
+        const std::string& r2tmp = r2.substr(1, r2.length()-2);
+
+        // Check that the run/subrun is not already present
+        if (r1.find(r2tmp) != std::string::npos){
+          std::cout << "Found files with duplicate run/subrun metadata: " << r2tmp << std::endl;
+
+          abort();
+        } 
+
         if(r1.empty()){
           base[key] = r2;
           continue;

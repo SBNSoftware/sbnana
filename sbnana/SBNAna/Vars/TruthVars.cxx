@@ -1,5 +1,5 @@
-#include "SBNAna/Vars/TruthVars.h"
-#include "SBNAna/Vars/Vars.h"
+#include "sbnana/SBNAna/Vars/TruthVars.h"
+#include "sbnana/SBNAna/Vars/Vars.h"
 
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
