@@ -1,5 +1,12 @@
 #include "sbnana/CAFAna/Systs/UniverseOracle.h"
 
+#include "sbnanaobj/StandardRecord/SRGlobal.h"
+
+#include "TFile.h"
+#include "TTree.h"
+#include "TROOT.h"
+#include "TSeqCollection.h"
+
 #include <cassert>
 #include <cmath>
 #include <fstream>
@@ -7,6 +14,56 @@
 
 namespace ana
 {
+  // --------------------------------------------------------------------------
+  // Go grubbing through all the open files looking for a globalTree to pull an
+  // SRGlobal object from. This is a hack, probably SpectrumLoader should have
+  // some hooks to send SRGlobal to interested parties each time it opens a new
+  // file(?)
+  caf::SRGlobal GetSRGlobal()
+  {
+    caf::SRGlobal global;
+    bool got = false;
+
+    TSeqCollection* seq = gROOT->GetListOfFiles();
+    for(int i = 0; i < seq->GetEntries(); ++i){
+      TFile* f = (TFile*)seq->At(i);
+      if(f->GetOption() != std::string("READ")) continue;
+      TTree* tr = (TTree*)f->Get("globalTree");
+      if(!tr) continue;
+      if(tr->GetEntries() < 1) continue;
+
+      if(got){
+        std::cout << "\nUniverseOracle: Found globalTree in multiple places. Will use first one, but this is unexpected" << std::endl;
+      }
+
+      caf::SRGlobal* pglobal = &global;
+      tr->SetBranchAddress("global", &pglobal);
+      tr->GetEntry(0);
+      got = true;
+    }
+
+    if(!got){
+      std::cout << "\nUniverseOracle: Failed to find globalTree in any open input file" << std::endl;
+      abort();
+    }
+
+    return global;
+  }
+
+  // --------------------------------------------------------------------------
+  void PrintSRGlobal(const caf::SRGlobal& global)
+  {
+    std::cout << global.wgts.size() << " parameter sets:" << std::endl;
+    for(unsigned int i = 0; i < global.wgts.size(); ++i){
+      const caf::SRWeightPSet& pset = global.wgts[i];
+      std::cout << "  " << i << ": " << pset.name << ", type " << pset.type << ", " << pset.nuniv << " universes, adjusted parameters:" << std::endl;
+
+      for(const caf::SRWeightMapEntry& entry: pset.map){
+        std::cout << "    " << entry.param.name << std::endl;
+      }
+    }
+  }
+
   // --------------------------------------------------------------------------
   UniverseOracle& UniverseOracle::Instance()
   {
@@ -17,80 +74,43 @@ namespace ana
   // --------------------------------------------------------------------------
   UniverseOracle::UniverseOracle()
   {
-    const std::string dir = "/sbnd/data/users/bckhouse/sample_2.1_fitters/";
+    const caf::SRGlobal global = GetSRGlobal();
+    std::cout << "\nSystematic weights in file:" << std::endl;
+    PrintSRGlobal(global);
 
-    for(const std::string prefix: {"genie", "fluxunisim"}){
-      // Must be in this order to match the indices in the CAFs
-      for(const std::string ab: {"a", "b"}){
-        const std::string fname = dir+prefix+"_params_"+ab+".txt";
-        std::ifstream ifin(fname);
-        if(ifin.fail()){
-          std::cout << "UniverseOracle: Couldn't open file '" << fname << "'" << std::endl;
-          abort();
-        }
+    for(unsigned int i = 0; i < global.wgts.size(); ++i){
+      const caf::SRWeightPSet& pset = global.wgts[i];
+      // For now, don't try to handle any parameter sets that have shifted more
+      // than one knob at once.
+      if(pset.map.size() != 1) continue;
 
-        while(true){
-          ifin.clear(); // clear error flag
-          std::string name;
-          ifin >> name;
-          if(!ifin.good()) break; // probably EOF
-          if(prefix == "genie"){
-            std::string junk;
-            ifin >> junk; // second version of the name...
-            assert(ifin.good());
-          }
-          else{
-            // Fix up the flux names
-            if(name == "expskin" ||
-               name == "horncurrent" ||
-               name == "nucleoninexsec" ||
-               name == "nucleonqexsec" ||
-               name == "nucleontotxsec" ||
-               name == "pioninexsec" ||
-               name == "pionqexsec" ||
-               name == "piontotxsec") name += "_FluxUnisim";
-          }
-
-          while(true){
-            double shift;
-            ifin >> shift;
-
-            if(!ifin.good()) break; // either the next label or EOF
-            fData[name].push_back(shift);
-          } // end loop over values
-        } // end loop over systs
-      } // end for ab
-    } // end for prefix
-
-    // Check we didn't screw up the file reading
-    for(auto it: fData){
-      const unsigned int N = it.second.size();
-      if(N != 1000 && N != 50){
-        std::cout << "UniverseOracle: Unexpected number of shifts (" << N << ") for '" << it.first << "'" << std::endl;
-      }
+      // Save which position in the vector this was
+      fSystIdxs[pset.map[0].param.name] = i;
+      // Save all the knob values
+      fShiftVals[pset.map[0].param.name] = pset.map[0].vals;
     }
   }
 
   // --------------------------------------------------------------------------
   bool UniverseOracle::SystExists(const std::string& name) const
   {
-    return fData.find(name) != fData.end();
+    return fShiftVals.find(name) != fShiftVals.end();
   }
 
   // --------------------------------------------------------------------------
   std::vector<std::string> UniverseOracle::Systs() const
   {
     std::vector<std::string> ret;
-    ret.reserve(fData.size());
-    for(auto it: fData) ret.push_back(it.first);
+    ret.reserve(fShiftVals.size());
+    for(auto it: fShiftVals) ret.push_back(it.first);
     return ret;
   }
 
   // --------------------------------------------------------------------------
-  const std::vector<double>& UniverseOracle::ShiftsForSyst(const std::string& name) const
+  const std::vector<float>& UniverseOracle::ShiftsForSyst(const std::string& name) const
   {
     assert(SystExists(name));
-    return fData.find(name)->second;
+    return fShiftVals.find(name)->second;
   }
 
   // --------------------------------------------------------------------------
@@ -99,7 +119,7 @@ namespace ana
     std::vector<SystShifts> ret(nUniv);
 
     for(const ISyst* s: systs){
-      const std::vector<double>& xs = ShiftsForSyst(s->ShortName());
+      const std::vector<float>& xs = ShiftsForSyst(s->ShortName());
       for(int i = 0; i < nUniv; ++i) ret[i].SetShift(s, xs[i%xs.size()]);
     }
 
@@ -107,12 +127,20 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
-  unsigned int UniverseOracle::ClosestIndex(const std::string& name,
-                                            double shift,
-                                            ESide side,
-                                            double* trueShift) const
+  unsigned int UniverseOracle::SystIndex(const std::string& name)
   {
-    const std::vector<double>& v = ShiftsForSyst(name);
+    auto it = fSystIdxs.find(name);
+    assert(it != fSystIdxs.end());
+    return it->second;
+  }
+
+  // --------------------------------------------------------------------------
+  unsigned int UniverseOracle::ClosestShiftIndex(const std::string& name,
+                                                 double shift,
+                                                 ESide side,
+                                                 double* trueShift) const
+  {
+    const std::vector<float>& v = ShiftsForSyst(name);
     int bestIdx = -1;
     double bestDist;
     for(unsigned int i = 0; i < v.size(); ++i){
