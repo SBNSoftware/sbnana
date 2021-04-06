@@ -1,7 +1,3 @@
-#pragma message "WARNING: PredictionLinFit temporarily disabled"
-
-#if 0
-
 #include "sbnana/CAFAna/Prediction/PredictionLinFit.h"
 
 #include "sbnana/CAFAna/Core/HistCache.h"
@@ -56,7 +52,7 @@ namespace ana
       {
       }
 
-      void Shift(double sigma, caf::SRProxy* sr, double& weight) const override
+      void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const override
       {
         weight *= fVar(sr);
       }
@@ -543,5 +539,3 @@ namespace ana
   }
 
 }
-
-#endif
