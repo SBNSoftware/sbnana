@@ -127,10 +127,13 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
-  unsigned int UniverseOracle::SystIndex(const std::string& name)
+  unsigned int UniverseOracle::SystIndex(const std::string& name) const
   {
     auto it = fSystIdxs.find(name);
-    assert(it != fSystIdxs.end());
+    if(it == fSystIdxs.end()){
+      std::cout << "UniverseOracle: syst '" << name << "' not known" << std::endl;
+      abort();
+    }
     return it->second;
   }
 

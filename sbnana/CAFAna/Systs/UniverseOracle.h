@@ -29,7 +29,7 @@ namespace ana
     std::vector<SystShifts> ShiftsForSysts(const std::vector<const ISyst*>& systs, int nUniv) const;
 
     /// Which index in the weights array corresponds to this syst?
-    unsigned int SystIndex(const std::string& name);
+    unsigned int SystIndex(const std::string& name) const;
 
     /// Within that entry, which index corresponds most closely to 'shift'?
     unsigned int ClosestShiftIndex(const std::string& name,
