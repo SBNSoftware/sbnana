@@ -428,7 +428,7 @@ namespace ana
           gPad->Print(TString::Format(savePattern.c_str(), s->ShortName().c_str()).Data());
         }
         else{
-          gPad->Print(TString::Format(savePattern.c_str(), s->ShortName()).Data());
+          gPad->Print(savePattern.c_str());
         }
       }
     } // end for s
