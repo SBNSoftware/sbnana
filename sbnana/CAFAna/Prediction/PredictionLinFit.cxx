@@ -363,7 +363,8 @@ namespace ana
     std::unique_ptr<TH1> nom(fNom->PredictComponent(calc, flav, curr, sign).ToTH1(18e20));
     const int nbins = nom->GetNbinsX();
 
-    TGraph* curves[nbins];
+    std::vector<TGraph*> curves(nbins);
+    for(int bin = 0; bin < nbins; ++bin) curves[bin] = new TGraph;
 
     for(int i = 0; i <= 80; ++i){
       const double x = .1*i-4;
@@ -371,10 +372,6 @@ namespace ana
       std::unique_ptr<TH1> h(PredictComponentSyst(calc, ss, flav, curr, sign).ToTH1(18e20));
 
       for(int bin = 0; bin < nbins; ++bin){
-        if(i == 0){
-          curves[bin] = new TGraph;
-        }
-
         const double ratio = h->GetBinContent(bin+1)/nom->GetBinContent(bin+1);
 
         if(!std::isnan(ratio)) curves[bin]->SetPoint(curves[bin]->GetN(), x, ratio);
