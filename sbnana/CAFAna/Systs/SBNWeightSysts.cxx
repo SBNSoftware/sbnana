@@ -1,8 +1,3 @@
-// None of this exists in the CAFs at present
-#pragma message "WARNING: SBNWeightSysts temporarily disabled"
-
-#if 0
-
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
 
 #include "sbnana/CAFAna/Systs/UniverseOracle.h"
@@ -28,100 +23,67 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
-  double UniverseWeight::operator()(const caf::SRProxy* sr) const
+  double UniverseWeight::operator()(const caf::SRSliceProxy* sr) const
   {
-    if(sr->mc.nu.empty()) return 1;
-    const auto& ws = sr->mc.nu[0].weights;
+    if(sr->truth.index < 0) return 1;
+
+    if(fSystIdxs.empty()){
+      const UniverseOracle& uo = UniverseOracle::Instance();
+      for(const std::string& name: fNames) fSystIdxs.push_back(uo.SystIndex(name));
+    }
+
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
+    if(wgts.empty()) return 1;
 
     // This hack improves throughput vastly
+    /*
     if(fUnivIdx == 0){
       for(unsigned int i = 0; i < fNames.size(); ++i){
-        for(const auto& b: ws[GetIdx(ws, i)].second) (void)((float)b);
+        for(const auto& b: wgts[fUnivIdx].univ) (void)((float)b);
       }
     }
+    */
 
     double w = 1;
 
     for(unsigned int i = 0; i < fNames.size(); ++i){
+      const unsigned int idx = fSystIdxs[i];
+
       // TODO: might want to "wrap around" differently in different systs to
       // avoid unwanted correlations between systs with the same number of
       // universes.
-      const unsigned int unividx = fUnivIdx % ws[GetIdx(ws, i)].second.size();
+      const unsigned int unividx = fUnivIdx % wgts[idx].univ.size();
 
-      w *= ws[GetIdx(ws, i)].second[unividx];
+      w *= wgts[idx].univ[unividx];
     }
 
     return w;
   }
 
   // --------------------------------------------------------------------------
-  int UniverseWeight::GetIdx(const caf::VectorProxy<caf::PairProxy>& ws,
-                             int isyst) const
-  {
-    if(fSystIdxs.empty()){
-      for(const std::string& name: fNames){
-        bool any = false;
-        for(unsigned int i = 0; i < ws.size(); ++i){
-          if(ws[i].first == name){
-            fSystIdxs.push_back(i);
-            any = true;
-            break;
-          }
-        }
-        if(!any){
-          std::cout << "UniverseWeight: Failed to find syst "
-                    << name << " in file" << std::endl;
-          abort();
-        }
-      } // end for name
-    }
-
-    return fSystIdxs[isyst];
-  }
-
-
-  // --------------------------------------------------------------------------
-  SBNWeightSyst::SBNWeightSyst(const std::string& name, const Cut& cut)
+  SBNWeightSyst::SBNWeightSyst(const std::string& name, const SliceCut& cut)
     : ISyst(name, name), fIdx(-1), fCut(cut)
   {
-    assert(UniverseOracle::Instance().SystExists(name));
+    //    assert(UniverseOracle::Instance().SystExists(name));
   }
 
   // --------------------------------------------------------------------------
-  void SBNWeightSyst::Shift(double x, caf::SRProxy* sr, double& weight) const
+  void SBNWeightSyst::Shift(double x, caf::SRSliceProxy* sr, double& weight) const
   {
-    if(sr->mc.nu.empty()) return;
+    if(sr->truth.index < 0) return;
     if(!fCut(sr)) return;
 
-    const auto& ws = sr->mc.nu[0].weights;
+    if(fIdx == -1) fIdx = UniverseOracle::Instance().SystIndex(ShortName());
 
-    const int i = GetIdx(ws);
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
+    if(wgts.empty()) return;
+
     const Univs u = GetUnivs(x);
 
-    const double y0 = ws[i].second[u.i0];
-    const double y1 = ws[i].second[u.i1];
+    const double y0 = wgts[fIdx].univ[u.i0];
+    const double y1 = wgts[fIdx].univ[u.i1];
 
     weight *= u.w0*y0 + u.w1*y1;
-  }
-
-  // --------------------------------------------------------------------------
-  int SBNWeightSyst::GetIdx(const caf::VectorProxy<caf::PairProxy>& ws) const
-  {
-    if(fIdx == -1){
-      for(unsigned int i = 0; i < ws.size(); ++i){
-        if(ws[i].first == ShortName()) fIdx = i;
-      }
-
-      if(fIdx == -1){
-        std::cout << "SBNWeightSyst: '" << ShortName() << "' not found in record" << std::endl;
-        std::cout << "Available:";
-        for(auto& it: ws) std::cout << " " << std::string(it.first);
-        std::cout << std::endl;
-        abort();
-      }
-    }
-
-    return fIdx;
   }
 
   // --------------------------------------------------------------------------
@@ -134,8 +96,8 @@ namespace ana
     const UniverseOracle& uo = UniverseOracle::Instance();
     // Neighbours
     double x0, x1;
-    u.i0 = uo.ClosestIndex(ShortName(), x, ESide::kBelow, &x0);
-    u.i1 = uo.ClosestIndex(ShortName(), x, ESide::kAbove, &x1);
+    u.i0 = uo.ClosestShiftIndex(ShortName(), x, ESide::kBelow, &x0);
+    u.i1 = uo.ClosestShiftIndex(ShortName(), x, ESide::kAbove, &x1);
     // Interpolation weights
     u.w0 = (x1-x)/(x1-x0);
     u.w1 = (x-x0)/(x1-x0);
@@ -153,6 +115,7 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
+  /*
   const std::vector<const ISyst*>& GetSBNGenieWeightSysts()
   {
     static std::vector<const ISyst*> ret;
@@ -181,8 +144,10 @@ namespace ana
     }
     return ret;
   }
+  */
 
   // --------------------------------------------------------------------------
+  /*
   const std::vector<const ISyst*>& GetSBNFluxWeightSysts()
   {
     static std::vector<const ISyst*> ret;
@@ -210,6 +175,5 @@ namespace ana
     }
     return ret;
   }
+  */
 }
-
-#endif
