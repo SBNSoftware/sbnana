@@ -1,5 +1,5 @@
 #include <iostream>
-#include "SBNAna/Cuts/NumuCuts.h"
+#include "sbnana/SBNAna/Cuts/NumuCuts.h"
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 #include <cassert>
 

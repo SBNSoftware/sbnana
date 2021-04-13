@@ -1,4 +1,4 @@
-#include "SBNAna/Vars/NueVars.h"
+#include "sbnana/SBNAna/Vars/NueVars.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 #include <cassert>
@@ -45,7 +45,7 @@ const Var kRecoShower_TruePdg(
 
 // Currently assumes shw 0 is the primary
 const Var kRecoShower_BestdEdx(
-    [](const caf::SRSliceProxy* slc) -> int {
+    [](const caf::SRSliceProxy* slc) -> double {
       double dedx = -5.0;
       const int largestShwIdx(kLargestRecoShowerIdx(slc));
       if (largestShwIdx != -1 && slc->reco.shw[largestShwIdx].bestplane_dEdx > 0) {

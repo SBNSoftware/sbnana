@@ -1,4 +1,4 @@
-#include "SBNAna/Cuts/TimingCuts.h"
+#include "sbnana/SBNAna/Cuts/TimingCuts.h"
 
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
