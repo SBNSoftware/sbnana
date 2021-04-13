@@ -50,11 +50,7 @@ cetbuildtools v7_17_01 - only_for_build
 # We now define allowed qualifiers and the corresponding qualifiers for the dependencies.
 # Make the table by adding columns before "notes".
 
-<<<<<<< HEAD
 qualifier     sbnanaobj  ifdhc     	  srproxy  osclib          cafanacore notes
-=======
-qualifier     sbnanaobj  ifdhc     	  srproxy  osclib          cafnacore  notes
->>>>>>> 50aff67ecf550aad5422ceb760dcbb05984d746d
 e20:debug     e20:debug  e20:debug:p383b  py3      e20:debug:stan  e20:debug  -nq-
 e20:prof      e20:prof   e20:prof:p383b   py3      e20:prof:stan   e20:prof   -nq-
 e19:debug     e19:debug  e19:debug:p383b  py3      e19:debug:stan  e19:debug  -nq-
