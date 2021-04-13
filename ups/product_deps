@@ -38,10 +38,10 @@ sbnanaobj        v09_16_06
 #SAM tools?
 ifdhc            v2_5_12
 # For CAFAna
-srproxy          v00.21
-osclib           v00.10
+srproxy          v00.22
+osclib           v00.12
 # this is from the type_erasure branch
-cafanacore       v01.11-6-g1d7b843
+cafanacore       v01.14-15-g0f3eb0b
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers

@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "CAFAna/Core/Ratio.h"
 #include "sbnana/CAFAna/Core/SystRegistry.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 

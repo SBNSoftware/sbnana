@@ -16,6 +16,7 @@
 // when the templates are introduced
 #include "TMatrixD.h"
 
+#include "CAFAna/Core/StanVar.h" // TODO this is only to make the eigen include safe. Should port more of this file from NOvA
 #include <Eigen/Dense>
 
 class TArrayD;
@@ -29,7 +30,7 @@ class TH2F;
 class TH2D;
 class TH3D;
 
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 namespace ana
 {

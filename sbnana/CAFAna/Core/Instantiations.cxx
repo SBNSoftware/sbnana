@@ -1,6 +1,8 @@
-#include "CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
 #include "CAFAna/Core/Spectrum.h"
+
+#include "sbnana/CAFAna/Core/HistAxis.h"
 
 //#include "CAFAna/Core/SpectrumConstructors.txx"
 
