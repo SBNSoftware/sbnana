@@ -40,7 +40,8 @@ ifdhc            v2_5_12
 # For CAFAna
 srproxy          v00.21
 osclib           v00.10
-cafanacore       v01.11-6-g1d7b843 # this is from the type_erasure branch
+# this is from the type_erasure branch
+cafanacore       v01.11-6-g1d7b843
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers
@@ -49,7 +50,7 @@ cetbuildtools v7_17_01 - only_for_build
 # We now define allowed qualifiers and the corresponding qualifiers for the dependencies.
 # Make the table by adding columns before "notes".
 
-qualifier     sbnanaobj  ifdhc     	  srproxy  osclib          cafnacore  notes
+qualifier     sbnanaobj  ifdhc     	  srproxy  osclib          cafanacore notes
 e20:debug     e20:debug  e20:debug:p383b  py3      e20:debug:stan  e20:debug  -nq-
 e20:prof      e20:prof   e20:prof:p383b   py3      e20:prof:stan   e20:prof   -nq-
 e19:debug     e19:debug  e19:debug:p383b  py3      e19:debug:stan  e19:debug  -nq-
