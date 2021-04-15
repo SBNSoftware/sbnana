@@ -61,7 +61,8 @@ const std::vector<std::string> systs = {
 };
 
 std::vector<double> local_linear(const std::vector<float>& xs,
-                                 const std::vector<double>& ys)
+                                 const std::vector<double>& ys,
+                                 std::vector<double>* grads = 0)
 {
   assert(xs.size() == ys.size());
 
@@ -100,12 +101,14 @@ std::vector<double> local_linear(const std::vector<float>& xs,
       //      std::cout << "D IS ZERO!!!" << std::endl;
       // happens when there is a big gap. Just set the fit to the point itself
       ret.push_back(ys[i]);
+      if(grads) grads->push_back(0);
       continue;
     }
     const double m = (Sw*Swxy  - Swx*Swy)/d;
     const double c = (Swy*Swx2 - Swx*Swxy)/d;
 
     ret.push_back(m*x0+c);
+    if(grads) grads->push_back(m);
   } // end for i
 
   return ret;
@@ -125,6 +128,61 @@ double calc_mse(const std::vector<std::vector<double>>& preds,
   for(unsigned int ipt = 0; ipt < Npt; ++ipt) mse += sqr(p[ipt]-ys[ipt]);
   mse /= Npt;
   return mse;
+}
+
+// Updates elements of xs[ivar]
+std::vector<double> local_linear_update_basis(int ivar,
+                                              std::vector<std::vector<float>>& xs,
+                                              const std::vector<double>& ys)
+{
+  const unsigned int Npt = ys.size();
+  const unsigned int Nvar = xs.size();
+
+  // try and learn a better beta
+  for(int pass = 0; pass < 3; ++pass){ // todo some kind of mse check
+    std::vector<double> grads;
+    std::vector<double> preds = local_linear(xs[ivar], ys, &grads);
+    if(pass == 2/*99*/) return preds;
+
+    // This is taken from
+    // https://en.wikipedia.org/wiki/Projection_pursuit_regression#Model_estimation
+    TMatrixD W(Npt, Npt);
+    for(unsigned int i = 0; i < Npt; ++i) W(i, i) = sqr(grads[i]);
+    TMatrixD b(Npt, 1);
+    TMatrixD X(Npt, Nvar);
+    TMatrixD XT(Nvar, Npt);
+    for(unsigned int i = 0; i < Npt; ++i){
+      b(i, 0) = xs[ivar][i] + (ys[i] - preds[i])/grads[i];
+      for(unsigned int j = 0; j < Nvar; ++j){
+        X(i, j) = xs[j][i];
+        XT(j, i) = xs[j][i];
+      }
+    }
+
+    TMatrixD XWX = XT*W*X;
+    double det;
+    XWX.Invert(&det);
+    if(det == 0) return preds;
+    TMatrixD beta = XWX*(XT*W*b);
+
+    // Normalize beta vector
+    double norm = 0;
+    for(unsigned int j = 0; j < Nvar; ++j) norm += sqr(beta(j, 0));
+    if(isnan(norm) || isinf(norm)) return preds; // bail out
+    norm = sqrt(norm);
+    for(unsigned int j = 0; j < Nvar; ++j) beta(j, 0) /= norm;
+
+    // Re-project the relevant x
+    for(unsigned int i = 0; i < Npt; ++i){
+      double x = 0;
+      for(unsigned int j = 0; j < Nvar; ++j){
+        x += beta(j, 0)*xs[j][i];
+      }
+      xs[ivar][i] = x;
+    }
+  }
+
+  abort();
 }
 
 void plot_residuals(const std::vector<std::vector<double>>& preds,
@@ -183,7 +241,7 @@ void plot_preds(const std::vector<std::vector<float>>& xs,
   c->cd(0);
 }
 
-std::vector<std::vector<double>> additive_model(const std::vector<std::vector<float>>& xs,
+std::vector<std::vector<double>> additive_model(/*const*/ std::vector<std::vector<float>>& xs,
                                                 const std::vector<double>& ys)
 {
   const unsigned int Npt = ys.size();
@@ -211,10 +269,32 @@ std::vector<std::vector<double>> additive_model(const std::vector<std::vector<fl
 
       preds[ivar] = local_linear(xs[ivar], dy);
     } // end for ivar
-   
+
     plot_preds(xs, ys, preds);
     gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
- 
+
+    const double mse = calc_mse(preds, ys);
+    std::cout << pass << ": MSE " << mse << " (" << sqrt(mse) << ")" << std::endl;
+
+    if(mse >= old_mse) break; // convergence
+    old_mse = mse;
+  } // end for pass
+
+  for(int pass = 0; pass < 100; ++pass){
+    for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
+      // Residual
+      std::vector<double> dy = ys;
+      for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
+        if(jvar == ivar) continue; // Not including this variable
+        for(unsigned int ipt = 0; ipt < Npt; ++ipt) dy[ipt] -= preds[jvar][ipt];
+      } // end for jvar
+
+      preds[ivar] = local_linear_update_basis(ivar, xs, dy);
+    } // end for ivar
+
+    plot_preds(xs, ys, preds);
+    gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
+
     const double mse = calc_mse(preds, ys);
     std::cout << pass << ": MSE " << mse << " (" << sqrt(mse) << ")" << std::endl;
 
@@ -224,6 +304,9 @@ std::vector<std::vector<double>> additive_model(const std::vector<std::vector<fl
 
   plot_residuals(preds, ys);
   gPad->Print("residuals.pdf");
+
+  //  plot_residuals(preds, ys);
+  //  gPad->Print("residuals.pdf");
 
   return preds;
 }
@@ -284,17 +367,18 @@ void test_additive(bool reload = false)
 
   // Example of switching to a different basis - gives worse results if you
   // just use a random one...
-  TMatrixD basis(systs.size(), systs.size());
+  std::vector<TVectorD> basis(systs.size(), TVectorD(systs.size()));
+
   // Random matrix with unit vector columns
-  for(int j = 0; j < basis.GetNcols(); ++j){
+  for(unsigned int i = 0; i < systs.size(); ++i){
     double norm = 0;
-    for(int i = 0; i < basis.GetNrows(); ++i){
-      basis(i, j) = gRandom->Gaus();
-      norm += sqr(basis(i, j));
+    for(unsigned int j = 0; j < systs.size(); ++j){
+      basis[i][j] = gRandom->Gaus();
+      norm += sqr(basis[i][j]);
     }
     norm = sqrt(norm);
-    for(int i = 0; i < basis.GetNrows(); ++i){
-      basis(i, j) /= norm;
+    for(unsigned int j = 0; j < systs.size(); ++j){
+      basis[i][j] /= norm;
     }
   }
 
@@ -308,7 +392,7 @@ void test_additive(bool reload = false)
     for(unsigned int j = 0; j < systs.size(); ++j){
       newxs[j][i] = 0;
       for(unsigned int k = 0; k < systs.size(); ++k){
-        newxs[j][i] += xs[k][i] * basis(k, j);
+        newxs[j][i] += xs[k][i] * basis[j][k];
       }
     }
   }
