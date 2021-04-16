@@ -63,12 +63,12 @@ const std::vector<std::string> systs = {
 // Returns new predictions
 TVectorD local_linear(const TVectorD& xs,
                       const TVectorD& ys,
-                      TVectorD* grads = 0)
+                      TVectorD* invgrads = 0)
 {
   assert(xs.GetNrows() == ys.GetNrows());
   const unsigned int Npts = xs.GetNrows();
 
-  if(grads) grads->ResizeTo(Npts);
+  if(invgrads) invgrads->ResizeTo(Npts);
 
   TVectorD ret(Npts);
 
@@ -102,10 +102,11 @@ TVectorD local_linear(const TVectorD& xs,
 
     const double d = Sw*Swx2 - Swx*Swx;
     if(d == 0){
+      //      std::cout << i << std::endl;
       //      std::cout << "D IS ZERO!!!" << std::endl;
       // happens when there is a big gap. Just set the fit to the point itself
       ret[i] = ys[i];
-      if(grads) (*grads)[i] = 0;
+      if(invgrads) (*invgrads)[i] = std::numeric_limits<double>::infinity(); // TODO what should we do?
       continue;
     }
 
@@ -113,7 +114,7 @@ TVectorD local_linear(const TVectorD& xs,
     const double c = (Swy*Swx2 - Swx*Swxy)/d;
 
     ret[i] = m*x0+c;
-    if(grads) (*grads)[i] = m;
+    if(invgrads) (*invgrads)[i] = 1/m;
   } // end for i
 
   return ret;
@@ -134,29 +135,70 @@ double calc_mse(const std::vector<TVectorD>& preds,
   return (total_prediction(preds) - ys).Norm2Sqr() / Npt;
 }
 
-// Updates elements of xs[ivar], returns new predictions for ivar
-TVectorD local_linear_update_basis(int ivar,
-                                   std::vector<TVectorD>& xs,
+TVectorD project(const TVectorD& beta, const std::vector<TVectorD>& xs)
+{
+  const int Nvar = beta.GetNrows();
+  const int Npt = xs[0].GetNrows();
+
+  TVectorD proj(Npt);
+  for(int i = 0; i < Npt; ++i){
+    for(int j = 0; j < Nvar; ++j){
+      proj[i] += beta[j]*xs[j][i];
+    }
+  }
+
+  return proj;
+}
+
+std::vector<TVectorD> project(const std::vector<TVectorD>& betas,
+                              const std::vector<TVectorD>& xs)
+{
+  std::vector<TVectorD> ret;
+  ret.reserve(betas.size());
+  for(const TVectorD& beta: betas) ret.push_back(project(beta, xs));
+  return ret;
+}
+
+// Updates beta, returns new predictions
+TVectorD local_linear_update_basis(TVectorD& beta,
+                                   const std::vector<TVectorD>& xs,
                                    const TVectorD& ys)
 {
   const unsigned int Npt = ys.GetNrows();
   const unsigned int Nvar = xs.size();
 
+  //  double old_mse = std::numeric_limits<double>::infinity();
+
   // try and learn a better beta
-  for(int pass = 0; pass < 3; ++pass){ // todo some kind of mse check
-    TVectorD grads;
-    TVectorD preds = local_linear(xs[ivar], ys, &grads);
+  for(int pass = 0; pass < 3/*100*/; ++pass){ // todo some kind of mse check
+    TVectorD bx = project(beta, xs);
+    TVectorD invgrads;
+    TVectorD preds = local_linear(bx, ys, &invgrads);
     if(pass == 2/*99*/) return preds;
+
+    /*
+    const double mse = (preds-ys).Norm2Sqr() / Npt;
+    if(mse > old_mse){
+      std::cout << mse << " " << old_mse << " bail after " << pass << std::endl;
+      return preds;
+    }
+    old_mse = mse;
+    */
 
     // This is taken from
     // https://en.wikipedia.org/wiki/Projection_pursuit_regression#Model_estimation
     TMatrixD W(Npt, Npt);
-    for(unsigned int i = 0; i < Npt; ++i) W(i, i) = sqr(grads[i]);
+    for(unsigned int i = 0; i < Npt; ++i) W(i, i) = sqr(1/invgrads[i]);
     TVectorD b(Npt);
     TMatrixD X(Npt, Nvar);
     TMatrixD XT(Nvar, Npt);
+
     for(unsigned int i = 0; i < Npt; ++i){
-      b[i] = xs[ivar][i] + (ys[i] - preds[i])/grads[i];
+      // TODO could almost write in one expression, but we don't have element-wise product
+      b[i] = bx[i] + (ys[i] - preds[i])*invgrads[i];
+      // TODO figure out what to do with zero gradient case!
+      //      if(grads[i] != 0) b(i, 0) += (ys[i] - preds[i])/grads[i]; else b(i, 0) += 1e8;
+      //      b(i, 0) += (ys[i] - preds[i])/grads[i];
       for(unsigned int j = 0; j < Nvar; ++j){
         X(i, j) = xs[j][i];
         XT(j, i) = xs[j][i];
@@ -164,23 +206,24 @@ TVectorD local_linear_update_basis(int ivar,
     }
 
     bool ok;
-    TVectorD beta = TDecompLU(XT*W*X).Solve(XT*W*b, ok);
+    TVectorD newbeta = TDecompLU(XT*W*X).Solve(XT*W*b, ok);
     if(!ok) return preds;
 
     // Normalize beta vector
-    double norm = beta.Norm2Sqr();
-    if(isnan(norm) || isinf(norm)) return preds;
+    double norm = newbeta.Norm2Sqr();
+    if(isnan(norm) || isinf(norm)) return preds;/*{
+      W.Print();
+      b.Print();
+      X.Print();
+      XT.Print();
+      XWX.Print();
+      beta.Print();
+      abort();
+      return preds; // bail out
+      }*/
     norm = sqrt(norm);
-    beta *= 1/norm;
-
-    // Re-project the relevant x - TODO matrixy
-    for(unsigned int i = 0; i < Npt; ++i){
-      double x = 0;
-      for(unsigned int j = 0; j < Nvar; ++j){
-        x += beta[j]*xs[j][i];
-      }
-      xs[ivar][i] = x;
-    }
+    newbeta *= 1/norm;
+    beta = newbeta;
   }
 
   abort();
@@ -273,14 +316,18 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
     old_mse = mse;
   } // end for pass
 
+  std::vector<TVectorD> betas(Nvar, TVectorD(Nvar));
+  // Start with the same basis as the regular variables
+  for(unsigned int i = 0; i < Nvar; ++i) betas[i][i] = 1;
+
   for(int pass = 0; pass < 100; ++pass){
     for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
       // Residual
       const TVectorD dy = ys - (total_prediction(preds) - preds[ivar]);
-      preds[ivar] = local_linear_update_basis(ivar, xs, dy);
+      preds[ivar] = local_linear_update_basis(betas[ivar], xs, dy);
     } // end for ivar
 
-    plot_preds(xs, ys, preds);
+    plot_preds(project(betas, xs), ys, preds);
     gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
 
     const double mse = calc_mse(preds, ys);
@@ -289,6 +336,8 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
     if(mse >= old_mse) break; // convergence
     old_mse = mse;
   } // end for pass
+
+  //  for(const TVectorD& beta: betas) beta.Print();
 
   plot_residuals(preds, ys);
   gPad->Print("residuals.pdf");
@@ -349,6 +398,24 @@ void test_additive(bool reload = false)
       std::cout << "bad y = " << y << std::endl;
       abort();
     }
+
+    /*
+    // Out of range in first pass
+    if(i == 1 || i == 20 || i == 54 || i == 74 || i == 75 || i == 83 || i == 86 || i == 90){
+      ys[i] = 0;
+      for(auto& x: xs) x[i] = 0;
+      continue;
+    }
+    */
+
+    /*
+    if(log(y) > 0.4 | log(y) < -0.4){
+      // Very specific...
+      std::cout << "bad y = " << y << std::endl;
+      for(auto& x: xs) x.erase(x.begin()+i);
+      continue;
+    }
+    */
 
     ys[i] = log(y);
   }
