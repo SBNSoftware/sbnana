@@ -13,6 +13,7 @@ using namespace ana;
 
 #include "TCanvas.h"
 #include "TDecompSVD.h"
+#include "TDecompLU.h"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TH2.h"
@@ -148,35 +149,33 @@ std::vector<double> local_linear_update_basis(int ivar,
     // https://en.wikipedia.org/wiki/Projection_pursuit_regression#Model_estimation
     TMatrixD W(Npt, Npt);
     for(unsigned int i = 0; i < Npt; ++i) W(i, i) = sqr(grads[i]);
-    TMatrixD b(Npt, 1);
+    TVectorD b(Npt);
     TMatrixD X(Npt, Nvar);
     TMatrixD XT(Nvar, Npt);
     for(unsigned int i = 0; i < Npt; ++i){
-      b(i, 0) = xs[ivar][i] + (ys[i] - preds[i])/grads[i];
+      b[i] = xs[ivar][i] + (ys[i] - preds[i])/grads[i];
       for(unsigned int j = 0; j < Nvar; ++j){
         X(i, j) = xs[j][i];
         XT(j, i) = xs[j][i];
       }
     }
 
-    TMatrixD XWX = XT*W*X;
-    double det;
-    XWX.Invert(&det);
-    if(det == 0) return preds;
-    TMatrixD beta = XWX*(XT*W*b);
+    bool ok;
+    TVectorD beta = TDecompLU(XT*W*X).Solve(XT*W*b, ok);
+    if(!ok) return preds;
 
     // Normalize beta vector
     double norm = 0;
-    for(unsigned int j = 0; j < Nvar; ++j) norm += sqr(beta(j, 0));
-    if(isnan(norm) || isinf(norm)) return preds; // bail out
+    for(unsigned int j = 0; j < Nvar; ++j) norm += sqr(beta[j]);
+    if(isnan(norm) || isinf(norm)) return preds;
     norm = sqrt(norm);
-    for(unsigned int j = 0; j < Nvar; ++j) beta(j, 0) /= norm;
+    for(unsigned int j = 0; j < Nvar; ++j) beta[j] /= norm;
 
     // Re-project the relevant x
     for(unsigned int i = 0; i < Npt; ++i){
       double x = 0;
       for(unsigned int j = 0; j < Nvar; ++j){
-        x += beta(j, 0)*xs[j][i];
+        x += beta[j]*xs[j][i];
       }
       xs[ivar][i] = x;
     }
