@@ -1,7 +1,3 @@
-#pragma message "WARNING: PredictionLinFit temporarily disabled"
-
-#if 0
-
 #include "sbnana/CAFAna/Prediction/PredictionLinFit.h"
 
 #include "sbnana/CAFAna/Core/HistCache.h"
@@ -56,7 +52,7 @@ namespace ana
       {
       }
 
-      void Shift(double sigma, caf::SRProxy* sr, double& weight) const override
+      void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const override
       {
         weight *= fVar(sr);
       }
@@ -367,7 +363,8 @@ namespace ana
     std::unique_ptr<TH1> nom(fNom->PredictComponent(calc, flav, curr, sign).ToTH1(18e20));
     const int nbins = nom->GetNbinsX();
 
-    TGraph* curves[nbins];
+    std::vector<TGraph*> curves(nbins);
+    for(int bin = 0; bin < nbins; ++bin) curves[bin] = new TGraph;
 
     for(int i = 0; i <= 80; ++i){
       const double x = .1*i-4;
@@ -375,10 +372,6 @@ namespace ana
       std::unique_ptr<TH1> h(PredictComponentSyst(calc, ss, flav, curr, sign).ToTH1(18e20));
 
       for(int bin = 0; bin < nbins; ++bin){
-        if(i == 0){
-          curves[bin] = new TGraph;
-        }
-
         const double ratio = h->GetBinContent(bin+1)/nom->GetBinContent(bin+1);
 
         if(!std::isnan(ratio)) curves[bin]->SetPoint(curves[bin]->GetN(), x, ratio);
@@ -432,7 +425,7 @@ namespace ana
           gPad->Print(TString::Format(savePattern.c_str(), s->ShortName().c_str()).Data());
         }
         else{
-          gPad->Print(TString::Format(savePattern.c_str(), s->ShortName()).Data());
+          gPad->Print(savePattern.c_str());
         }
       }
     } // end for s
@@ -543,5 +536,3 @@ namespace ana
   }
 
 }
-
-#endif
