@@ -12,7 +12,6 @@ using namespace ana;
 #include "sbnana/SBNAna/Cuts/TruthCuts.h"
 
 #include "TCanvas.h"
-#include "TDecompSVD.h"
 #include "TDecompLU.h"
 #include "TFile.h"
 #include "TGraph.h"
@@ -61,17 +60,21 @@ const std::vector<std::string> systs = {
   "QEMA",
 };
 
-std::vector<double> local_linear(const std::vector<float>& xs,
-                                 const std::vector<double>& ys,
-                                 std::vector<double>* grads = 0)
+// Returns new predictions
+TVectorD local_linear(const TVectorD& xs,
+                      const TVectorD& ys,
+                      TVectorD* grads = 0)
 {
-  assert(xs.size() == ys.size());
+  assert(xs.GetNrows() == ys.GetNrows());
+  const unsigned int Npts = xs.GetNrows();
 
-  std::vector<double> ret;
+  if(grads) grads->ResizeTo(Npts);
+
+  TVectorD ret(Npts);
 
   const double window = 1; // in sigmas
 
-  for(unsigned int i = 0; i < xs.size(); ++i){
+  for(unsigned int i = 0; i < Npts; ++i){
     const double x0 = xs[i];
 
     // Linear fit variables
@@ -82,7 +85,7 @@ std::vector<double> local_linear(const std::vector<float>& xs,
     double Swx2 = 0;
     double Sw   = 0;
 
-    for(unsigned int j = 0; j < xs.size(); ++j){
+    for(unsigned int j = 0; j < Npts; ++j){
       const double x = xs[j];
       const double y = ys[j];
       const double dx = fabs(x-x0)/window;
@@ -101,48 +104,48 @@ std::vector<double> local_linear(const std::vector<float>& xs,
     if(d == 0){
       //      std::cout << "D IS ZERO!!!" << std::endl;
       // happens when there is a big gap. Just set the fit to the point itself
-      ret.push_back(ys[i]);
-      if(grads) grads->push_back(0);
+      ret[i] = ys[i];
+      if(grads) (*grads)[i] = 0;
       continue;
     }
+
     const double m = (Sw*Swxy  - Swx*Swy)/d;
     const double c = (Swy*Swx2 - Swx*Swxy)/d;
 
-    ret.push_back(m*x0+c);
-    if(grads) grads->push_back(m);
+    ret[i] = m*x0+c;
+    if(grads) (*grads)[i] = m;
   } // end for i
 
   return ret;
 }
 
-double calc_mse(const std::vector<std::vector<double>>& preds,
-                const std::vector<double>& ys)
+TVectorD total_prediction(const std::vector<TVectorD>& preds)
 {
-  const unsigned int Npt = ys.size();
-  const unsigned int Nvar = preds.size();
-
-  std::vector<double> p(Npt, 0);
-  for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
-    for(unsigned int ipt = 0; ipt < Npt; ++ipt) p[ipt] += preds[jvar][ipt];
-  }
-  double mse = 0;
-  for(unsigned int ipt = 0; ipt < Npt; ++ipt) mse += sqr(p[ipt]-ys[ipt]);
-  mse /= Npt;
-  return mse;
+  TVectorD tot(preds[0].GetNrows());
+  for(const TVectorD& pred: preds) tot += pred;
+  return tot;
 }
 
-// Updates elements of xs[ivar]
-std::vector<double> local_linear_update_basis(int ivar,
-                                              std::vector<std::vector<float>>& xs,
-                                              const std::vector<double>& ys)
+double calc_mse(const std::vector<TVectorD>& preds,
+                const TVectorD& ys)
 {
-  const unsigned int Npt = ys.size();
+  const unsigned int Npt = ys.GetNrows();
+
+  return (total_prediction(preds) - ys).Norm2Sqr() / Npt;
+}
+
+// Updates elements of xs[ivar], returns new predictions for ivar
+TVectorD local_linear_update_basis(int ivar,
+                                   std::vector<TVectorD>& xs,
+                                   const TVectorD& ys)
+{
+  const unsigned int Npt = ys.GetNrows();
   const unsigned int Nvar = xs.size();
 
   // try and learn a better beta
   for(int pass = 0; pass < 3; ++pass){ // todo some kind of mse check
-    std::vector<double> grads;
-    std::vector<double> preds = local_linear(xs[ivar], ys, &grads);
+    TVectorD grads;
+    TVectorD preds = local_linear(xs[ivar], ys, &grads);
     if(pass == 2/*99*/) return preds;
 
     // This is taken from
@@ -165,13 +168,12 @@ std::vector<double> local_linear_update_basis(int ivar,
     if(!ok) return preds;
 
     // Normalize beta vector
-    double norm = 0;
-    for(unsigned int j = 0; j < Nvar; ++j) norm += sqr(beta[j]);
+    double norm = beta.Norm2Sqr();
     if(isnan(norm) || isinf(norm)) return preds;
     norm = sqrt(norm);
-    for(unsigned int j = 0; j < Nvar; ++j) beta[j] /= norm;
+    beta *= 1/norm;
 
-    // Re-project the relevant x
+    // Re-project the relevant x - TODO matrixy
     for(unsigned int i = 0; i < Npt; ++i){
       double x = 0;
       for(unsigned int j = 0; j < Nvar; ++j){
@@ -184,16 +186,13 @@ std::vector<double> local_linear_update_basis(int ivar,
   abort();
 }
 
-void plot_residuals(const std::vector<std::vector<double>>& preds,
-                    const std::vector<double>& ys)
+void plot_residuals(const std::vector<TVectorD>& preds,
+                    const TVectorD& ys)
 {
-  const unsigned int Npt = ys.size();
+  const unsigned int Npt = ys.GetNrows();
   const unsigned int Nvar = preds.size();
 
-  std::vector<double> p(Npt, 0);
-  for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
-    for(unsigned int ipt = 0; ipt < Npt; ++ipt) p[ipt] += preds[jvar][ipt];
-  }
+  TVectorD p = total_prediction(preds);
   TGraph* g = new TGraph;
   for(unsigned int ipt = 0; ipt < Npt; ++ipt)
     g->SetPoint(ipt, p[ipt], ys[ipt]-p[ipt]);
@@ -202,11 +201,11 @@ void plot_residuals(const std::vector<std::vector<double>>& preds,
   g->Draw("ap");
 }
 
-void plot_preds(const std::vector<std::vector<float>>& xs,
-                const std::vector<double>& ys,
-                const std::vector<std::vector<double>>& preds)
+void plot_preds(const std::vector<TVectorD>& xs,
+                const TVectorD& ys,
+                const std::vector<TVectorD>& preds)
 {
-  const unsigned int Npt = ys.size();
+  const unsigned int Npt = ys.GetNrows();
   const unsigned int Nvar = xs.size();
 
   TCanvas* c = new TCanvas;
@@ -240,16 +239,16 @@ void plot_preds(const std::vector<std::vector<float>>& xs,
   c->cd(0);
 }
 
-std::vector<std::vector<double>> additive_model(/*const*/ std::vector<std::vector<float>>& xs,
-                                                const std::vector<double>& ys)
+std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
+                                     const TVectorD& ys)
 {
-  const unsigned int Npt = ys.size();
-  for(const std::vector<float>& x: xs) assert(x.size() == Npt);
+  const unsigned int Npt = ys.GetNrows();
+  for(const TVectorD& x: xs) assert(x.GetNrows() == int(Npt));
   const unsigned int Nvar = xs.size();
 
   std::cout << "Solving model for " << Npt << " universes described by " << Nvar << " vars" << std::endl;
 
-  std::vector<std::vector<double>> preds(Nvar, std::vector<double>(Npt, 0));
+  std::vector<TVectorD> preds(Nvar, TVectorD(Npt));
 
   double old_mse = calc_mse(preds, ys);
   std::cout << "MSE " << old_mse << " (" << sqrt(old_mse) << ")" << std::endl;
@@ -260,12 +259,7 @@ std::vector<std::vector<double>> additive_model(/*const*/ std::vector<std::vecto
   for(int pass = 0; pass < 100; ++pass){
     for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
       // Residual
-      std::vector<double> dy = ys;
-      for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
-        if(jvar == ivar) continue; // Not including this variable
-        for(unsigned int ipt = 0; ipt < Npt; ++ipt) dy[ipt] -= preds[jvar][ipt];
-      } // end for jvar
-
+      const TVectorD dy = ys - (total_prediction(preds) - preds[ivar]);
       preds[ivar] = local_linear(xs[ivar], dy);
     } // end for ivar
 
@@ -282,12 +276,7 @@ std::vector<std::vector<double>> additive_model(/*const*/ std::vector<std::vecto
   for(int pass = 0; pass < 100; ++pass){
     for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
       // Residual
-      std::vector<double> dy = ys;
-      for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
-        if(jvar == ivar) continue; // Not including this variable
-        for(unsigned int ipt = 0; ipt < Npt; ++ipt) dy[ipt] -= preds[jvar][ipt];
-      } // end for jvar
-
+      const TVectorD dy = ys - (total_prediction(preds) - preds[ivar]);
       preds[ivar] = local_linear_update_basis(ivar, xs, dy);
     } // end for ivar
 
@@ -344,62 +333,25 @@ void test_additive(bool reload = false)
   std::vector<Spectrum> multiverse;
   for(int i = 0; i < 100; ++i) multiverse.push_back(*LoadFrom<Spectrum>(fin->GetDirectory(TString::Format("multiverse_%d", i).Data())));
 
-  std::vector<std::vector<float>> xs;
+  std::vector<TVectorD> xs;
   for(unsigned int i = 0; i < systs.size(); ++i){
     TVectorD* v = (TVectorD*)fin->Get(TString::Format("xs_%d", i).Data());
-    xs.emplace_back();
-    for(int j = 0; j < 100; ++j) xs.back().push_back((*v)[j]);
+    xs.emplace_back(100);
+    for(int j = 0; j < 100; ++j) xs.back()[j] = (*v)[j];
   }
 
-  std::vector<double> ys;
+  TVectorD ys(100);
 
   for(int i = 0; i < 100; ++i){
     // TODO leaks histogram
     const double y = (multiverse[i] / snom).ToTH1()->GetBinContent(5);
     if(isnan(y) || isinf(y) || isnan(log(y)) || isinf(log(y))){
       std::cout << "bad y = " << y << std::endl;
-      continue;
+      abort();
     }
 
-    ys.push_back(log(y));
+    ys[i] = log(y);
   }
-
-  // Example of switching to a different basis - gives worse results if you
-  // just use a random one...
-  std::vector<TVectorD> basis(systs.size(), TVectorD(systs.size()));
-
-  // Random matrix with unit vector columns
-  for(unsigned int i = 0; i < systs.size(); ++i){
-    double norm = 0;
-    for(unsigned int j = 0; j < systs.size(); ++j){
-      basis[i][j] = gRandom->Gaus();
-      norm += sqr(basis[i][j]);
-    }
-    norm = sqrt(norm);
-    for(unsigned int j = 0; j < systs.size(); ++j){
-      basis[i][j] /= norm;
-    }
-  }
-
-
-  std::vector<std::vector<float>> newxs;
-  newxs.resize(xs.size());
-  for(auto& it: newxs) it.resize(xs[0].size());
-
-  for(int i = 0; i < 100; ++i){ // for each universe
-    // Work out the new x-values by dotting with the basis
-    for(unsigned int j = 0; j < systs.size(); ++j){
-      newxs[j][i] = 0;
-      for(unsigned int k = 0; k < systs.size(); ++k){
-        newxs[j][i] += xs[k][i] * basis[j][k];
-      }
-    }
-  }
-
-  // Use the new basis instead
-  //  xs = newxs;
-  // Use both natural and new basis
-  //  xs.insert(xs.end(), newxs.begin(), newxs.end());
 
   /*
   TH1* h = snom.ToTH1(pot);
