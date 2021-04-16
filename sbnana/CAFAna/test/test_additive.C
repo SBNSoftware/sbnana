@@ -167,35 +167,41 @@ TVectorD local_linear_update_basis(TVectorD& beta,
   const unsigned int Npt = ys.GetNrows();
   const unsigned int Nvar = xs.size();
 
-  //  double old_mse = std::numeric_limits<double>::infinity();
+  double old_mse = std::numeric_limits<double>::infinity();
+
+  TVectorD oldpreds(Npt);
+  TVectorD oldbeta(beta.GetNrows());
 
   // try and learn a better beta
-  for(int pass = 0; pass < 3/*100*/; ++pass){ // todo some kind of mse check
+  while(true){
     TVectorD bx = project(beta, xs);
     TVectorD invgrads;
     TVectorD preds = local_linear(bx, ys, &invgrads);
-    if(pass == 2/*99*/) return preds;
 
-    /*
     const double mse = (preds-ys).Norm2Sqr() / Npt;
     if(mse > old_mse){
-      std::cout << mse << " " << old_mse << " bail after " << pass << std::endl;
-      return preds;
+      //      std::cout << mse << " " << old_mse << " bail after " << pass << std::endl;
+      beta = oldbeta;
+      return oldpreds;
     }
     old_mse = mse;
-    */
+    oldbeta = beta;
+    oldpreds = preds;
 
     // This is taken from
     // https://en.wikipedia.org/wiki/Projection_pursuit_regression#Model_estimation
     TMatrixD W(Npt, Npt);
-    for(unsigned int i = 0; i < Npt; ++i) W(i, i) = sqr(1/invgrads[i]);
+    for(unsigned int i = 0; i < Npt; ++i){
+      if(!isinf(invgrads[i]) && !isnan(invgrads[i])) W(i, i) = sqr(1/invgrads[i]);
+    }
     TVectorD b(Npt);
     TMatrixD X(Npt, Nvar);
     TMatrixD XT(Nvar, Npt);
 
     for(unsigned int i = 0; i < Npt; ++i){
       // TODO could almost write in one expression, but we don't have element-wise product
-      b[i] = bx[i] + (ys[i] - preds[i])*invgrads[i];
+      b[i] = bx[i];
+      if(!isinf(invgrads[i]) && !isnan(invgrads[i])) b[i] += (ys[i] - preds[i])*invgrads[i];
       // TODO figure out what to do with zero gradient case!
       //      if(grads[i] != 0) b(i, 0) += (ys[i] - preds[i])/grads[i]; else b(i, 0) += 1e8;
       //      b(i, 0) += (ys[i] - preds[i])/grads[i];
@@ -226,7 +232,7 @@ TVectorD local_linear_update_basis(TVectorD& beta,
     beta = newbeta;
   }
 
-  abort();
+  abort(); // unreached
 }
 
 void plot_residuals(const std::vector<TVectorD>& preds,
@@ -297,8 +303,12 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
   std::cout << "MSE " << old_mse << " (" << sqrt(old_mse) << ")" << std::endl;
 
   plot_preds(xs, ys, preds);
-  gPad->Print("preds_orig.pdf");
 
+  gPad->Print("preds_anim.pdf[");
+
+  gPad->Print("preds_orig.pdf");
+  gPad->Print("preds_anim.pdf");
+  /*
   for(int pass = 0; pass < 100; ++pass){
     for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
       // Residual
@@ -308,6 +318,7 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
 
     plot_preds(xs, ys, preds);
     gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
+    gPad->Print("preds_anim.pdf");
 
     const double mse = calc_mse(preds, ys);
     std::cout << pass << ": MSE " << mse << " (" << sqrt(mse) << ")" << std::endl;
@@ -315,12 +326,23 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
     if(mse >= old_mse) break; // convergence
     old_mse = mse;
   } // end for pass
+  */
 
   std::vector<TVectorD> betas(Nvar, TVectorD(Nvar));
   // Start with the same basis as the regular variables
   for(unsigned int i = 0; i < Nvar; ++i) betas[i][i] = 1;
 
-  for(int pass = 0; pass < 100; ++pass){
+  /* // random initialization
+  for(unsigned int i = 0; i < Nvar; ++i){
+    for(unsigned int j = 0; j < Nvar; ++j){
+      betas[i][j] = gRandom->Gaus();
+    }
+    betas[i] *= 1/sqrt(betas[i].Norm2Sqr()); // unit vector
+  }
+  */
+
+  int pass = 0;
+  while(true){
     for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
       // Residual
       const TVectorD dy = ys - (total_prediction(preds) - preds[ivar]);
@@ -329,13 +351,18 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
 
     plot_preds(project(betas, xs), ys, preds);
     gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
+    gPad->Print("preds_anim.pdf");
 
     const double mse = calc_mse(preds, ys);
     std::cout << pass << ": MSE " << mse << " (" << sqrt(mse) << ")" << std::endl;
 
     if(mse >= old_mse) break; // convergence
     old_mse = mse;
+
+    ++pass;
   } // end for pass
+
+  gPad->Print("preds_anim.pdf]");
 
   //  for(const TVectorD& beta: betas) beta.Print();
 
