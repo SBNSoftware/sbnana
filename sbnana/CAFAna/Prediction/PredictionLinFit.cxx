@@ -1,10 +1,9 @@
 #include "sbnana/CAFAna/Prediction/PredictionLinFit.h"
 
-#include "sbnana/CAFAna/Core/HistCache.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/MathUtil.h"
-#include "sbnana/CAFAna/Core/Progress.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "CAFAna/Core/Progress.h"
+#include "CAFAna/Core/Ratio.h"
 #include "sbnana/CAFAna/Core/SystRegistry.h"
 
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
@@ -109,7 +108,7 @@ namespace ana
 
     TH1D* hnom = snom.ToTH1(1); // only need this to count the bins :(
     const int Nbins = hnom->GetNbinsX();
-    HistCache::Delete(hnom);
+    delete hnom;
 
     // The data (ratios) that we're trying to fit
     std::vector<std::vector<double>> ds(Nbins+2, std::vector<double>(fUnivs.size()));
@@ -122,7 +121,7 @@ namespace ana
         ds[binIdx][univIdx] = log(hr->GetBinContent(binIdx));
       }
 
-      HistCache::Delete(hr);
+      delete hr;
     }
 
     Progress prog("Initializing PredictionLinFit");
@@ -303,8 +302,9 @@ namespace ana
     if(fCoeffs.empty()) InitFits();
 
     // To get correct binning
-    TH1D* hret = fNom->PredictUnoscillated().ToTH1(1);
-    hret->Reset();
+    Spectrum unosc = fNom->PredictUnoscillated();
+    Eigen::ArrayXd aret = unosc.GetEigen(1);
+    aret.setZero();
 
     const std::vector<double> coords = GetCoords(shift);
     const unsigned int N = coords.size();
@@ -313,12 +313,10 @@ namespace ana
       double factor = 0;
       for(unsigned int i = 0; i < N; ++i) factor += fCoeffs[binIdx][i] * coords[i];
 
-      hret->SetBinContent(binIdx, exp(factor));
+      aret[binIdx] = exp(factor);
     }
 
-    const Ratio ret(hret);
-    HistCache::Delete(hret);
-    return ret;
+    return Ratio(std::move(aret), unosc.GetLabels(), unosc.GetBinnings());
   }
 
   //----------------------------------------------------------------------
