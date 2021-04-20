@@ -38,7 +38,7 @@ sbnanaobj        v09_16_06
 #SAM tools?
 ifdhc            v2_5_12
 # For CAFAna
-srproxy          v00.22
+srproxy          v00.23
 osclib           v00.14
 cafanacore       v01.15
 
