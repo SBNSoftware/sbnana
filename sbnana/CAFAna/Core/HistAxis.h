@@ -2,7 +2,7 @@
 
 #include "CAFAnaCore/CAFAna/Core/HistAxis.h"
 
-#include "CAFAna/Core/Var.h" // TODO do we want our own FwdDeclare.h?
+#include "sbnana/CAFAna/Core/Var.h" // TODO do we want our own FwdDeclare.h?
 
 namespace ana
 {

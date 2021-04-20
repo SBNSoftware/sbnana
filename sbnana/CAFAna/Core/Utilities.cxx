@@ -1,7 +1,8 @@
+#include "CAFAna/Core/Spectrum.h"
+
 #include "sbnana/CAFAna/Core/Utilities.h"
 
-#include "sbnana/CAFAna/Core/Spectrum.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "CAFAna/Core/Ratio.h"
 #include "sbnana/CAFAna/Core/MathUtil.h"
 
 #include "TArrayD.h"

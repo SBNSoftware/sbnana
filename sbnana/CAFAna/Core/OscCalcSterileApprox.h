@@ -2,7 +2,7 @@
 
 #include "OscLib/IOscCalc.h"
 
-#include "CAFAna/Core/StanTypedefs.h"
+#include "sbnana/CAFAna/Core/StanTypedefs.h"
 
 namespace ana
 {

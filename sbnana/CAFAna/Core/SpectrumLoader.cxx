@@ -1,9 +1,9 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 
-#include "sbnana/CAFAna/Core/Progress.h"
-#include "sbnana/CAFAna/Core/ReweightableSpectrum.h"
-#include "sbnana/CAFAna/Core/SAMProjectSource.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Progress.h"
+#include "CAFAna/Core/ReweightableSpectrum.h"
+#include "CAFAna/Core/SAMProjectSource.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "sbnana/CAFAna/Core/GenieWeightList.h"

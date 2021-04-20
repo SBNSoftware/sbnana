@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 
 #include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
 

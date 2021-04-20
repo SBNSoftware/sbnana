@@ -1,9 +1,10 @@
 #pragma once
 
 #include "CAFAna/Core/FwdDeclare.h"
-#include "CAFAna/Core/StanTypedefs.h"
 
 #include "CAFAna/Core/Ratio.h"
+
+#include "sbnana/CAFAna/Core/StanTypedefs.h"
 
 namespace osc
 {

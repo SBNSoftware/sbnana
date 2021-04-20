@@ -1,7 +1,5 @@
 #include "sbnana/CAFAna/Experiment/IExperiment.h"
 
-#include "sbnana/CAFAna/Core/Utilities.h"
-
 #include "TFile.h"
 #include "TObjString.h"
 
@@ -14,6 +12,8 @@
 #include "sbnana/CAFAna/Experiment/SolarConstraints.h"
 #include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Experiment/ReactorExperiment.h"
+
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 namespace ana
 {

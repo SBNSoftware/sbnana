@@ -1,7 +1,7 @@
 #pragma once
 
 #include "sbnana/CAFAna/Experiment/IExperiment.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 
 
 namespace ana

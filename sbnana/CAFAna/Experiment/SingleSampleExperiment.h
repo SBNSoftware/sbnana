@@ -14,10 +14,7 @@ namespace ana
     /// \param pred   Source of oscillated MC beam predictions
     /// \param data   Data spectrum to compare to
     SingleSampleExperiment(const IPrediction* pred,
-                           const Spectrum& data)
-      : fMC(pred), fData(data), fCosmic(0), fMask(0)
-    {
-    }
+                           const Spectrum& data);
 
     virtual ~SingleSampleExperiment();
 

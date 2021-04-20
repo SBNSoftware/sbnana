@@ -8,8 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "CAFAna/Core/IFileSource.h"
+
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnana/CAFAna/Core/IFileSource.h"
 #include "sbnana/CAFAna/Core/MultiVar.h"
 #include "sbnana/CAFAna/Core/SystShifts.h"
 #include "sbnana/CAFAna/Core/Var.h"

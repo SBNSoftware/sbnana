@@ -29,7 +29,7 @@ class TH2F;
 class TH2D;
 class TH3D;
 
-#include "CAFAna/Core/MathUtil.h"
+#include "sbnana/CAFAna/Core/MathUtil.h"
 
 namespace ana
 {
