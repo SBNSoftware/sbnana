@@ -1,8 +1,8 @@
 #pragma once
 
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "SBNAna/Cuts/Cuts.h"
-#include "SBNAna/Vars/NueVars.h"
+#include "sbnana/SBNAna/Cuts/Cuts.h"
+#include "sbnana/SBNAna/Vars/NueVars.h"
 
 namespace ana {
 extern const Cut kRecoShower;

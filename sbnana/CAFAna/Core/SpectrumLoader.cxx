@@ -6,8 +6,6 @@
 #include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
-#include "sbnana/CAFAna/Core/GenieWeightList.h"
-
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
 #include <cassert>

@@ -1,9 +1,3 @@
-# SBNAna starts all its includes with just SBNAna/ -- allow that
-include_directories(BEFORE ..)
-
-# But we also want to find the generated SRProxy.h under "StandardRecord/Proxy"
- include_directories($ENV{MRB_BUILDDIR}/sbnana/sbnana/CAFAna/)
-
 include_directories($ENV{SRPROXY_INC})
 
 include_directories($ENV{EIGEN_INC})

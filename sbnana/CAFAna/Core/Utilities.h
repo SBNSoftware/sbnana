@@ -16,6 +16,7 @@
 // when the templates are introduced
 #include "TMatrixD.h"
 
+#include "CAFAna/Core/StanVar.h" // TODO this is only to make the eigen include safe. Should port more of this file from NOvA
 #include <Eigen/Dense>
 
 class TArrayD;

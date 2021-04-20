@@ -1,4 +1,4 @@
-#include "SBNAna/Vars/NumuVars.h"
+#include "sbnana/SBNAna/Vars/NumuVars.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 #include <cassert>

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "stan/math/rev/core/var_value_fwd_declare.hpp"
+
 namespace stan
 {
   namespace math
