@@ -2,7 +2,7 @@
 // cafe demo2.C
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"

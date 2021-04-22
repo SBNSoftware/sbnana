@@ -1,11 +1,13 @@
 // Make a few spectra with different cuts.
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 
 #include "helper.h"
 
 #include "TFile.h"
+
+#include <iostream>
 
 using namespace ana;
 
@@ -49,13 +51,13 @@ void make_spectra()
     for( unsigned int jVar = 0; jVar < kNVar; ++jVar ){
       std::string mysuffix = sels[iSel].suffix + "_" + plots[jVar].suffix;
       std::cout << "Saving spectra: " << mysuffix << std::endl;
-      specs[iSel][jVar]->SaveTo( fout.mkdir(mysuffix.c_str()) );
+      specs[iSel][jVar]->SaveTo(&fout, mysuffix);
     }
   }
 
-  s0->SaveTo( fout.mkdir("s0"));
-  s1->SaveTo( fout.mkdir("s1"));
-  s2->SaveTo( fout.mkdir("s2"));
-  s3->SaveTo( fout.mkdir("s3"));
+  s0->SaveTo(&fout, "s0");
+  s1->SaveTo(&fout, "s1");
+  s2->SaveTo(&fout, "s2");
+  s3->SaveTo(&fout, "s3");
 
 }

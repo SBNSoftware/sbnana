@@ -1,6 +1,6 @@
 // Make a few spectra with different cuts.
 
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 
 #include "helper_eff_spill.h"
@@ -81,7 +81,7 @@ void make_spectra_eff_spill(const std::string fname = "etyley_caf_NuEOverlay_caf
         const double thisPOT(spec->POT());
         if (thisPOT < std::numeric_limits<double>::epsilon())
           spec->OverridePOT(cosmicPOT);
-        spec->SaveTo(fout.mkdir(mysuffix.c_str()));
+        spec->SaveTo(&fout, mysuffix);
       }
     }
   }
@@ -90,7 +90,7 @@ void make_spectra_eff_spill(const std::string fname = "etyley_caf_NuEOverlay_caf
   //   for( unsigned int jVar = 0; jVar < kNVarSpill; ++jVar ){
   //     std::string mysuffix = sels_spill[iSel].suffix + "_" + plots_spill[jVar].suffix;
   //     std::cout << "Saving spectra: " << mysuffix << std::endl;
-  //     specsSpill[iSel][jVar]->SaveTo( fout.mkdir(mysuffix.c_str()) );
+  //     specsSpill[iSel][jVar]->SaveTo(&fout, mysuffix);
   //   }
   // }
 }

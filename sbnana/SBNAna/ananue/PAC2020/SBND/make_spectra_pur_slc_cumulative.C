@@ -1,6 +1,6 @@
 // Make a few spectra with different cuts.
 
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 
 #include "helper_pur_slc_cumulative.h"
@@ -83,7 +83,7 @@ void make_spectra_pur_slc_cumulative(const std::string fname = "etyley_caf_NuEOv
         const double thisPOT(spec->POT());
         if (thisPOT < std::numeric_limits<double>::epsilon())
           spec->OverridePOT(cosmicPOT);
-        spec->SaveTo(fout.mkdir(mysuffix.c_str()));
+        spec->SaveTo(&fout, mysuffix);
       }
     }
   }

@@ -1,7 +1,7 @@
 // Make a few spectra with different cuts.
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 
 #include "eventsel.h"
 
@@ -42,7 +42,7 @@ void make_eventsel()
     for( unsigned int jVar = 0; jVar < kNVar; ++jVar ){
       std::string mysuffix = sels[iSel].suffix + "_" + plots[jVar].suffix;
       std::cout << "Saving spctra: " << mysuffix << std::endl;
-      specs[iSel][jVar]->SaveTo( fout.mkdir(mysuffix.c_str()) );
+      specs[iSel][jVar]->SaveTo(&fout, mysuffix);
     }
   }
 

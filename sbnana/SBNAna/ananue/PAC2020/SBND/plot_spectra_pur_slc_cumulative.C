@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 
 #include "helper_pur_slc_cumulative.h"
 

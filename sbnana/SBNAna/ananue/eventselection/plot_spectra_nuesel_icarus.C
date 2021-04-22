@@ -11,7 +11,7 @@
 #pragma once
 
 #include "../../../CAFAna/rootlogon.C"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "helper_nuesel_icarus.h"

@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
 #include "sbnana/CAFAna/Analysis/Calcs.h"
 #include "sbnana/CAFAna/Analysis/Plots.h"

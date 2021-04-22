@@ -1,6 +1,6 @@
 // Make a plot with cuts 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 
 using namespace ana;

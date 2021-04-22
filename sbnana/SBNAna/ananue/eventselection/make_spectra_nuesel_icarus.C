@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 
 #include "helper_nuesel_icarus.h"
 
@@ -132,8 +132,8 @@ void make_spectra_nuesel_icarus(std::string finname = "nucosmics", int setno = 1
             specveto->OverridePOT(cosmicPOT);
           }
         } // fake cosmics pot
-        spec->SaveTo(fout.mkdir(mysuffix.c_str()));
-        specveto->SaveTo(fout.mkdir(mysuffixveto.c_str()));
+        spec->SaveTo(&fout, mysuffix);
+        specveto->SaveTo(&fout, mysuffixveto);
       }
     }
   }
@@ -142,7 +142,7 @@ void make_spectra_nuesel_icarus(std::string finname = "nucosmics", int setno = 1
     for( unsigned int jVar = 0; jVar < kNVarCRTSpill; ++jVar ){
       std::string mysuffix = crtsels_spill[iSel].suffix + "_" + crtplots_spill[jVar].suffix;
       std::cout << "Saving spectra: " << mysuffix << std::endl;
-      specscrtspill[iSel][jVar]->SaveTo( fout.mkdir(mysuffix.c_str()) );
+      specscrtspill[iSel][jVar]->SaveTo(&fout, mysuffix);
     }
   }
 
