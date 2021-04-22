@@ -4,12 +4,12 @@
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
-#include "SBNAna/Vars/Binnings.h"
-#include "SBNAna/Vars/NueVars.h"
-#include "SBNAna/Vars/Vars.h"
-#include "SBNAna/Cuts/Cuts.h"
-#include "SBNAna/Cuts/NueCuts.h"
-#include "SBNAna/Cuts/TruthCuts.h"
+#include "sbnana/SBNAna/Vars/Binnings.h"
+#include "sbnana/SBNAna/Vars/NueVars.h"
+#include "sbnana/SBNAna/Vars/Vars.h"
+#include "sbnana/SBNAna/Cuts/Cuts.h"
+#include "sbnana/SBNAna/Cuts/NueCuts.h"
+#include "sbnana/SBNAna/Cuts/TruthCuts.h"
 
 using namespace ana;
 

@@ -5,14 +5,14 @@
 #include "sbnana/CAFAna/Core/Ratio.h"
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
-#include "SBNAna/Cuts/Cuts.h"
-#include "SBNAna/Cuts/NueCuts.h"
-#include "SBNAna/Cuts/TruthCuts.h"
-#include "SBNAna/Cuts/VolumeDefinitions.h"
-#include "SBNAna/Vars/Binnings.h"
-#include "SBNAna/Vars/NueVars.h"
-#include "SBNAna/Vars/TruthVars.h"
-#include "SBNAna/Vars/Vars.h"
+#include "sbnana/SBNAnaCuts/Cuts.h"
+#include "sbnana/SBNAnaCuts/NueCuts.h"
+#include "sbnana/SBNAnaCuts/TruthCuts.h"
+#include "sbnana/SBNAnaCuts/VolumeDefinitions.h"
+#include "sbnana/SBNAnaVars/Binnings.h"
+#include "sbnana/SBNAnaVars/NueVars.h"
+#include "sbnana/SBNAnaVars/TruthVars.h"
+#include "sbnana/SBNAnaVars/Vars.h"
 
 #include <fstream>
 
