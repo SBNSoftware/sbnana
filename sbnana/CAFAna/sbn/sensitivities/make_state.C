@@ -191,16 +191,16 @@ void make_state(const std::string anatype = numuStr)
   std::cout << "\n" << std::endl;
   std::vector<const ISyst*> noSysts{};
 
-  std::vector<NoExtrapGenerator*> gens(systWs.size());
+  std::vector<NoExtrapPredictionGenerator*> gens(systWs.size());
 
   for(unsigned int i = 0; i < systWs.size(); ++i){
     //Use true energy, no weights until we get new nue files
-    gens[i] = new NoExtrapGenerator(anatype == numuStr ? axEnergy : axEnergy,
-                                    kOneTrue,
-                                    *systWs[i]*kWeight);
+    gens[i] = new NoExtrapPredictionGenerator(anatype == numuStr ? axEnergy : axEnergy,
+                                              kOneTrue,
+                                              *systWs[i]*kWeight);
   }
 
-  NoExtrapGenerator nom_gen(axEnergy, kOneTrue, kWeight);
+  NoExtrapPredictionGenerator nom_gen(axEnergy, kOneTrue, kWeight);
 
   if (anatype == numuStr) {
     std::cout << "Using reco energy" << std::endl;
