@@ -20,11 +20,12 @@ namespace ana
                                          const std::string& label,
                                          const Binning& bins,
                                          const Var& var,
+                                         const SpillCut& spillcut,
                                          const Cut& cut,
                                          const SystShifts& shift,
                                          const Var& wei)
     : PredictionExtrap(new TrivialExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-                                         label, bins, var, cut, shift, wei))
+                                         label, bins, var, spillcut, cut, shift, wei))
   {
   }
 
@@ -34,11 +35,12 @@ namespace ana
                                          SpectrumLoaderBase& loaderNuTau,
 					 SpectrumLoaderBase& loaderIntrinsic,
 					 const HistAxis& axis,
+                                         const SpillCut& spillcut,
                                          const Cut& cut,
                                          const SystShifts& shift,
                                          const Var& wei)
     : PredictionExtrap(new TrivialExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-                                         axis, cut, shift, wei))
+                                         axis, spillcut, cut, shift, wei))
   {
   }
 
@@ -52,20 +54,22 @@ namespace ana
                                          const std::string& label,
                                          const Binning& bins,
                                          const Var& var,
+                                         const SpillCut& spillcut,
                                          const Cut& cut,
                                          const SystShifts& shift,
                                          const Var& wei)
-    : PredictionNoExtrap(loaders, HistAxis(label, bins, var), cut, shift, wei)
+    : PredictionNoExtrap(loaders, HistAxis(label, bins, var), spillcut, cut, shift, wei)
   {
   }
 
   //----------------------------------------------------------------------
   PredictionNoExtrap::PredictionNoExtrap(Loaders& loaders,
                                          const HistAxis& axis,
+                                         const SpillCut& spillcut,
                                          const Cut& cut,
                                          const SystShifts& shift,
                                          const Var& wei)
-    : PredictionExtrap(new TrivialExtrap(loaders, axis, cut, shift, wei))
+    : PredictionExtrap(new TrivialExtrap(loaders, axis, spillcut, cut, shift, wei))
   {
   }
 

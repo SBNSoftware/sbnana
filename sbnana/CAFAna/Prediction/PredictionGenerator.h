@@ -36,6 +36,7 @@ namespace ana
     public:
     NoExtrapGenerator(
       const HistAxis axis,
+      const SpillCut spillcut,
       const Cut cut,
       const Var wei = kUnweighted );
 
@@ -45,6 +46,7 @@ namespace ana
 
     private:
     const HistAxis fAxis;
+    const SpillCut fSpillCut;
     const Cut fCut;
     const Var fWei;
   };
