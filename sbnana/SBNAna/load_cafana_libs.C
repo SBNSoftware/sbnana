@@ -59,7 +59,7 @@ void load_cafana_libs()
     incdir = std::string(mrbi)+"/sbnana/"+std::string(sbnv)+"/include/";
   }
 
-  TString includes = "-I"+incdir+" -I$ROOTSYS/include -I$SRPROXY_INC -I$OSCLIB_INC";
+  TString includes = "-I"+incdir+" -I$ROOTSYS/include -I$SRPROXY_INC -I$OSCLIB_INC -I$EIGEN_INC";
 
   // List of libraries to load. Dependency order.
   const std::vector<std::string> libs =

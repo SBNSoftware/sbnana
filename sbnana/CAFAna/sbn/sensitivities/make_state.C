@@ -14,6 +14,8 @@
 #include "TFile.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+
 #include "toysysts.h"
 
 // Random numbers
@@ -34,7 +36,7 @@ public:
   {
   }
 
-  double operator()(const caf::SRProxy* sr)
+  double operator()(const caf::SRSliceProxy* sr)
   {
     static std::vector<double> ws;
 
@@ -150,23 +152,23 @@ void make_state(const std::string anatype = numuStr)
   // Calculator (just use no oscillations)
   osc::NoOscillations* calc = new osc::NoOscillations;
 
-  const Var kRecoE([](const caf::SRProxy* sr)
+  const Var kRecoE([](const caf::SRSliceProxy* sr)
                    {
                      // std::cout << "ENERGY" << std::endl;
                      return sr->reco.reco_energy;
                    });
 
-  const Var kTrueE([](const caf::SRProxy* sr)
+  const Var kTrueE([](const caf::SRSliceProxy* sr)
                         {
 			  return sr->truth[0].neutrino.energy;
 			});
 
-  const Var kWeight([](const caf::SRProxy* sr)
+  const Var kWeight([](const caf::SRSliceProxy* sr)
 		    {
 		      return sr->reco.weight;
 		    });
 
-  const Var kWeighthack([](const caf::SRProxy* sr)
+  const Var kWeighthack([](const caf::SRSliceProxy* sr)
                         {
 			  std::cout << sr->truth[0].neutrino.iscc << " " << sr->truth[0].neutrino.pdg << " " << sr->reco.weight << std::endl; 
 			  if (sr->truth[0].neutrino.iscc && sr->truth[0].neutrino.pdg == 12) return 0.8;
@@ -175,7 +177,7 @@ void make_state(const std::string anatype = numuStr)
 			  return 1.0;
 			});
 
-  const Cut kOneTrue([](const caf::SRProxy* sr)
+  const Cut kOneTrue([](const caf::SRSliceProxy* sr)
 		     {
 		       return (sr->truth.size() == 1);
 		     });
