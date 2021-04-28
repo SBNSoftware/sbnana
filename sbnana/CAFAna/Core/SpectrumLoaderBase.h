@@ -251,9 +251,15 @@ namespace ana
                      const SpillCut& cut,
                      const SpillVar& wei = kSpillUnweighted) override {}
 
+    void AddReweightableSpectrum(ReweightableSpectrum& spect,
+                                 const Var& var,
+                                 const Cut& cut,
+                                 const SystShifts& shift,
+                                 const Var& wei) override {}
 
     void AddReweightableSpectrum(ReweightableSpectrum& spect,
                                  const Var& var,
+                                 const SpillCut& spillcut,
                                  const Cut& cut,
                                  const SystShifts& shift,
                                  const Var& wei) override {}
