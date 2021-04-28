@@ -55,7 +55,7 @@ void make_state_extrap_syst()
 
   osc::NoOscillations calc;
 
-  NoExtrapGenerator nogen(axEnergy, kOneTrue, kWeight);
+  NoExtrapPredictionGenerator nogen(axEnergy, kOneTrue, kWeight);
   SBNExtrapGenerator extrapgen(loaders_nd, axEnergy, kOneTrue, kWeight,
                                /*for data*/ kNoShift, kWeight);
 

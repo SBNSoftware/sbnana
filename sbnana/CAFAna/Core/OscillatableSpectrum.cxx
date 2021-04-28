@@ -56,6 +56,17 @@ namespace ana
                                              const Cut& cut,
                                              const SystShifts& shift,
                                              const Var& wei)
+    : OscillatableSpectrum(loader, axis, kNoSpillCut, cut, shift, wei)
+  {
+  }
+
+  //----------------------------------------------------------------------
+  OscillatableSpectrum::OscillatableSpectrum(SpectrumLoaderBase& loader,
+                                             const HistAxis& axis,
+                                             const SpillCut& spillcut,
+                                             const SliceCut& slicecut,
+                                             const SystShifts& shift,
+                                             const Var& wei)
     : ReweightableSpectrum(axis.GetLabels(), axis.GetBinnings(), kTrueLOverE),
       fCachedOsc(0, {}, {}, 0, 0),
       fCachedHash(0)
@@ -86,7 +97,7 @@ namespace ana
                         axis.GetVars()[1], axis.GetBinnings()[1],
                         axis.GetVars()[2], axis.GetBinnings()[2]);
 
-    loader.AddReweightableSpectrum(*this, multiDVar, cut, shift, wei);
+    loader.AddReweightableSpectrum(*this, multiDVar, spillcut, slicecut, shift, wei);
   }
 
   //----------------------------------------------------------------------

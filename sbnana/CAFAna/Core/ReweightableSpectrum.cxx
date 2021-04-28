@@ -24,6 +24,18 @@ namespace ana
                                              const Cut& cut,
                                              const SystShifts& shift,
                                              const Var& wei)
+    : ReweightableSpectrum(loader, recoAxis, trueAxis, kNoSpillCut, cut, shift, wei)
+  {
+  }
+
+  //----------------------------------------------------------------------
+  ReweightableSpectrum::ReweightableSpectrum(SpectrumLoaderBase& loader,
+                                             const HistAxis& recoAxis,
+                                             const HistAxis& trueAxis,
+                                             const SpillCut& spillcut,
+                                             const SliceCut& slicecut,
+                                             const SystShifts& shift,
+                                             const Var& wei)
     : ReweightableSpectrum(recoAxis.GetLabels(), recoAxis.GetBinnings(),
                            trueAxis.GetVars()[0])
   {
@@ -69,7 +81,7 @@ namespace ana
                         xbins.NBins(), &xbins.Edges()[0],
                         ybins.NBins(), &ybins.Edges()[0]);
 
-    loader.AddReweightableSpectrum(*this, recoAxis.GetMultiDVar(), cut, shift, wei);
+    loader.AddReweightableSpectrum(*this, recoAxis.GetMultiDVar(), spillcut, slicecut, shift, wei);
   }
 
   //----------------------------------------------------------------------

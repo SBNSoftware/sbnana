@@ -7,7 +7,7 @@ class ToyEnergyScaleSyst: public ISyst
  public:
  ToyEnergyScaleSyst() : ISyst("toyEScale", "Toy Energy Scale") {}
   void Shift(double sigma,
-             caf::SRProxy* sr,
+             caf::SRSliceProxy* sr,
              double& weight) const override
   {
     const double scale = 1 + .05*sigma; // 5% E scale syst.                    
@@ -26,7 +26,7 @@ class ToyNormSyst: public ISyst
  public:
  ToyNormSyst() : ISyst("toyNorm", "Toy Norm Scale") {}
   void Shift(double sigma,
-             caf::SRProxy* sr,
+             caf::SRSliceProxy* sr,
              double& weight) const override
   {
     weight *= TMath::Max(0., 1+0.1*sigma);

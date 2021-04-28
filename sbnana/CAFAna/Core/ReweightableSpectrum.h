@@ -26,6 +26,14 @@ namespace ana
                          const SystShifts& shift = kNoShift,
                          const Var& wei = kUnweighted);
 
+    ReweightableSpectrum(SpectrumLoaderBase& loader,
+                         const HistAxis& recoAxis,
+                         const HistAxis& trueAxis,
+                         const SpillCut& spillcut,
+                         const SliceCut& slicecut,
+                         const SystShifts& shift = kNoShift,
+                         const Var& wei = kUnweighted);
+
     ReweightableSpectrum(const Var& rwVar,
                          const std::string& xlabel, const std::string& ylabel,
                          double pot,
