@@ -19,6 +19,7 @@ namespace ana
   PredictionScaleComp::
   PredictionScaleComp(SpectrumLoaderBase& loader,
                       const HistAxis& axis,
+                      SpillCut spillcut,
                       Cut cut,
                       const std::vector<const SystComponentScale*>& systs,
                       const SystShifts& shift,
@@ -30,10 +31,10 @@ namespace ana
     assert(!systs.empty() && "Please give at least one systematic.");
     for(const SystComponentScale* syst: systs){
       fPreds.push_back(new PredictionNoOsc(loader, axis,
-                                           cut && syst->GetCut(), shift, wei));
+                                           spillcut, cut && syst->GetCut(), shift, wei));
     }
 
-    fTotal = new PredictionNoOsc(loader, axis, cut, shift, wei);
+    fTotal = new PredictionNoOsc(loader, axis, spillcut, cut, shift, wei);
   }
 
   //----------------------------------------------------------------------
@@ -43,6 +44,7 @@ namespace ana
                       SpectrumLoaderBase& loaderNuTau,
                       SpectrumLoaderBase& loaderIntrinsic,
                       const HistAxis&     axis,
+                      SpillCut            spillcut,
                       Cut                 cut,
                       const std::vector<const SystComponentScale*>& systs,
                       const SystShifts&   shift,
@@ -52,11 +54,11 @@ namespace ana
     assert(!systs.empty() && "Please give at least one systematic.");
     for(const SystComponentScale* syst: systs){
       fPreds.push_back(new PredictionNoExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-                                              axis, cut && syst->GetCut(), shift, wei));
+                                              axis, spillcut, cut && syst->GetCut(), shift, wei));
     }
 
     fTotal = new PredictionNoExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-                                    axis, cut, shift, wei);
+                                    axis, spillcut, cut, shift, wei);
   }
 
   //----------------------------------------------------------------------
@@ -64,6 +66,7 @@ namespace ana
   PredictionScaleComp(SpectrumLoaderBase& loader,
                       const HistAxis& axis1,
                       const HistAxis& axis2,
+                      SpillCut spillcut,
                       Cut cut,
                       const std::vector<const SystComponentScale*>& systs,
                       const SystShifts& shift,

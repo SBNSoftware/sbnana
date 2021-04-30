@@ -11,6 +11,7 @@ namespace ana
   public:
     PredictionNoOsc(SpectrumLoaderBase& loader,
                     const HistAxis& axis,
+                    const SpillCut& spillcut,
                     const Cut& cut,
                     const SystShifts& shift = kNoShift,
                     const Var& wei = kUnweighted);
@@ -19,6 +20,7 @@ namespace ana
                     const std::string& label,
                     const Binning& bins,
                     const Var& var,
+                    const SpillCut& spillcut,
                     const Cut& cut,
                     const SystShifts& shift = kNoShift,
                     const Var& wei = kUnweighted);
@@ -63,9 +65,10 @@ namespace ana
   public:
     NoOscPredictionGenerator(SpectrumLoaderBase& loader,
                              HistAxis axis,
+                             SpillCut spillcut,
                              Cut cut,
 			     Var wei = kUnweighted)
-      : fLoader(loader), fAxis(axis), fCut(cut), fWei(wei)
+      : fLoader(loader), fAxis(axis), fSpillCut(spillcut), fCut(cut), fWei(wei)
     {
     }
 
@@ -74,12 +77,14 @@ namespace ana
     {
       return std::unique_ptr<IPrediction>(new PredictionNoOsc(fLoader,
                                                               fAxis,
+                                                              fSpillCut,
                                                               fCut,
                                                               shiftMC, fWei));
     }
   protected:
     SpectrumLoaderBase& fLoader;
     HistAxis fAxis;
+    SpillCut fSpillCut;
     Cut fCut;
     Var fWei;
   };

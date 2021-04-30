@@ -42,6 +42,13 @@ namespace ana
                          const SystShifts& shift = kNoShift,
                          const Var& wei = kUnweighted);
 
+    OscillatableSpectrum(SpectrumLoaderBase& loader,
+                         const HistAxis& axis,
+                         const SpillCut& spillcut,
+                         const SliceCut& slicecut,
+                         const SystShifts& shift = kNoShift,
+                         const Var& wei = kUnweighted);
+
     OscillatableSpectrum(const std::string& label, const Binning& bins);
     OscillatableSpectrum(const std::string& label, double pot, double livetime,
                          const Binning& bins);
