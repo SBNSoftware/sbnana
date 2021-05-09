@@ -3,8 +3,10 @@
 
 #include "sbnana/SBNAna/Vars/Vars.h"
 #include "sbnana/SBNAna/Vars/NumuVars.h"
+#include "sbnana/SBNAna/Vars/NumuVarsSBND202106.h"
 #include "sbnana/SBNAna/Cuts/Cuts.h"
 #include "sbnana/SBNAna/Cuts/NumuCuts.h"
+#include "sbnana/SBNAna/Cuts/NumuCutsSBND202106.h"
 #include "sbnana/SBNAna/Cuts/TruthCuts.h"
 
 using namespace ana;
@@ -68,7 +70,7 @@ struct SelDef
 // In this example, our signal is Numu cc
 // See Cuts/TruthCuts to check out these cuts
 const Cut kSig = kIsNumu && !kIsNC;
-const Cut kTest = kSlcIsRecoNu && kSlcNuScoreCut && kFiducialVolumeND && kSlcFlashMatchCut;
+const Cut kTest = kSlcIsRecoNu && kSlcNuScoreCut && kFiducialVolumeND && kSlcFlashMatchCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut;
 // about test: 
 // check Fiducial Volume
 //  
