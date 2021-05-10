@@ -29,6 +29,10 @@ namespace ana
 
   extern const Cut kPTrack;
 
+  extern const Cut kPTrackContained;
+  
+  extern const Cut kPTrackExiting;
+
   // "Successive" cuts for the selection.
   extern const Cut kNuMuCC_Cryo0;
 
@@ -74,4 +78,7 @@ namespace ana
 
   // The full selection cut using only reco information.
   extern const Cut kNuMuCC_FullSelection;
+
+  // Spill level cuts.
+  extern const SpillCut kLongTrack;
 }

@@ -52,49 +52,39 @@ namespace ana
     });
 
   const Cut kPTrack([](const caf::SRSliceProxy* slc) {
-      // The (dis)qualification of a slice is based upon the track level information.
-      float Atslc, Chi2Proton, Chi2Muon;
-      std::vector<unsigned int> Candidates;
-      bool AtSlice, Contained, MaybeMuonExiting, MaybeMuonContained, ProgCut(false);
-      
-      for (auto const& trk : slc->reco.trk)
-      {
-	// First we calculate the distance of each track to the slice vertex.
-	Atslc = sqrt( pow( slc->vertex.x - trk.start.x, 2.0 ) +
-		      pow( slc->vertex.y - trk.start.y, 2.0 ) +
-		      pow( slc->vertex.z - trk.start.z, 2.0 ) );
-	// We require that the distance of the track from the slice is less than
-	// 10 cm and that the parent of the track has been marked as the primary.
-	AtSlice = ( Atslc < 10.0 && trk.parent_is_primary);
-	
-	if (trk.bestplane == 0)
-	{
-	  Chi2Proton = trk.chi2pid0.chi2_proton;
-	  Chi2Muon = trk.chi2pid0.chi2_muon;
-	}
-	else if (trk.bestplane == 1)
-	{
-	  Chi2Proton = trk.chi2pid1.chi2_proton;
-	  Chi2Muon = trk.chi2pid1.chi2_muon;
-	}
-	else
-	{
-	  Chi2Proton = trk.chi2pid2.chi2_proton;
-	  Chi2Muon = trk.chi2pid2.chi2_muon;
-	}
+      return ( kPTrackInd(slc) >= 0 );
+    });
 
+  const Cut kPTrackContained([](const caf::SRSliceProxy* slc) {
+      int Ind = kPTrackInd(slc);
+      bool Contained(false);
+      if ( Ind >= 0 ) 
+      {
+	auto const& trk = slc->reco.trk.at(Ind);
 	Contained = ( !isnan(trk.end.x) &&
-		      ( trk.end.x < -71.1 - 25 && trk.end.x > -369.33 + 25 ) &&//
-		      // || ( trk.end.x > 71.1 + 25 && trk.end.x < 369.33 - 25 ) ) &&
+		      ( trk.end.x < -71.1 - 25 && trk.end.x > -369.33 + 25 ) &&
 		      !isnan(trk.end.y) &&
 		      ( trk.end.y > -181.7 + 25 && trk.end.y < 134.8 - 25 ) &&
 		      !isnan(trk.end.z) &&
 		      ( trk.end.z > -895.95 + 30 && trk.end.z < 895.95 - 50 ) );
-	MaybeMuonExiting = ( !Contained && trk.len > 100);
-	MaybeMuonContained = ( Contained && Chi2Proton > 60 && Chi2Muon < 30 && trk.len > 50 );
-	ProgCut = ProgCut || ( AtSlice && ( MaybeMuonExiting || MaybeMuonContained ) );
       }
-      return ProgCut;
+      return Contained;
+    });
+
+  const Cut kPTrackExiting([](const caf::SRSliceProxy* slc) {
+      int Ind = kPTrackInd(slc);
+      bool Exiting(false);
+      if ( Ind >= 0 ) 
+      {
+	auto const& trk = slc->reco.trk.at(Ind);
+	Exiting = !( !isnan(trk.end.x) &&
+		     ( trk.end.x < -71.1 - 25 && trk.end.x > -369.33 + 25 ) &&
+		     !isnan(trk.end.y) &&
+		     ( trk.end.y > -181.7 + 25 && trk.end.y < 134.8 - 25 ) &&
+		     !isnan(trk.end.z) &&
+		     ( trk.end.z > -895.95 + 30 && trk.end.z < 895.95 - 50 ) );
+      }
+      return Exiting;
     });
 
   // "Successive" cuts for the selection. These are meant to successively build upon
@@ -143,4 +133,20 @@ namespace ana
   
   // The full selection cut using only reco information.
   const Cut kNuMuCC_FullSelection = ( kCryo0 && kRFiducial && kNotClearCosmic && kNuScore && kFMScore && kPTrack );
+
+  const SpillCut kLongTrack([](const caf::SRSpillProxy* sr){
+      bool ProgCut = false;
+      bool NuIsNuMuCC, IsMuon, Contained;
+      for (auto const& nu: sr->mc.nu)
+      {
+	NuIsNuMuCC = nu.iscc && ( nu.pdg == 14 || nu.pdg == -14 );
+	for (auto const& prim: nu.prim)
+	{
+	  IsMuon = ( prim.pdg == 13 || prim.pdg == -13 );
+	  Contained = ( prim.contained == 1 );
+	  ProgCut = ProgCut || ( NuIsNuMuCC && IsMuon && ( (Contained && prim.length > 50.0) || (!Contained && prim.length > 100.0) ) );
+	}
+      }
+      return ProgCut;
+    });
 }
