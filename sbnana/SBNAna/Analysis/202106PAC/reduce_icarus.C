@@ -4,17 +4,15 @@
 
 using namespace ana;
 
-// This should be
-// workshop_SBNWorkshop0421_prodoverlay_corsika_cosmics_cosmics_proton_genie_nu_spill_gsimple-config_caf_icarus
-// but that is only available from SAM to icarus users, for now.
-const std::string icarus_wildcard = "/pnfs/icarus/persistent/users/icaruspro/SBNworkshopApril2021/CAF/corsika_nue_BNB/*/*/*.root";
-
-void reduce_icarus()
+// Note the input file can (and likely should) be a SAM definition, or wildcard
+// (if properly escaped from the shell).
+void reduce_icarus(const std::string& in, const std::string& out)
 {
   const SpillCut kNumuSpillSel = kNoSpillCut; // TODO
   const Cut kNumuSel = kNuMuCC_FullSelection;
 
-  FileReducer reducer(icarus_wildcard, "reduced_icarus.root");
+  FileReducer reducer(in, out);
+  reducer.AddReductionStep(ClearTrueParticles);
   reducer.AddSpillCut(kNumuSpillSel);
   reducer.AddSliceCut(kNumuSel);
 
