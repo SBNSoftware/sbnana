@@ -36,19 +36,10 @@ const std::string nueStr = "nue";
 
 void make_surfaces(const std::string anatype = numuStr)
 {
-  const std::vector<const ISyst*>& systs = GetSBNWeightSysts();
-
-  auto systs_flux = GetSBNFluxWeightSysts();
-  auto systs_genie = GetSBNGenieWeightSysts();
+  const auto genie_systs = GetSBNGenieWeightSysts();
+  const auto flux_systs = GetSBNFluxHadronSysts(30);
+  const auto energy_systs = GetEnergySysts();
   
-  std::vector<const ISyst*> systs_to_process;
-
-  std::vector<std::string> syst_names{"expskin_FluxUnisim","horncurrent_FluxUnisim","kminus_PrimaryHadronNormalization","kplus_PrimaryHadronFeynmanScaling","kzero_PrimaryHadronSanfordWang","nucleoninexsec_FluxUnisim","nucleonqexsec_FluxUnisim","nucleontotxsec_FluxUnisim","piminus_PrimaryHadronSWCentralSplineVariation","pioninexsec_FluxUnisim","pionqexsec_FluxUnisim","piontotxsec_FluxUnisim","piplus_PrimaryHadronSWCentralSplineVariation","genie_ccresAxial_Genie","genie_ncresAxial_Genie","genie_qema_Genie","genie_NC_Genie","genie_NonResRvbarp1pi_Genie","genie_NonResRvbarp2pi_Genie","genie_NonResRvp1pi_Genie","genie_NonResRvp2pi_Genie","genie_NonResRvbarp1piAlt_Genie","genie_NonResRvbarp2piAlt_Genie","genie_NonResRvp1piAlt_Genie","genie_NonResRvp2piAlt_Genie"};
-
-  for (auto s : systs) {
-    for (auto n : syst_names) if (n == s->ShortName()) systs_to_process.push_back(s);
-  }
-
   const char* name_in;
   const char* name_out;
   if (anatype == numuStr) {
@@ -125,25 +116,30 @@ void make_surfaces(const std::string anatype = numuStr)
   surf_nom_ub.SaveTo(gDirectory->mkdir("nom_ub"));
   surf_nd_fd.SaveTo(gDirectory->mkdir("nom_nd_fd"));
 
-  std::vector<std::vector<const ISyst*>> slists;
-  //slists.emplace_back(1, systs[0]);
-  slists.push_back(systs_to_process);
+  std::map<std::string, std::vector<const ISyst*>> slists;
+  std::vector<const ISyst*> systs = genie_systs;
+  systs.insert(systs.end(), flux_systs.begin(), flux_systs.end());
+  systs.push_back(kEnergyScaleMuon);
+  systs.push_back(kEnergyScaleMuonND);
+  systs.push_back(kEnergyScaleHadron);
+  systs.push_back(kEnergyScaleHadronND);
+  slists["all_systs"] = systs; 
 
-  for(const std::vector<const ISyst*> slist: slists){
+  for(auto syst_pair: slists){
+    std::string suffix = syst_pair.first;
+    std::vector<const ISyst*> slist = syst_pair.second;    
+
     Surface surf_syst(&multiExpt, calc, kAxForTh, kAxDmSq, {}, slist);
     Surface surf_syst_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq, {}, slist);
     Surface surf_syst_nd(&expt_nd, calc, kAxForTh, kAxDmSq, {}, slist);
     Surface surf_syst_fd(&expt_fd, calc, kAxForTh, kAxDmSq, {}, slist);
     Surface surf_syst_ub(&expt_ub, calc, kAxForTh, kAxDmSq, {}, slist);
 
-    std::string suffix = "prop_systs";
-
     surf_syst_nd.SaveTo(gDirectory->mkdir(("nd_"+suffix).c_str()));
     surf_syst_fd.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
     surf_syst_ub.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
     surf_syst.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
     surf_syst_nd_fd.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
-
   } // end for s
 
 
