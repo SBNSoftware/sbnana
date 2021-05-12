@@ -14,6 +14,8 @@ namespace ana
   /// it inline as a lambda function.
   extern const Cut kIsNC;
 
+  extern const Cut kIsCC;
+
   //----------------------------------------------------------------------
   /// Helper for defining true CC event cuts
   class CCFlavSel
