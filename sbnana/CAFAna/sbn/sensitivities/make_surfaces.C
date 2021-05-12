@@ -59,8 +59,8 @@ void make_surfaces(const std::string anatype = numuStr)
   TFile fout(name_out,"RECREATE");
 
   PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+  //PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
+  //PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
 
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
   OscCalcSterileApproxAdjustable* seed = DefaultSterileApproxCalc();
@@ -91,30 +91,30 @@ void make_surfaces(const std::string anatype = numuStr)
 
   // We'll call zero nominal
   const Spectrum data_nd = p_nd->Predict(calc).FakeData(sbndPOT);
-  const Spectrum data_fd = p_fd->Predict(calc).FakeData(icarusPOT);
-  const Spectrum data_ub = p_ub->Predict(calc).FakeData(uboonePOT);
+  //const Spectrum data_fd = p_fd->Predict(calc).FakeData(icarusPOT);
+  //const Spectrum data_ub = p_ub->Predict(calc).FakeData(uboonePOT);
 
   SingleSampleExperiment expt_nd(p_nd, data_nd);
-  SingleSampleExperiment expt_fd(p_fd, data_fd);
-  SingleSampleExperiment expt_ub(p_ub, data_ub);
+  //SingleSampleExperiment expt_fd(p_fd, data_fd);
+  //SingleSampleExperiment expt_ub(p_ub, data_ub);
 
-  MultiExperimentSBN multiExpt({&expt_nd, &expt_fd, &expt_ub}, {kSBND, kICARUS, kMicroBoone});
-  MultiExperimentSBN fd_nd({&expt_nd, &expt_fd}, {kSBND, kICARUS});
+  //MultiExperimentSBN multiExpt({&expt_nd, &expt_fd, &expt_ub}, {kSBND, kICARUS, kMicroBoone});
+  //MultiExperimentSBN fd_nd({&expt_nd, &expt_fd}, {kSBND, kICARUS});
 
-  Surface surf_nom(&multiExpt, calc, kAxForTh, kAxDmSq);
-  Surface surf_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq);
+  //Surface surf_nom(&multiExpt, calc, kAxForTh, kAxDmSq);
+  //Surface surf_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq);
   Surface surf_nom_nd(&expt_nd, calc, kAxForTh, kAxDmSq);
-  Surface surf_nom_fd(&expt_fd, calc, kAxForTh, kAxDmSq);
-  Surface surf_nom_ub(&expt_ub, calc, kAxForTh, kAxDmSq);
+  //Surface surf_nom_fd(&expt_fd, calc, kAxForTh, kAxDmSq);
+  //Surface surf_nom_ub(&expt_ub, calc, kAxForTh, kAxDmSq);
 
   fout.mkdir("exclusion");
   fout.cd("exclusion");    
 
-  surf_nom.SaveTo(gDirectory->mkdir("nom"));
+  //surf_nom.SaveTo(gDirectory->mkdir("nom"));
   surf_nom_nd.SaveTo(gDirectory->mkdir("nom_nd"));
-  surf_nom_fd.SaveTo(gDirectory->mkdir("nom_fd"));
-  surf_nom_ub.SaveTo(gDirectory->mkdir("nom_ub"));
-  surf_nd_fd.SaveTo(gDirectory->mkdir("nom_nd_fd"));
+  //surf_nom_fd.SaveTo(gDirectory->mkdir("nom_fd"));
+  //surf_nom_ub.SaveTo(gDirectory->mkdir("nom_ub"));
+  //surf_nd_fd.SaveTo(gDirectory->mkdir("nom_nd_fd"));
 
   std::map<std::string, std::vector<const ISyst*>> slists;
   std::vector<const ISyst*> systs = genie_systs;
@@ -129,17 +129,17 @@ void make_surfaces(const std::string anatype = numuStr)
     std::string suffix = syst_pair.first;
     std::vector<const ISyst*> slist = syst_pair.second;    
 
-    Surface surf_syst(&multiExpt, calc, kAxForTh, kAxDmSq, {}, slist);
-    Surface surf_syst_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq, {}, slist);
+    //Surface surf_syst(&multiExpt, calc, kAxForTh, kAxDmSq, {}, slist);
+    //Surface surf_syst_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq, {}, slist);
     Surface surf_syst_nd(&expt_nd, calc, kAxForTh, kAxDmSq, {}, slist);
-    Surface surf_syst_fd(&expt_fd, calc, kAxForTh, kAxDmSq, {}, slist);
-    Surface surf_syst_ub(&expt_ub, calc, kAxForTh, kAxDmSq, {}, slist);
+    //Surface surf_syst_fd(&expt_fd, calc, kAxForTh, kAxDmSq, {}, slist);
+    //Surface surf_syst_ub(&expt_ub, calc, kAxForTh, kAxDmSq, {}, slist);
 
     surf_syst_nd.SaveTo(gDirectory->mkdir(("nd_"+suffix).c_str()));
-    surf_syst_fd.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
-    surf_syst_ub.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
-    surf_syst.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
-    surf_syst_nd_fd.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
+    //surf_syst_fd.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
+    //surf_syst_ub.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
+    //surf_syst.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
+    //surf_syst_nd_fd.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
   } // end for s
 
 
