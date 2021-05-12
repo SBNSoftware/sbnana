@@ -1,40 +1,51 @@
 #include "sbnana/CAFAna/Systs/EnergySysts.h"
 
 namespace ana {
-  // const eScaleMuLArSyst keScaleMuLArSyst;
-  // const EnergyScaleMuSystND kEnergyScaleMuSystND;
-  // const EnergyScaleESyst kEnergyScaleESyst;
-  // const ChargedHadCorrSyst kChargedHadCorrSyst;
-  // const ChargedHadUncorrFDSyst kChargedHadUncorrFDSyst;
-  // const ChargedHadUncorrNDSyst kChargedHadUncorrNDSyst;
-  // const NUncorrNDSyst kNUncorrNDSyst;  
-  // const NUncorrFDSyst kNUncorrFDSyst;  
-  // const Pi0CorrSyst kEnergyScalePi0Syst;
-  // const Pi0UncorrNDSyst kPi0UncorrNDSyst;
-  // const Pi0UncorrFDSyst kPi0UncorrFDSyst;
+  const EnergyScaleMuon kEnergyScaleMuon;
+  const EnergyScaleMuonND kEnergyScaleMuonND;
+  // const EnergyScaleMuonMB kEnergyScaleMuonMB;
+   const EnergyScaleMuonFD kEnergyScaleMuonFD;
+   const EnergyScaleMuonFD5p kEnergyScaleMuonFD5p;
+   const EnergyScaleMuonFD10p kEnergyScaleMuonFD10p;
+   const EnergyScaleMuonFD20p kEnergyScaleMuonFD20p;
+   const EnergyScaleHadron kEnergyScaleHadron;
+   const EnergyScaleHadronND kEnergyScaleHadronND;
+  // const EnergyScaleHadronMB kEnergyScaleHadronMB;
+   const EnergyScaleHadronFD kEnergyScaleHadronFD;
+  // const UncorrFDTotSqrt kUncorrFDTotSqrt;
+  // const UncorrFDTotInvSqrt kUncorrFDTotInvSqrt;
+  // const UncorrFDHadSqrt kUncorrFDHadSqrt;
+  // const UncorrFDHadInvSqrt kUncorrFDHadInvSqrt;
+  // const UncorrFDMuSqrt kUncorrFDMuSqrt;
+  // const UncorrFDMuInvSqrt kUncorrFDMuInvSqrt;
+  // const UncorrFDNSqrt kUncorrFDNSqrt;
+  // const UncorrFDNInvSqrt kUncorrFDNInvSqrt;
+  // const UncorrFDEMSqrt kUncorrFDEMSqrt;
+  // const UncorrFDEMInvSqrt kUncorrFDEMInvSqrt;
+  // const EScaleMuLArFD kEScaleMuLArFD;
+  // const ChargedHadUncorrFD kChargedHadUncorrFD;
+  // const NUncorrFD kNUncorrFD;
+  // const EMUncorrFD kEMUncorrFD;
+  // const MuonResFD kMuonResFD;
+  // const EMResFD kEMResFD;
+  // const ChargedHadResFD kChargedHadResFD;
+  // const NResFD kNResFD;
 
-  // const UncorrNDHadLinSyst kUncorrNDHadLinSyst;
-  // const UncorrNDPi0LinSyst kUncorrNDPi0LinSyst;
-  // const UncorrNDNLinSyst kUncorrNDNLinSyst;
+  EnergySystVector GetEnergySysts() {
 
-  // EnergySystVector GetEnergySysts()
-  // {
-  //   EnergySystVector vec;
-  //   vec.push_back(&keScaleMuLArSyst);
-  //   vec.push_back(&kEnergyScaleMuSystND);
-  //   vec.push_back(&kEnergyScaleESyst);
-  //   vec.push_back(&kChargedHadCorrSyst);
-  //   vec.push_back(&kChargedHadUncorrFDSyst);
-  //   vec.push_back(&kChargedHadUncorrNDSyst);
-  //   vec.push_back(&kNUncorrFDSyst);
-  //   vec.push_back(&kNUncorrNDSyst);
-  //   vec.push_back(&kEnergyScalePi0Syst);
-  //   vec.push_back(&kPi0UncorrFDSyst);
-  //   vec.push_back(&kPi0UncorrNDSyst);
-  //   vec.push_back(&kUncorrNDHadLinSyst);
-  //   vec.push_back(&kUncorrNDPi0LinSyst);
-  //   vec.push_back(&kUncorrNDNLinSyst);
+    EnergySystVector vec;
+    vec.push_back(&kEnergyScaleMuon);
+    vec.push_back(&kEnergyScaleMuonND);
+    // vec.push_back(&kEnergyScaleMuonMB);
+    vec.push_back(&kEnergyScaleMuonFD);
+    vec.push_back(&kEnergyScaleMuonFD5p);
+    vec.push_back(&kEnergyScaleMuonFD10p);
+    vec.push_back(&kEnergyScaleMuonFD20p);
+    vec.push_back(&kEnergyScaleHadron);
+    vec.push_back(&kEnergyScaleHadronND);
+    // vec.push_back(&kEnergyScaleHadronMB);
+    vec.push_back(&kEnergyScaleHadronFD);
 
-  //   return vec;
-  // }
-} // namespace
+    return vec;
+  }
+} // namespace ana
