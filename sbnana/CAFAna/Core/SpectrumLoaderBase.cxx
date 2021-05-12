@@ -288,6 +288,24 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddReweightableSpectrum(ReweightableSpectrum& spect,
+                                                   const Var& var,
+                                                   const SpillCut& spillcut,
+                                                   const SliceCut& slicecut,
+                                                   const SystShifts& shift,
+                                                   const Var& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fHistDefs[spillcut][shift][slicecut][wei][var].rwSpects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::
   RemoveReweightableSpectrum(ReweightableSpectrum* spect)
   {

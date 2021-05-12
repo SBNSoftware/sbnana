@@ -15,6 +15,7 @@ namespace ana
     PredictionSBNExtrap(Loaders& loadersND,
                         Loaders& loadersFD,
                         const HistAxis& axis,
+                        const SpillCut& spillcut,
                         const Cut& cut,
                         const SystShifts& shift_mc = kNoShift,
                         const Var& wei_mc = kUnweighted,
@@ -54,6 +55,7 @@ namespace ana
   public:
     SBNExtrapGenerator(Loaders& loaders_nd,
                        const HistAxis& ax,
+                       const SpillCut& spillcut,
                        const Cut& cut,
                        const Var& wei_mc,
                        const SystShifts& shift_data = kNoShift,
@@ -65,6 +67,7 @@ namespace ana
   protected:
     Loaders& fLoadersND;
     HistAxis fAxis;
+    SpillCut fSpillCut;
     Cut fCut;
     Var fWeightMC;
     SystShifts fShiftData;

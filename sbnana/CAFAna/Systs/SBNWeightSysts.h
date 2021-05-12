@@ -1,18 +1,13 @@
 #pragma once
 
-#if 0 // temporarily disabled. None of this exists in the CAFs at present
-
 #include "sbnana/CAFAna/Core/ISyst.h"
+#include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
-#include <vector>
-#include <unordered_map>
+#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
 
-namespace caf
-{
-  class PairProxy;
-  template<class T> class VectorProxy;
-}
+#include <unordered_map>
+#include <vector>
 
 namespace ana
 {
@@ -22,13 +17,12 @@ namespace ana
     UniverseWeight(const std::vector<std::string>& systs, int univIdx);
     UniverseWeight(const std::vector<const ISyst*>& systs, int univIdx);
 
-    double operator()(const caf::SRProxy* sr) const;
-  protected:
-    int GetIdx(const caf::VectorProxy<caf::PairProxy>& ws, int isyst) const;
+    double operator()(const caf::SRSliceProxy* sr) const;
 
+  protected:
     std::vector<std::string> fNames;
     int fUnivIdx;
-    mutable std::vector<int> fSystIdxs;
+    mutable std::vector<unsigned int> fSystIdxs;
   };
 
   Var GetUniverseWeight(const std::string& syst, int univIdx)
@@ -50,17 +44,14 @@ namespace ana
   class SBNWeightSyst: public ISyst
   {
   public:
-    SBNWeightSyst(const std::string& name, const Cut& cut = kNoCut);
+    SBNWeightSyst(const std::string& name, const SliceCut& cut = kNoCut);
 
-    void Shift(double x, caf::SRProxy* sr, double& weight) const override;
+    void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
 
   protected:
     mutable int fIdx;
 
-    Cut fCut;
-
-    int GetIdx(const caf::VectorProxy<caf::PairProxy>& ws) const;
-
+    SliceCut fCut;
 
     struct Univs
     {
@@ -73,9 +64,7 @@ namespace ana
     Univs GetUnivs(double x) const;
   };
 
-  const std::vector<const ISyst*>& GetSBNGenieWeightSysts();
-  const std::vector<const ISyst*>& GetSBNFluxWeightSysts();
-  const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
+  //  const std::vector<const ISyst*>& GetSBNGenieWeightSysts();
+  //  const std::vector<const ISyst*>& GetSBNFluxWeightSysts();
+  //  const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
 }
-
-#endif

@@ -14,6 +14,8 @@ namespace ana
 
     double P_LoverE(int from, int to, double LElo, double LEhi);
 
+    using osc::IOscCalc::P;
+
     virtual OscCalcSterileApprox* Copy() const override;
 
     void SetDmsq(double d) {fDmsq = d;}
@@ -51,6 +53,8 @@ namespace ana
     {
       return calc.P(from, to, E);
     }
+
+    using osc::IOscCalc::P;
 
     virtual OscCalcSterileApproxAdjustable* Copy() const override
     {
