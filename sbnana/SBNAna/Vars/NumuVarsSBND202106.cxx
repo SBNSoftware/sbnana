@@ -70,4 +70,77 @@ namespace ana
    				 }
    			         return best_idx;
 			       });
+
+  const Var kPrimaryMuonTrkP([](const caf::SRSliceProxy *slc)
+			       {
+  				 //bool contained; 
+				 //int ptrkid = kPrimaryMuonTrkIdx(slc);
+
+				 //const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+				 //contained = ( (-199.15 + 10) < ptrk.end.x && ptrk.end.x < (199.15 - 10) && (-200. + 10) < ptrk.end.y && ptrk.end.y < (200. - 10) && (0.0 + 10) < ptrk.end.z && ptrk.end.z < (500. - 50));
+				 //if(contained) return ptrk.rangeP.p_muon;
+				 //else return ptrk.mcsP.fwdP_muon;                               
+
+			         float recop(-5.f);
+      				 bool contained(false);
+      
+			         if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
+			       	   auto const& ptrk = slc->reco.trk.at(kPrimaryMuonTrkIdx(slc));
+				   contained = ( (-199.15 + 10) < ptrk.end.x && ptrk.end.x < (199.15 - 10) && (-200. + 10) < ptrk.end.y && ptrk.end.y < (200. - 10) && (0.0 + 10) < ptrk.end.z && ptrk.end.z < (500. - 50));
+
+			 	   if(contained) recop = ptrk.rangeP.p_muon;
+				   else recop = ptrk.mcsP.fwdP_muon;
+      				 }
+      				 return recop;
+			       });
+
+  const Var kCRTTrkTime([](const caf::SRSliceProxy *slc) -> double
+  			  {
+			    float crttrktime(-5.f);
+                            if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
+                              int ptrkid = kPrimaryMuonTrkIdx(slc);
+                              const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+			      crttrktime = ptrk.crthit.hit.time;
+			    }
+         		    return crttrktime;
+       			  });
+
+  const Var kCRTTrkAngle([](const caf::SRSliceProxy *slc) -> double
+  			  {
+			    float crttrkangle(-5.f);
+                            if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
+                              int ptrkid = kPrimaryMuonTrkIdx(slc);
+                              const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+			      crttrkangle = ptrk.crttrack.angle;
+			    }
+         		    return crttrkangle;
+       			  });
+
+  const Var kCRTHitDist([](const caf::SRSliceProxy *slc) -> double
+  			  {
+			    float crttrkdist(-5.f);
+                            if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
+                              int ptrkid = kPrimaryMuonTrkIdx(slc);
+                              const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+			      crttrkdist = ptrk.crthit.distance;
+			    }
+         		    return crttrkdist;
+       			  });
+
+  const Var kNuScore([](const caf::SRSliceProxy *slc) -> double
+  			  {
+         		    return slc->nu_score;
+       			  });
+
+  const Var kPrimaryMuonTrkLen([](const caf::SRSliceProxy *slc) -> double
+  			  {
+			    float ptrklen(-5.f);
+                            if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
+                              int ptrkid = kPrimaryMuonTrkIdx(slc);
+                              const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+			      ptrklen = ptrk.len;
+			    }
+         		    return ptrklen;
+       			  });
+
 }

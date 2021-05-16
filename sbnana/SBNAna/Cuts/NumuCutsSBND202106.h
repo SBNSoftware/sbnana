@@ -4,10 +4,14 @@
 
 namespace ana
 {
+  extern const Cut kInFV;
+
   extern const Cut kHasPrimaryMuonTrk;
 
   //CRT Match
   extern const Cut kCRTTrackAngleCut;
   extern const Cut kCRTHitDistanceCut;
+  extern const Cut kSlcFlashMatchTimeCut;
+  extern const Cut kSlcFlashMatchScoreCu;
 
 }
