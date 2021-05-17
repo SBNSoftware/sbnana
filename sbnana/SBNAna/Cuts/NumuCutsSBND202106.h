@@ -12,6 +12,6 @@ namespace ana
   extern const Cut kCRTTrackAngleCut;
   extern const Cut kCRTHitDistanceCut;
   extern const Cut kSlcFlashMatchTimeCut;
-  extern const Cut kSlcFlashMatchScoreCu;
+  extern const Cut kSlcFlashMatchScoreCut;
 
 }
