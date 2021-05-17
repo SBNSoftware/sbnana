@@ -20,7 +20,7 @@ namespace ana{
 
   const Cut kSlcFlashMatchScoreCut([](const caf::SRSliceProxy* slc)
                         {
-                          return ( slc->fmatch.score < 1.800 );
+                          return ( slc->fmatch.score < 7 );
                         });
 
   //const Cut kHasPrimaryMuonTrk = kPrimaryMuonTrkIdx != -1;
