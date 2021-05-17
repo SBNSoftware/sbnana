@@ -17,15 +17,16 @@ namespace ana
   PredictionSBNExtrap::PredictionSBNExtrap(Loaders& loadersND,
                                            Loaders& loadersFD,
                                            const HistAxis& axis,
+                                           const SpillCut& spillcut,
                                            const Cut& cut,
                                            const SystShifts& shift_mc,
                                            const Var& wei_mc,
                                            const SystShifts& shift_data,
                                            const Var& wei_data)
-    : fPredND(loadersND, axis, cut, shift_mc, wei_mc),
-      fPredFD(loadersFD, axis, cut, shift_mc, wei_mc),
+    : fPredND(loadersND, axis, spillcut, cut, shift_mc, wei_mc),
+      fPredFD(loadersFD, axis, spillcut, cut, shift_mc, wei_mc),
       // TODO how on earth do fake ND oscillations get in here?
-      fDataND(loadersND.GetLoader(Loaders::kData), axis, cut, shift_data, wei_data)
+      fDataND(loadersND.GetLoader(Loaders::kData), axis, spillcut, cut, shift_data, wei_data)
   {
   }
 
@@ -119,11 +120,12 @@ namespace ana
   //----------------------------------------------------------------------
   SBNExtrapGenerator::SBNExtrapGenerator(Loaders& loaders_nd,
                                          const HistAxis& ax,
+                                         const SpillCut& spillcut,
                                          const Cut& cut,
                                          const Var& wei_mc,
                                          const SystShifts& shift_data,
                                          const Var& wei_data)
-    : fLoadersND(loaders_nd), fAxis(ax), fCut(cut), fWeightMC(wei_mc),
+    : fLoadersND(loaders_nd), fAxis(ax), fSpillCut(spillcut), fCut(cut), fWeightMC(wei_mc),
       fShiftData(shift_data), fWeightData(wei_data)
   {
   }
@@ -133,6 +135,6 @@ namespace ana
                                                             const SystShifts& shiftMC) const
   {
     // No data shifts or weights
-    return std::unique_ptr<IPrediction>(new PredictionSBNExtrap(fLoadersND, loaders_fd, fAxis, fCut, shiftMC, fWeightMC, fShiftData, fWeightData));
+    return std::unique_ptr<IPrediction>(new PredictionSBNExtrap(fLoadersND, loaders_fd, fAxis, fSpillCut, fCut, shiftMC, fWeightMC, fShiftData, fWeightData));
   }
 }

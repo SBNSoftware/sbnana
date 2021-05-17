@@ -18,6 +18,7 @@ namespace ana
                       SpectrumLoaderBase& loaderIntrinsic,
                       SpectrumLoaderBase& loaderDirt,
                       const HistAxis& axis,
+                      const SpillCut& spillcut,
                       const Cut& cut,
                       const SystShifts& shift = kNoShift,
                       const Var& wei = kUnweighted);
@@ -25,6 +26,7 @@ namespace ana
     PredictionIncDirt(Loaders& loaders,
                       SpectrumLoaderBase& loaderDirt,
                       const HistAxis& axis,
+                      const SpillCut& spillcut,
                       const Cut& cut,
                       const SystShifts& shift = kNoShift,
                       const Var& wei = kUnweighted);
