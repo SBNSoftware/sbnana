@@ -13,7 +13,7 @@ const std::string sbnd_wildcard = "workshop_SBNWorkshop0421_prodoverlay_corsika_
 void reduce_sbnd()
 {
   const SpillCut kNumuSpillSel = kNoSpillCut; // TODO
-  const Cut kNumuSel = kSlcIsRecoNu && kSlcNuScoreCut && kFiducialVolumeND && kSlcFlashMatchCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut;
+  const Cut kNumuSel = kSlcNuScoreCut && kInFV && kSlcFlashMatchTimeCut && kSlcFlashMatchScoreCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut;
 
   FileReducer reducer(sbnd_wildcard, "reduced_sbnd.root");
   reducer.AddSpillCut(kNumuSpillSel);
