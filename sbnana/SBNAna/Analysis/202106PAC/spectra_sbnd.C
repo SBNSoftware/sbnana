@@ -28,7 +28,7 @@ void spectra_sbnd()
   const Var kRecoE = kTrueE; // TODO
 
   const SpillCut kNumuSpillSel = kNoSpillCut; // TODO
-  const Cut kNumuSel = kSlcIsRecoNu && kSlcNuScoreCut && kFiducialVolumeND && kSlcFlashMatchCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut;
+  const Cut kNumuSel = kSlcNuScoreCut && kInFV && kSlcFlashMatchTimeCut && kSlcFlashMatchScoreCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut;
 
   const Cut kIsCosmic = SIMPLEVAR(truth.index) < 0;
 

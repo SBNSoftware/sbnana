@@ -19,6 +19,7 @@
 #include "sbnana/SBNAna/Cuts/NumuCutsSBND202106.h"
 #include "sbnana/SBNAna/Cuts/Cuts.h"
 
+#include "TGraph.h"
 #include "TPad.h"
 
 using namespace ana;
@@ -35,7 +36,7 @@ void contours_sbnd()
   const Var kRecoE = kTrueE; // TODO
 
   const SpillCut kNumuSpillSel = kNoSpillCut; // TODO
-  const Cut kNumuSel = kSlcIsRecoNu && kSlcNuScoreCut && kFiducialVolumeND && kSlcFlashMatchCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut;
+  const Cut kNumuSel = kSlcNuScoreCut && kInFV && kSlcFlashMatchTimeCut && kSlcFlashMatchScoreCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut;
 
   // TODO should make this an official function somewhere
   const vector<double> binEdges = {0.2, 0.3, 0.4, 0.45, 0.5,
@@ -68,4 +69,18 @@ void contours_sbnd()
   surf.DrawContour(crit5sig, kSolid, kBlack);
 
   gPad->Print("contour_sbnd.pdf");
+
+  TH2* crit3sig = Gaussian3Sigma1D1Sided(surf);
+  TH2* crit90pc = Gaussian90Percent1D1Sided(surf);
+  TH2* crit95pc = Gaussian95Percent1D1Sided(surf);
+  TH2* crit99pc = Gaussian99Percent1D1Sided(surf);
+
+  TFile fout("sbnd_numu_disapp_exclusion_pac2021.root", "RECREATE");
+  surf.GetGraphs(crit3sig)[0]->Write("nd_stat_3sig");
+  surf.GetGraphs(crit5sig)[0]->Write("nd_stat_5sig");
+  surf.GetGraphs(crit90pc)[0]->Write("nd_stat_90pct");
+  surf.GetGraphs(crit95pc)[0]->Write("nd_stat_95pct");
+  surf.GetGraphs(crit99pc)[0]->Write("nd_stat_99pct");
+
+  expt.SaveTo(fout.mkdir("nd_expt"));
 }
