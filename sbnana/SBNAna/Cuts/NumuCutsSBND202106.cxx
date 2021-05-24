@@ -14,6 +14,8 @@ namespace ana{
 
   const Cut kSlcFlashMatchTimeCut([](const caf::SRSliceProxy* slc)
                         {
+                          if(std::isnan(slc->fmatch.time)) return false;
+
                           bool InBeam = (slc->fmatch.time > 0. && slc->fmatch.time < 1.800);
                           return ( InBeam );
                         });
