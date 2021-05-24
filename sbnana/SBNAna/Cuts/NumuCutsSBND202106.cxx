@@ -44,11 +44,13 @@ namespace ana{
   const Cut kCRTHitDistanceCut([](const caf::SRSliceProxy* slc)
                         {
                           int ptrkid = kPrimaryMuonTrkIdx(slc);
-			  const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+			  const caf::SRCRTHitMatchProxy& crthit = slc->reco.trk[ptrkid].crthit;
+
+                          // No candidate CRT hit matches
+                          if(std::isnan(crthit.hit.time) || std::isnan(crthit.distance)) return true;
 
 			  //Beam time window used in SBNSoftware/sbncode/blob/develop/sbncode/NuMuSelection/jupyter-ana/selection.py
-                          bool InBeam = (ptrk.crthit.hit.time > 0. && ptrk.crthit.hit.time < 1.800);
-                          return ( isnan(ptrk.crthit.distance) || ptrk.crthit.distance > 5 || InBeam );
+                          return crthit.distance > 5 || (crthit.hit.time > 0. && crthit.hit.time < 1.800);
                         });
 
 }
