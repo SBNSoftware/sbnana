@@ -16,19 +16,19 @@ namespace ana{
 			   });
 
   const Cut kHasFlashMatch([](const caf::SRSliceProxy* slc)
-			{ 
-			  return ( slc->fmatch.present );
-			});
+                        {
+                          return ( slc->fmatch.present );
+                        });
 
   const Cut kFlashMatchScore([](const caf::SRSliceProxy* slc)
-			{ 
-			  return ( slc->fmatch.time > 0 && 
-				   slc->fmatch.score > 6   );
-			});
+                        {
+                          return ( slc->fmatch.time > 0. &&
+                                   slc->fmatch.scoreTotal > 6. );
+                        });
 
   const Cut kFlashMatchNumuCut = kHasFlashMatch  && kFlashMatchScore;
 
-  
+
   const Cut kNumuTrkLen([](const caf::SRSliceProxy* slc)
 			{ // TO DO: Prim pandora trk len primary_track.length > fConfig.TrackLength
 			  bool hastrk = ( slc->reco.ntrk > 0 );

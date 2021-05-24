@@ -90,10 +90,11 @@ namespace ana{
        {
          return slc->fmatch.present;
        });
-  
+
   const Cut kSlcFlashMatchCut([](const caf::SRSliceProxy *slc)
        {
-         return (kSlcHasFlashMatch(slc) && slc->fmatch.score>0 && slc->fmatch.score<6);
+         return (kSlcHasFlashMatch(slc) &&
+                 slc->fmatch.scoreTotal>0. && slc->fmatch.scoreTotal<6.);
        });
 
 } // namespace

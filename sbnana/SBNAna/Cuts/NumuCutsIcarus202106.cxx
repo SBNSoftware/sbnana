@@ -48,7 +48,7 @@ namespace ana
     });
 
   const Cut kFMScore([](const caf::SRSliceProxy* slc) {
-      return ( !isnan(slc->fmatch.score) && slc->fmatch.score < 7.0 );
+      return ( !isnan(slc->fmatch.scoreTotal) && slc->fmatch.scoreTotal < 7.0 );
     });
 
   const Cut kPTrack([](const caf::SRSliceProxy* slc) {

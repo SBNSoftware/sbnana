@@ -110,7 +110,7 @@ namespace ana
 
   const Var kSlcFlashScore([](const caf::SRSliceProxy *slc) -> double
        {
-         return ((bool)kSlcHasFlash(slc) ? (float)slc->fmatch.score : -5.f);
+         return ((bool)kSlcHasFlash(slc) ? (float)slc->fmatch.scoreTotal : -5.f);
        });
 
   const Var kSlcIsRecoNu([](const caf::SRSliceProxy *slc) -> double
