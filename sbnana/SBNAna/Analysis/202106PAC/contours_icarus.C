@@ -18,6 +18,7 @@
 
 #include "sbnana/SBNAna/Cuts/NumuCutsIcarus202106.h"
 
+#include "TGraph.h"
 #include "TPad.h"
 
 using namespace ana;
@@ -27,9 +28,11 @@ using namespace ana;
 // but that is only available from SAM to icarus users, for now.
 //const std::string icarus_wildcard = "/pnfs/icarus/persistent/users/icaruspro/SBNworkshopApril2021/CAF/corsika_nue_BNB/*/*/*.root";
 
-// That dataset takes absolutely forever, because it isn't flattened. Use this
-// file for now.
-const std::string icarus_wildcard = "/icarus/data/users/mueller/NuMuSelection/v09_17_00/nucosmics/icarus_nucosmics.flat.root";
+// That dataset takes absolutely forever because it's not flattened
+
+// Fully reduced flatcafs. By far the fastest, but NB the full selection is
+// baked into them, so can only tighten, not loosen, any cuts below
+const std::string icarus_wildcard = "/pnfs/sbn/persistent/analysis/CAF/202106PAC/workshop_SBNWorkshop0421_prodoverlay_corsika_cosmics_cosmics_proton_genie_nu_spill_gsimple-config_caf_icarus/combined_reduced_flatcafs/*.flat.caf.root";
 
 void contours_icarus()
 {
@@ -64,8 +67,8 @@ void contours_icarus()
 
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
 
-  const FitAxis kAxTh(&kFitSinSq2ThetaMuMu, 30, 1e-3, 1, true);
-  const FitAxis kAxDmSq(&kFitDmSqSterile, 30, 1e-2, 1e2, true);
+  const FitAxis kAxTh(&kFitSinSq2ThetaMuMu, 60, 1e-3, 1, true);
+  const FitAxis kAxDmSq(&kFitDmSqSterile, 60, 1e-2, 1e2, true);
   
   SingleSampleExperiment expt(&pred, fake);
 
@@ -75,4 +78,18 @@ void contours_icarus()
   surf.DrawContour(crit5sig, kSolid, kBlack);
 
   gPad->Print("contour_icarus.pdf");
+
+  TH2* crit3sig = Gaussian3Sigma1D1Sided(surf);
+  TH2* crit90pc = Gaussian90Percent1D1Sided(surf);
+  TH2* crit95pc = Gaussian95Percent1D1Sided(surf);
+  TH2* crit99pc = Gaussian99Percent1D1Sided(surf);
+
+  TFile fout("icarus_numu_disapp_exclusion_pac2021.root", "RECREATE");
+  surf.GetGraphs(crit3sig)[0]->Write("fd_stat_3sig");
+  surf.GetGraphs(crit5sig)[0]->Write("fd_stat_5sig");
+  surf.GetGraphs(crit90pc)[0]->Write("fd_stat_90pct");
+  surf.GetGraphs(crit95pc)[0]->Write("fd_stat_95pct");
+  surf.GetGraphs(crit99pc)[0]->Write("fd_stat_99pct");
+
+  expt.SaveTo(fout.mkdir("fd_expt"));
 }
