@@ -35,14 +35,6 @@ void spectra_sbnd()
   // This looks much better than the official fit binning 
   const Binning binsEnergy = Binning::Simple(30, 0, 3);
 
-  // TODO should make this an official function somewhere
-  /*
-  const vector<double> binEdges = {0.2, 0.3, 0.4, 0.45, 0.5,
-                                   0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0,
-                                   1.25, 1.5, 2.0, 2.5, 3.0};
-  const Binning binsEnergy = Binning::Custom(binEdges);
-  */
-
   const HistAxis axEnergy(/*Reconstructed*/"True energy (GeV)", binsEnergy, kRecoE);
 
   Spectrum sTot(loader, axEnergy, kNumuSpillSel, kNumuSel);

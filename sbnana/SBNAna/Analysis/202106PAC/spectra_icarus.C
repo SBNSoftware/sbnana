@@ -21,9 +21,12 @@ using namespace ana;
 // but that is only available from SAM to icarus users, for now.
 //const std::string icarus_wildcard = "/pnfs/icarus/persistent/users/icaruspro/SBNworkshopApril2021/CAF/corsika_nue_BNB/*/*/*.root";
 
-// That dataset takes absolutely forever, because it isn't flattened. Use this
-// file for now.
-const std::string icarus_wildcard = "/icarus/data/users/mueller/NuMuSelection/v09_17_00/nucosmics/icarus_nucosmics.flat.root";
+// That dataset takes absolutely forever because it isn't flattened.
+
+// Fully reduced flatcafs. By far the fastest, but NB the full selection is
+// baked into them, so can only tighten, not loosen, any cuts below
+const std::string icarus_wildcard = "/pnfs/sbn/persistent/analysis/CAF/202106PAC/workshop_SBNWorkshop0421_prodoverlay_corsika_cosmics_cosmics_proton_genie_nu_spill_gsimple-config_caf_icarus/combined_reduced_flatcafs/*.flat.caf.root";
+
 
 void spectra_icarus()
 {
@@ -41,14 +44,6 @@ void spectra_icarus()
 
   // This looks much better than the official fit binning 
   const Binning binsEnergy = Binning::Simple(30, 0, 3);
-
-  // TODO should make this an official function somewhere
-  /*
-  const vector<double> binEdges = {0.2, 0.3, 0.4, 0.45, 0.5,
-                                   0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0,
-                                   1.25, 1.5, 2.0, 2.5, 3.0};
-  const Binning binsEnergy = Binning::Custom(binEdges);
-  */
 
   const HistAxis axEnergy(/*Reconstructed*/"True energy (GeV)", binsEnergy, kRecoE);
 
