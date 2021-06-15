@@ -92,7 +92,7 @@ void make_state_syst(const std::string anatype = numuStr)
   const Binning binsEnergy = Binning::Custom(binEdges);
   const HistAxis axEnergy("Reconstructed energy (GeV)", binsEnergy, kRecoE);
 
-  NoExtrapGenerator nom_gen(axEnergy, kOneTrue, kWeight);
+  NoExtrapPredictionGenerator nom_gen(axEnergy, kOneTrue, kWeight);
 
   std::vector<const ISyst*> systs = GetSBNWeightSysts();
   for(const ISyst* s: GetSBNFluxHadronSysts(30)) systs.push_back(s);

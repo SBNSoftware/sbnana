@@ -14,13 +14,14 @@ namespace ana
                                        SpectrumLoaderBase& loaderIntrinsic,
                                        SpectrumLoaderBase& loaderDirt,
                                        const HistAxis& axis,
+                                       const SpillCut& spillcut,
                                        const Cut& cut,
                                        const SystShifts& shift,
                                        const Var& wei)
     : fDet(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-           axis, cut, shift, wei),
+           axis, spillcut, cut, shift, wei),
       fDirt(loaderDirt, kNullLoader, kNullLoader, kNullLoader,
-            axis, cut, shift, wei)
+            axis, spillcut, cut, shift, wei)
   {
   }
 
@@ -28,12 +29,13 @@ namespace ana
   PredictionIncDirt::PredictionIncDirt(Loaders& loaders,
                                        SpectrumLoaderBase& loaderDirt,
                                        const HistAxis& axis,
+                                       const SpillCut& spillcut,
                                        const Cut& cut,
                                        const SystShifts& shift,
                                        const Var& wei)
-    : fDet(loaders, axis, cut, shift, wei),
+    : fDet(loaders, axis, spillcut, cut, shift, wei),
       fDirt(loaderDirt, kNullLoader, kNullLoader, kNullLoader,
-            axis, cut, shift, wei)
+            axis, spillcut, cut, shift, wei)
   {
   }
 

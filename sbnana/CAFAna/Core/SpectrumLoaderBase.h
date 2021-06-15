@@ -74,6 +74,14 @@ namespace ana
                                          const SystShifts& shift,
                                          const Var& wei);
 
+    /// For use by the constructors of \ref ReweightableSpectrum subclasses
+    virtual void AddReweightableSpectrum(ReweightableSpectrum& spect,
+                                         const Var& var,
+                                         const SpillCut& spillcut,
+                                         const SliceCut& slicecut,
+                                         const SystShifts& shift,
+                                         const Var& wei);
+
     /// Load all the registered spectra
     virtual void Go() = 0;
 
@@ -227,6 +235,11 @@ namespace ana
                      const SpillCut& cut,
                      const SpillVar& wei = kSpillUnweighted) override {}
 
+    void AddReweightableSpectrum(ReweightableSpectrum& spect,
+                                 const Var& var,
+                                 const Cut& cut,
+                                 const SystShifts& shift,
+                                 const Var& wei) override {}
 
     void AddReweightableSpectrum(ReweightableSpectrum& spect,
                                  const Var& xvar,

@@ -2,12 +2,8 @@
 
 #include <memory>
 
-#include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnana/CAFAna/Core/HistAxis.h"
-#include "sbnana/CAFAna/Core/Var.h"
-//#include "sbnana/CAFAna/Vars/GenieWeights.h"
 #include "sbnana/CAFAna/Core/SystShifts.h"
-#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
 
 namespace ana
 {
@@ -28,24 +24,4 @@ namespace ana
 
   };
 
-  //---------------------------------------------------------------------------
-
-  /// Generates FD-only predictions (no extrapolation)
-  class NoExtrapGenerator: public IPredictionGenerator
-  {
-    public:
-    NoExtrapGenerator(
-      const HistAxis axis,
-      const Cut cut,
-      const Var wei = kUnweighted );
-
-    std::unique_ptr<IPrediction> Generate(
-    					  Loaders& loaders,
-					  const SystShifts& shiftMC = kNoShift ) const override;
-
-    private:
-    const HistAxis fAxis;
-    const Cut fCut;
-    const Var fWei;
-  };
 }

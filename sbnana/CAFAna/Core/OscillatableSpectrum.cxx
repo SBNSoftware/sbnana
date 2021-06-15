@@ -22,7 +22,7 @@ namespace ana
   // Duplicate here because we can't include Vars.h
   const Var kTrueE([](const caf::SRSliceProxy* slc) -> double {return slc->truth.E;});
 
-  const Var kBaseline([](const caf::SRSliceProxy* slc) -> double {return slc->truth.baseline;});
+  const Var kBaseline([](const caf::SRSliceProxy* slc) -> double {return slc->truth.baseline * 1e-3;}); // m -> km
 
   const Var kTrueLOverE = kBaseline / kTrueE;
 
@@ -53,7 +53,7 @@ namespace ana
                                              const SystShifts& shift,
                                              const Var& wei)
     : ReweightableSpectrum(loader, axis,
-                           HistAxis("True L / E (km / GeV)", kTrueLOverEBins, kTrueLOverE),
+                           HistAxis("True baseline / True energy (km / GeV)", kTrueLOverEBins, kTrueLOverE),
                            kHasNu && cut, shift, wei)
   {
   }

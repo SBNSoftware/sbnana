@@ -15,30 +15,31 @@ namespace ana
                                SpectrumLoaderBase& loaderNuTau,
                                SpectrumLoaderBase& loaderIntrinsic,
                                const HistAxis& axis,
+                               const SpillCut& spillcut,
                                const Cut& cut,
                                const SystShifts& shift,
                                const Var& wei)
     :
-    fNueApp       (loaderNue,     axis, cut && kIsNueApp    && !kIsAntiNu, shift, wei),
-    fNueAppAnti   (loaderNue,     axis, cut && kIsNueApp    &&  kIsAntiNu, shift, wei),
+    fNueApp       (loaderNue,     axis, spillcut, cut && kIsNueApp    && !kIsAntiNu, shift, wei),
+    fNueAppAnti   (loaderNue,     axis, spillcut, cut && kIsNueApp    &&  kIsAntiNu, shift, wei),
 
-    fNumuSurv     (loaderNonswap, axis, cut && kIsNumuCC    && !kIsAntiNu, shift, wei),
-    fNumuSurvAnti (loaderNonswap, axis, cut && kIsNumuCC    &&  kIsAntiNu, shift, wei),
+    fNumuSurv     (loaderNonswap, axis, spillcut, cut && kIsNumuCC    && !kIsAntiNu, shift, wei),
+    fNumuSurvAnti (loaderNonswap, axis, spillcut, cut && kIsNumuCC    &&  kIsAntiNu, shift, wei),
 
-    fNumuApp      (loaderNuTau,   axis, cut && kIsNumuApp   && !kIsAntiNu, shift, wei),
-    fNumuAppAnti  (loaderNuTau,   axis, cut && kIsNumuApp   &&  kIsAntiNu, shift, wei),
+    fNumuApp      (loaderNuTau,   axis, spillcut, cut && kIsNumuApp   && !kIsAntiNu, shift, wei),
+    fNumuAppAnti  (loaderNuTau,   axis, spillcut, cut && kIsNumuApp   &&  kIsAntiNu, shift, wei),
 
-    fNueSurv      (loaderIntrinsic, axis, cut && kIsBeamNue   && !kIsAntiNu, shift, wei),
-    fNueSurvAnti  (loaderIntrinsic, axis, cut && kIsBeamNue   &&  kIsAntiNu, shift, wei),
+    fNueSurv      (loaderIntrinsic, axis, spillcut, cut && kIsBeamNue   && !kIsAntiNu, shift, wei),
+    fNueSurvAnti  (loaderIntrinsic, axis, spillcut, cut && kIsBeamNue   &&  kIsAntiNu, shift, wei),
 
-    fTauFromE     (loaderNue,     axis, cut && kIsTauFromE  && !kIsAntiNu, shift, wei),
-    fTauFromEAnti (loaderNue,     axis, cut && kIsTauFromE  &&  kIsAntiNu, shift, wei),
+    fTauFromE     (loaderNue,     axis, spillcut, cut && kIsTauFromE  && !kIsAntiNu, shift, wei),
+    fTauFromEAnti (loaderNue,     axis, spillcut, cut && kIsTauFromE  &&  kIsAntiNu, shift, wei),
 
-    fTauFromMu    (loaderNuTau,   axis, cut && kIsTauFromMu && !kIsAntiNu, shift, wei),
-    fTauFromMuAnti(loaderNuTau,   axis, cut && kIsTauFromMu &&  kIsAntiNu, shift, wei),
+    fTauFromMu    (loaderNuTau,   axis, spillcut, cut && kIsTauFromMu && !kIsAntiNu, shift, wei),
+    fTauFromMuAnti(loaderNuTau,   axis, spillcut, cut && kIsTauFromMu &&  kIsAntiNu, shift, wei),
 
-    fNCFromNumu   (loaderNonswap, axis, cut && kIsNCFromNumu,     shift, wei),
-    fNCFromNue    (loaderNonswap, axis, cut && kIsNCFromNue,      shift, wei)
+    fNCFromNumu   (loaderNonswap, axis, spillcut, cut && kIsNCFromNumu,     shift, wei),
+    fNCFromNue    (loaderNonswap, axis, spillcut, cut && kIsNCFromNue,      shift, wei)
   {
     // All swapped files are equally valid as a source of NCs. This
     // approximately doubles/triples our statistics. SpectrumLoader just adds
@@ -53,7 +54,6 @@ namespace ana
     //Also load in intrinsic nues from nonswap file
     loaderNonswap.AddReweightableSpectrum(fNueSurv, axis.GetVar1D(), kTrueLOverE, cut && kIsBeamNue && !kIsAntiNu, shift, wei);
     loaderNonswap.AddReweightableSpectrum(fNueSurvAnti, axis.GetVar1D(), kTrueLOverE, cut && kIsBeamNue && kIsAntiNu, shift, wei);
-
   }
 
 
@@ -65,13 +65,14 @@ namespace ana
                                std::string label,
                                const Binning& bins,
                                const Var& var,
+                               const SpillCut& spillcut,
                                const Cut& cut,
                                const SystShifts& shift,
                                const Var& wei)
     :
     TrivialExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
                   HistAxis(label, bins, var),
-                  cut, shift, wei)
+                  spillcut, cut, shift, wei)
   {
   }
 
@@ -80,16 +81,18 @@ namespace ana
                                std::string label,
                                const Binning& bins,
                                const Var& var,
+                               const SpillCut& spillcut,
                                const Cut& cut,
                                const SystShifts& shift,
                                const Var& wei)
-    : TrivialExtrap(loaders, HistAxis(label, bins, var), cut, shift, wei)
+    : TrivialExtrap(loaders, HistAxis(label, bins, var), spillcut, cut, shift, wei)
   {
   }
 
   //----------------------------------------------------------------------
   TrivialExtrap::TrivialExtrap(Loaders& loaders,
                                const HistAxis& axis,
+                               const SpillCut& spillcut,
                                const Cut& cut,
                                const SystShifts& shift,
                                const Var& wei)

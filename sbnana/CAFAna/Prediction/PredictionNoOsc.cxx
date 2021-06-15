@@ -19,25 +19,27 @@ namespace ana
                                    const std::string& label,
                                    const Binning& bins,
                                    const Var& var,
+                                   const SpillCut& spillcut,
                                    const Cut& cut,
                                    const SystShifts& shift,
                                    const Var& wei)
-    : PredictionNoOsc(loader, HistAxis(label, bins, var), cut, shift, wei)
+    : PredictionNoOsc(loader, HistAxis(label, bins, var), spillcut, cut, shift, wei)
   {
   }
 
   //----------------------------------------------------------------------
   PredictionNoOsc::PredictionNoOsc(SpectrumLoaderBase& loader,
                                    const HistAxis& axis,
+                                   const SpillCut& spillcut,
                                    const Cut& cut,
                                    const SystShifts& shift,
                                    const Var& wei)
-    : fSpectrum(       loader, axis, cut,                                        shift, wei),
-      fSpectrumNC(     loader, axis, cut &&  kIsNC,                              shift, wei),
-      fSpectrumNumu(   loader, axis, cut && !kIsNC && kIsNumuCC &&  !kIsAntiNu,  shift, wei),
-      fSpectrumNumubar(loader, axis, cut && !kIsNC && kIsNumuCC &&   kIsAntiNu,  shift, wei),
-      fSpectrumNue(    loader, axis, cut && !kIsNC && kIsBeamNue && !kIsAntiNu,  shift, wei),
-      fSpectrumNuebar( loader, axis, cut && !kIsNC && kIsBeamNue &&  kIsAntiNu,  shift, wei)
+    : fSpectrum(       loader, axis, spillcut, cut,                                        shift, wei),
+      fSpectrumNC(     loader, axis, spillcut, cut &&  kIsNC,                              shift, wei),
+      fSpectrumNumu(   loader, axis, spillcut, cut && !kIsNC && kIsNumuCC &&  !kIsAntiNu,  shift, wei),
+      fSpectrumNumubar(loader, axis, spillcut, cut && !kIsNC && kIsNumuCC &&   kIsAntiNu,  shift, wei),
+      fSpectrumNue(    loader, axis, spillcut, cut && !kIsNC && kIsBeamNue && !kIsAntiNu,  shift, wei),
+      fSpectrumNuebar( loader, axis, spillcut, cut && !kIsNC && kIsBeamNue &&  kIsAntiNu,  shift, wei)
   {
   }
 

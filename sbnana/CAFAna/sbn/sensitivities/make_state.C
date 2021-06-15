@@ -14,6 +14,8 @@
 #include "TFile.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+
 #include "toysysts.h"
 
 // Random numbers
@@ -34,7 +36,7 @@ public:
   {
   }
 
-  double operator()(const caf::SRProxy* sr)
+  double operator()(const caf::SRSliceProxy* sr)
   {
     static std::vector<double> ws;
 
@@ -150,23 +152,23 @@ void make_state(const std::string anatype = numuStr)
   // Calculator (just use no oscillations)
   osc::NoOscillations* calc = new osc::NoOscillations;
 
-  const Var kRecoE([](const caf::SRProxy* sr)
+  const Var kRecoE([](const caf::SRSliceProxy* sr)
                    {
                      // std::cout << "ENERGY" << std::endl;
                      return sr->reco.reco_energy;
                    });
 
-  const Var kTrueE([](const caf::SRProxy* sr)
+  const Var kTrueE([](const caf::SRSliceProxy* sr)
                         {
 			  return sr->truth[0].neutrino.energy;
 			});
 
-  const Var kWeight([](const caf::SRProxy* sr)
+  const Var kWeight([](const caf::SRSliceProxy* sr)
 		    {
 		      return sr->reco.weight;
 		    });
 
-  const Var kWeighthack([](const caf::SRProxy* sr)
+  const Var kWeighthack([](const caf::SRSliceProxy* sr)
                         {
 			  std::cout << sr->truth[0].neutrino.iscc << " " << sr->truth[0].neutrino.pdg << " " << sr->reco.weight << std::endl; 
 			  if (sr->truth[0].neutrino.iscc && sr->truth[0].neutrino.pdg == 12) return 0.8;
@@ -175,7 +177,7 @@ void make_state(const std::string anatype = numuStr)
 			  return 1.0;
 			});
 
-  const Cut kOneTrue([](const caf::SRProxy* sr)
+  const Cut kOneTrue([](const caf::SRSliceProxy* sr)
 		     {
 		       return (sr->truth.size() == 1);
 		     });
@@ -191,16 +193,16 @@ void make_state(const std::string anatype = numuStr)
   std::cout << "\n" << std::endl;
   std::vector<const ISyst*> noSysts{};
 
-  std::vector<NoExtrapGenerator*> gens(systWs.size());
+  std::vector<NoExtrapPredictionGenerator*> gens(systWs.size());
 
   for(unsigned int i = 0; i < systWs.size(); ++i){
     //Use true energy, no weights until we get new nue files
-    gens[i] = new NoExtrapGenerator(anatype == numuStr ? axEnergy : axEnergy,
-                                    kOneTrue,
-                                    *systWs[i]*kWeight);
+    gens[i] = new NoExtrapPredictionGenerator(anatype == numuStr ? axEnergy : axEnergy,
+                                              kOneTrue,
+                                              *systWs[i]*kWeight);
   }
 
-  NoExtrapGenerator nom_gen(axEnergy, kOneTrue, kWeight);
+  NoExtrapPredictionGenerator nom_gen(axEnergy, kOneTrue, kWeight);
 
   if (anatype == numuStr) {
     std::cout << "Using reco energy" << std::endl;
