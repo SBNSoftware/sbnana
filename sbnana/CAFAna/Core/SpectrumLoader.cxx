@@ -190,6 +190,8 @@ namespace ana
   //----------------------------------------------------------------------
   void SpectrumLoader::HandleRecord(caf::SRSpillProxy* sr)
   {
+    if(sr->hdr.first_in_subrun) fPOT += sr->hdr.pot;
+
     // Do the spill-level spectra first. Keep this very simple because we
     // intend to change it.
     for(auto& spillcutdef: fSpillHistDefs){
@@ -321,6 +323,11 @@ namespace ana
     // printout remains relevant...
 
     std::cout << fPOT << " POT" << std::endl;
+
+    if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.001){
+      std::cout << "Differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
+      abort();
+    }
   }
 
   //----------------------------------------------------------------------

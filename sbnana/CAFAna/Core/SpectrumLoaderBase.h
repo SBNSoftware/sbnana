@@ -131,7 +131,8 @@ namespace ana
 
     bool fGone; ///< Has Go() been called? Can't add more histograms after that
 
-    double fPOT; ///< Accumulated by calls to \ref GetNextFile
+    double fPOT;
+    double fPOTFromHist; ///< Accumulated by calls to \ref GetNextFile
 
     /// \brief Helper class for \ref SpectrumLoaderBase
     ///
