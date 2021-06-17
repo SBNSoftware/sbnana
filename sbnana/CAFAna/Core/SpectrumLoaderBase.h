@@ -133,7 +133,7 @@ namespace ana
 
     double fPOT;
     double fPOTFromHist; ///< Accumulated by calls to \ref GetNextFile
-    double fLivetime; ///< In fact, a number of spills
+    int fNGenEvt;
 
     /// \brief Helper class for \ref SpectrumLoaderBase
     ///

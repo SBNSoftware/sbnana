@@ -120,7 +120,7 @@ namespace ana
 
   //----------------------------------------------------------------------
   SpectrumLoaderBase::SpectrumLoaderBase(DataSource src)
-    : fSource(src), fGone(false), fPOT(0), fPOTFromHist(0), fLivetime(0)
+    : fSource(src), fGone(false), fPOT(0), fPOTFromHist(0), fNGenEvt(0)
   {
   }
 

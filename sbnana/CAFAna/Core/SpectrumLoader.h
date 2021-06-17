@@ -50,8 +50,8 @@ namespace ana
     /// Save results of AccumulateExposures into the individual spectra
     virtual void StoreExposures();
 
-    /// Prints POT/livetime info for all spectra
-    virtual void ReportExposures();
+    /// Returns effective number of spills, and optionally prints out reasoning
+    virtual double ComputeExposure(bool report);
 
     /// All unique cuts contained in fHistDefs
     //    std::vector<Cut> fAllCuts;

@@ -106,14 +106,12 @@ namespace ana
       if(Nfiles > 1 && prog) prog->SetProgress((fileIdx+1.)/Nfiles);
     } // end for fileIdx
 
-    StoreExposures();
-
     if(prog){
       prog->Done();
       delete prog;
     }
 
-    ReportExposures();
+    StoreExposures(); // also triggers the POT printout
 
     fHistDefs.RemoveLoader(this);
     fHistDefs.Clear();
@@ -196,7 +194,10 @@ namespace ana
   {
     if(sr->hdr.first_in_subrun){
       fPOT += sr->hdr.pot;
-      fLivetime += sr->hdr.pot / kHardcodedIntensityAssumption;
+      // TODO think about if this should be gated behind first_in_file. At the
+      // moment I think these will be synonymous. And despite the comment on
+      // hdr.pot, I think it may be file-based in practice too.
+      fNGenEvt += sr->hdr.ngenevt;
     }
 
     // Do the spill-level spectra first. Keep this very simple because we
@@ -321,22 +322,30 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void SpectrumLoader::ReportExposures()
+  double SpectrumLoader::ComputeExposure(bool report)
   {
-    // The POT member variables we use here were filled as part of
-    // SpectrumLoaderBase::GetNextFile() as we looped through the input files.
-
     // Let's just assume no-one is using the Cut::POT() function yet, so this
     // printout remains relevant...
 
-    std::cout << fPOT << " POT" << std::endl;
-
     if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.001){
-      std::cout << "Differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
+      std::cout << fPOT << " POT from hdr differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
       abort();
     }
 
-    std::cout << "Corresponding to " << fLivetime << " spills, computed using a hardcoded intensity of " << kHardcodedIntensityAssumption << " POT/spill" << std::endl;
+    if(fPOT == 0){
+      if(report){
+        std::cout << "This appears to be a cosmics-only dataset" << std::endl;
+        std::cout << "Total number of spills " << fNGenEvt << " from hdr.ngenevt" << std::endl;
+      }
+      return fNGenEvt;
+    }
+
+    if(report) std::cout << fPOT << " POT" << std::endl;
+
+    const double ret = fPOT/kHardcodedIntensityAssumption;
+    if(report) std::cout << "Corresponding to " << ret << " spills, computed using a hardcoded intensity of " << kHardcodedIntensityAssumption << " POT/spill" << std::endl;
+
+    return ret;
   }
 
   //----------------------------------------------------------------------
@@ -347,6 +356,8 @@ namespace ana
   //----------------------------------------------------------------------
   void SpectrumLoader::StoreExposures()
   {
+    const double livetime = ComputeExposure(true);
+
     for(auto& shiftdef: fHistDefs){
       for(auto& spillcutdef: shiftdef.second){
         for(auto& cutdef: spillcutdef.second){
@@ -354,11 +365,11 @@ namespace ana
             for(auto& vardef: weidef.second){
               for(Spectrum* s: vardef.second.spects){
                 s->fPOT += fPOT;
-                s->fLivetime += fLivetime;
+                s->fLivetime += livetime;
               }
               for(ReweightableSpectrum* rw: vardef.second.rwSpects){
                 rw->fPOT += fPOT;
-                rw->fLivetime += fLivetime;
+                rw->fLivetime += livetime;
               }
             }
           }
@@ -372,7 +383,7 @@ namespace ana
         for(auto spillvardef: spillweidef.second){
           for(Spectrum* s: spillvardef.second.spects){
             s->fPOT += fPOT;
-            s->fLivetime += fLivetime;
+            s->fLivetime += livetime;
           }
         }
       }
