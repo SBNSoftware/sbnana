@@ -21,6 +21,10 @@
 
 namespace ana
 {
+  // TODO this needs to be handled in a more sophisticated way for real data,
+  // and potentially for future Monte Carlo.
+  const double kHardcodedIntensityAssumption = 5e12;
+
   //----------------------------------------------------------------------
   SpectrumLoader::SpectrumLoader(const std::string& wildcard, DataSource src, int max)
     : SpectrumLoaderBase(wildcard, src), max_entries(max)
@@ -190,7 +194,10 @@ namespace ana
   //----------------------------------------------------------------------
   void SpectrumLoader::HandleRecord(caf::SRSpillProxy* sr)
   {
-    if(sr->hdr.first_in_subrun) fPOT += sr->hdr.pot;
+    if(sr->hdr.first_in_subrun){
+      fPOT += sr->hdr.pot;
+      fLivetime += sr->hdr.pot / kHardcodedIntensityAssumption;
+    }
 
     // Do the spill-level spectra first. Keep this very simple because we
     // intend to change it.
@@ -328,6 +335,8 @@ namespace ana
       std::cout << "Differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
       abort();
     }
+
+    std::cout << "Corresponding to " << fLivetime << " spills, computed using a hardcoded intensity of " << kHardcodedIntensityAssumption << " POT/spill" << std::endl;
   }
 
   //----------------------------------------------------------------------
@@ -343,8 +352,14 @@ namespace ana
         for(auto& cutdef: spillcutdef.second){
           for(auto& weidef: cutdef.second){
             for(auto& vardef: weidef.second){
-              for(Spectrum* s: vardef.second.spects) s->fPOT += fPOT;
-              for(ReweightableSpectrum* rw: vardef.second.rwSpects) rw->fPOT += fPOT;
+              for(Spectrum* s: vardef.second.spects){
+                s->fPOT += fPOT;
+                s->fLivetime += fLivetime;
+              }
+              for(ReweightableSpectrum* rw: vardef.second.rwSpects){
+                rw->fPOT += fPOT;
+                rw->fLivetime += fLivetime;
+              }
             }
           }
         }
@@ -355,7 +370,10 @@ namespace ana
     for(auto& spillcutdef: fSpillHistDefs){
       for(auto& spillweidef: spillcutdef.second){
         for(auto spillvardef: spillweidef.second){
-          for(Spectrum* s: spillvardef.second.spects) s->fPOT += fPOT;
+          for(Spectrum* s: spillvardef.second.spects){
+            s->fPOT += fPOT;
+            s->fLivetime += fLivetime;
+          }
         }
       }
     }
