@@ -17,14 +17,9 @@
 #include "TFile.h"
 #include "TH2.h"
 #include "TTree.h"
-#include "TTreeFormula.h"
 
 namespace ana
 {
-  // TODO this needs to be handled in a more sophisticated way for real data,
-  // and potentially for future Monte Carlo.
-  const double kHardcodedIntensityAssumption = 5e12;
-
   //----------------------------------------------------------------------
   SpectrumLoader::SpectrumLoader(const std::string& wildcard, DataSource src, int max)
     : SpectrumLoaderBase(wildcard, src), max_entries(max)
@@ -322,41 +317,14 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  double SpectrumLoader::ComputeExposure(bool report)
+  void SpectrumLoader::StoreExposures()
   {
-    // Let's just assume no-one is using the Cut::POT() function yet, so this
-    // printout remains relevant...
-
     if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.001){
       std::cout << fPOT << " POT from hdr differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
       abort();
     }
 
-    if(fPOT == 0){
-      if(report){
-        std::cout << "This appears to be a cosmics-only dataset" << std::endl;
-        std::cout << "Total number of spills " << fNGenEvt << " from hdr.ngenevt" << std::endl;
-      }
-      return fNGenEvt;
-    }
-
-    if(report) std::cout << fPOT << " POT" << std::endl;
-
-    const double ret = fPOT/kHardcodedIntensityAssumption;
-    if(report) std::cout << "Corresponding to " << ret << " spills, computed using a hardcoded intensity of " << kHardcodedIntensityAssumption << " POT/spill" << std::endl;
-
-    return ret;
-  }
-
-  //----------------------------------------------------------------------
-  void SpectrumLoader::AccumulateExposures(const caf::SRSpill* spill)
-  {
-  }
-
-  //----------------------------------------------------------------------
-  void SpectrumLoader::StoreExposures()
-  {
-    const double livetime = ComputeExposure(true);
+    std::cout << fPOT << " POT over " << fNGenEvt << " readouts" << std::endl;
 
     for(auto& shiftdef: fHistDefs){
       for(auto& spillcutdef: shiftdef.second){
@@ -365,11 +333,11 @@ namespace ana
             for(auto& vardef: weidef.second){
               for(Spectrum* s: vardef.second.spects){
                 s->fPOT += fPOT;
-                s->fLivetime += livetime;
+                s->fLivetime += fNGenEvt;
               }
               for(ReweightableSpectrum* rw: vardef.second.rwSpects){
                 rw->fPOT += fPOT;
-                rw->fLivetime += livetime;
+                rw->fLivetime += fNGenEvt;
               }
             }
           }
@@ -383,7 +351,7 @@ namespace ana
         for(auto spillvardef: spillweidef.second){
           for(Spectrum* s: spillvardef.second.spects){
             s->fPOT += fPOT;
-            s->fLivetime += livetime;
+            s->fLivetime += fNGenEvt;
           }
         }
       }

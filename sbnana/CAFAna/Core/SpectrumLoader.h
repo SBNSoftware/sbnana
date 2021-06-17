@@ -41,17 +41,12 @@ namespace ana
     SpectrumLoader(const SpectrumLoader&) = delete;
     SpectrumLoader& operator=(const SpectrumLoader&) = delete;
 
-    void AccumulateExposures(const caf::SRSpill* spill) override;
-
     virtual void HandleFile(TFile* f, Progress* prog = 0);
 
     virtual void HandleRecord(caf::SRSpillProxy* sr);
 
-    /// Save results of AccumulateExposures into the individual spectra
+    /// Save accumulated exposures into the individual spectra
     virtual void StoreExposures();
-
-    /// Returns effective number of spills, and optionally prints out reasoning
-    virtual double ComputeExposure(bool report);
 
     /// All unique cuts contained in fHistDefs
     //    std::vector<Cut> fAllCuts;
