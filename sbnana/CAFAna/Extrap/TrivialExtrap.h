@@ -2,6 +2,8 @@
 
 #include "sbnana/CAFAna/Extrap/IExtrap.h"
 
+#include "sbnana/CAFAna/Core/Weight.h"
+
 namespace ana
 {
   class Loaders;
@@ -15,10 +17,34 @@ namespace ana
                   SpectrumLoaderBase& loaderNuTau,
                   SpectrumLoaderBase& loaderIntrinsic,
                   const HistAxis& axis,
+                  const Cut& cut,
+                  const SystShifts& shift,
+                  const Weight& wei);
+
+    TrivialExtrap(SpectrumLoaderBase& loaderNonswap,
+                  SpectrumLoaderBase& loaderNue,
+                  SpectrumLoaderBase& loaderNuTau,
+                  SpectrumLoaderBase& loaderIntrinsic,
+                  const HistAxis& axis,
                   const SpillCut& spillcut,
                   const Cut& cut,
                   const SystShifts& shift,
-                  const Var& wei);
+                  const Weight& wei)
+      : TrivialExtrap()
+    {
+      abort(); // TODO TODO TODO
+    }
+
+    TrivialExtrap(SpectrumLoaderBase& loaderNonswap,
+                  SpectrumLoaderBase& loaderNue,
+                  SpectrumLoaderBase& loaderNuTau,
+                  SpectrumLoaderBase& loaderIntrinsic,
+                  std::string label,
+                  const Binning& bins,
+                  const Var& var,
+                  const Cut& cut,
+                  const SystShifts& shift,
+                  const Weight& wei);
 
     TrivialExtrap(SpectrumLoaderBase& loaderNonswap,
                   SpectrumLoaderBase& loaderNue,
@@ -30,7 +56,19 @@ namespace ana
                   const SpillCut& spillcut,
                   const Cut& cut,
                   const SystShifts& shift,
-                  const Var& wei);
+                  const Weight& wei)
+      : TrivialExtrap()
+    {
+      abort(); // TODO TODO TODO
+    }
+
+    TrivialExtrap(Loaders& loaders,
+                  std::string label,
+                  const Binning& bins,
+                  const Var& var,
+                  const Cut& cut,
+                  const SystShifts& shift = kNoShift,
+                  const Weight& wei = kUnweighted);
 
     TrivialExtrap(Loaders& loaders,
                   std::string label,
@@ -39,14 +77,28 @@ namespace ana
                   const SpillCut& spillcut,
                   const Cut& cut,
                   const SystShifts& shift = kNoShift,
-                  const Var& wei = kUnweighted);
+                  const Weight& wei = kUnweighted)
+      : TrivialExtrap()
+    {
+      abort(); // TODO TODO TODO
+    }
+
+    TrivialExtrap(Loaders& loaders,
+                  const HistAxis& axis,
+                  const Cut& cut,
+                  const SystShifts& shift = kNoShift,
+                  const Weight& wei = kUnweighted);
 
     TrivialExtrap(Loaders& loaders,
                   const HistAxis& axis,
                   const SpillCut& spillcut,
                   const Cut& cut,
                   const SystShifts& shift = kNoShift,
-                  const Var& wei = kUnweighted);
+                  const Weight& wei = kUnweighted)
+      : TrivialExtrap()
+    {
+      abort(); // TODO TODO TODO
+    }
 
     virtual OscillatableSpectrum NueSurvComponent()       {return fNueSurv;}
     virtual OscillatableSpectrum AntiNueSurvComponent()   {return fNueSurvAnti;}

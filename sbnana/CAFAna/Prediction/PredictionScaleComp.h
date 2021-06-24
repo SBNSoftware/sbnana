@@ -23,7 +23,7 @@ namespace ana
                         Cut                 cut,
                         const std::vector<const SystComponentScale*>& systs,
                         const SystShifts&   shift = kNoShift,
-                        const Var&          wei = kUnweighted);
+                        const Weight&       wei = kUnweighted);
     /// Constructor to take two HistAxis's to weight 2D spectra
     PredictionScaleComp(SpectrumLoaderBase& loader,
                         const HistAxis&     axis1,
@@ -32,7 +32,7 @@ namespace ana
                         Cut                 cut,
                         const std::vector<const SystComponentScale*>& systs,
                         const SystShifts&   shift = kNoShift,
-                        const Var&          wei = kUnweighted);
+                        const Weight&       wei = kUnweighted);
 
     /// This is for the FD via PredictionNoExtrap
     PredictionScaleComp(SpectrumLoaderBase& loaderNonswap,
@@ -44,7 +44,7 @@ namespace ana
                         Cut                 cut,
                         const std::vector<const SystComponentScale*>& systs,
                         const SystShifts&   shift = kNoShift,
-                        const Var&          wei = kUnweighted);
+                        const Weight&       wei = kUnweighted);
 
     virtual ~PredictionScaleComp();
 

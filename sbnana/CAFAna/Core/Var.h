@@ -23,9 +23,4 @@ namespace ana
 #define SIMPLEVAR(CAFNAME) Var([](const caf::SRSliceProxy* sr) -> double {return sr->CAFNAME;})
 
 #define SIMPLESPILLVAR(CAFNAME) SpillVar([](const caf::SRSpillProxy* sr) -> double {return sr->CAFNAME;})
-
-  /// The simplest possible Var, always 1. Used as a default weight.
-  const Var kUnweighted = Unweighted<caf::SRSliceProxy>();
-
-  const SpillVar kSpillUnweighted = Unweighted<caf::SRSpillProxy>();
 } // namespace

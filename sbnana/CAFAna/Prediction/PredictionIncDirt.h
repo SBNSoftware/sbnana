@@ -21,7 +21,7 @@ namespace ana
                       const SpillCut& spillcut,
                       const Cut& cut,
                       const SystShifts& shift = kNoShift,
-                      const Var& wei = kUnweighted);
+                      const Weight& wei = kUnweighted);
 
     PredictionIncDirt(Loaders& loaders,
                       SpectrumLoaderBase& loaderDirt,
@@ -29,7 +29,7 @@ namespace ana
                       const SpillCut& spillcut,
                       const Cut& cut,
                       const SystShifts& shift = kNoShift,
-                      const Var& wei = kUnweighted);
+                      const Weight& wei = kUnweighted);
 
     virtual ~PredictionIncDirt();
 

@@ -14,6 +14,7 @@
 
 namespace ana
 {
+  /*
   //----------------------------------------------------------------------
   PredictionNoOsc::PredictionNoOsc(SpectrumLoaderBase& loader,
                                    const std::string& label,
@@ -22,7 +23,7 @@ namespace ana
                                    const SpillCut& spillcut,
                                    const Cut& cut,
                                    const SystShifts& shift,
-                                   const Var& wei)
+                                   const Weight& wei)
     : PredictionNoOsc(loader, HistAxis(label, bins, var), spillcut, cut, shift, wei)
   {
   }
@@ -33,7 +34,7 @@ namespace ana
                                    const SpillCut& spillcut,
                                    const Cut& cut,
                                    const SystShifts& shift,
-                                   const Var& wei)
+                                   const Weight& wei)
     : fSpectrum(       loader, axis, spillcut, cut,                                        shift, wei),
       fSpectrumNC(     loader, axis, spillcut, cut &&  kIsNC,                              shift, wei),
       fSpectrumNumu(   loader, axis, spillcut, cut && !kIsNC && kIsNumuCC &&  !kIsAntiNu,  shift, wei),
@@ -42,6 +43,7 @@ namespace ana
       fSpectrumNuebar( loader, axis, spillcut, cut && !kIsNC && kIsBeamNue &&  kIsAntiNu,  shift, wei)
   {
   }
+  */
 
   //----------------------------------------------------------------------
   Spectrum PredictionNoOsc::PredictComponent(osc::IOscCalc* /*calc*/,

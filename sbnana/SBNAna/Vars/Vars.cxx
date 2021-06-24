@@ -16,8 +16,8 @@ namespace ana
   const SpillVar kEvt = SIMPLESPILLVAR(hdr.evt);
   //  const Var kSlc = SIMPLEVAR(hdr.subevt);
 
-  const Var kCounting = kUnweighted;
-  const SpillVar kSpillCounting = kSpillUnweighted;
+  const Var kCounting([](const caf::SRSliceProxy*){return 1;});
+  const SpillVar kSpillCounting([](const caf::SRSpillProxy*){return 1;});
 
 
   // There can be more than one crt hit per spill so the variables are vectors.

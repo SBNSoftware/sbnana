@@ -9,12 +9,14 @@ namespace ana
   class PredictionNoOsc: public IPrediction
   {
   public:
+    // TODO TODO TODO
+    /*
     PredictionNoOsc(SpectrumLoaderBase& loader,
                     const HistAxis& axis,
                     const SpillCut& spillcut,
                     const Cut& cut,
                     const SystShifts& shift = kNoShift,
-                    const Var& wei = kUnweighted);
+                    const Weight& wei = kUnweighted);
 
     PredictionNoOsc(SpectrumLoaderBase& loader,
                     const std::string& label,
@@ -23,7 +25,8 @@ namespace ana
                     const SpillCut& spillcut,
                     const Cut& cut,
                     const SystShifts& shift = kNoShift,
-                    const Var& wei = kUnweighted);
+                    const Weight& wei = kUnweighted);
+    */
 
     static std::unique_ptr<PredictionNoOsc> LoadFrom(TDirectory* dir);
     virtual void SaveTo(TDirectory* dir) const override;
@@ -67,7 +70,7 @@ namespace ana
                              HistAxis axis,
                              SpillCut spillcut,
                              Cut cut,
-			     Var wei = kUnweighted)
+			     Weight wei = kUnweighted)
       : fLoader(loader), fAxis(axis), fSpillCut(spillcut), fCut(cut), fWei(wei)
     {
     }
@@ -75,18 +78,22 @@ namespace ana
     virtual std::unique_ptr<IPrediction>
     Generate(Loaders& loaders, const SystShifts& shiftMC = kNoShift) const override
     {
+      abort();
+      // TODO TODO TODO
+      /*
       return std::unique_ptr<IPrediction>(new PredictionNoOsc(fLoader,
                                                               fAxis,
                                                               fSpillCut,
                                                               fCut,
                                                               shiftMC, fWei));
+      */
     }
   protected:
     SpectrumLoaderBase& fLoader;
     HistAxis fAxis;
     SpillCut fSpillCut;
     Cut fCut;
-    Var fWei;
+    Weight fWei;
   };
 
 }

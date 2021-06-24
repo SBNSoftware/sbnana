@@ -22,9 +22,11 @@ namespace ana
                       Cut cut,
                       const std::vector<const SystComponentScale*>& systs,
                       const SystShifts& shift,
-                      const Var& wei)
+                      const Weight& wei)
     : fSysts(systs)
   {
+    abort(); // TODO TODO TODO
+    /*
     Cut complementCut = kNoCut;
 
     assert(!systs.empty() && "Please give at least one systematic.");
@@ -34,6 +36,7 @@ namespace ana
     }
 
     fTotal = new PredictionNoOsc(loader, axis, spillcut, cut, shift, wei);
+      */
   }
 
   //----------------------------------------------------------------------
@@ -47,7 +50,7 @@ namespace ana
                       Cut                 cut,
                       const std::vector<const SystComponentScale*>& systs,
                       const SystShifts&   shift,
-                      const Var&          wei)
+                      const Weight&       wei)
     : fSysts(systs)
   {
     assert(!systs.empty() && "Please give at least one systematic.");
@@ -69,7 +72,7 @@ namespace ana
                       Cut cut,
                       const std::vector<const SystComponentScale*>& systs,
                       const SystShifts& shift,
-                      const Var& wei)
+                      const Weight& wei)
   {
     assert(0 && "unimplemented");
 

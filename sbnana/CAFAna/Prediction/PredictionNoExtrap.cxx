@@ -23,7 +23,7 @@ namespace ana
                                          const SpillCut& spillcut,
                                          const Cut& cut,
                                          const SystShifts& shift,
-                                         const Var& wei)
+                                         const Weight& wei)
     : PredictionExtrap(new TrivialExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
                                          label, bins, var, spillcut, cut, shift, wei))
   {
@@ -38,7 +38,7 @@ namespace ana
                                          const SpillCut& spillcut,
                                          const Cut& cut,
                                          const SystShifts& shift,
-                                         const Var& wei)
+                                         const Weight& wei)
     : PredictionExtrap(new TrivialExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
                                          axis, spillcut, cut, shift, wei))
   {
@@ -57,7 +57,7 @@ namespace ana
                                          const SpillCut& spillcut,
                                          const Cut& cut,
                                          const SystShifts& shift,
-                                         const Var& wei)
+                                         const Weight& wei)
     : PredictionNoExtrap(loaders, HistAxis(label, bins, var), spillcut, cut, shift, wei)
   {
   }
@@ -68,7 +68,7 @@ namespace ana
                                          const SpillCut& spillcut,
                                          const Cut& cut,
                                          const SystShifts& shift,
-                                         const Var& wei)
+                                         const Weight& wei)
     : PredictionExtrap(new TrivialExtrap(loaders, axis, spillcut, cut, shift, wei))
   {
   }

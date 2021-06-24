@@ -40,7 +40,7 @@ ifdhc            v2_5_12
 # For CAFAna
 srproxy          v00.24
 osclib           v00.14
-cafanacore       v01.18
+cafanacore       v01.20
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers

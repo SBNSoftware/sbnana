@@ -219,7 +219,7 @@ namespace ana
         // but aren't grouped with the other nominal histograms. Keep track of
         // the results for nominals in these caches to speed those systs up.
         CutVarCache<bool, Cut, caf::SRSliceProxy> nomCutCache;
-        CutVarCache<double, Var, caf::SRSliceProxy> nomWeiCache;
+        CutVarCache<double, Weight, caf::SRSliceProxy> nomWeiCache;
         CutVarCache<double, Var, caf::SRSliceProxy> nomVarCache;
 
         for(auto& shiftdef: spillcutdef.second){
@@ -250,7 +250,7 @@ namespace ana
             if(!pass) continue;
 
             for(auto& weidef: cutdef.second){
-              const Var& weivar = weidef.first;
+              const Weight& weivar = weidef.first;
 
               double wei = shifted ? weivar(&slc) : nomWeiCache.Get(weivar, &slc);
 

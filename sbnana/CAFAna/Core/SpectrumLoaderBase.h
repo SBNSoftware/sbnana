@@ -14,6 +14,7 @@
 #include "sbnana/CAFAna/Core/MultiVar.h"
 #include "sbnana/CAFAna/Core/SystShifts.h"
 #include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Weight.h"
 
 namespace caf{class StandardRecord;}
 
@@ -44,7 +45,7 @@ namespace ana
                              const SpillCut& spillcut,
                              const Cut& cut,
                              const SystShifts& shift,
-                             const Var& wei = kUnweighted);
+                             const Weight& wei = kUnweighted);
 
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
@@ -52,19 +53,19 @@ namespace ana
                              const SpillCut& spillcut,
                              const Cut& cut,
                              const SystShifts& shift,
-                             const Var& wei = kUnweighted);
+                             const Weight& wei = kUnweighted);
 
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
                              const SpillVar& var,
                              const SpillCut& cut,
-                             const SpillVar& wei = kSpillUnweighted);
+                             const SpillWeight& wei = kSpillUnweighted);
 
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
                              const SpillMultiVar& var,
                              const SpillCut& cut,
-                             const SpillVar& wei = kSpillUnweighted);
+                             const SpillWeight& wei = kSpillUnweighted);
 
     /// For use by the constructors of \ref ReweightableSpectrum subclasses
     virtual void AddReweightableSpectrum(ReweightableSpectrum& spect,
@@ -72,15 +73,7 @@ namespace ana
                                          const Var& yvar,
                                          const Cut& cut,
                                          const SystShifts& shift,
-                                         const Var& wei);
-
-    /// For use by the constructors of \ref ReweightableSpectrum subclasses
-    virtual void AddReweightableSpectrum(ReweightableSpectrum& spect,
-                                         const Var& var,
-                                         const SpillCut& spillcut,
-                                         const SliceCut& slicecut,
-                                         const SystShifts& shift,
-                                         const Var& wei);
+                                         const Weight& wei);
 
     /// Load all the registered spectra
     virtual void Go() = 0;
@@ -197,9 +190,9 @@ namespace ana
     /// \brief All the spectra that need to be filled
     ///
     /// [spillcut][shift][cut][wei][var]
-    IDMap<SpillCut, IDMap<SystShifts, IDMap<Cut, IDMap<Var, IDMap<VarOrMultiVar, SpectList>>>>> fHistDefs;
+    IDMap<SpillCut, IDMap<SystShifts, IDMap<Cut, IDMap<Weight, IDMap<VarOrMultiVar, SpectList>>>>> fHistDefs;
     /// [spillcut][spillwei][spillvar]
-    IDMap<SpillCut, IDMap<SpillVar, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
+    IDMap<SpillCut, IDMap<SpillWeight, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
   };
 
   /// \brief Dummy loader that doesn't load any files
@@ -212,41 +205,30 @@ namespace ana
     ~NullLoader();
 
     virtual void Go() override;
-    void AddSpectrum(Spectrum& spect,
-                     const Var& var,
-                     const SpillCut& spillcut,
-                     const Cut& cut,
-                     const SystShifts& shift,
-                     const Var& wei = kUnweighted) override {}
+
     void AddSpectrum(Spectrum& spect,
                      const MultiVar& var,
                      const SpillCut& spillcut,
                      const Cut& cut,
                      const SystShifts& shift,
-                     const Var& wei = kUnweighted) override {}
+                     const Weight& wei = kUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
                      const SpillVar& var,
                      const SpillCut& cut,
-                     const SpillVar& wei = kSpillUnweighted) override {}
+                     const SpillWeight& wei = kSpillUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
                      const SpillMultiVar& var,
                      const SpillCut& cut,
-                     const SpillVar& wei = kSpillUnweighted) override {}
-
-    void AddReweightableSpectrum(ReweightableSpectrum& spect,
-                                 const Var& var,
-                                 const Cut& cut,
-                                 const SystShifts& shift,
-                                 const Var& wei) override {}
+                     const SpillWeight& wei = kSpillUnweighted) override {}
 
     void AddReweightableSpectrum(ReweightableSpectrum& spect,
                                  const Var& xvar,
                                  const Var& yvar,
                                  const Cut& cut,
                                  const SystShifts& shift,
-                                 const Var& wei) override {}
+                                 const Weight& wei) override {}
   };
   /// \brief Dummy loader that doesn't load any files
   ///

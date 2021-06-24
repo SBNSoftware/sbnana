@@ -12,15 +12,17 @@ namespace ana
   class PredictionSBNExtrap: public IPrediction
   {
   public:
+    /*
     PredictionSBNExtrap(Loaders& loadersND,
                         Loaders& loadersFD,
                         const HistAxis& axis,
                         const SpillCut& spillcut,
                         const Cut& cut,
                         const SystShifts& shift_mc = kNoShift,
-                        const Var& wei_mc = kUnweighted,
+                        const Weight& wei_mc = kUnweighted,
                         const SystShifts& shift_data = kNoShift,
-                        const Var& wei_data = kUnweighted);
+                        const Weight& wei_data = kUnweighted);
+    */
     virtual ~PredictionSBNExtrap();
 
     virtual Spectrum Predict(osc::IOscCalc* calc) const override;
@@ -57,9 +59,9 @@ namespace ana
                        const HistAxis& ax,
                        const SpillCut& spillcut,
                        const Cut& cut,
-                       const Var& wei_mc,
+                       const Weight& wei_mc,
                        const SystShifts& shift_data = kNoShift,
-                       const Var& wei_data = kUnweighted);
+                       const Weight& wei_data = kUnweighted);
 
     std::unique_ptr<IPrediction> Generate(Loaders& loaders_fd,
                                           const SystShifts& shiftMC = kNoShift) const override;

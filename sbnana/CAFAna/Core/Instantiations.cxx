@@ -13,7 +13,7 @@ namespace ana
                                 const HistAxis& axis,
                                 const Cut& cut,
                                 const SystShifts& shift,
-                                const Var& wei,
+                                const Weight& wei,
                                 Spectrum::ESparse sparse)
     : Spectrum(LabelsAndBins(axis.GetLabels(), axis.GetBinnings()), sparse)
   {
@@ -55,7 +55,7 @@ namespace ana
                               const Var& var,
                               const Cut& cut,
                               const SystShifts& shift,
-                              const Var& wei,
+                              const Weight& wei,
                               Spectrum::ESparse sparse);
 
   template Spectrum::Spectrum(SpectrumLoaderBase& loader,
@@ -63,7 +63,7 @@ namespace ana
                               const HistAxis& yAxis,
                               const Cut& cut,
                               const SystShifts& shift,
-                              const Var& wei,
+                              const Weight& wei,
                               ESparse sparse);
 
   template Spectrum::Spectrum(const std::string& xLabel,
@@ -73,7 +73,7 @@ namespace ana
                               const Binning& binsy, const Var& vary,
                               const Cut& cut,
                               const SystShifts& shift,
-                              const Var& wei,
+                              const Weight& wei,
                               ESparse sparse);
 
   template Spectrum::Spectrum(SpectrumLoaderBase& loader,
@@ -82,7 +82,7 @@ namespace ana
                               const HistAxis& zAxis,
                               const Cut& cut,
                               const SystShifts& shift,
-                              const Var& wei,
+                              const Weight& wei,
                               ESparse sparse);
 
   template Spectrum::Spectrum(const std::string& xLabel,
@@ -94,14 +94,14 @@ namespace ana
                               const Binning& binsz, const Var& varz,
                               const Cut& cut,
                               const SystShifts& shift,
-                              const Var& wei,
+                              const Weight& wei,
                               ESparse sparse);
 
   template Spectrum::Spectrum(SpectrumLoaderBase& loader,
                               const _HistAxis<MultiVar>& axis,
                               const Cut& cut,
                               const SystShifts& shift,
-                              const Var& wei);
+                              const Weight& wei);
   */
 }
 
@@ -115,5 +115,5 @@ namespace ana
                                                       const HistAxis& trueAxis,
                                                       const Cut& cut,
                                                       const SystShifts& shift,
-                                                      const Var& wei);
+                                                      const Weight& wei);
 }

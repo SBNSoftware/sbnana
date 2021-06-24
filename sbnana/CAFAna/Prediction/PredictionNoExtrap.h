@@ -24,7 +24,7 @@ namespace ana
                        const SpillCut& spillcut,
                        const Cut& cut,
                        const SystShifts& shift = kNoShift,
-                       const Var& wei = kUnweighted);
+                       const Weight& wei = kUnweighted);
 
     PredictionNoExtrap(SpectrumLoaderBase& loaderNonswap,
                        SpectrumLoaderBase& loaderNue,
@@ -34,7 +34,7 @@ namespace ana
                        const SpillCut& spillcut,
 		       const Cut& cut,
                        const SystShifts& shift = kNoShift,
-                       const Var& wei = kUnweighted);
+                       const Weight& wei = kUnweighted);
 
     PredictionNoExtrap(Loaders& loaders,
                        const std::string& label,
@@ -43,14 +43,14 @@ namespace ana
                        const SpillCut& spillcut,
                        const Cut& cut,
                        const SystShifts& shift = kNoShift,
-                       const Var& wei = kUnweighted);
+                       const Weight& wei = kUnweighted);
 
     PredictionNoExtrap(Loaders& loaders,
                        const HistAxis& axis,
                        const SpillCut& spillcut,
                        const Cut& cut,
                        const SystShifts& shift = kNoShift,
-                       const Var& wei = kUnweighted);
+                       const Weight& wei = kUnweighted);
 
     virtual ~PredictionNoExtrap();
 
@@ -62,7 +62,7 @@ namespace ana
   class NoExtrapPredictionGenerator: public IPredictionGenerator
   {
   public:
-    NoExtrapPredictionGenerator(HistAxis axis, SpillCut spillcut, Cut cut, Var wei = kUnweighted)
+    NoExtrapPredictionGenerator(HistAxis axis, SpillCut spillcut, Cut cut, Weight wei = kUnweighted)
       : fAxis(axis), fSpillCut(spillcut), fCut(cut), fWei(wei)
     {
     }
@@ -77,6 +77,6 @@ namespace ana
     HistAxis fAxis;
     SpillCut fSpillCut;
     Cut fCut;
-    Var fWei;
+    Weight fWei;
   };
 }

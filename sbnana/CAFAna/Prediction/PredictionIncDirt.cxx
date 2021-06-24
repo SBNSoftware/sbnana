@@ -17,7 +17,7 @@ namespace ana
                                        const SpillCut& spillcut,
                                        const Cut& cut,
                                        const SystShifts& shift,
-                                       const Var& wei)
+                                       const Weight& wei)
     : fDet(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
            axis, spillcut, cut, shift, wei),
       fDirt(loaderDirt, kNullLoader, kNullLoader, kNullLoader,
@@ -32,7 +32,7 @@ namespace ana
                                        const SpillCut& spillcut,
                                        const Cut& cut,
                                        const SystShifts& shift,
-                                       const Var& wei)
+                                       const Weight& wei)
     : fDet(loaders, axis, spillcut, cut, shift, wei),
       fDirt(loaderDirt, kNullLoader, kNullLoader, kNullLoader,
             axis, spillcut, cut, shift, wei)
