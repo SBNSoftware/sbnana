@@ -128,8 +128,8 @@ namespace ana{
   const Cut kShowerRazzleElectronCut = kRecoShowerRazzlePID == 11;
   const Cut kShowerRazzleElectronScoreCut = kRecoShowerRazzleElectronScore > 0.8;
 
-  const Cut kNueLongestTrackDazzleMuonCut = kLongestTrackDazzlePID == 13;
-  const Cut kNueLongestTrackDazzleMuonScoreCut = kLongestTrackDazzleMuonScore > 0.8;
+  const Cut kNueLongestTrackDazzleMuonCut = kLongestTrackDazzlePID != 13;
+  const Cut kNueLongestTrackDazzleMuonScoreCut = kLongestTrackDazzleMuonScore < 0.8;
 
   const Cut kNueAllTrackDazzleMuonCut(
     [](const caf::SRSliceProxy* slc)
