@@ -32,6 +32,13 @@ namespace ana
                    });
 
   //----------------------------------------------------------------------
+  OscillatableSpectrum::OscillatableSpectrum(ISliceSource& src,
+                                             const HistAxis& axis)
+    : ReweightableSpectrum(src[kHasNu], axis, HistAxis("True L / E (km / GeV)", kTrueLOverEBins, kTrueLOverE))
+  {
+  }
+
+  //----------------------------------------------------------------------
   OscillatableSpectrum::
   OscillatableSpectrum(const std::string& label, const Binning& bins,
                        SpectrumLoaderBase& loader,

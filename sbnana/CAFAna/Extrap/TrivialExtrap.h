@@ -2,6 +2,8 @@
 
 #include "sbnana/CAFAna/Extrap/IExtrap.h"
 
+#include "sbnana/CAFAna/Core/IRecordSource.h"
+
 #include "sbnana/CAFAna/Core/Weight.h"
 
 namespace ana
@@ -12,6 +14,12 @@ namespace ana
   class TrivialExtrap: public IExtrap
   {
   public:
+    TrivialExtrap(ISliceSource& nonswapSrc,
+                  ISliceSource& nueSrc,
+                  ISliceSource& tauSrc,
+                  ISliceSource& intrinsicSrc,
+                  const HistAxis& axis);
+
     TrivialExtrap(SpectrumLoaderBase& loaderNonswap,
                   SpectrumLoaderBase& loaderNue,
                   SpectrumLoaderBase& loaderNuTau,

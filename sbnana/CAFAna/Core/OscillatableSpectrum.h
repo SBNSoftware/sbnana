@@ -8,6 +8,7 @@
 #include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 #include "sbnana/CAFAna/Core/StanTypedefs.h"
+#include "sbnana/CAFAna/Core/IRecordSource.h"
 #include "CAFAna/Core/ThreadLocal.h"
 
 #include "TMD5.h"
@@ -46,6 +47,8 @@ namespace ana
     friend class SpectrumLoaderBase;
     friend class SpectrumLoader;
     friend class NullLoader;
+
+    OscillatableSpectrum(ana::ISliceSource& src, const HistAxis& axis);
 
     OscillatableSpectrum(const std::string& label,
                          const Binning& bins,

@@ -10,6 +10,30 @@
 namespace ana
 {
   //----------------------------------------------------------------------
+  TrivialExtrap::TrivialExtrap(ISliceSource& nonswapSrc,
+                               ISliceSource& nueSrc,
+                               ISliceSource& tauSrc,
+                               ISliceSource& intrinsicSrc,
+                               const HistAxis& axis)
+    :
+    fNueApp       (nueSrc      [kIsNueApp    && !kIsAntiNu], axis),
+    fNueAppAnti   (nueSrc      [kIsNueApp    &&  kIsAntiNu], axis),
+    fNumuSurv     (nonswapSrc  [kIsNumuCC    && !kIsAntiNu], axis),
+    fNumuSurvAnti (nonswapSrc  [kIsNumuCC    &&  kIsAntiNu], axis),
+    fNumuApp      (tauSrc      [kIsNumuApp   && !kIsAntiNu], axis),
+    fNumuAppAnti  (tauSrc      [kIsNumuApp   &&  kIsAntiNu], axis),
+    fNueSurv      (intrinsicSrc[kIsBeamNue   && !kIsAntiNu], axis),
+    fNueSurvAnti  (intrinsicSrc[kIsBeamNue   &&  kIsAntiNu], axis),
+    fTauFromE     (nueSrc      [kIsTauFromE  && !kIsAntiNu], axis),
+    fTauFromEAnti (nueSrc      [kIsTauFromE  &&  kIsAntiNu], axis),
+    fTauFromMu    (tauSrc      [kIsTauFromMu && !kIsAntiNu], axis),
+    fTauFromMuAnti(tauSrc      [kIsTauFromMu &&  kIsAntiNu], axis),
+    fNCFromNumu   (nonswapSrc[kIsNCFromNumu], axis),
+    fNCFromNue    (nonswapSrc[kIsNCFromNue ], axis)
+  {
+  }
+
+  //----------------------------------------------------------------------
   TrivialExtrap::TrivialExtrap(SpectrumLoaderBase& loaderNonswap,
                                SpectrumLoaderBase& loaderNue,
                                SpectrumLoaderBase& loaderNuTau,
