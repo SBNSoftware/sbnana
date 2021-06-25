@@ -352,42 +352,26 @@ const Var kMuonTrackLength(
 
 const Var kLongestTrackDazzlePID(
     [](const caf::SRSliceProxy* slc) -> int {
-      int pdg(-5);
       const int longestTrackIdx(kLongestTrackIdx(slc));
-      if (longestTrackIdx != -1) {
-        pdg = slc->reco.trk[longestTrackIdx].dazzle.pdg;
-      }
-      return pdg;
+      return longestTrackIdx != -1 ? slc->reco.trk[longestTrackIdx].dazzle.pdg : -5;
     });
 
 const Var kLongestTrackDazzleMuonScore(
     [](const caf::SRSliceProxy* slc) -> float {
-      float score(-5.f);
       const int longestTrackIdx(kLongestTrackIdx(slc));
-      if (longestTrackIdx != -1) {
-        score = slc->reco.trk[longestTrackIdx].dazzle.muonScore;
-      }
-      return score;
+      return longestTrackIdx != -1 ? slc->reco.trk[longestTrackIdx].dazzle.muonScore : -5.f;
     });
 
 const Var kRecoShowerRazzlePID(
     [](const caf::SRSliceProxy* slc) -> int {
       const int showerIdx(kLargestRecoShowerIdx(slc));
-      int pdg(-5);
-      if (showerIdx != -1) {
-        pdg = slc->reco.shw[showerIdx].razzle.pdg;
-      }
-      return pdg;
+      return showerIdx != -1 ? slc->reco.shw[showerIdx].razzle.pdg : -5;
     });
 
 const Var kRecoShowerRazzleElectronScore(
     [](const caf::SRSliceProxy* slc) -> float {
       const int showerIdx(kLargestRecoShowerIdx(slc));
-      float score(-5.f);
-      if (showerIdx != -1) {
-        score = slc->reco.shw[showerIdx].razzle.electronScore;
-      }
-      return score;
+      return showerIdx != -1 ? slc->reco.shw[showerIdx].razzle.electronScore : -5.f;
     });
 
 }
