@@ -667,6 +667,7 @@ namespace ana
       if(ret.fHistSparse)
 	ret.fHistSparse->Scale(pot/fPOT);
     }
+    if(fLivetime > 0) ret.fLivetime *= pot/fPOT;
     ret.fPOT = pot;
 
     // Drop old errors, which are based on the MC statistics, and create new
@@ -737,8 +738,10 @@ namespace ana
       if(fLivetime && rhs.fLivetime){
         // If POT/livetime ratios match, keep regular lifetime, otherwise zero
         // it out.
-        if(AlmostEqual(fLivetime*rhs.fPOT, rhs.fLivetime*fPOT))
-          fLivetime = 0;
+        if(!AlmostEqual(fLivetime*rhs.fPOT, rhs.fLivetime*fPOT)){
+          std::cout << "Attempting to combine two spectra with incompatible POT / livetime ratio " << fPOT << " / " << fLivetime << " vs " << rhs.fPOT << " / " << rhs.fLivetime << std::endl;
+          abort();
+        }
       }
       if(!fLivetime && rhs.fLivetime){
         // If the RHS has a livetime and we don't, copy it in (suitably scaled)
