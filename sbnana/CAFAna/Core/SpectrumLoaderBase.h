@@ -116,12 +116,9 @@ namespace ana
     virtual void RemoveSpectrum(Spectrum*);
     virtual void RemoveReweightableSpectrum(ReweightableSpectrum*);
 
-    virtual void AccumulateExposures(const caf::SRSpill* spill) = 0;
-
     /// Forwards to \ref fFileSource
     int NFiles() const;
 
-    /// Forwards to \ref fFileSource but also accumulates POT and livetime
     TFile* GetNextFile();
 
     std::string fWildcard;
@@ -131,7 +128,9 @@ namespace ana
 
     bool fGone; ///< Has Go() been called? Can't add more histograms after that
 
-    double fPOT; ///< Accumulated by calls to \ref GetNextFile
+    double fPOT;
+    double fPOTFromHist; ///< Accumulated by calls to \ref GetNextFile
+    int fNGenEvt;
 
     /// \brief Helper class for \ref SpectrumLoaderBase
     ///
@@ -263,8 +262,6 @@ namespace ana
                                  const Cut& cut,
                                  const SystShifts& shift,
                                  const Var& wei) override {}
-
-    void AccumulateExposures(const caf::SRSpill* spill) override {};
   };
   /// \brief Dummy loader that doesn't load any files
   ///

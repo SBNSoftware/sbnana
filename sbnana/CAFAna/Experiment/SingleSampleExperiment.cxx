@@ -12,66 +12,39 @@
 
 namespace ana
 {
-  const CosmicBkgScaleSyst kCosmicBkgScaleSyst;
-
   //----------------------------------------------------------------------
   SingleSampleExperiment::SingleSampleExperiment(const IPrediction* pred,
                                                  const Spectrum& data,
-                                                 const Spectrum& cosmic,
-                                                 double cosmicScaleError)
-    : fMC(pred), fData(data),
-      fCosmic(cosmic.ToTH1(data.Livetime(), kLivetime)),
-      fMask(0), fCosmicScaleError(cosmicScaleError)
-  {
-  }
-
-  //----------------------------------------------------------------------
-  SingleSampleExperiment::SingleSampleExperiment(const IPrediction* pred,
-                                                 const Spectrum& data,
-                                                 const TH1D* cosmic,
-                                                 double cosmicScaleError)
-    : fMC(pred), fData(data), fCosmic(new TH1D(*cosmic)),
-      fMask(0), fCosmicScaleError(cosmicScaleError)
+                                                 const Spectrum& cosmic)
+    : fMC(pred), fData(data), fCosmic(cosmic), fMask(0)
   {
   }
 
   //----------------------------------------------------------------------
   SingleSampleExperiment::~SingleSampleExperiment()
   {
-    delete fCosmic;
     delete fMask;
-  }
-
-  //----------------------------------------------------------------------
-  TH1D* SingleSampleExperiment::
-  PredHistIncCosmics(osc::IOscCalc* calc,
-                     const SystShifts& syst) const
-  {
-    SystShifts systNoCosmic = syst;
-    systNoCosmic.SetShift(&kCosmicBkgScaleSyst, 0);
-
-    const Spectrum pred = fMC->PredictSyst(calc, systNoCosmic);
-
-    TH1D* hpred = pred.ToTH1(fData.POT());
-
-    if(fCosmic){
-      if(fCosmicScaleError != 0){
-        const double scale = 1 + syst.GetShift(&kCosmicBkgScaleSyst) * fCosmicScaleError;
-        hpred->Add(fCosmic, scale);
-      }
-      else{
-        hpred->Add(fCosmic);
-      }
-    }
-
-    return hpred;
   }
 
   //----------------------------------------------------------------------
   double SingleSampleExperiment::ChiSq(osc::IOscCalcAdjustable* calc,
                                        const SystShifts& syst) const
   {
-    TH1D* hpred = PredHistIncCosmics(calc, syst);
+    const Spectrum p = fMC->PredictSyst(calc, syst);
+    TH1D* hpred = p.ToTH1(fData.POT());
+
+    // "Livetime" here means number of readout windows.
+    if(fCosmic.Livetime() > 0){ // if cosmics supplied
+      // This many are already included in the beam MC
+      const double beamLivetime = p.Livetime() * fData.POT()/p.POT();
+      // So we need to take this many from the cosmics-only to match the data
+      const double intimeLivetime = fData.Livetime() - beamLivetime;
+
+      TH1D* hcosmic = fCosmic.ToTH1(intimeLivetime, kLivetime);
+      hpred->Add(hcosmic);
+      HistCache::Delete(hcosmic);
+    }
+
     TH1D* hdata = fData.ToTH1(fData.POT());
 
     // If a valid mask has been set, zero out the offending bins
@@ -104,8 +77,7 @@ namespace ana
 
     fMC->SaveTo(dir->mkdir("mc"));
     fData.SaveTo(dir->mkdir("data"));
-
-    if(fCosmic) fCosmic->Write("cosmic");
+    fCosmic.SaveTo(dir->mkdir("cosmic"));
 
     tmp->cd();
   }
@@ -119,19 +91,17 @@ namespace ana
 
     assert(dir->GetDirectory("mc"));
     assert(dir->GetDirectory("data"));
-    
+
 
     const IPrediction* mc = ana::LoadFrom<IPrediction>(dir->GetDirectory("mc")).release();
     const std::unique_ptr<Spectrum> data = Spectrum::LoadFrom(dir->GetDirectory("data"));
+    const std::unique_ptr<Spectrum> cosmic = Spectrum::LoadFrom(dir->GetDirectory("cosmic"));
 
-    TH1D* cosmic = 0;
-    if(dir->Get("cosmic")) cosmic = (TH1D*)dir->Get("cosmic");
-
-    auto ret = std::make_unique<SingleSampleExperiment>(mc, *data);
-    if(cosmic) ret->fCosmic = cosmic;
+    auto ret = std::make_unique<SingleSampleExperiment>(mc, *data, *cosmic);
     return ret;
   }
 
+  //----------------------------------------------------------------------
   void SingleSampleExperiment::SetMaskHist(double xmin, double xmax, double ymin, double ymax)
   {
     fMask = GetMaskHist(fData, xmin, xmax, ymin, ymax);

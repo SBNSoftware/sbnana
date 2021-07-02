@@ -36,7 +36,7 @@ namespace ana
 				   //atslc
   				   dist = sqrt((pow(trk.start.x - slc->vertex.x,2)) + (pow(trk.start.y - slc->vertex.y,2)) + (pow(trk.start.z  - slc->vertex.z,2)));
   				   atslc = dist < 10;
-     				   if(!atslc || !trk.parent_is_primary) continue;
+     				   if(!atslc || !trk.pfp.parent_is_primary) continue;
 
   				   //contained
   				   //contained = ( vol.xmin < trk.end.x && trk.end.x < vol.xmax && vol.ymin < trk.end.y && trk.end.y < vol.ymax && vol.zmin < trk.end.z && trk.end.z < vol.zmax);
