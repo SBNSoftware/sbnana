@@ -24,6 +24,7 @@ namespace ana
     int fUnivIdx;
     mutable std::vector<unsigned int> fSystIdxs;
     mutable std::vector<int> fUnivOffsets;
+    mutable std::vector<Cut> fUnivCuts;
   };
 
   Var GetUniverseWeight(const std::string& syst, int univIdx)
