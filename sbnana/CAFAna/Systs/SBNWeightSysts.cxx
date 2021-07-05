@@ -31,7 +31,35 @@ namespace ana
 
     if(fSystIdxs.empty()){
       const UniverseOracle& uo = UniverseOracle::Instance();
-      for(const std::string& name: fNames) fSystIdxs.push_back(uo.SystIndex(name));
+      for(const std::string& name: fNames){
+        if(name.find("NonResR") == 0){
+          // NonRes systs are weird. We need to decode them to the name that's
+          // already in the file, and also assign different universes to the
+          // ones that are backed by the same file syst, to ensure they're
+          // independent.
+
+          int offset = 0;
+          // 0: CCv, 1: CCvbar, 2: NCv, 3: NCvbar
+          if(name.find("vbar") != std::string::npos) offset += 1;
+          if(name.find("NC") != std::string::npos) offset += 2;
+
+          // Drop, eg "1piCC"
+          std::string prefix = name.substr(0, name.size()-5);
+          // This position should be "1pi" or "2pi"
+          const std::string npi = name.substr(name.size()-5, 3);
+
+          // vn -> vbarp and vbarn -> vp
+          if(prefix.find("vn") != std::string::npos) prefix = prefix.substr(0, prefix.size()-2) + "vbarp";
+          if(prefix.find("vbarn") != std::string::npos) prefix = prefix.substr(0, prefix.size()-5) + "vp";
+
+          fSystIdxs.push_back(uo.SystIndex(prefix+npi));
+          fUnivOffsets.push_back(offset);
+        }
+        else{
+          fSystIdxs.push_back(uo.SystIndex(name));
+          fUnivOffsets.push_back(0);
+        }
+      }
     }
 
     const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
@@ -54,7 +82,7 @@ namespace ana
       // TODO: might want to "wrap around" differently in different systs to
       // avoid unwanted correlations between systs with the same number of
       // universes.
-      const unsigned int unividx = fUnivIdx % wgts[idx].univ.size();
+      const unsigned int unividx = (fUnivIdx + fUnivOffsets[i]) % wgts[idx].univ.size();
 
       w *= wgts[idx].univ[unividx];
     }
