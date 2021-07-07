@@ -31,7 +31,55 @@ namespace ana
 
     if(fSystIdxs.empty()){
       const UniverseOracle& uo = UniverseOracle::Instance();
-      for(const std::string& name: fNames) fSystIdxs.push_back(uo.SystIndex(name));
+      for(const std::string& name: fNames){
+
+        // These ones have to be handled specially
+        const std::string prefix = "NonResR";
+
+        if(name.find(prefix) == 0){
+          // This logic is copied from GetSBNGenieWeightSysts()
+          for(std::string npi: {"1pi", "2pi"}){
+            // They need to be split into CC and NC variants
+            for(std::string ccncStr: {"CC", "NC"}){
+              const Cut& ccncCut = (ccncStr == "CC") ? kIsCC : kIsNC;
+
+              // And restricted to either neutrino or antineutrino, taking
+              // advantage of symmetries to implement both proton and neutron
+              // versions.
+
+              // Originals
+              if(name == prefix + "vp" + npi + ccncStr){
+                fSystIdxs.push_back(uo.SystIndex(prefix + "vp" + npi));
+                fUnivOffsets.push_back(0);
+                fUnivCuts.push_back(ccncCut && !kIsAntiNu);
+              }
+              if(name == prefix + "vbarp" + npi + ccncStr){
+                fSystIdxs.push_back(uo.SystIndex(prefix + "vbarp" + npi));
+                fUnivOffsets.push_back(1);
+                fUnivCuts.push_back(ccncCut &&  kIsAntiNu);
+              }
+
+              // Switched variants
+              if(name == prefix + "vbarn" + npi + ccncStr){
+                fSystIdxs.push_back(uo.SystIndex(prefix + "vp" + npi));
+                fUnivOffsets.push_back(2);
+                fUnivCuts.push_back(ccncCut &&  kIsAntiNu);
+              }
+              if(name == prefix + "vn" + npi + ccncStr){
+                fSystIdxs.push_back(uo.SystIndex(prefix + "vbarp" + npi));
+                fUnivOffsets.push_back(3);
+                fUnivCuts.push_back(ccncCut && !kIsAntiNu);
+              }
+            }
+          }
+        }
+        else{
+          // "Normal" syst
+          fSystIdxs.push_back(uo.SystIndex(name));
+          fUnivOffsets.push_back(0);
+          fUnivCuts.push_back(kNoCut);
+        }
+      }
     }
 
     const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
@@ -49,14 +97,16 @@ namespace ana
     double w = 1;
 
     for(unsigned int i = 0; i < fNames.size(); ++i){
-      const unsigned int idx = fSystIdxs[i];
+      if(fUnivCuts[i](sr)){
+        const unsigned int idx = fSystIdxs[i];
 
-      // TODO: might want to "wrap around" differently in different systs to
-      // avoid unwanted correlations between systs with the same number of
-      // universes.
-      const unsigned int unividx = fUnivIdx % wgts[idx].univ.size();
+        // TODO: might want to "wrap around" differently in different systs to
+        // avoid unwanted correlations between systs with the same number of
+        // universes.
+        const unsigned int unividx = (fUnivIdx + fUnivOffsets[i]) % wgts[idx].univ.size();
 
-      w *= wgts[idx].univ[unividx];
+        w *= wgts[idx].univ[unividx];
+      }
     }
 
     return w;
