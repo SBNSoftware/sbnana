@@ -29,7 +29,7 @@ namespace ana{
       if ( largestShwIdx==-1 )
         return false;
 
-      return (slc->reco.shw[largestShwIdx].bestplane_energy > 200. &&
+      return (slc->reco.shw[largestShwIdx].bestplane_energy > 0.2f &&
           slc->reco.shw[largestShwIdx].bestplane_dEdx < 3 &&
           slc->reco.shw[largestShwIdx].conversion_gap < 3 );
   }
@@ -42,7 +42,7 @@ namespace ana{
       if ( largestShwIdx==-1 )
         return false;
 
-      return (slc->reco.shw[largestShwIdx].bestplane_energy > 200.f );
+      return (slc->reco.shw[largestShwIdx].bestplane_energy > 0.2f );
     }
     );
 

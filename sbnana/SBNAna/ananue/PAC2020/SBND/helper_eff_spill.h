@@ -77,7 +77,6 @@ struct PlotDef {
 };
 
 const Binning kBDTBinning = Binning::Simple(40, 0, 1.0);
-const Binning kEnergyBinning = Binning::Simple(40, 0, 3000);
 const Binning kEnergyBinningGeV = Binning::Simple(30, 0, 3);
 const Binning kdEdxBinning = Binning::Simple(40, 0, 10);
 const Binning kGapBinning = Binning::Simple(20, 0, 10);
