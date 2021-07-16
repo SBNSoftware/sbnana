@@ -191,7 +191,9 @@ namespace ana
       // Need to deal with parameters that are not fit values!
       SystShifts shift = pt.shift;
 
-      // Deal with systs that are not fit values
+      // Need to copy over syst values into the seed for this fit 
+      // that were in the input syst shifts, but are not being fit for, 
+      // and therefore not part of the seedPts list
       for(auto s: bestSysts.ActiveSysts()) {
         auto fit_systs = shift.ActiveSysts();
         if(std::find(fit_systs.begin(), fit_systs.end(), s) == fit_systs.end()) {
