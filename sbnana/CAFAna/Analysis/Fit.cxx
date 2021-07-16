@@ -475,9 +475,9 @@ namespace ana
 
   //----------------------------------------------------------------------
   TH1* Profile(const IExperiment* expt,
-	       osc::IOscCalcAdjustable* calc, const ISyst* s,
-	       int nbinsx, double minx, double maxx,
-	       double input_minchi,
+               osc::IOscCalcAdjustable* calc, const ISyst* s,
+               int nbinsx, double minx, double maxx,
+               double input_minchi,
                const std::vector<const IFitVar*>& profVars,
                const std::vector<const ISyst*>& profSysts,
                const std::map<const IFitVar*, std::vector<double>>& seedPts,
@@ -526,8 +526,8 @@ namespace ana
       ret->Fill(x, chi);
 
       if(chi < minchi){
-	minchi = chi;
-	minpos = x;
+        minchi = chi;
+        minpos = x;
       }
       for(const IFitVar* var: profVars){
 	profVarsMap[var]->SetPoint(n, x, var->GetValue(calc));

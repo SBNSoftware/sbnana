@@ -227,10 +227,10 @@ namespace ana
   ///
   /// \return The best fit delta chisq as a function of \a a
   TH1* Profile(const IExperiment* expt,
-	       osc::IOscCalcAdjustable* calc,
+               osc::IOscCalcAdjustable* calc,
                const IFitVar* v,
-	       int nbinsx, double minx, double maxx,
-	       double minchi = -1,
+               int nbinsx, double minx, double maxx,
+               double minchi = -1,
                const std::vector<const IFitVar*>& profVars = {},
                const std::vector<const ISyst*>& profSysts = {},
                const std::map<const IFitVar*, std::vector<double>>& seedPts = {},
@@ -239,10 +239,10 @@ namespace ana
                std::map<const ISyst*, TGraph*>& systsMap = empty_syst_map);
 
   TH1* Profile(const IExperiment* expt,
-	       osc::IOscCalcAdjustable* calc,
+               osc::IOscCalcAdjustable* calc,
                const ISyst* s,
-	       int nbinsx, double minx, double maxx,
-	       double minchi = -1,
+               int nbinsx, double minx, double maxx,
+               double minchi = -1,
                const std::vector<const IFitVar*>& profVars = {},
                const std::vector<const ISyst*>& profSysts = {},
                const std::map<const IFitVar*, std::vector<double>>& seedPts = {},
