@@ -49,10 +49,10 @@ cetbuildtools v7_17_01 - only_for_build
 # Make the table by adding columns before "notes".
 
 qualifier     sbnanaobj	      ifdhc   	       srproxy  osclib                   notes
-e20:debug     e20:debug:s110  e20:debug:p383b  py3      e20:debug:n309:stanfree  -nq-
-e20:prof      e20:prof:s110   e20:prof:p383b   py3      e20:prof:n309:stanfree   -nq-
-c7:debug      c7:debug:s110   c7:debug:p383b   py3      c7:debug:n309:stanfree   -nq-
-c7:prof       c7:prof:s110    c7:prof:p383b    py3      c7:prof:n309:stanfree    -nq-
+e20:debug     e20:debug	      e20:debug:p383b  py3      e20:debug:n309:stanfree  -nq-
+e20:prof      e20:prof	      e20:prof:p383b   py3      e20:prof:n309:stanfree   -nq-
+c7:debug      c7:debug	      c7:debug:p383b   py3      c7:debug:n309:stanfree   -nq-
+c7:prof       c7:prof	      c7:prof:p383b    py3      c7:prof:n309:stanfree    -nq-
 
 # Preserve tabs and formatting in emacs and vi / vim:
 
