@@ -17,7 +17,8 @@ namespace ana
                                 Spectrum::ESparse sparse)
     : Spectrum(LabelsAndBins(axis.GetLabels(), axis.GetBinnings()), sparse)
   {
-    if(axis.HasVars()) loader.AddSpectrum(*this, axis.GetVar1D(), kNoSpillCut, cut, shift, wei);
+    abort();
+    //    if(axis.HasVars()) loader.AddSpectrum(*this, axis.GetVar1D(), kNoSpillCut, cut, shift, wei);
   }
 
   // TODO why can't these be compiled into cafanacore now?
@@ -106,10 +107,22 @@ namespace ana
 }
 
 #include "CAFAna/Core/ReweightableSpectrum.h"
-#include "CAFAna/Core/ReweightableSpectrumConstructors.txx"
+//#include "CAFAna/Core/ReweightableSpectrumConstructors.txx"
 
 namespace ana
 {
+  template<class T, class U> ReweightableSpectrum::
+  ReweightableSpectrum(SpectrumLoaderBase& loader,
+                       const _HistAxis<_Var<T>>& recoAxis,
+                       const _HistAxis<_Var<T>>& trueAxis,
+                       const _Cut<T, U>& cut,
+                       const SystShifts& shift,
+                       const _Weight<T>& wei)
+    : ReweightableSpectrum(recoAxis, trueAxis)
+  {
+    abort();
+  }
+
   template ReweightableSpectrum::ReweightableSpectrum(SpectrumLoaderBase& loader,
                                                       const HistAxis& recoAxis,
                                                       const HistAxis& trueAxis,

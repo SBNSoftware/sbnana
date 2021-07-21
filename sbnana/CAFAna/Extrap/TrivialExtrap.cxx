@@ -31,6 +31,19 @@ namespace ana
     fNCFromNumu   (nonswapSrc[kIsNCFromNumu], axis),
     fNCFromNue    (nonswapSrc[kIsNCFromNue ], axis)
   {
+    // All swapped files are equally valid as a source of NCs. This
+    // approximately doubles/triples our statistics. SpectrumLoader just adds
+    // events and POT for both cases, which is the right thing to do.
+
+    nueSrc[kIsNCFromNumu].GetVars(axis.GetVar1D(), kTrueLOverE).Register(&fNCFromNumu);
+    tauSrc[kIsNCFromNumu].GetVars(axis.GetVar1D(), kTrueLOverE).Register(&fNCFromNumu);
+
+    nueSrc[kIsNCFromNue].GetVars(axis.GetVar1D(), kTrueLOverE).Register(&fNCFromNue);
+    tauSrc[kIsNCFromNue].GetVars(axis.GetVar1D(), kTrueLOverE).Register(&fNCFromNue);
+
+    //Also load in intrinsic nues from nonswap file
+    nonswapSrc[kIsBeamNue && !kIsAntiNu].GetVars(axis.GetVar1D(), kTrueLOverE).Register(&fNueSurv);
+    nonswapSrc[kIsBeamNue &&  kIsAntiNu].GetVars(axis.GetVar1D(), kTrueLOverE).Register(&fNueSurvAnti);
   }
 
   //----------------------------------------------------------------------
@@ -64,19 +77,7 @@ namespace ana
     fNCFromNumu   (loaderNonswap, axis, cut && kIsNCFromNumu,     shift, wei),
     fNCFromNue    (loaderNonswap, axis, cut && kIsNCFromNue,      shift, wei)
   {
-    // All swapped files are equally valid as a source of NCs. This
-    // approximately doubles/triples our statistics. SpectrumLoader just adds
-    // events and POT for both cases, which is the right thing to do.
-
-    loaderNue  .AddReweightableSpectrum(fNCFromNumu, axis.GetVar1D(), kTrueLOverE, cut && kIsNCFromNumu, shift, wei);
-    loaderNuTau.AddReweightableSpectrum(fNCFromNumu, axis.GetVar1D(), kTrueLOverE, cut && kIsNCFromNumu, shift, wei);
-
-    loaderNue  .AddReweightableSpectrum(fNCFromNue, axis.GetVar1D(), kTrueLOverE, cut && kIsNCFromNue, shift, wei);
-    loaderNuTau.AddReweightableSpectrum(fNCFromNue, axis.GetVar1D(), kTrueLOverE, cut && kIsNCFromNue, shift, wei);
-
-    //Also load in intrinsic nues from nonswap file
-    loaderNonswap.AddReweightableSpectrum(fNueSurv, axis.GetVar1D(), kTrueLOverE, cut && kIsBeamNue && !kIsAntiNu, shift, wei);
-    loaderNonswap.AddReweightableSpectrum(fNueSurvAnti, axis.GetVar1D(), kTrueLOverE, cut && kIsBeamNue && kIsAntiNu, shift, wei);
+    abort(); // TODO TODO TODO
   }
 
 
