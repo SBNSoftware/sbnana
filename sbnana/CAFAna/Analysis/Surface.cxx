@@ -580,13 +580,14 @@ namespace ana
       it->Write( TString::Format("hist%d", idx++));
     }
 
+    dir->cd();
+
     if(!fBinMask.empty()){
       const std::vector<double> tmp(fBinMask.begin(), fBinMask.end());
       TVectorD m(tmp.size(), &tmp[0]);
       m.Write("mask");
     }
 
-    dir->cd();
     TObjString(fLogX ? "yes" : "no").Write("logx");
     TObjString(fLogY ? "yes" : "no").Write("logy");
 
@@ -641,6 +642,7 @@ namespace ana
   std::unique_ptr<Surface> Surface::
   LoadFromMulti(const std::vector<TFile*>& files, const std::string& label)
   {
+    DontAddDirectory guard;
     std::vector<std::unique_ptr<Surface>> surfs;
     for(TFile* f: files) {
       surfs.push_back(Surface::LoadFrom(f->GetDirectory(label.c_str())));
@@ -662,7 +664,10 @@ namespace ana
     if(binMask.size() != nbins) {
       std::cout << "Missing bins found in surfaces being merged. "
                 << "Are you sure you included all files for this surface?"
+                << " Loaded " << binMask.size() << " bins, but expected "
+                << nbins
                 << std::endl;
+      
       assert(false);
     }
 
