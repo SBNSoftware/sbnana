@@ -1,8 +1,8 @@
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
 
-#include "sbnana/SBNAnaVars/NumuVars.h"
-#include "sbnana/SBNAnaCuts/TruthCuts.h"
+#include "sbnana/SBNAna/Vars/NumuVars.h"
+#include "sbnana/SBNAna/Cuts/TruthCuts.h"
 
 using namespace ana;
 

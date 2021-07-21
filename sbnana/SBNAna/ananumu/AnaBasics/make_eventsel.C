@@ -7,8 +7,6 @@
 
 #include "TFile.h"
 
-#include <iostream>
-
 using namespace ana;
 
 void make_eventsel()
