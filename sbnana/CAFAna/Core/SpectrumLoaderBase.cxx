@@ -94,7 +94,7 @@ namespace ana
 
   //----------------------------------------------------------------------
   SpectrumLoaderBase::SpectrumLoaderBase()
-    : fGone(false), fPOT(0)
+    : fGone(false), fPOT(0), fPOTFromHist(0), fNGenEvt(0)
   {
   }
 
@@ -283,23 +283,8 @@ namespace ana
 
     TH1* hPOT = (TH1*)f->Get("TotalPOT");
     assert(hPOT);
-    fPOT += hPOT->Integral(0, -1);
-    /*
-    TTree* trPot = new TTree();
-    if (f->GetListOfKeys()->Contains("sbnsubrun"))
-      trPot = (TTree*)f->Get("sbnsubrun");
-    assert(trPot);
+    fPOTFromHist  += hPOT->Integral(0, -1);
 
-    long n;
-    // TODO should be totgoodpot?
-    caf::Proxy<double> pot(0, trPot, "totpot", n, 0);
-
-    for(n = 0; n < trPot->GetEntries(); n++){
-      trPot->LoadTree(n);
-
-      fPOT += pot;
-    }
-    */
     return f;
   }
 

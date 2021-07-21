@@ -38,5 +38,10 @@ namespace ana
   extern const Var kLongestTrackChi2Proton;
 
   extern const Var kMuonTrackLength;
+
+  extern const Var kLongestTrackDazzlePID;
+  extern const Var kLongestTrackDazzleMuonScore;
+  extern const Var kRecoShowerRazzlePID;
+  extern const Var kRecoShowerRazzleElectronScore;
 } // namespace
 

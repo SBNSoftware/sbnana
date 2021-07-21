@@ -15,7 +15,6 @@
 #include "TFile.h"
 #include "TH2.h"
 #include "TTree.h"
-#include "TTreeFormula.h"
 
 namespace ana
 {
@@ -96,14 +95,12 @@ namespace ana
       if(Nfiles > 1 && prog) prog->SetProgress((fileIdx+1.)/Nfiles);
     } // end for fileIdx
 
-    StoreExposures();
-
     if(prog){
       prog->Done();
       delete prog;
     }
 
-    ReportExposures();
+    StoreExposures(); // also triggers the POT printout
 
     fHistDefs.RemoveLoader(this);
     fHistDefs.Clear();
@@ -184,6 +181,14 @@ namespace ana
   //----------------------------------------------------------------------
   void SpectrumLoader::HandleRecord(caf::SRSpillProxy* sr)
   {
+    if(sr->hdr.first_in_subrun){
+      fPOT += sr->hdr.pot;
+      // TODO think about if this should be gated behind first_in_file. At the
+      // moment I think these will be synonymous. And despite the comment on
+      // hdr.pot, I think it may be file-based in practice too.
+      fNGenEvt += sr->hdr.ngenevt;
+    }
+
     // Do the spill-level spectra first. Keep this very simple because we
     // intend to change it.
     for(auto& spillcutdef: fSpillHistDefs){
@@ -308,38 +313,32 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void SpectrumLoader::ReportExposures()
-  {
-    // The POT member variables we use here were filled as part of
-    // SpectrumLoaderBase::GetNextFile() as we looped through the input files.
-
-    // Let's just assume no-one is using the Cut::POT() function yet, so this
-    // printout remains relevant...
-
-    std::cout << fPOT << " POT" << std::endl;
-  }
-
-  // cafanacore's spectra are expecting a different structure of
-  // spectrumloader. But we can easily trick it with these.
-  struct SpectrumSink
-  {
-    static void FillPOT(Spectrum* s, double pot){s->fPOT += pot;}
-  };
-  struct ReweightableSpectrumSink
-  {
-    static void FillPOT(ReweightableSpectrum* rw, double pot){rw->fPOT += pot;}
-  };
-
-  //----------------------------------------------------------------------
   void SpectrumLoader::StoreExposures()
   {
+    if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.001){
+      std::cout << fPOT << " POT from hdr differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
+      abort();
+    }
+
+    std::cout << fPOT << " POT over " << fNGenEvt << " readouts" << std::endl;
+
     for(auto& shiftdef: fHistDefs){
       for(auto& spillcutdef: shiftdef.second){
         for(auto& cutdef: spillcutdef.second){
           for(auto& weidef: cutdef.second){
             for(auto& vardef: weidef.second){
-              for(Spectrum** s: vardef.second.spects) if(*s) SpectrumSink::FillPOT(*s, fPOT);
-              for(auto rv: vardef.second.rwSpects) if(*rv.first) ReweightableSpectrumSink::FillPOT(*rv.first, fPOT);
+              for(Spectrum** s: vardef.second.spects){
+                if(*s){
+                  (*s)->FillPOT(fPOT);
+                  (*s)->FillLivetime(fNGenEvt);
+                }
+              }
+              for(auto it: vardef.second.rwSpects){
+                if(*it.first){
+                  (*it.first)->FillPOT(fPOT);
+                  (*it.first)->FillLivetime(fNGenEvt);
+                }
+              }
             }
           }
         }
@@ -350,7 +349,12 @@ namespace ana
     for(auto& spillcutdef: fSpillHistDefs){
       for(auto& spillweidef: spillcutdef.second){
         for(auto spillvardef: spillweidef.second){
-          for(Spectrum** s: spillvardef.second.spects) if(*s) SpectrumSink::FillPOT(*s, fPOT);
+          for(Spectrum** s: spillvardef.second.spects){
+            if(*s){
+              (*s)->FillPOT(fPOT);
+              (*s)->FillLivetime(fNGenEvt);
+            }
+          }
         }
       }
     }

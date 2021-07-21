@@ -100,11 +100,9 @@ namespace ana
     /// Figure out if \a str is a wildcard or SAM query and return a source
     IFileSource* WildcardOrSAMQuery(const std::string& str) const;
 
-
     /// Forwards to \ref fFileSource
     int NFiles() const;
 
-    /// Forwards to \ref fFileSource but also accumulates POT and livetime
     TFile* GetNextFile();
 
     std::string fWildcard;
@@ -112,7 +110,9 @@ namespace ana
 
     bool fGone; ///< Has Go() been called? Can't add more histograms after that
 
-    double fPOT; ///< Accumulated by calls to \ref GetNextFile
+    double fPOT;
+    double fPOTFromHist; ///< Accumulated by calls to \ref GetNextFile
+    int fNGenEvt;
 
     /// \brief Helper class for \ref SpectrumLoaderBase
     ///

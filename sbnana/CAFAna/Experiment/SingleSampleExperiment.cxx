@@ -14,8 +14,9 @@ namespace ana
 {
   //----------------------------------------------------------------------
   SingleSampleExperiment::SingleSampleExperiment(const IPrediction* pred,
-                                                 const Spectrum& data)
-    : fMC(pred), fData(data)
+                                                 const Spectrum& data,
+                                                 const Spectrum& cosmic)
+    : fMC(pred), fData(data), fCosmic(cosmic)
   {
   }
 
@@ -27,9 +28,21 @@ namespace ana
   //----------------------------------------------------------------------
   double SingleSampleExperiment::ChiSq(osc::IOscCalcAdjustable* calc,
                                        const SystShifts& syst) const
-   {
-    Eigen::ArrayXd apred = fMC->PredictSyst(calc, syst).GetEigen(fData.POT());
+  {
+    const Spectrum pred = fMC->PredictSyst(calc, syst);
+    Eigen::ArrayXd apred = pred.GetEigen(fData.POT());
     Eigen::ArrayXd adata = fData.GetEigen(fData.POT());
+
+    // "Livetime" here means number of readout windows.
+    if(fCosmic.Livetime() > 0){ // if cosmics supplied
+      // This many are already included in the beam MC
+      const double beamLivetime = pred.Livetime() * fData.POT()/pred.POT();
+      // So we need to take this many from the cosmics-only to match the data
+      const double intimeLivetime = fData.Livetime() - beamLivetime;
+
+      Eigen::ArrayXd acosmic = fCosmic.GetEigen(intimeLivetime, kLivetime);
+      apred += acosmic;
+    }
 
     ApplyMask(apred, adata);
 
@@ -84,6 +97,7 @@ namespace ana
 
     fMC->SaveTo(dir->mkdir("mc"));
     fData.SaveTo(dir, "data");
+    fCosmic.SaveTo(dir, "cosmic");
 
     tmp->cd();
   }
@@ -96,12 +110,14 @@ namespace ana
     assert(ptag->GetString() == "SingleSampleExperiment");
 
     assert(dir->GetDirectory("mc"));
-    
+
 
     const IPrediction* mc = ana::LoadFrom<IPrediction>(dir->GetDirectory("mc")).release();
     const std::unique_ptr<Spectrum> data = Spectrum::LoadFrom(dir, "data");
+    const std::unique_ptr<Spectrum> cosmic = Spectrum::LoadFrom(dir, "cosmic");
 
     auto ret = std::make_unique<SingleSampleExperiment>(mc, *data);
+
     return ret;
   }
 

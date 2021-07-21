@@ -23,12 +23,20 @@ extern const Cut kShowerConvGapCut;
 extern const Cut kShowerDensityCut;
 extern const Cut kShowerOpenAngleCut;
 
+extern const Cut kShowerRazzleElectronCut;
+extern const Cut kShowerRazzleElectronScoreCut;
+extern const Cut kNueLongestTrackDazzleMuonCut;
+extern const Cut kNueLongestTrackDazzleMuonScoreCut;
+extern const Cut kNueAllTrackDazzleMuonCut;
+extern const Cut kNueAllTrackDazzleMuonScoreCut;
+
 extern const Cut kNueContainedND;
 extern const Cut kNueContainedFD;
 
 const Cut kPreNueSelND = kFiducialVolumeND && kSlcNuScoreCut && kSlcFlashMatchCut;
 const Cut kRecoNueSel = kRecoShower && kShowerEnergyCut;
 const Cut kFullNueSel = kNueTrackLenCut && kShowerConvGapCut && kShowerdEdxCut && kShowerDensityCut;
+const Cut kRazzleDazzleNueSel = kNueAllTrackDazzleMuonCut && kShowerRazzleElectronScoreCut;
 
 // Specific FD cuts although they're currenly basically the same as for the ND
 const Cut kNueFlashScoreFDCut   = kSlcFlashMatchCut;
