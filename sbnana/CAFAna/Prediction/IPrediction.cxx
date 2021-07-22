@@ -15,7 +15,6 @@
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Prediction/PredictionLinFit.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoOsc.h"
-#include "sbnana/CAFAna/Prediction/PredictionScaleComp.h"
 #include "sbnana/CAFAna/Prediction/PredictionIncDirt.h"
 #include "sbnana/CAFAna/Prediction/PredictionSBNExtrap.h"
 
@@ -39,8 +38,6 @@ namespace ana
     //    if(tag == "PredictionLinFit") return PredictionLinFit::LoadFrom(dir);
 
     if(tag == "PredictionNoOsc") return PredictionNoOsc::LoadFrom(dir);
-
-    if(tag == "PredictionScaleComp") return PredictionScaleComp::LoadFrom(dir);
 
     if(tag == "PredictionIncDirt") return PredictionIncDirt::LoadFrom(dir);
 

@@ -8,34 +8,23 @@
 namespace ana
 {
   // --------------------------------------------------------------------------
-  PredictionIncDirt::PredictionIncDirt(SpectrumLoaderBase& loaderNonswap,
-                                       SpectrumLoaderBase& loaderNue,
-                                       SpectrumLoaderBase& loaderNuTau,
-                                       SpectrumLoaderBase& loaderIntrinsic,
-                                       SpectrumLoaderBase& loaderDirt,
-                                       const HistAxis& axis,
-                                       const SpillCut& spillcut,
-                                       const Cut& cut,
-                                       const SystShifts& shift,
-                                       const Weight& wei)
-    : fDet(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-           axis, spillcut, cut, shift, wei),
-      fDirt(loaderDirt, kNullLoader, kNullLoader, kNullLoader,
-            axis, spillcut, cut, shift, wei)
+  PredictionIncDirt::PredictionIncDirt(ISliceSource& srcNonswap,
+                                       ISliceSource& srcNue,
+                                       ISliceSource& srcNuTau,
+                                       ISliceSource& srcIntrinsic,
+                                       ISliceSource& srcDirt,
+                                       const HistAxis& axis)
+    : fDet(srcNonswap, srcNue, srcNuTau, srcIntrinsic, axis),
+      fDirt(srcDirt, kNullLoader, kNullLoader, kNullLoader, axis)
   {
   }
 
   // --------------------------------------------------------------------------
   PredictionIncDirt::PredictionIncDirt(Loaders& loaders,
-                                       SpectrumLoaderBase& loaderDirt,
-                                       const HistAxis& axis,
-                                       const SpillCut& spillcut,
-                                       const Cut& cut,
-                                       const SystShifts& shift,
-                                       const Weight& wei)
-    : fDet(loaders, axis, spillcut, cut, shift, wei),
-      fDirt(loaderDirt, kNullLoader, kNullLoader, kNullLoader,
-            axis, spillcut, cut, shift, wei)
+                                       ISliceSource& loaderDirt,
+                                       const HistAxis& axis)
+    : fDet(loaders, axis),
+      fDirt(loaderDirt, kNullLoader, kNullLoader, kNullLoader, axis)
   {
   }
 

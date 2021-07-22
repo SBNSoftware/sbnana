@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "CAFAna/Core/IFileSource.h"
+#include "sbnana/CAFAna/Core/IRecordSource.h"
 
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/MultiVar.h"
@@ -158,20 +159,4 @@ namespace ana
     /// [spillcut][spillwei][spillvar]
     IDMap<SpillCut, IDMap<SpillWeight, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
   };
-
-  /// \brief Dummy loader that doesn't load any files
-  ///
-  /// Useful when a loader is required for a component you want to ignore
-  class NullLoader: public SpectrumLoaderBase
-  {
-  public:
-    NullLoader() {}
-    ~NullLoader();
-
-    virtual void Go() override;
-  };
-  /// \brief Dummy loader that doesn't load any files
-  ///
-  /// Useful when a loader is required for a component you want to ignore
-  static NullLoader kNullLoader;
 }

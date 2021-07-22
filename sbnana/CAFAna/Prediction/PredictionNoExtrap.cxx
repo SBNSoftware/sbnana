@@ -13,63 +13,19 @@
 namespace ana
 {
   //----------------------------------------------------------------------
-  PredictionNoExtrap::PredictionNoExtrap(SpectrumLoaderBase& loaderNonswap,
-                                         SpectrumLoaderBase& loaderNue,
-                                         SpectrumLoaderBase& loaderNuTau,
-					 SpectrumLoaderBase& loaderIntrinsic,
-                                         const std::string& label,
-                                         const Binning& bins,
-                                         const Var& var,
-                                         const SpillCut& spillcut,
-                                         const Cut& cut,
-                                         const SystShifts& shift,
-                                         const Weight& wei)
-    : PredictionExtrap(new TrivialExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-                                         label, bins, var, spillcut, cut, shift, wei))
-  {
-  }
-
-  //----------------------------------------------------------------------
-  PredictionNoExtrap::PredictionNoExtrap(SpectrumLoaderBase& loaderNonswap,
-                                         SpectrumLoaderBase& loaderNue,
-                                         SpectrumLoaderBase& loaderNuTau,
-					 SpectrumLoaderBase& loaderIntrinsic,
-					 const HistAxis& axis,
-                                         const SpillCut& spillcut,
-                                         const Cut& cut,
-                                         const SystShifts& shift,
-                                         const Weight& wei)
-    : PredictionExtrap(new TrivialExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-                                         axis, spillcut, cut, shift, wei))
-  {
-  }
-
-  //----------------------------------------------------------------------
-  PredictionNoExtrap::PredictionNoExtrap(PredictionExtrap* pred) : PredictionExtrap(pred->GetExtrap())
+  PredictionNoExtrap::PredictionNoExtrap(ISliceSource& srcNonswap,
+                                         ISliceSource& srcNue,
+                                         ISliceSource& srcNuTau,
+					 ISliceSource& srcIntrinsic,
+                                         const HistAxis& axis)
+    : PredictionExtrap(new TrivialExtrap(srcNonswap, srcNue, srcNuTau, srcIntrinsic, axis))
   {
   }
 
   //----------------------------------------------------------------------
   PredictionNoExtrap::PredictionNoExtrap(Loaders& loaders,
-                                         const std::string& label,
-                                         const Binning& bins,
-                                         const Var& var,
-                                         const SpillCut& spillcut,
-                                         const Cut& cut,
-                                         const SystShifts& shift,
-                                         const Weight& wei)
-    : PredictionNoExtrap(loaders, HistAxis(label, bins, var), spillcut, cut, shift, wei)
-  {
-  }
-
-  //----------------------------------------------------------------------
-  PredictionNoExtrap::PredictionNoExtrap(Loaders& loaders,
-                                         const HistAxis& axis,
-                                         const SpillCut& spillcut,
-                                         const Cut& cut,
-                                         const SystShifts& shift,
-                                         const Weight& wei)
-    : PredictionExtrap(new TrivialExtrap(loaders, axis, spillcut, cut, shift, wei))
+                                         const HistAxis& axis)
+    : PredictionExtrap(new TrivialExtrap(loaders, axis))
   {
   }
 
@@ -92,9 +48,8 @@ namespace ana
   std::unique_ptr<PredictionNoExtrap> PredictionNoExtrap::LoadFrom(TDirectory* dir)
   {
     assert(dir->GetDirectory("extrap"));
-    IExtrap* extrap = ana::LoadFrom<IExtrap>(dir->GetDirectory("extrap")).release();
-    PredictionExtrap* pred = new PredictionExtrap(extrap);
-    return std::unique_ptr<PredictionNoExtrap>(new PredictionNoExtrap(pred));
+    TrivialExtrap* extrap = ana::LoadFrom<TrivialExtrap>(dir->GetDirectory("extrap")).release();
+    return std::unique_ptr<PredictionNoExtrap>(new PredictionNoExtrap(extrap));
   }
 
 

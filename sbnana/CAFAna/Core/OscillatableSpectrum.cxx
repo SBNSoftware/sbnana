@@ -37,7 +37,7 @@ namespace ana
     : ReweightableSpectrum(src[kHasNu], axis, HistAxis("True L / E (km / GeV)", kTrueLOverEBins, kTrueLOverE))
   {
   }
-
+  /*
   //----------------------------------------------------------------------
   OscillatableSpectrum::
   OscillatableSpectrum(const std::string& label, const Binning& bins,
@@ -64,7 +64,7 @@ namespace ana
                            kHasNu && cut, shift, wei)
   {
   }
-
+  */
   //----------------------------------------------------------------------
   OscillatableSpectrum::OscillatableSpectrum(const Eigen::MatrixXd&& mat,
                                              const HistAxis& recoAxis,
@@ -264,21 +264,19 @@ namespace ana
 
     delete dir;
 
-    auto ret = std::make_unique<OscillatableSpectrum>(kNullLoader,
-                                                      HistAxis(labels, bins),
-                                                      kNoCut);
+    const HistAxis recoAxis(labels, bins);
 
     // ROOT histogram storage is row-major, but Eigen is column-major by
     // default
     typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen:: Dynamic, Eigen::RowMajor> MatRowMajor;
-    ret->fMat = Eigen::Map<MatRowMajor>(spect->GetArray(),
-                                        ret->fMat.rows(),
-                                        ret->fMat.cols());
+
+    auto ret = std::make_unique<OscillatableSpectrum>(Eigen::Map<MatRowMajor>(spect->GetArray(), kTrueLOverEBins.NBins()+2, recoAxis.GetBins1D().NBins()+2),
+                                                      recoAxis,
+                                                      hPot->Integral(0, -1),
+                                                      hLivetime->Integral(0, -1));
+
 
     delete spect;
-
-    ret->fPOT = hPot->Integral(0, -1);
-    ret->fLivetime = hLivetime->Integral(0, -1);
 
     delete hPot;
     delete hLivetime;

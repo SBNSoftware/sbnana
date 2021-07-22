@@ -46,6 +46,7 @@ namespace ana
     nonswapSrc[kIsBeamNue &&  kIsAntiNu].GetVars(axis.GetVar1D(), kTrueLOverE).Register(&fNueSurvAnti);
   }
 
+  /*
   //----------------------------------------------------------------------
   TrivialExtrap::TrivialExtrap(SpectrumLoaderBase& loaderNonswap,
                                SpectrumLoaderBase& loaderNue,
@@ -98,30 +99,15 @@ namespace ana
                   cut, shift, wei)
   {
   }
+  */
 
   //----------------------------------------------------------------------
-  TrivialExtrap::TrivialExtrap(Loaders& loaders,
-                               std::string label,
-                               const Binning& bins,
-                               const Var& var,
-                               const Cut& cut,
-                               const SystShifts& shift,
-                               const Weight& wei)
-    : TrivialExtrap(loaders, HistAxis(label, bins, var), cut, shift, wei)
-  {
-  }
-
-  //----------------------------------------------------------------------
-  TrivialExtrap::TrivialExtrap(Loaders& loaders,
-                               const HistAxis& axis,
-                               const Cut& cut,
-                               const SystShifts& shift,
-                               const Weight& wei)
+  TrivialExtrap::TrivialExtrap(Loaders& loaders, const HistAxis& axis)
     : TrivialExtrap(loaders.GetLoader(Loaders::kMC, Loaders::kNonSwap),
                     loaders.GetLoader(Loaders::kMC, Loaders::kNueSwap),
                     loaders.GetLoader(Loaders::kMC, Loaders::kNuTauSwap),
 		    loaders.GetLoader(Loaders::kMC, Loaders::kIntrinsic),
-                    axis, cut, shift, wei)
+                    axis)
   {
   }
 

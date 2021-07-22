@@ -12,24 +12,16 @@ namespace ana
   class PredictionIncDirt: public IPrediction
   {
   public:
-    PredictionIncDirt(SpectrumLoaderBase& loaderNonswap,
-                      SpectrumLoaderBase& loaderNue,
-                      SpectrumLoaderBase& loaderNuTau,
-                      SpectrumLoaderBase& loaderIntrinsic,
-                      SpectrumLoaderBase& loaderDirt,
-                      const HistAxis& axis,
-                      const SpillCut& spillcut,
-                      const Cut& cut,
-                      const SystShifts& shift = kNoShift,
-                      const Weight& wei = kUnweighted);
+    PredictionIncDirt(ISliceSource& srcNonswap,
+                      ISliceSource& srcNue,
+                      ISliceSource& srcNuTau,
+                      ISliceSource& srcIntrinsic,
+                      ISliceSource& srcDirt,
+                      const HistAxis& axis);
 
     PredictionIncDirt(Loaders& loaders,
-                      SpectrumLoaderBase& loaderDirt,
-                      const HistAxis& axis,
-                      const SpillCut& spillcut,
-                      const Cut& cut,
-                      const SystShifts& shift = kNoShift,
-                      const Weight& wei = kUnweighted);
+                      ISliceSource& srcDirt,
+                      const HistAxis& axis);
 
     virtual ~PredictionIncDirt();
 

@@ -187,16 +187,6 @@ namespace ana
     return f;
   }
 
-  //----------------------------------------------------------------------
-  void NullLoader::Go()
-  {
-  }
-
-  //----------------------------------------------------------------------
-  NullLoader::~NullLoader()
-  {
-  }
-
   // Apparently the existence of fSpillDefs isn't enough and I need to spell
   // this out to make sure the function bodies are generated.
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<Weight, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::VarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;

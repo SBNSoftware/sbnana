@@ -50,9 +50,9 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void Loaders::AddLoader(SpectrumLoaderBase* file,
-                               DataMC datamc,
-                               SwappingConfig swap)
+  void Loaders::AddLoader(SpectrumLoader* src,
+                          DataMC datamc,
+                          SwappingConfig swap)
   {
     assert(datamc == kMC || swap == kNonSwap);
 
@@ -61,7 +61,7 @@ namespace ana
     // Clear out the old one if necessary
     DisableLoader(datamc, swap);
 
-    fLoaders[key] = file;
+    fLoaders[key] = src;
   }
 
   //----------------------------------------------------------------------
@@ -84,8 +84,8 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  SpectrumLoaderBase& Loaders::GetLoader(DataMC datamc,
-                                         SwappingConfig swap)
+  SpectrumLoader& Loaders::GetLoader(DataMC datamc,
+                                     SwappingConfig swap)
   {
     assert(datamc == kMC || swap == kNonSwap);
 

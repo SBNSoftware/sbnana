@@ -2,6 +2,8 @@
 
 #include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
+#include "sbnana/CAFAna/Core/IRecordSource.h"
+
 class TFile;
 
 namespace ana
@@ -16,14 +18,14 @@ namespace ana
   /// need. They will register with this loader. Finally, calling \ref Go will
   /// cause all the spectra to be filled at once. After this the loader may not
   /// be used again.
-  class SpectrumLoader: public SpectrumLoaderBase
+  class SpectrumLoader: public SpectrumLoaderBase, public ISpillSource, public ISliceSource
   {
   public:
     SpectrumLoader(const std::string& wildcard, int max = 0);
     SpectrumLoader(const std::vector<std::string>& fnames, int max = 0);
     /// Named constructor for SAM projects
-    static SpectrumLoader FromSAMProject(const std::string& proj,
-					 int fileLimit = -1);
+    static SpectrumLoader* FromSAMProject(const std::string& proj,
+                                          int fileLimit = -1);
     virtual ~SpectrumLoader();
 
     virtual void Go() override;
@@ -52,4 +54,20 @@ namespace ana
     //    std::vector<double> fPOTByCut;      ///< Indexing matches fAllCuts
     int max_entries;
   };
+
+// TODO does this actually work right?
+  /// \brief Dummy loader that doesn't load any files
+  ///
+  /// Useful when a loader is required for a component you want to ignore
+  class NullLoader: public SpectrumLoader
+  {
+  public:
+    NullLoader();
+    virtual ~NullLoader();
+    virtual void Go() override;
+  };
+  /// \brief Dummy loader that doesn't load any files
+  ///
+  /// Useful when a loader is required for a component you want to ignore
+  static NullLoader kNullLoader;
 }

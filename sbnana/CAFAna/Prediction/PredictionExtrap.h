@@ -31,7 +31,6 @@ namespace ana
 
     IExtrap* GetExtrap() const {return fExtrap;}
   protected:
-
     IExtrap* fExtrap;
   };
 }

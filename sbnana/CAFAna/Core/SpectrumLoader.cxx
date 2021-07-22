@@ -36,12 +36,12 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  SpectrumLoader SpectrumLoader::FromSAMProject(const std::string& proj,
-                                                int fileLimit)
+  SpectrumLoader* SpectrumLoader::FromSAMProject(const std::string& proj,
+                                                 int fileLimit)
   {
-    SpectrumLoader ret;
-    ret.fWildcard = "project "+proj;
-    ret.fFileSource = std::unique_ptr<IFileSource>(new SAMProjectSource(proj, fileLimit));
+    SpectrumLoader* ret = new SpectrumLoader;
+    ret->fWildcard = "project "+proj;
+    ret->fFileSource = std::unique_ptr<IFileSource>(new SAMProjectSource(proj, fileLimit));
     return ret;
   }
 
@@ -360,4 +360,20 @@ namespace ana
     }
 
   }
+
+  //----------------------------------------------------------------------
+  NullLoader::NullLoader()
+  {
+  }
+
+  //----------------------------------------------------------------------
+  NullLoader::~NullLoader()
+  {
+  }
+
+  //----------------------------------------------------------------------
+  void NullLoader::Go()
+  {
+  }
+
 } // namespace

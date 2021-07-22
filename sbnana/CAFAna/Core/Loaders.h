@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
 
 #include <map>
 
@@ -29,16 +29,16 @@ namespace ana
                         DataMC datamc,
                         SwappingConfig swap = kNonSwap);
 
-    void AddLoader(SpectrumLoaderBase*,
-                        DataMC datamc,
-                        SwappingConfig swap = kNonSwap);
+    void AddLoader(SpectrumLoader*,
+                   DataMC datamc,
+                   SwappingConfig swap = kNonSwap);
 
     void DisableLoader(DataMC datamc,
                        SwappingConfig swap = kNonSwap);
 
     /// Retrieve a specific loader
-    SpectrumLoaderBase& GetLoader(DataMC datamc,
-                                  SwappingConfig swap = kNonSwap);
+    SpectrumLoader& GetLoader(DataMC datamc,
+                              SwappingConfig swap = kNonSwap);
 
     /// Call Go() on all the loaders
     void Go();
@@ -50,7 +50,7 @@ namespace ana
     std::map<Key_t, std::string> fLoaderPaths;
     std::map<Key_t, std::vector<std::string>> fLoaderFiles;
     // Only reify them when someone actually calls GetLoader()
-    std::map<Key_t, SpectrumLoaderBase*> fLoaders;
+    std::map<Key_t, SpectrumLoader*> fLoaders;
 
     /// We give this back when a loader isn't set for some configuration
     NullLoader fNull;
