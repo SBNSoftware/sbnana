@@ -2,6 +2,8 @@
 
 #include "sbnana/CAFAna/Core/Ratio.h"
 
+#include "TGraphAsymmErrors.h"
+
 #include <cassert>
 
 namespace ana
@@ -20,6 +22,8 @@ namespace ana
       assert(i < fUnivs.size());
       return fUnivs[i];
     }
+
+    TGraphAsymmErrors* ErrorBand() const;
 
     EnsembleRatio& operator*=(const EnsembleRatio& rhs);
     EnsembleRatio operator*(const EnsembleRatio& rhs) const;

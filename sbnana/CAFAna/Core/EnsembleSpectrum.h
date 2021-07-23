@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+class TGraphAsymmErrors;
+
 namespace ana
 {
   class EnsembleRatio;
@@ -40,6 +42,11 @@ namespace ana
 
     double Livetime() const {return fNom.Livetime();}
 
+    /// Result can be painted prettily with \ref DrawErrorBand
+    TGraphAsymmErrors* ErrorBand(double exposure,
+                                 EExposureType expotype = kPOT,
+                                 EBinType bintype = kBinContent) const;
+
     void Scale(double c);
 
     EnsembleSpectrum& operator+=(const EnsembleSpectrum& rhs);
@@ -71,4 +78,9 @@ namespace ana
   // Commutative
   inline EnsembleSpectrum operator*(const EnsembleRatio& lhs, const EnsembleSpectrum& rhs){return rhs*lhs;}
   inline EnsembleSpectrum operator/(const EnsembleRatio& lhs, const EnsembleSpectrum& rhs){return rhs/lhs;}
+
+  void DrawErrorBand(TH1* nom,
+                     TGraphAsymmErrors* band,
+                     int bandCol = -1,
+                     double alpha = 1);
 }

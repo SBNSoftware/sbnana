@@ -3,7 +3,10 @@
 #include "sbnana/CAFAna/Core/EnsembleRatio.h"
 
 #include "TDirectory.h"
+#include "TGraphAsymmErrors.h"
+#include "TH1.h"
 #include "TObjString.h"
+#include "TPad.h"
 
 namespace ana
 {
@@ -35,6 +38,28 @@ namespace ana
     for(const Var& w: univ_weis){
       fUnivs.emplace_back(loader, axis, spillcut, cut, kNoShift, cv_wei * w);
     }
+  }
+
+  //----------------------------------------------------------------------
+  TGraphAsymmErrors* EnsembleSpectrum::ErrorBand(double exposure,
+                                                 EExposureType expotype,
+                                                 EBinType bintype) const
+  {
+    std::unique_ptr<TH1D> hnom(fNom.ToTH1(exposure, expotype, bintype));
+
+    TGraphAsymmErrors* g = new TGraphAsymmErrors;
+
+    for(int binIdx = 0; binIdx < hnom->GetNbinsX()+2; ++binIdx){
+      const double xnom = hnom->GetXaxis()->GetBinCenter(binIdx);
+      const double ynom = hnom->GetBinContent(binIdx);
+      g->SetPoint(binIdx, xnom, ynom);
+
+      const double dx = hnom->GetXaxis()->GetBinWidth(binIdx);
+
+      g->SetPointError(binIdx, dx/2, dx/2, .1*ynom, .1*ynom);
+    } // end for binIdx
+
+    return g;
   }
 
   //----------------------------------------------------------------------
@@ -147,5 +172,35 @@ namespace ana
     }
 
     return ret;
+  }
+
+  //----------------------------------------------------------------------
+  void DrawErrorBand(TH1* nom, TGraphAsymmErrors* band, int bandCol, double alpha)
+  {
+    if(bandCol == -1) bandCol = nom->GetLineColor()-7; // hopefully a lighter version
+
+    // Check if this pad has already been drawn in
+    const bool same = gPad && !gPad->GetListOfPrimitives()->IsEmpty();
+
+    nom->Draw(same ? "hist same" : "hist");
+
+    band->SetFillColorAlpha(bandCol, alpha);
+    band->Draw("e2 same");
+
+    nom->Draw("hist same");
+
+    // If we are the first spectrum to draw, scale the y-axis appropriately to
+    // fit the error band as well as the nominal
+    if(!same){
+      double maxY = 0;
+      for(int i = 0; i < band->GetN(); ++i){
+        maxY = std::max(maxY, band->GetY()[i] + band->GetErrorYhigh(i));
+      }
+
+      // Use non-zero lower value so that SetLogy() still works
+      nom->GetYaxis()->SetRangeUser(1e-10, 1.1 * maxY);
+    }
+
+    gPad->RedrawAxis();
   }
 }

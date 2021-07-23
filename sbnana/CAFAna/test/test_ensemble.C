@@ -81,6 +81,15 @@ void test_ensemble(bool reload = false)
 
   new TCanvas;
 
+  TGraphAsymmErrors* bandCC = sCC->ErrorBand(kPOTnominal);
+  DrawErrorBand(sCC->Nominal().ToTH1(kPOTnominal, kRed), bandCC);
+  TGraphAsymmErrors* bandNC = sNC->ErrorBand(kPOTnominal);
+  DrawErrorBand(sNC->Nominal().ToTH1(kPOTnominal, kBlue), bandNC, kBlue, .5);
+
+  gPad->Print("test_ensemble_band.pdf");
+
+  new TCanvas;
+
   EnsembleRatio ratio = *sCC / *sNC;
   TH1* hratio = ratio.Nominal().ToTH1();
   hratio->Draw("hist ][");
@@ -91,4 +100,10 @@ void test_ensemble(bool reload = false)
   hratio->Draw("hist ][ same");
 
   gPad->Print("test_ensemble_ratio.pdf");
+
+  new TCanvas;
+  TGraphAsymmErrors* bandRatio = ratio.ErrorBand();
+  DrawErrorBand(ratio.Nominal().ToTH1(), bandRatio, kGray);
+
+  gPad->Print("test_ensemble_ratio_band.pdf");
 }
