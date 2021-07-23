@@ -47,6 +47,10 @@ namespace ana
   {
     std::unique_ptr<TH1D> hnom(fNom.ToTH1(exposure, expotype, bintype));
 
+    std::vector<std::unique_ptr<TH1D>> hunivs;
+    hunivs.reserve(fUnivs.size());
+    for(const Spectrum& u: fUnivs) hunivs.emplace_back(u.ToTH1(exposure, expotype, bintype));
+
     TGraphAsymmErrors* g = new TGraphAsymmErrors;
 
     for(int binIdx = 0; binIdx < hnom->GetNbinsX()+2; ++binIdx){
@@ -56,7 +60,21 @@ namespace ana
 
       const double dx = hnom->GetXaxis()->GetBinWidth(binIdx);
 
-      g->SetPointError(binIdx, dx/2, dx/2, .1*ynom, .1*ynom);
+      std::vector<double> ys;
+      ys.reserve(hunivs.size());
+      for(const std::unique_ptr<TH1D>& hu: hunivs){
+        ys.push_back(hu->GetBinContent(binIdx));
+      }
+
+      // 1 sigma
+      const double y0 = FindQuantile(.5-0.6827/2, ys);
+      const double y1 = FindQuantile(.5+0.6827/2, ys);
+
+      // It's theoretically possible for the central value to be outside the
+      // error bands - clamp to zero in that case
+      g->SetPointError(binIdx, dx/2, dx/2,
+                       std::max(ynom-y0, 0.),
+                       std::max(y1-ynom, 0.));
     } // end for binIdx
 
     return g;
@@ -177,7 +195,7 @@ namespace ana
   //----------------------------------------------------------------------
   void DrawErrorBand(TH1* nom, TGraphAsymmErrors* band, int bandCol, double alpha)
   {
-    if(bandCol == -1) bandCol = nom->GetLineColor()-7; // hopefully a lighter version
+    if(bandCol == -1) bandCol = nom->GetLineColor()-10; // hopefully a lighter version
 
     // Check if this pad has already been drawn in
     const bool same = gPad && !gPad->GetListOfPrimitives()->IsEmpty();

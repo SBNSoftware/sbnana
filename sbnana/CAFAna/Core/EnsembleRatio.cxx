@@ -23,6 +23,10 @@ namespace ana
   {
     std::unique_ptr<TH1D> hnom(fNom.ToTH1());
 
+    std::vector<std::unique_ptr<TH1D>> hunivs;
+    hunivs.reserve(fUnivs.size());
+    for(const Ratio& u: fUnivs) hunivs.emplace_back(u.ToTH1());
+
     TGraphAsymmErrors* g = new TGraphAsymmErrors;
 
     for(int binIdx = 0; binIdx < hnom->GetNbinsX()+2; ++binIdx){
@@ -32,7 +36,21 @@ namespace ana
 
       const double dx = hnom->GetXaxis()->GetBinWidth(binIdx);
 
-      g->SetPointError(binIdx, dx/2, dx/2, .1*ynom, .1*ynom);
+      std::vector<double> ys;
+      ys.reserve(hunivs.size());
+      for(const std::unique_ptr<TH1D>& hu: hunivs){
+        ys.push_back(hu->GetBinContent(binIdx));
+      }
+
+      // 1 sigma
+      const double y0 = FindQuantile(.5-0.6827/2, ys);
+      const double y1 = FindQuantile(.5+0.6827/2, ys);
+
+      // It's theoretically possible for the central value to be outside the
+      // error bands - clamp to zero in that case
+      g->SetPointError(binIdx, dx/2, dx/2,
+                       std::max(ynom-y0, 0.),
+                       std::max(y1-ynom, 0.));
     } // end for binIdx
 
     return g;

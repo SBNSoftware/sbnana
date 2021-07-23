@@ -956,4 +956,31 @@ namespace ana
     }
     return fMask1D;
   }
+
+  //----------------------------------------------------------------------
+  double FindQuantile(double frac, std::vector<double>& xs)
+  {
+    // In principle we could use std::nth_element(). Probably doesn't matter
+    // much in practice since this is only for plotting.
+    std::sort(xs.begin(), xs.end());
+
+    const int N = xs.size();
+    const int idx = frac*(N+1)-1;
+    // Up values for the points either side of this significance
+    const double x0 = xs[idx];
+    const double x1 = xs[idx+1];
+    // What significance taking the points themselves would be worth. Consider
+    // some small-N cases. If there is only one point it represents the 50%
+    // mark. If there are two, 50% is halfway between them, and they are 33%
+    // and 67%.
+    const double frac0 = double(idx+1)/(N+1);
+    const double frac1 = double(idx+2)/(N+1);
+    const double dfrac = 1./(N+1); //frac1-frac0;
+
+    // Make sure we picked the right points
+    assert(frac >= frac0 && frac <= frac1);
+
+    // Linear interpolation
+    return ((frac1-frac)*x0 + (frac-frac0)*x1)/dfrac;
+  }
 }

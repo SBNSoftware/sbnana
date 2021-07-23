@@ -103,7 +103,7 @@ void test_ensemble(bool reload = false)
 
   new TCanvas;
   TGraphAsymmErrors* bandRatio = ratio.ErrorBand();
-  DrawErrorBand(ratio.Nominal().ToTH1(), bandRatio, kGray);
+  DrawErrorBand(hratio, bandRatio, kGray);
 
   gPad->Print("test_ensemble_ratio_band.pdf");
 }
