@@ -960,27 +960,28 @@ namespace ana
   //----------------------------------------------------------------------
   double FindQuantile(double frac, std::vector<double>& xs)
   {
+    // This turns out to be a much more fraught issue than you would naively
+    // expect. This algorithm is equivalent to R-6 here:
+    // https://en.wikipedia.org/wiki/Quantile#Estimating_quantiles_from_a_sample
+
     // In principle we could use std::nth_element(). Probably doesn't matter
     // much in practice since this is only for plotting.
     std::sort(xs.begin(), xs.end());
 
     const int N = xs.size();
-    const int idx = frac*(N+1)-1;
-    // Up values for the points either side of this significance
-    const double x0 = xs[idx];
-    const double x1 = xs[idx+1];
-    // What significance taking the points themselves would be worth. Consider
-    // some small-N cases. If there is only one point it represents the 50%
-    // mark. If there are two, 50% is halfway between them, and they are 33%
-    // and 67%.
-    const double frac0 = double(idx+1)/(N+1);
-    const double frac1 = double(idx+2)/(N+1);
-    const double dfrac = 1./(N+1); //frac1-frac0;
+    // The index we would ideally be sampling at
+    const double h = frac*(N+1);
+    // The indices on either side where we have to actually evaluate
+    const int h0 = std::floor(h);
+    const int h1 = std::ceil(h);
+    if(h0 == 0) return xs[0]; // Don't underflow indexing
+    // The values at those indices
+    const double x0 = xs[h0-1]; // wikipedia is using 1-based indexing
+    const double x1 = xs[h1-1];
 
-    // Make sure we picked the right points
-    assert(frac >= frac0 && frac <= frac1);
+    if(h0 == h1) return x0;
 
     // Linear interpolation
-    return ((frac1-frac)*x0 + (frac-frac0)*x1)/dfrac;
+    return (h1-h)*x0 + (h-h0)*x1;
   }
 }
