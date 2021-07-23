@@ -614,13 +614,11 @@ namespace ana
 
     for(int idx = 0; idx < s.GetNrows(); ++idx){
       surf->fSeedValues.push_back(s[idx]);
+    }
 
-      // Search for old "marg" name here too for backwards compatibility
+    for(int idx = 0; ; ++idx){
       TH2* h = (TH2*)dir->Get(TString::Format("profHists/hist%d", idx));
-      if(h)
-        surf->fProfHists.push_back(h);
-      else
-        surf->fProfHists.push_back((TH2*)dir->Get(TString::Format("margHists/hist%d", idx)));
+      if(h) surf->fProfHists.push_back(h); else break;
     }
 
     if(m){
