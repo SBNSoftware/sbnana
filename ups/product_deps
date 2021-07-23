@@ -38,7 +38,7 @@ sbnanaobj        v09_16_10
 #SAM tools?
 ifdhc            v2_5_13
 # For CAFAna
-srproxy          v00.24
+srproxy          v00.25
 osclib           v00.15
 
 # list products required ONLY for the build
