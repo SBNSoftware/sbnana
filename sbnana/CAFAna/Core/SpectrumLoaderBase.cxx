@@ -24,74 +24,6 @@
 
 namespace ana
 {
-
-  //----------------------------------------------------------------------
-  SpectrumLoaderBase::SpectList::~SpectList()
-  {
-    // We don't seem to be able to do this - maybe SpectList gets copied?
-    // Let's just bite the bullet and leak a few pointers. This all works
-    // completely differently in NOvA CAFAna with refactored SpectrumLoader.
-    //
-    // Clean up the memory allocated for the pointers themselves
-    //    for(Spectrum** s: spects) delete *s;
-    //    for(auto rv: rwSpects) delete *rv.first;
-  }
-
-  // Work around ReweightableSpectrum's friend requirements
-  struct ReweightableSpectrumSink
-  {
-    static void AddLoader(ReweightableSpectrum** rw){(*rw)->AddLoader(rw);}
-    static void RemoveLoader(ReweightableSpectrum** rw){(*rw)->RemoveLoader(rw);}
-  };
-
-  //----------------------------------------------------------------------
-  void SpectrumLoaderBase::SpectList::RemoveLoader(SpectrumLoaderBase* l)
-  {
-    for(Spectrum** s: spects) if(*s) (*s)->RemoveLoader(s);
-    for(auto rv: rwSpects) if(*rv.first) ReweightableSpectrumSink::RemoveLoader(rv.first);
-  }
-
-  //----------------------------------------------------------------------
-  size_t SpectrumLoaderBase::SpectList::TotalSize() const
-  {
-    return spects.size() + rwSpects.size();
-  }
-
-  //----------------------------------------------------------------------
-  template<class T, class U> U& SpectrumLoaderBase::IDMap<T, U>::
-  operator[](const T& key)
-  {
-    for(auto& it: fElems){
-      if(it.first.ID() == key.ID()) return it.second;
-    }
-    fElems.push_back(std::make_pair(key, U()));
-    return fElems.back().second;
-  }
-
-  //----------------------------------------------------------------------
-  template<class T, class U> void SpectrumLoaderBase::IDMap<T, U>::
-  RemoveLoader(SpectrumLoaderBase* l)
-  {
-    for(auto& it: fElems) it.second.RemoveLoader(l);
-  }
-
-  //----------------------------------------------------------------------
-  template<class T, class U> void SpectrumLoaderBase::IDMap<T, U>::Clear()
-  {
-    fElems.clear();
-  }
-
-  //----------------------------------------------------------------------
-  template<class T, class U> size_t SpectrumLoaderBase::IDMap<T, U>::
-  TotalSize()
-  {
-    size_t ret = 0;
-    for(auto& it: fElems) ret += it.second.TotalSize();
-    return ret;
-  }
-
-  // Start of SpectrumLoaderBase proper
-
   //----------------------------------------------------------------------
   SpectrumLoaderBase::SpectrumLoaderBase()
     : fGone(false), fPOT(0), fPOTFromHist(0), fNGenEvt(0)
@@ -119,8 +51,6 @@ namespace ana
   //----------------------------------------------------------------------
   SpectrumLoaderBase::~SpectrumLoaderBase()
   {
-    fHistDefs.RemoveLoader(this);
-    fHistDefs.Clear();
   }
 
   //----------------------------------------------------------------------
@@ -186,10 +116,4 @@ namespace ana
 
     return f;
   }
-
-  // Apparently the existence of fSpillDefs isn't enough and I need to spell
-  // this out to make sure the function bodies are generated.
-  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<Weight, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::VarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
-
-  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SpillWeight, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::SpillVarOrMultiVar, SpectrumLoaderBase::SpectList>>>;
 } // namespace

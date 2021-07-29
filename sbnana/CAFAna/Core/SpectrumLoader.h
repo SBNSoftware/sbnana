@@ -60,7 +60,7 @@ namespace ana
     int max_entries;
   };
 
-// TODO does this actually work right?
+  // TODO does this actually work right?
   /// \brief Dummy loader that doesn't load any files
   ///
   /// Useful when a loader is required for a component you want to ignore

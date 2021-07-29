@@ -20,8 +20,6 @@
 namespace caf{class StandardRecord;}
 
 class TFile;
-class TH1;
-class TTree;
 
 namespace ana
 {
@@ -32,12 +30,6 @@ namespace ana
   class SpectrumLoaderBase
   {
   public:
-
-    friend class ReweightableSpectrum;
-    friend class NDOscillatableSpectrum;
-    friend class OscillatableSpectrum;
-    friend class Spectrum;
-
     virtual ~SpectrumLoaderBase();
 
     /// Load all the registered spectra
@@ -78,85 +70,5 @@ namespace ana
     double fPOT;
     double fPOTFromHist; ///< Accumulated by calls to \ref GetNextFile
     int fNGenEvt;
-
-    /// \brief Helper class for \ref SpectrumLoaderBase
-    ///
-    /// List of Spectrum and OscillatableSpectrum, some utility functions
-    struct SpectList
-    {
-      ~SpectList();
-      void RemoveLoader(SpectrumLoaderBase* l);
-      size_t TotalSize() const;
-
-      // Doubled pointers are sadly necessary as we need the locations of the
-      // nodes to be constant so Spectrum can re-register itself if moved.
-      std::vector<Spectrum**> spects;
-      std::vector<std::pair<ReweightableSpectrum**, Var>> rwSpects;
-    };
-
-    /// \brief Helper class for \ref SpectrumLoaderBase
-    ///
-    /// Functions like std::map<T, U> except it should be faster to iterate
-    /// through the elements (while slower to fill) and it knows to compare Ts
-    /// via their ID() function. Various methods that forward through to the
-    /// \ref SpectList at the end of the chain.
-    template<class T, class U> struct IDMap
-    {
-      U& operator[](const T& key);
-
-      // Make class iterable. Keep inline for speed
-      typedef typename std::vector<std::pair<T, U>>::iterator it_t;
-      inline it_t begin(){return fElems.begin();}
-      inline it_t end(){return fElems.end();}
-
-      void RemoveLoader(SpectrumLoaderBase* l);
-      void Clear();
-      size_t TotalSize();
-    protected:
-      std::vector<std::pair<T, U>> fElems;
-    };
-
-    template<class T> class _VarOrMultiVar
-    {
-    public:
-      // v could easily be a temporary, have to make a copy
-      _VarOrMultiVar(const _Var<T>& v) : fVar(new _Var<T>(v)), fMultiVar(0) {}
-      _VarOrMultiVar(const _MultiVar<T>& v) : fVar(0), fMultiVar(new _MultiVar<T>(v)) {}
-      ~_VarOrMultiVar() {delete fVar; delete fMultiVar;}
-
-      _VarOrMultiVar(const _VarOrMultiVar& v)
-        : fVar(v.fVar ? new _Var<T>(*v.fVar) : 0),
-          fMultiVar(v.fMultiVar ? new _MultiVar<T>(*v.fMultiVar) : 0)
-      {
-      }
-
-      _VarOrMultiVar(_VarOrMultiVar&& v)
-      {
-        fVar = v.fVar;
-        fMultiVar = v.fMultiVar;
-        v.fVar = 0;
-        v.fMultiVar = 0;
-      }
-
-      bool IsMulti() const {return fMultiVar;}
-      const _Var<T>& GetVar() const {assert(fVar); return *fVar;}
-      const _MultiVar<T>& GetMultiVar() const {assert(fMultiVar); return *fMultiVar;}
-
-      int ID() const {return fVar ? fVar->ID() : fMultiVar->ID();}
-
-    protected:
-      const _Var<T>* fVar;
-      const _MultiVar<T>* fMultiVar;
-    };
-
-    typedef _VarOrMultiVar<caf::SRSliceProxy> VarOrMultiVar;
-    typedef _VarOrMultiVar<caf::SRSpillProxy> SpillVarOrMultiVar;
-
-    /// \brief All the spectra that need to be filled
-    ///
-    /// [spillcut][shift][cut][wei][var]
-    IDMap<SpillCut, IDMap<SystShifts, IDMap<Cut, IDMap<Weight, IDMap<VarOrMultiVar, SpectList>>>>> fHistDefs;
-    /// [spillcut][spillwei][spillvar]
-    IDMap<SpillCut, IDMap<SpillWeight, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
   };
 }
