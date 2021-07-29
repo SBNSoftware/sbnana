@@ -4,6 +4,8 @@
 #include "CAFAna/Core/ReweightableSpectrum.h"
 #include "CAFAna/Core/SAMProjectSource.h"
 #include "CAFAna/Core/Spectrum.h"
+
+#include "sbnana/CAFAna/Core/IRecordSink.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
@@ -189,6 +191,16 @@ namespace ana
       fNGenEvt += sr->hdr.ngenevt;
     }
 
+    for(ISpillSink* s: ISpillSource::fSinks) s->HandleRecord(sr, 1);
+
+    for(caf::SRSliceProxy& slc: sr->slc){
+      for(ISliceSink* s: ISliceSource::fSinks){
+        s->HandleRecord(&slc, 1);
+      }
+    }
+
+    return;
+
     // Do the spill-level spectra first. Keep this very simple because we
     // intend to change it.
     for(auto& spillcutdef: fSpillHistDefs){
@@ -321,6 +333,19 @@ namespace ana
     }
 
     std::cout << fPOT << " POT over " << fNGenEvt << " readouts" << std::endl;
+
+
+    for(ISpillSink* s: ISpillSource::fSinks){
+      s->HandlePOT(fPOT);
+      s->HandleLivetime(fNGenEvt);
+    }
+
+    for(ISliceSink* s: ISliceSource::fSinks){
+      s->HandlePOT(fPOT);
+      s->HandleLivetime(fNGenEvt);
+    }
+
+    return;
 
     for(auto& shiftdef: fHistDefs){
       for(auto& spillcutdef: shiftdef.second){

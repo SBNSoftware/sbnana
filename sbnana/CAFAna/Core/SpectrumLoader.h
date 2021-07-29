@@ -30,6 +30,11 @@ namespace ana
 
     virtual void Go() override;
 
+    using ISpillSource::GetVar;
+    using ISliceSource::GetVar;
+    using ISpillSource::operator[];
+    using ISliceSource::operator[];
+
   protected:
     SpectrumLoader();
 
