@@ -3,12 +3,46 @@
 #include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
 #include "sbnana/CAFAna/Core/IRecordSource.h"
+#include "sbnana/CAFAna/Core/IRecordSink.h"
 
 class TFile;
 
 namespace ana
 {
   class Progress;
+
+  // TODO drop the "SBN" and define all this in RecordSource?
+  /// SBNSpillSource is special since it also knows how to loop over slices
+  class SBNSpillSource: public ISpillSink, public ISpillSource, public ISliceSource
+  {
+  public:
+
+    using ISliceSource::GetVar;
+    using ISliceSource::GetVars;
+    beta::IValueSource& operator[](const Var& var){return GetVar(var);}
+
+    using ISliceSource::GetCut;
+    ISliceSource& operator[](const Cut& cut){return ISliceSource::GetCut(cut);}
+
+    SBNSpillSource& GetCut(const SpillCut& cut);
+
+    SBNSpillSource& operator[](const SpillCut& cut){return GetCut(cut);}
+
+    using ISpillSource::GetVar;
+    using ISpillSource::GetVars;
+    beta::IValueSource& operator[](const SpillVar& var){return GetVar(var);}
+
+    virtual void HandleRecord(const caf::SRSpillProxy* spill, double weight) override;
+
+    virtual void HandlePOT(double pot) override;
+
+    virtual void HandleLivetime(double livetime) override;
+
+    virtual unsigned int NSinks() const override;
+
+  protected:
+    SBNSpillSource(){}
+  };
 
   /// \brief Collaborates with \ref Spectrum and \ref OscillatableSpectrum to
   /// fill spectra from CAF files.
@@ -18,7 +52,7 @@ namespace ana
   /// need. They will register with this loader. Finally, calling \ref Go will
   /// cause all the spectra to be filled at once. After this the loader may not
   /// be used again.
-  class SpectrumLoader: public SpectrumLoaderBase, public ISpillSource, public ISliceSource
+  class SpectrumLoader: public SpectrumLoaderBase, public SBNSpillSource
   {
   public:
     SpectrumLoader(const std::string& wildcard, int max = 0);
@@ -29,11 +63,6 @@ namespace ana
     virtual ~SpectrumLoader();
 
     virtual void Go() override;
-
-    using ISpillSource::GetVar;
-    using ISliceSource::GetVar;
-    using ISpillSource::operator[];
-    using ISliceSource::operator[];
 
   protected:
     SpectrumLoader();
@@ -47,8 +76,6 @@ namespace ana
     SpectrumLoader& operator=(const SpectrumLoader&) = delete;
 
     virtual void HandleFile(TFile* f, Progress* prog = 0);
-
-    virtual void HandleRecord(caf::SRSpillProxy* sr);
 
     /// Save accumulated exposures into the individual spectra
     virtual void StoreExposures();

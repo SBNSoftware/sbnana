@@ -21,6 +21,50 @@
 namespace ana
 {
   //----------------------------------------------------------------------
+  SBNSpillSource& SBNSpillSource::GetCut(const SpillCut& cut)
+  {
+    // TODO don't leak - ret needs to be saved somewhere
+    // TODO cacheing for when it's the same cut
+    SBNSpillSource* ret = new SBNSpillSource;
+    ISpillSource::GetCut(cut).Register(ret);
+    return *ret;
+  }
+
+  //----------------------------------------------------------------------
+  void SBNSpillSource::HandleRecord(const caf::SRSpillProxy* spill, double weight)
+  {
+    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandleRecord(spill, weight);
+    for(caf::SRSliceProxy& slc: spill->slc){
+      for(ISliceSink* s: ISliceSource::fSinks){
+        s->HandleRecord(&slc, 1);
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------
+  void SBNSpillSource::HandlePOT(double pot)
+  {
+    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandlePOT(pot);
+    for(ISliceSink* sink: ISliceSource::fSinks) sink->HandlePOT(pot);
+  }
+
+  //----------------------------------------------------------------------
+  void SBNSpillSource::HandleLivetime(double livetime)
+  {
+    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandleLivetime(livetime);
+    for(ISliceSink* sink: ISliceSource::fSinks) sink->HandleLivetime(livetime);
+  }
+
+  //----------------------------------------------------------------------
+  unsigned int SBNSpillSource::NSinks() const
+  {
+    unsigned int totsinks = 0;
+    for(const ISpillSink* s: ISpillSource::fSinks) totsinks += s->NSinks();
+    for(const ISliceSink* s: ISliceSource::fSinks) totsinks += s->NSinks();
+    return totsinks;
+  }
+
+  //----------------------------------------------------------------------
   SpectrumLoader::SpectrumLoader(const std::string& wildcard, int max)
     : SpectrumLoaderBase(wildcard), max_entries(max)
   {
@@ -93,11 +137,7 @@ namespace ana
       ++fileIdx;
 
       if(Nfiles >= 0 && !prog){
-        int totsinks = 0;
-        for(const ISpillSink* s: ISpillSource::fSinks) totsinks += s->NSinks();
-        for(const ISliceSink* s: ISliceSource::fSinks) totsinks += s->NSinks();
-
-        prog = new Progress(TString::Format("Filling %d spectra from %d files matching '%s'", totsinks, Nfiles, fWildcard.c_str()).Data());
+        prog = new Progress(TString::Format("Filling %ud spectra from %d files matching '%s'", NSinks(), Nfiles, fWildcard.c_str()).Data());
       }
 
       HandleFile(f, Nfiles == 1 ? prog : 0);
@@ -153,30 +193,18 @@ namespace ana
     for(n = 0; n < Nentries; ++n){
       if(type != caf::kFlatMultiTree) tr->LoadTree(n); // for all single-tree modes
 
-      HandleRecord(&sr);
+      if(sr.hdr.first_in_subrun){
+        fPOT += sr.hdr.pot;
+        // TODO think about if this should be gated behind first_in_file. At
+        // the moment I think these will be synonymous. And despite the comment
+        // on hdr.pot, I think it may be file-based in practice too.
+        fNGenEvt += sr.hdr.ngenevt;
+      }
+
+      HandleRecord(&sr, 1);
 
       if(prog) prog->SetProgress(double(n)/Nentries);
     } // end for n
-  }
-
-  //----------------------------------------------------------------------
-  void SpectrumLoader::HandleRecord(caf::SRSpillProxy* sr)
-  {
-    if(sr->hdr.first_in_subrun){
-      fPOT += sr->hdr.pot;
-      // TODO think about if this should be gated behind first_in_file. At the
-      // moment I think these will be synonymous. And despite the comment on
-      // hdr.pot, I think it may be file-based in practice too.
-      fNGenEvt += sr->hdr.ngenevt;
-    }
-
-    for(ISpillSink* s: ISpillSource::fSinks) s->HandleRecord(sr, 1);
-
-    for(caf::SRSliceProxy& slc: sr->slc){
-      for(ISliceSink* s: ISliceSource::fSinks){
-        s->HandleRecord(&slc, 1);
-      }
-    }
   }
 
   //----------------------------------------------------------------------
@@ -189,16 +217,8 @@ namespace ana
 
     std::cout << fPOT << " POT over " << fNGenEvt << " readouts" << std::endl;
 
-
-    for(ISpillSink* s: ISpillSource::fSinks){
-      s->HandlePOT(fPOT);
-      s->HandleLivetime(fNGenEvt);
-    }
-
-    for(ISliceSink* s: ISliceSource::fSinks){
-      s->HandlePOT(fPOT);
-      s->HandleLivetime(fNGenEvt);
-    }
+    HandlePOT(fPOT);
+    HandleLivetime(fNGenEvt);
   }
 
   //----------------------------------------------------------------------
