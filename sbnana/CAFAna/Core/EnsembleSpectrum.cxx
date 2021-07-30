@@ -211,7 +211,8 @@ namespace ana
     // fit the error band as well as the nominal
     if(!same){
       double maxY = 0;
-      for(int i = 0; i < band->GetN(); ++i){
+      // Don't consider underflow or overflow bins when determining maximum
+      for(int i = 1; i < band->GetN()-1; ++i){
         maxY = std::max(maxY, band->GetY()[i] + band->GetErrorYhigh(i));
       }
 
