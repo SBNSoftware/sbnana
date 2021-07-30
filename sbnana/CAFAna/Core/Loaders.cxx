@@ -9,20 +9,20 @@
 namespace ana
 {
   //----------------------------------------------------------------------
-  Loaders::Loaders()
+  template<class SrcT> Sources<SrcT>::Sources()
   {
   }
 
   //----------------------------------------------------------------------
-  Loaders::~Loaders()
+  template<class SrcT> Sources<SrcT>::~Sources()
   {
-    // for(auto it: fLoaders) delete it.second;
+    // for(auto it: fSources) delete it.second;
   }
 
   //----------------------------------------------------------------------
-  void Loaders::SetLoaderPath(const std::string& path,
-                              DataMC datamc,
-                              SwappingConfig swap)
+  template<class SrcT> void Sources<SrcT>::SetLoaderPath(const std::string& path,
+                                                         DataMC datamc,
+                                                         SwappingConfig swap)
   {
     assert(datamc == kMC || swap == kNonSwap);
 
@@ -35,9 +35,9 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void Loaders::SetLoaderFiles(const std::vector<std::string>& files,
-                               DataMC datamc,
-                               SwappingConfig swap)
+  template<class SrcT> void Sources<SrcT>::SetLoaderFiles(const std::vector<std::string>& files,
+                                                          DataMC datamc,
+                                                          SwappingConfig swap)
   {
     assert(datamc == kMC || swap == kNonSwap);
 
@@ -50,9 +50,9 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void Loaders::AddLoader(SpectrumLoader* src,
-                          DataMC datamc,
-                          SwappingConfig swap)
+  template<class SrcT> void Sources<SrcT>::AddLoader(SrcT* src,
+                                                     DataMC datamc,
+                                                     SwappingConfig swap)
   {
     assert(datamc == kMC || swap == kNonSwap);
 
@@ -61,22 +61,22 @@ namespace ana
     // Clear out the old one if necessary
     DisableLoader(datamc, swap);
 
-    fLoaders[key] = src;
+    fSources[key] = src;
   }
 
   //----------------------------------------------------------------------
-  void Loaders::DisableLoader(DataMC datamc,
-                              SwappingConfig swap)
+  template<class SrcT> void Sources<SrcT>::DisableLoader(DataMC datamc,
+                                                         SwappingConfig swap)
   {
     assert(datamc == kMC || swap == kNonSwap);
 
     const Key_t key(datamc, swap);
 
     // Clear out the current one if possible
-    auto it = fLoaders.find(key);
-    if(it != fLoaders.end()){
+    auto it = fSources.find(key);
+    if(it != fSources.end()){
       delete it->second;
-      fLoaders.erase(it);
+      fSources.erase(it);
     }
 
     fLoaderPaths.erase(key);
@@ -84,34 +84,34 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  SpectrumLoader& Loaders::GetLoader(DataMC datamc,
-                                     SwappingConfig swap)
+  template<class SrcT> SrcT& Sources<SrcT>::GetLoader(DataMC datamc,
+                                                      SwappingConfig swap)
   {
     assert(datamc == kMC || swap == kNonSwap);
 
     const Key_t key(datamc, swap);
 
-    // Look up and return. Use fNull if no loader is set for this config
-    auto itLoader = fLoaders.find(key);
-    if(itLoader != fLoaders.end()) return *itLoader->second;
+    // Look up and return. Use kNullLoader if no loader is set for this config
+    auto itLoader = fSources.find(key);
+    if(itLoader != fSources.end()) return *itLoader->second;
 
     auto itPath = fLoaderPaths.find(key);
     if(itPath != fLoaderPaths.end()){
-      fLoaders[key] = new SpectrumLoader(itPath->second);
-      return *fLoaders[key];
+      fSources[key] = new SpectrumLoader(itPath->second);
+      return *fSources[key];
     }
     auto itFiles = fLoaderFiles.find(key);
     if(itFiles != fLoaderFiles.end()){
-      fLoaders[key] = new SpectrumLoader(itFiles->second);
-      return *fLoaders[key];
+      fSources[key] = new SpectrumLoader(itFiles->second);
+      return *fSources[key];
     }
 
-    return fNull;
+    return kNullLoader;
   }
 
-  //----------------------------------------------------------------------
-  void Loaders::Go()
-  {
-    for(auto it: fLoaders) it.second->Go();
-  }
+  // Instantiate the ones we need
+  template class Sources<SpectrumLoader>;
+  template class Sources<SBNSpillSource>;
+  template class Sources<ISpillSource>;
+  template class Sources<ISliceSource>;
 }

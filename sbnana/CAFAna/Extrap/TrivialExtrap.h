@@ -3,8 +3,7 @@
 #include "sbnana/CAFAna/Extrap/IExtrap.h"
 
 #include "sbnana/CAFAna/Core/IRecordSource.h"
-
-#include "sbnana/CAFAna/Core/Weight.h"
+#include "sbnana/CAFAna/Core/Loaders.h"
 
 namespace ana
 {
@@ -20,7 +19,7 @@ namespace ana
                   ISliceSource& intrinsicSrc,
                   const HistAxis& axis);
 
-    TrivialExtrap(Loaders& loaders, const HistAxis& axis);
+    TrivialExtrap(SliceSources& srcs, const HistAxis& axis);
 
     virtual OscillatableSpectrum NueSurvComponent()       {return fNueSurv;}
     virtual OscillatableSpectrum AntiNueSurvComponent()   {return fNueSurvAnti;}

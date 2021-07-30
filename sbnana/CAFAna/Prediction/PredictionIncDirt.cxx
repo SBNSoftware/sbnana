@@ -20,11 +20,11 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
-  PredictionIncDirt::PredictionIncDirt(Loaders& loaders,
-                                       ISliceSource& loaderDirt,
+  PredictionIncDirt::PredictionIncDirt(SliceSources& srcs,
+                                       ISliceSource& srcDirt,
                                        const HistAxis& axis)
-    : fDet(loaders, axis),
-      fDirt(loaderDirt, kNullLoader, kNullLoader, kNullLoader, axis)
+    : fDet(srcs, axis),
+      fDirt(srcDirt, kNullLoader, kNullLoader, kNullLoader, axis)
   {
   }
 

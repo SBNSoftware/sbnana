@@ -102,11 +102,11 @@ namespace ana
   */
 
   //----------------------------------------------------------------------
-  TrivialExtrap::TrivialExtrap(Loaders& loaders, const HistAxis& axis)
-    : TrivialExtrap(loaders.GetLoader(Loaders::kMC, Loaders::kNonSwap),
-                    loaders.GetLoader(Loaders::kMC, Loaders::kNueSwap),
-                    loaders.GetLoader(Loaders::kMC, Loaders::kNuTauSwap),
-		    loaders.GetLoader(Loaders::kMC, Loaders::kIntrinsic),
+  TrivialExtrap::TrivialExtrap(SliceSources& srcs, const HistAxis& axis)
+    : TrivialExtrap(srcs.GetLoader(kMC, kNonSwap),
+                    srcs.GetLoader(kMC, kNueSwap),
+                    srcs.GetLoader(kMC, kNuTauSwap),
+		    srcs.GetLoader(kMC, kIntrinsic),
                     axis)
   {
   }

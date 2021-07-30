@@ -19,7 +19,7 @@ namespace ana
                       ISliceSource& srcDirt,
                       const HistAxis& axis);
 
-    PredictionIncDirt(Loaders& loaders,
+    PredictionIncDirt(SliceSources& srcs,
                       ISliceSource& srcDirt,
                       const HistAxis& axis);
 

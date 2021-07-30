@@ -23,9 +23,9 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  PredictionNoExtrap::PredictionNoExtrap(Loaders& loaders,
+  PredictionNoExtrap::PredictionNoExtrap(SliceSources& srcs,
                                          const HistAxis& axis)
-    : PredictionExtrap(new TrivialExtrap(loaders, axis))
+    : PredictionExtrap(new TrivialExtrap(srcs, axis))
   {
   }
 

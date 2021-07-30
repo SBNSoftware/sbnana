@@ -137,7 +137,7 @@ namespace ana
       ++fileIdx;
 
       if(Nfiles >= 0 && !prog){
-        prog = new Progress(TString::Format("Filling %ud spectra from %d files matching '%s'", NSinks(), Nfiles, fWildcard.c_str()).Data());
+        prog = new Progress(TString::Format("Filling %u spectra from %d files matching '%s'", NSinks(), Nfiles, fWildcard.c_str()).Data());
       }
 
       HandleFile(f, Nfiles == 1 ? prog : 0);

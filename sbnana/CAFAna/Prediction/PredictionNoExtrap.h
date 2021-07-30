@@ -20,8 +20,7 @@ namespace ana
                        ISliceSource& srcIntrinsic,
                        const HistAxis& axis);
 
-    PredictionNoExtrap(Loaders& loaders,
-                       const HistAxis& axis);
+    PredictionNoExtrap(SliceSources& srcs, const HistAxis& axis);
 
     virtual ~PredictionNoExtrap();
 
