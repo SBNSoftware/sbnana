@@ -65,28 +65,6 @@ namespace ana
     b *= fMaskA;
   }
 
-  /*
-  stan::math::var SingleSampleExperiment::LogLikelihood(osc::IOscCalcAdjustableStan *osc,
-                                                        const SystShifts &syst) const
-  {
-    const Spectrum pred = fMC->PredictSyst(osc, syst);
- 
-    const Eigen::ArrayXd data = fData.GetEigen(fData.POT());
- 
-    // It's possible to have a non-stan prediction. e.g. from a NoOsc
-    // prediction with no systs.
-    if(pred.HasStan()){
-      // fully-qualified so that we get the one in StanUtils.h
-      //
-      // LogLikelihood(), confusingly, returns chi2=-2*LL
-      return ana::LogLikelihood(pred.GetEigenStan(fData.POT()), data) / -2.;
-    }
-    else{
-      return ana::LogLikelihood(pred.GetEigen(fData.POT()), data) / -2.;
-    }
-   }
-  */ 
-
   //----------------------------------------------------------------------
   void SingleSampleExperiment::SaveTo(TDirectory* dir) const
   {

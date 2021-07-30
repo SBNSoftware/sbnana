@@ -44,27 +44,7 @@ namespace ana
   class OscillatableSpectrum: public ReweightableSpectrum
   {
   public:
-    //    friend class SpectrumLoaderBase;
-    //    friend class SpectrumLoader;
-    //    friend class NullLoader;
-
     OscillatableSpectrum(ana::ISliceSource& src, const HistAxis& axis);
-
-    /*
-    OscillatableSpectrum(const std::string& label,
-                         const Binning& bins,
-                         SpectrumLoaderBase& loader,
-                         const Var& var,
-                         const Cut& cut,
-                         const SystShifts& shift = kNoShift,
-                         const Weight& wei = kUnweighted);
-
-    OscillatableSpectrum(SpectrumLoaderBase& loader,
-                         const HistAxis& axis,
-                         const Cut& cut,
-                         const SystShifts& shift = kNoShift,
-                         const Weight& wei = kUnweighted);
-    */
 
     OscillatableSpectrum(const Eigen::MatrixXd&& mat,
                          const HistAxis& recoAxis,

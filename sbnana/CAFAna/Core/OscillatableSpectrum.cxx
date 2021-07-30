@@ -37,34 +37,7 @@ namespace ana
     : ReweightableSpectrum(src[kHasNu], axis, HistAxis("True L / E (km / GeV)", kTrueLOverEBins, kTrueLOverE))
   {
   }
-  /*
-  //----------------------------------------------------------------------
-  OscillatableSpectrum::
-  OscillatableSpectrum(const std::string& label, const Binning& bins,
-                       SpectrumLoaderBase& loader,
-                       const Var& var,
-                       const Cut& cut,
-                       const SystShifts& shift,
-                       const Weight& wei)
-    : ReweightableSpectrum(loader,
-                           HistAxis(label, bins, var),
-                           HistAxis("True L / E (km / GeV)", kTrueLOverEBins, kTrueLOverE),
-                           kHasNu && cut, shift, wei)
-  {
-  }
 
-  //----------------------------------------------------------------------
-  OscillatableSpectrum::OscillatableSpectrum(SpectrumLoaderBase& loader,
-                                             const HistAxis& axis,
-                                             const Cut& cut,
-                                             const SystShifts& shift,
-                                             const Weight& wei)
-    : ReweightableSpectrum(loader, axis,
-                           HistAxis("True baseline / True energy (km / GeV)", kTrueLOverEBins, kTrueLOverE),
-                           kHasNu && cut, shift, wei)
-  {
-  }
-  */
   //----------------------------------------------------------------------
   OscillatableSpectrum::OscillatableSpectrum(const Eigen::MatrixXd&& mat,
                                              const HistAxis& recoAxis,
