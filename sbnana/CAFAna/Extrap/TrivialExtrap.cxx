@@ -46,61 +46,6 @@ namespace ana
     nonswapSrc[kIsBeamNue &&  kIsAntiNu].GetVars(axis.GetVar1D(), kTrueLOverE).Register(&fNueSurvAnti);
   }
 
-  /*
-  //----------------------------------------------------------------------
-  TrivialExtrap::TrivialExtrap(SpectrumLoaderBase& loaderNonswap,
-                               SpectrumLoaderBase& loaderNue,
-                               SpectrumLoaderBase& loaderNuTau,
-                               SpectrumLoaderBase& loaderIntrinsic,
-                               const HistAxis& axis,
-                               const Cut& cut,
-                               const SystShifts& shift,
-                               const Weight& wei)
-    :
-    fNueApp       (loaderNue,     axis, cut && kIsNueApp    && !kIsAntiNu, shift, wei),
-    fNueAppAnti   (loaderNue,     axis, cut && kIsNueApp    &&  kIsAntiNu, shift, wei),
-
-    fNumuSurv     (loaderNonswap, axis, cut && kIsNumuCC    && !kIsAntiNu, shift, wei),
-    fNumuSurvAnti (loaderNonswap, axis, cut && kIsNumuCC    &&  kIsAntiNu, shift, wei),
-
-    fNumuApp      (loaderNuTau,   axis, cut && kIsNumuApp   && !kIsAntiNu, shift, wei),
-    fNumuAppAnti  (loaderNuTau,   axis, cut && kIsNumuApp   &&  kIsAntiNu, shift, wei),
-
-    fNueSurv      (loaderIntrinsic, axis, cut && kIsBeamNue   && !kIsAntiNu, shift, wei),
-    fNueSurvAnti  (loaderIntrinsic, axis, cut && kIsBeamNue   &&  kIsAntiNu, shift, wei),
-
-    fTauFromE     (loaderNue,     axis, cut && kIsTauFromE  && !kIsAntiNu, shift, wei),
-    fTauFromEAnti (loaderNue,     axis, cut && kIsTauFromE  &&  kIsAntiNu, shift, wei),
-
-    fTauFromMu    (loaderNuTau,   axis, cut && kIsTauFromMu && !kIsAntiNu, shift, wei),
-    fTauFromMuAnti(loaderNuTau,   axis, cut && kIsTauFromMu &&  kIsAntiNu, shift, wei),
-
-    fNCFromNumu   (loaderNonswap, axis, cut && kIsNCFromNumu,     shift, wei),
-    fNCFromNue    (loaderNonswap, axis, cut && kIsNCFromNue,      shift, wei)
-  {
-    abort(); // TODO TODO TODO
-  }
-
-
-  //----------------------------------------------------------------------
-  TrivialExtrap::TrivialExtrap(SpectrumLoaderBase& loaderNonswap,
-                               SpectrumLoaderBase& loaderNue,
-                               SpectrumLoaderBase& loaderNuTau,
-                               SpectrumLoaderBase& loaderIntrinsic,
-                               std::string label,
-                               const Binning& bins,
-                               const Var& var,
-                               const Cut& cut,
-                               const SystShifts& shift,
-                               const Weight& wei)
-    :
-    TrivialExtrap(loaderNonswap, loaderNue, loaderNuTau, loaderIntrinsic,
-                  HistAxis(label, bins, var),
-                  cut, shift, wei)
-  {
-  }
-  */
-
   //----------------------------------------------------------------------
   TrivialExtrap::TrivialExtrap(SliceSources& srcs, const HistAxis& axis)
     : TrivialExtrap(srcs.GetLoader(kMC, kNonSwap),
@@ -142,9 +87,6 @@ namespace ana
   std::unique_ptr<TrivialExtrap> TrivialExtrap::LoadFrom(TDirectory* dir)
   {
     std::unique_ptr<TrivialExtrap> ret(new TrivialExtrap);
-
-    // This is a lot of repetitive typing. Define some macros
-#define LOAD_OSC(FIELD, LABEL) ret->FIELD = *OscillatableSpectrum::LoadFrom(dir, LABEL);
 
     ret->fNueApp        = *OscillatableSpectrum::LoadFrom(dir, "nue_app");
     ret->fNueAppAnti    = *OscillatableSpectrum::LoadFrom(dir, "nue_app_anti");
