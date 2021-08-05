@@ -16,10 +16,10 @@ namespace ana
                           double best_len   = -5.0;
 			  for( unsigned int trkIdx = 0; trkIdx < slc->reco.ntrk; trkIdx++ ){
 			    auto &trk = slc->reco.trk[trkIdx];
-			    if(trk.chi2pid2.pid_ndof < 0 ) return -5.0;
+			    if(trk.chi2pid[2].pid_ndof < 0 ) return -5.0;
 
 			    //Find longest trk w/Chi2 for muon < Chi2 for pion
-			    bool isMuonLike = trk.chi2pid2.chi2_pion > trk.chi2pid2.chi2_muon;
+			    bool isMuonLike = trk.chi2pid[2].chi2_pion > trk.chi2pid[2].chi2_muon;
 			    if( isMuonLike && trk.len > best_len ){ //Chi2 muon < Chi2 pion
 			      // best_score = score;
 			      best_len = trk.len;

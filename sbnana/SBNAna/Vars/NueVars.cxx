@@ -271,14 +271,7 @@ const Var kLongestTrackChi2Muon(
       if (longestTrackIdx != -1) {
         const unsigned int bestplane(slc->reco.trk[longestTrackIdx].bestplane);
 
-        switch (bestplane) {
-        case 0:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid0.chi2_muon;
-        case 1:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid1.chi2_muon;
-        case 2:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid2.chi2_muon;
-        }
+        chi2 = slc->reco.trk[longestTrackIdx].chi2pid[bestplane].chi2_muon;
       }
       return chi2;
     });
@@ -290,14 +283,7 @@ const Var kLongestTrackChi2Pion(
       if (longestTrackIdx != -1) {
         const unsigned int bestplane(slc->reco.trk[longestTrackIdx].bestplane);
 
-        switch (bestplane) {
-        case 0:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid0.chi2_pion;
-        case 1:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid1.chi2_pion;
-        case 2:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid2.chi2_pion;
-        }
+        chi2 = slc->reco.trk[longestTrackIdx].chi2pid[bestplane].chi2_pion;
       }
       return chi2;
     });
@@ -309,14 +295,7 @@ const Var kLongestTrackChi2Kaon(
       if (longestTrackIdx != -1) {
         const unsigned int bestplane(slc->reco.trk[longestTrackIdx].bestplane);
 
-        switch (bestplane) {
-        case 0:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid0.chi2_kaon;
-        case 1:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid1.chi2_kaon;
-        case 2:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid2.chi2_kaon;
-        }
+        chi2 = slc->reco.trk[longestTrackIdx].chi2pid[bestplane].chi2_kaon;
       }
       return chi2;
     });
@@ -328,14 +307,7 @@ const Var kLongestTrackChi2Proton(
       if (longestTrackIdx != -1) {
         const unsigned int bestplane(slc->reco.trk[longestTrackIdx].bestplane);
 
-        switch (bestplane) {
-        case 0:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid0.chi2_proton;
-        case 1:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid1.chi2_proton;
-        case 2:
-          chi2 = slc->reco.trk[longestTrackIdx].chi2pid2.chi2_proton;
-        }
+        chi2 = slc->reco.trk[longestTrackIdx].chi2pid[bestplane].chi2_proton;
       }
       return chi2;
     });
