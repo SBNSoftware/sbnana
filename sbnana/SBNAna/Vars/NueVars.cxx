@@ -79,7 +79,7 @@ const Var kRecoShower_Energy(
       double energy = -5.0;
       const int largestShwIdx(kLargestRecoShowerIdx(slc));
       if (largestShwIdx != -1) {
-        energy = slc->reco.shw[largestShwIdx].energy_plane1; // so far taking whatever plane 1 is and first shw
+        energy = slc->reco.shw[largestShwIdx].energy[1]; // so far taking whatever plane 1 is and first shw
         // energy = slc->reco.shw[largestShwIdx].energy.x; // so far taking whatever plane 1 is and first shw
       }
       return energy;
