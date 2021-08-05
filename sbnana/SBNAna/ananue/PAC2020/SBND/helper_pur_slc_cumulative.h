@@ -28,7 +28,7 @@ const Binning kPdgBinning = Binning::Simple(5000, -2500, 2500);
 // // In this example, we are making the following Spectra
 std::vector<PlotDef> plots = {
   { "count", "", Binning::Simple(3, 0, 3), kCounting },
-  { "bestenergy", "Best plane energy (MeV)", kEnergyBinningGeV, kRecoShower_BestEnergy },
+  { "bestenergy", "Best plane energy (GeV)", kEnergyBinningGeV, kRecoShower_BestEnergy },
   { "conversion", "Conversion gap (cm)", kGapBinning, kRecoShower_ConversionGap },
   { "dedx", "dEdx (MeV/cm)", kdEdxBinning, kRecoShower_BestdEdx },
   { "slength", "Shower Length (cm)", kLengthBinning, kRecoShower_Length },
