@@ -32,6 +32,7 @@ namespace ana
 
    				 for(unsigned int trkidx = 0; trkidx < slc->reco.trk.size(); ++trkidx){
      				   const caf::SRTrackProxy& trk = slc->reco.trk[trkidx];
+                                   if(trk.bestplane == -1) continue;
 				   
 				   //atslc
   				   dist = sqrt((pow(trk.start.x - slc->vertex.x,2)) + (pow(trk.start.y - slc->vertex.y,2)) + (pow(trk.start.z  - slc->vertex.z,2)));

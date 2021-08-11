@@ -24,6 +24,8 @@ namespace ana
       for (std::size_t i(0); i < slc->reco.trk.size(); ++i)
       {
 	auto const& trk = slc->reco.trk.at(i);
+        if(trk.bestplane == -1) continue;
+
 	// First we calculate the distance of each track to the slice vertex.
         const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
                                        slc->vertex.y - trk.start.y,
