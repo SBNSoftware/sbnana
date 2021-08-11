@@ -189,39 +189,41 @@ const Var kLongestTrackLength(
       return trk ? double(trk->len) : -5.;
     });
 
+
+const caf::SRTrkChi2PIDProxy* BestPlaneChi2PID(const caf::SRTrackProxy* trk)
+{
+  if(trk->bestplane == -1) return 0;
+  return &trk->chi2pid[trk->bestplane];
+}
+
+const caf::SRTrkChi2PIDProxy* LongestTrackBestPlaneChi2PID(const caf::SRSliceProxy* slc)
+{
+  const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+  return trk ? BestPlaneChi2PID(trk) : 0;
+}
+
 const Var kLongestTrackChi2Muon(
     [](const caf::SRSliceProxy* slc) -> double {
-      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
-      if(!trk) return -5;
-      const unsigned int bestplane = trk->bestplane;
-
-      return trk->chi2pid[bestplane].chi2_muon;
+      const caf::SRTrkChi2PIDProxy* chi2 = LongestTrackBestPlaneChi2PID(slc);
+      return chi2 ? double(chi2->chi2_muon) : -5.;
     });
 
 const Var kLongestTrackChi2Pion(
     [](const caf::SRSliceProxy* slc) -> double {
-      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
-      if(!trk) return -5;
-      const unsigned int bestplane(trk->bestplane);
-
-      return trk->chi2pid[bestplane].chi2_pion;
+      const caf::SRTrkChi2PIDProxy* chi2 = LongestTrackBestPlaneChi2PID(slc);
+      return chi2 ? double(chi2->chi2_pion) : -5.;
     });
 
 const Var kLongestTrackChi2Kaon(
     [](const caf::SRSliceProxy* slc) -> double {
-      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
-      if(!trk) return -5;
-      const unsigned int bestplane(trk->bestplane);
-
-      return trk->chi2pid[bestplane].chi2_kaon;
+      const caf::SRTrkChi2PIDProxy* chi2 = LongestTrackBestPlaneChi2PID(slc);
+      return chi2 ? double(chi2->chi2_kaon) : -5.;
     });
 
 const Var kLongestTrackChi2Proton(
     [](const caf::SRSliceProxy* slc) -> double {
-      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
-      if(!trk) return -5;
-      const unsigned int bestplane(trk->bestplane);
-      return trk->chi2pid[bestplane].chi2_proton;
+      const caf::SRTrkChi2PIDProxy* chi2 = LongestTrackBestPlaneChi2PID(slc);
+      return chi2 ? double(chi2->chi2_proton) : -5.;
     });
 
 const Var kMuonTrackLength(
