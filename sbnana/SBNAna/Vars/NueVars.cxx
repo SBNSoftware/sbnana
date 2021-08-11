@@ -22,137 +22,123 @@ const Var kLargestRecoShowerIdx(
       return bestIdx;
     });
 
+/// Pointer to largest reconstructed shower, or null pointer if none exists
+const caf::SRShowerProxy* LargestRecoShower(const caf::SRSliceProxy* slc)
+{
+  const int largestShwIdx = kLargestRecoShowerIdx(slc);
+  if(largestShwIdx == -1) return 0;
+  return &slc->reco.shw[largestShwIdx];
+}
+
 // Currently assumes shw 0 is the primary
 const Var kRecoShower_BestEnergy(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].bestplane_energy;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->bestplane_energy) : -5;
     });
 
 const Var kRecoShower_TruePdg(
     [](const caf::SRSliceProxy* slc) -> int {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].truth.p.pdg;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? int(shw->truth.p.pdg) : -5;
     });
 
 // Currently assumes shw 0 is the primary
 const Var kRecoShower_BestdEdx(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      const double dEdx = slc->reco.shw[largestShwIdx].bestplane_dEdx;
-      if(dEdx < 0) return -5;
-      return dEdx;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      if(!shw || shw->bestplane_dEdx < 0) return -5.;
+      return shw->bestplane_dEdx;
     });
 
 const Var kRecoShower_ConversionGap(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].conversion_gap;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->conversion_gap) : -5.;
     });
 
 const Var kRecoShower_Density(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].density;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->density) : -5.;
     });
 
 const Var kRecoShower_Energy(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx != -1) return -5;
-      return slc->reco.shw[largestShwIdx].energy[1]; // so far taking whatever plane 1 is and first shw
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->energy[1]) : -5.; // so far taking whatever plane 1 is and first shw
     });
 
 const Var kRecoShower_Length(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].len;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->len) : -5.;
     });
 
 const Var kRecoShower_OpenAngle(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return 180 * slc->reco.shw[largestShwIdx].open_angle / M_PI;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? 180. * shw->open_angle / M_PI : -5.;
     });
 
 const Var kRecoShower_StartX(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -9999;
-      return slc->reco.shw[largestShwIdx].start.x;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->start.x) : -9999.;
     });
 
 const Var kRecoShower_StartY(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx != -1) return -9999;
-      return slc->reco.shw[largestShwIdx].start.y;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->start.y) : -9999.;
     });
 
 const Var kRecoShower_StartZ(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -9999;
-      return slc->reco.shw[largestShwIdx].start.z;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->start.z) : -9999.;
     });
 
 const Var kRecoShower_EndX(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -9999;
-      const caf::SRShowerProxy& shw = slc->reco.shw[largestShwIdx];
-      return shw.start.x + shw.dir.x * shw.len;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->start.x + shw->dir.x * shw->len) : -9999.;
     });
 
 const Var kRecoShower_EndY(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -9999;
-      const caf::SRShowerProxy& shw = slc->reco.shw[largestShwIdx];
-      return shw.start.y + shw.dir.y * shw.len;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->start.y + shw->dir.y * shw->len) : -9999.;
     });
 
 const Var kRecoShower_EndZ(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -9999;
-      const caf::SRShowerProxy& shw = slc->reco.shw[largestShwIdx];
-      return shw.start.z + shw.dir.z * shw.len;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->start.z + shw->dir.z * shw->len) : -9999.;
     });
 
 const Var kRecoShower_densityGradient(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].selVars.densityGradient;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->selVars.densityGradient) : -5.;
     });
 
 const Var kRecoShower_densityGradientPower(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].selVars.densityGradientPower;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->selVars.densityGradientPower) : -5.;
     });
 
 const Var kRecoShower_trackLength(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].selVars.trackLength;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->selVars.trackLength) : -5.;
     });
 
 const Var kRecoShower_trackWidth(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int largestShwIdx(kLargestRecoShowerIdx(slc));
-      if(largestShwIdx == -1) return -5;
-      return slc->reco.shw[largestShwIdx].selVars.trackWidth;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? double(shw->selVars.trackWidth) : -5.;
     });
 
 const Var kRecoShowers_EnergyCut(
@@ -183,100 +169,93 @@ const Var kLongestTrackIdx(
       return bestIdx;
     });
 
+/// Pointer to longest reconstructed shower, or null pointer if none exists
+const caf::SRTrackProxy* LongestRecoTrack(const caf::SRSliceProxy* slc)
+{
+  const int longestTrackIdx = kLongestTrackIdx(slc);
+  if(longestTrackIdx == -1) return 0;
+  return &slc->reco.trk[longestTrackIdx];
+}
+
 const Var kLongestTrackTruePdg(
     [](const caf::SRSliceProxy* slc) -> int {
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      if(longestTrackIdx != -1) return -5;
-      return slc->reco.trk[longestTrackIdx].truth.p.pdg;
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      return trk ? int(trk->truth.p.pdg) : -5;
     });
 
 const Var kLongestTrackLength(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      if(longestTrackIdx != -1) return -5;
-      return slc->reco.trk[longestTrackIdx].len;
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      return trk ? double(trk->len) : -5.;
     });
 
 const Var kLongestTrackChi2Muon(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      float chi2(-5.f);
-      if (longestTrackIdx != -1) {
-        const unsigned int bestplane(slc->reco.trk[longestTrackIdx].bestplane);
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      if(!trk) return -5;
+      const unsigned int bestplane = trk->bestplane;
 
-        chi2 = slc->reco.trk[longestTrackIdx].chi2pid[bestplane].chi2_muon;
-      }
-      return chi2;
+      return trk->chi2pid[bestplane].chi2_muon;
     });
 
 const Var kLongestTrackChi2Pion(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      float chi2(-5.f);
-      if (longestTrackIdx != -1) {
-        const unsigned int bestplane(slc->reco.trk[longestTrackIdx].bestplane);
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      if(!trk) return -5;
+      const unsigned int bestplane(trk->bestplane);
 
-        chi2 = slc->reco.trk[longestTrackIdx].chi2pid[bestplane].chi2_pion;
-      }
-      return chi2;
+      return trk->chi2pid[bestplane].chi2_pion;
     });
 
 const Var kLongestTrackChi2Kaon(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      float chi2(-5.f);
-      if (longestTrackIdx != -1) {
-        const unsigned int bestplane(slc->reco.trk[longestTrackIdx].bestplane);
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      if(!trk) return -5;
+      const unsigned int bestplane(trk->bestplane);
 
-        chi2 = slc->reco.trk[longestTrackIdx].chi2pid[bestplane].chi2_kaon;
-      }
-      return chi2;
+      return trk->chi2pid[bestplane].chi2_kaon;
     });
 
 const Var kLongestTrackChi2Proton(
     [](const caf::SRSliceProxy* slc) -> double {
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      float chi2(-5.f);
-      if (longestTrackIdx != -1) {
-        const unsigned int bestplane(slc->reco.trk[longestTrackIdx].bestplane);
-
-        chi2 = slc->reco.trk[longestTrackIdx].chi2pid[bestplane].chi2_proton;
-      }
-      return chi2;
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      if(!trk) return -5;
+      const unsigned int bestplane(trk->bestplane);
+      return trk->chi2pid[bestplane].chi2_proton;
     });
 
 const Var kMuonTrackLength(
     [](const caf::SRSliceProxy* slc) -> double {
-      double length = -5.f;
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      if(longestTrackIdx != -1 && (kLongestTrackChi2Muon(slc) < 30.f && kLongestTrackChi2Proton(slc) > 60.f)) {
-        length = slc->reco.trk[longestTrackIdx].len;
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      if(!trk) return -5;
+      if(trk && (kLongestTrackChi2Muon(slc) < 30.f && kLongestTrackChi2Proton(slc) > 60.f)) {
+        return trk->len;
       }
-      return length;
+      return -5;
     });
 
 const Var kLongestTrackDazzlePID(
     [](const caf::SRSliceProxy* slc) -> int {
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      return longestTrackIdx != -1 ? (int)slc->reco.trk[longestTrackIdx].dazzle.pdg : -5;
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      return trk ? (int)trk->dazzle.pdg : -5;
     });
 
 const Var kLongestTrackDazzleMuonScore(
     [](const caf::SRSliceProxy* slc) -> float {
-      const int longestTrackIdx(kLongestTrackIdx(slc));
-      return longestTrackIdx != -1 ? (float)slc->reco.trk[longestTrackIdx].dazzle.muonScore : -5.f;
+      const caf::SRTrackProxy* trk = LongestRecoTrack(slc);
+      return trk ? (float)trk->dazzle.muonScore : -5.f;
     });
 
 const Var kRecoShowerRazzlePID(
     [](const caf::SRSliceProxy* slc) -> int {
-      const int showerIdx(kLargestRecoShowerIdx(slc));
-      return showerIdx != -1 ? (int)slc->reco.shw[showerIdx].razzle.pdg : -5;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? (int)shw->razzle.pdg : -5;
     });
 
 const Var kRecoShowerRazzleElectronScore(
     [](const caf::SRSliceProxy* slc) -> float {
-      const int showerIdx(kLargestRecoShowerIdx(slc));
-      return showerIdx != -1 ? (float)slc->reco.shw[showerIdx].razzle.electronScore : -5.f;
+      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
+      return shw ? (float)shw->razzle.electronScore : -5.f;
     });
 
 }
