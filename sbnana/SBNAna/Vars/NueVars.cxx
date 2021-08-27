@@ -142,10 +142,10 @@ const Var kRecoShower_trackWidth(
     });
 
 const Var kRecoShowers_EnergyCut(
-    [](const caf::SRSliceProxy* slc) -> double {
+    [](const caf::SRSliceProxy* slc) -> unsigned {
       unsigned int counter(0);
       for (auto const& shw : slc->reco.shw) {
-        if (shw.bestplane_energy > 200)
+        if (shw.bestplane_energy > 0.2f)
           ++counter;
       }
       return counter;
