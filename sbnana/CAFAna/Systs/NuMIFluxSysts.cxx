@@ -87,7 +87,7 @@ namespace ana
   //----------------------------------------------------------------------
   std::vector<const ISyst*> GetNuMIFluxSysts()
   {
-    const std::vector<std::string> syst_names = {"thintarget", "pCpi", "pCk", "pCnu", "nCpi", "mesinc", "nua", "nuAlFe", "attenuation", "others"};
+    const std::vector<std::string> syst_names = {"pCpi", "pCk", "pCnu", "nCpi", "mesinc", "nua", "nuAlFe", "attenuation", "others"};
 
     std::vector<const ISyst*> ret;
     for(std::string name: syst_names) ret.push_back(GetNuMIFluxSyst(name));
