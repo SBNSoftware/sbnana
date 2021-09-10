@@ -40,7 +40,7 @@ namespace ana
       for(int hcIdx: {0, 1}){
         for(int flavIdx: {0, 1}){
           for(int signIdx: {0, 1}){
-            std::string hName = "fractional_uncertainties/hfrac_"+fName;
+            std::string hName = "fractional_uncertainties/"+fDir+"/hfrac_"+fName;
             if(hcIdx == 0) hName += "_fhc"; else hName += "_rhc";
             if(flavIdx == 0) hName += "_nue"; else hName += "_numu";
             if(signIdx == 1) hName += "bar";
@@ -74,24 +74,68 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  const NuMIFluxSyst* GetNuMIFluxSyst(const std::string& name)
+  const NuMIFluxSyst* GetNuMIFluxSyst(const std::string& dir,
+                                      const std::string& name)
   {
     // Make sure we always give the same one back
     static std::map<std::string, const NuMIFluxSyst*> cache;
 
-    if(cache.count(name) == 0) cache[name] = new NuMIFluxSyst(name);
+    const std::string key = dir+"/"+name;
+    if(cache.count(key) == 0) cache[key] = new NuMIFluxSyst(dir, name);
 
-    return cache[name];
+    return cache[key];
   }
 
   //----------------------------------------------------------------------
-  std::vector<const ISyst*> GetNuMIFluxSysts()
+  std::vector<const ISyst*> GetNuMIHadronProductionFluxSysts()
   {
-    const std::vector<std::string> syst_names = {"pCpi", "pCk", "pCnu", "nCpi", "mesinc", "nua", "nuAlFe", "attenuation", "others"};
+    const std::vector<std::string> syst_names =
+      {
+        "pCpi",
+        "pCk",
+        "pCnu",
+        "nCpi",
+        "mesinc",
+        "nua",
+        "nuAlFe",
+        "attenuation",
+        "others"
+      };
 
     std::vector<const ISyst*> ret;
-    for(std::string name: syst_names) ret.push_back(GetNuMIFluxSyst(name));
+    for(std::string name: syst_names)
+      ret.push_back(GetNuMIFluxSyst("hadron_production", name));
     return ret;
   }
 
+  //----------------------------------------------------------------------
+  std::vector<const ISyst*> GetNuMIBeamlineFluxSysts()
+  {
+    const std::vector<std::string> syst_names =
+      {
+        "horn_current",
+        "horn1_position_xy",
+        "horn2_position_xy",
+        "beam_shift_xy",
+        "target_position_z",
+        "beam_spot_size",
+        "water_layer",
+        "B_field",
+        "beam_divergence"
+      };
+
+    std::vector<const ISyst*> ret;
+    for(std::string name: syst_names)
+      ret.push_back(GetNuMIFluxSyst("beamline", name));
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
+  std::vector<const ISyst*> GetAllNuMIFluxSysts()
+  {
+    std::vector<const ISyst*> ret = GetNuMIHadronProductionFluxSysts();
+    std::vector<const ISyst*> add = GetNuMIBeamlineFluxSysts();
+    ret.insert(ret.end(), add.begin(), add.end());
+    return ret;
+  }
 } // namespace ana

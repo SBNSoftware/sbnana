@@ -1,5 +1,6 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "sbnana/CAFAna/Systs/NuMIFluxSysts.h"
 
@@ -14,7 +15,7 @@ void test_numi_systs()
 {
   const std::string fname = "/icarus/data/users/mmr/CAFMaker/v09_20_00/NuMIBeamWindow/ICARUS_prod_2020A_00_numioffaxis_v09_10_01_reco2/ICARUS_prod_2020A_00_numioffaxis_v09_10_01_reco2_CAFMaker_out_flat.root";
 
-  const std::vector<const ISyst*> systs = GetNuMIFluxSysts();
+  const std::vector<const ISyst*> systs = GetAllNuMIFluxSysts();
 
   SpectrumLoader loader(fname);
 
@@ -39,7 +40,7 @@ void test_numi_systs()
 
   for(unsigned int i = 0; i < systs.size(); ++i){
     new TCanvas;
-    TH1* h = (TH1*)hnom->Clone();
+    TH1* h = (TH1*)hnom->Clone(UniqueName().c_str());
     h->SetTitle(systs[i]->LatexName().c_str());
     h->Draw("hist");
     sup[i]->ToTH1(pot, kRed)->Draw("hist same");
