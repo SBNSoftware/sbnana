@@ -10,8 +10,9 @@ namespace ana
                const std::string& latexName,
 	       bool applyPenalty,
 	       double min,
-	       double max)
-    : fShortName(shortName), fLatexName(latexName), fApplyPenalty(applyPenalty), fMin(min), fMax(max)
+	       double max,
+               bool applyClamp)
+    : fShortName(shortName), fLatexName(latexName), fApplyPenalty(applyPenalty), fMin(min), fMax(max), fApplyClamp(applyClamp)
   {
     SystRegistry::Register(this);
   }

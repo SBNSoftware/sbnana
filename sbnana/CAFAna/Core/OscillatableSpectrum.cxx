@@ -26,8 +26,11 @@ namespace ana
   const Var kTrueE([](const caf::SRSliceProxy* slc) -> double {return slc->truth.E;});
 
   const Var kBaseline([](const caf::SRSliceProxy* slc) -> double {return slc->truth.baseline * 1e-3;}); // m -> km
+  const Var kBaselineUboone([](const caf::SRSliceProxy* slc) -> double {return slc->truth.baseline * 1e-3 * 0.470/0.600;}); // m -> km
 
   const Var kTrueLOverE = kBaseline / kTrueE;
+  // Uncomment to make Uboone state file
+  //const Var kTrueLOverE = kBaselineUboone / kTrueE; 
 
   //----------------------------------------------------------------------
   OscillatableSpectrum::

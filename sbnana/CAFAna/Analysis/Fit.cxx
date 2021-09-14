@@ -191,6 +191,14 @@ namespace ana
       // Need to deal with parameters that are not fit values!
       SystShifts shift = pt.shift;
 
+      // Deal with systs that are not fit values
+      for(auto s: bestSysts.ActiveSysts()) {
+        auto fit_systs = shift.ActiveSysts();
+        if(std::find(fit_systs.begin(), fit_systs.end(), s) == fit_systs.end()) {
+          shift.SetShift(s, bestSysts.GetShift(s));
+        }
+      }
+
       std::unique_ptr<ROOT::Math::Minimizer> thisMin =
           FitHelperSeeded(seed, shift, verb);
 
@@ -464,6 +472,95 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  TH1* Profile(const IExperiment* expt,
+	       osc::IOscCalcAdjustable* calc, const ISyst* s,
+	       int nbinsx, double minx, double maxx,
+	       double input_minchi,
+               const std::vector<const IFitVar*>& profVars,
+               const std::vector<const ISyst*>& profSysts,
+               const std::map<const IFitVar*, std::vector<double>>& seedPts,
+               const std::vector<SystShifts>& systSeedPts,
+               std::map<const IFitVar*, TGraph*>& profVarsMap,
+               std::map<const ISyst*, TGraph*>& profSystsMap)
+  {
+    Progress prog ("Filling profile");
+    // If we're called with the default arguments they could already have stuff
+    // in from before.
+    for(auto it: profVarsMap) delete it.second;
+    for(auto it: profSystsMap) delete it.second;
+    profVarsMap.clear();
+    profSystsMap.clear();
+
+    // And then create the plots we'll be filling
+    for(const IFitVar* v: profVars) profVarsMap[v] = new TGraph;
+    for(const ISyst* prof_syst: profSysts) profSystsMap[prof_syst] = new TGraph;
+
+    TH1* ret = new TH1F(UniqueName().c_str(),
+			(";"+s->LatexName()+ (input_minchi == 0? ";#chi^{2}" : ";#Delta#chi^{2}") ).c_str(),
+			nbinsx, minx, maxx);
+
+    // Save the values of the fit vars as they were in the seed so we can put
+    // them back to that value every iteration.
+    std::vector<double> seedValues;
+    for(const IFitVar* v: profVars) seedValues.push_back(v->GetValue(calc));
+
+    double minpos = 0;
+    double minchi = 1e10;
+
+    Fitter fit(expt, profVars, profSysts);
+
+    for(int n = 0; n < nbinsx; ++n){
+      prog.SetProgress((double) n/nbinsx);
+
+      const double x = ret->GetXaxis()->GetBinCenter(n+1);
+      SystShifts systshift(s, x);
+
+      // Put oscillation values back to their seed position each iteration
+      for(unsigned int i = 0; i < seedValues.size(); ++i)
+        profVars[i]->SetValue( calc, seedValues[i] );
+
+      double chi = fit.Fit(calc, systshift, seedPts, systSeedPts, Fitter::kQuiet);
+      chi += s->Penalty(x);
+      
+      ret->Fill(x, chi);
+
+      if(chi < minchi){
+	minchi = chi;
+	minpos = x;
+      }
+      for(const IFitVar* var: profVars){
+	profVarsMap[var]->SetPoint(n, x, var->GetValue(calc));
+      }
+      for(const ISyst* s: profSysts){
+	profSystsMap[s]->SetPoint(n, x, systshift.GetShift(s));
+      }
+    }
+    prog.Done();
+    // If we weren't given an explicit minimum chisq, go find one
+    if(input_minchi == -1){
+      std::vector<const ISyst*> allSysts = {s};
+      for(unsigned int i = 0; i < seedValues.size(); ++i) {
+	 profVars[i]->SetValue(calc, seedValues[i]);
+      }
+      for(unsigned int i = 0; i < profSysts.size(); ++i) {
+	 allSysts.push_back(profSysts[i]);
+      }
+      Fitter fit(expt, profVars, allSysts);
+      // Seed from best grid point
+      SystShifts systshift(s, minpos);
+      minchi = fit.Fit(calc, systshift); // get a better value
+    }
+    else{
+      minchi = input_minchi;
+    }
+
+    // Zero-subtract the result histogram
+    for(int n = 0; n < nbinsx; ++n) ret->AddBinContent(n+1, -minchi);
+
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
   TH1* SqrtProfile(const IExperiment* expt,
 		   osc::IOscCalcAdjustable* calc, const IFitVar* v,
 		   int nbinsx, double minx, double maxx, double minchi,
@@ -487,6 +584,29 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  TH1* SqrtProfile(const IExperiment* expt,
+		   osc::IOscCalcAdjustable* calc, const ISyst* s,
+		   int nbinsx, double minx, double maxx, double minchi,
+		   std::vector<const IFitVar*> profVars,
+		   std::vector<const ISyst*> profSysts,
+                   const std::map<const IFitVar*, std::vector<double>>& seedPts,
+                   const std::vector<SystShifts>& systSeedPts,
+                   std::map<const IFitVar*, TGraph*>& profVarsMap,
+                   std::map<const ISyst*, TGraph*>& systsMap)
+  {
+    TH1* ret = Profile(expt, calc,
+                       s, nbinsx, minx, maxx,
+                       minchi, profVars, profSysts, seedPts, systSeedPts,
+                       profVarsMap, systsMap);
+    for(int n = 0; n < ret->GetNbinsX()+2; ++n){
+      const double v = ret->GetBinContent(n);
+      ret->SetBinContent(n, v > 0 ? sqrt(v) : 0);
+    }
+    ret->GetYaxis()->SetTitle("#sigma");
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
   TH1* Slice(const IExperiment* expt,
              osc::IOscCalcAdjustable* calc, const IFitVar* v,
              int nbinsx, double minx, double maxx,
@@ -496,11 +616,34 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  TH1* Slice(const IExperiment* expt,
+             osc::IOscCalcAdjustable* calc, const ISyst* s,
+             int nbinsx, double minx, double maxx,
+             double minchi)
+  {
+    return Profile(expt, calc, s, nbinsx, minx, maxx, minchi);
+  }
+
+  //----------------------------------------------------------------------
   TH1* SqrtSlice(const IExperiment* expt,
                  osc::IOscCalcAdjustable* calc, const IFitVar* v,
                  int nbinsx, double minx, double maxx, double minchi)
   {
     TH1* ret = Slice(expt, calc, v, nbinsx, minx, maxx, minchi);
+    for(int n = 0; n < ret->GetNbinsX()+2; ++n){
+      const double v = ret->GetBinContent(n);
+      ret->SetBinContent(n, v > 0 ? sqrt(v) : 0);
+    }
+    ret->GetYaxis()->SetTitle("#sigma");
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
+  TH1* SqrtSlice(const IExperiment* expt,
+                 osc::IOscCalcAdjustable* calc, const ISyst* s,
+                 int nbinsx, double minx, double maxx, double minchi)
+  {
+    TH1* ret = Slice(expt, calc, s, nbinsx, minx, maxx, minchi);
     for(int n = 0; n < ret->GetNbinsX()+2; ++n){
       const double v = ret->GetBinContent(n);
       ret->SetBinContent(n, v > 0 ? sqrt(v) : 0);

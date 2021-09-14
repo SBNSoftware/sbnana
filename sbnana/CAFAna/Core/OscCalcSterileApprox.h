@@ -8,7 +8,7 @@ namespace ana
   {
   public:
     // if flavAfter == 0, give the active fraction
-    using osc::_IOscCalc<double>::P;
+    //using osc::_IOscCalc<double>::P;
     virtual double P(int from, int to, double E) override;
     double P_range(int from, int to, double Elo, double Ehi);
 
@@ -48,7 +48,7 @@ namespace ana
   public:
     OscCalcSterileApprox calc;
 
-    using osc::_IOscCalc<double>::P;
+    //using osc::_IOscCalc<double>::P;
     virtual double P(int from, int to, double E) override
     {
       return calc.P(from, to, E);

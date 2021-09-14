@@ -49,6 +49,10 @@ namespace ana
     fID = fgNextID++;
 
     fSysts.erase(syst);
+    // Clamp
+    if(syst->ApplyClamp()) {
+      shift = std::min(std::max(shift, syst->Min()), syst->Max());
+    }
     if(shift != 0) fSysts.emplace(syst, shift);
   }
 

@@ -38,7 +38,7 @@ namespace ana
 
     if(approx){
       for(int i = 0; i < fHist->GetNbinsX()+2; ++i){
-        if(LoverE){
+        if(LoverE && approx){
           const double LElo = fHist->GetXaxis()->GetBinLowEdge(i);
           const double LEhi = fHist->GetXaxis()->GetBinUpEdge(i);
           fHist->SetBinContent(i, approx->P_LoverE(from, to, LElo, LEhi));

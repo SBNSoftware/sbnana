@@ -238,10 +238,34 @@ namespace ana
                std::map<const IFitVar*, TGraph*>& profVarsMap = empty_vars_map,
                std::map<const ISyst*, TGraph*>& systsMap = empty_syst_map);
 
+  TH1* Profile(const IExperiment* expt,
+	       osc::IOscCalcAdjustable* calc,
+               const ISyst* s,
+	       int nbinsx, double minx, double maxx,
+	       double minchi = -1,
+               const std::vector<const IFitVar*>& profVars = {},
+               const std::vector<const ISyst*>& profSysts = {},
+               const std::map<const IFitVar*, std::vector<double>>& seedPts = {},
+               const std::vector<SystShifts>& systsSeedPts = {},
+               std::map<const IFitVar*, TGraph*>& profVarsMap = empty_vars_map,
+               std::map<const ISyst*, TGraph*>& systsMap = empty_syst_map);
+
   /// Forward to \ref Profile but sqrt the result for a crude significance
   TH1* SqrtProfile(const IExperiment* expt,
                    osc::IOscCalcAdjustable* calc,
                    const IFitVar* v,
+                   int nbinsx, double minx, double maxx,
+                   double minchi = -1,
+                   std::vector<const IFitVar*> profVars = {},
+                   std::vector<const ISyst*> profSysts = {},
+                   const std::map<const IFitVar*, std::vector<double>>& seedPts = {},
+                   const std::vector<SystShifts>& systsSeedPts = {},
+                   std::map<const IFitVar*, TGraph*>& profVarsMap = empty_vars_map,
+                   std::map<const ISyst*, TGraph*>& systsMap = empty_syst_map);
+
+  TH1* SqrtProfile(const IExperiment* expt,
+                   osc::IOscCalcAdjustable* calc,
+                   const ISyst* s,
                    int nbinsx, double minx, double maxx,
                    double minchi = -1,
                    std::vector<const IFitVar*> profVars = {},
@@ -257,9 +281,18 @@ namespace ana
              int nbinsx, double minx, double maxx,
              double minchi = -1);
 
+  TH1* Slice(const IExperiment* expt,
+             osc::IOscCalcAdjustable* calc, const ISyst* s,
+             int nbinsx, double minx, double maxx,
+             double minchi = -1);
+
   /// Forward to \ref Slice but sqrt the result for a crude significance
   TH1* SqrtSlice(const IExperiment* expt,
                  osc::IOscCalcAdjustable* calc, const IFitVar* v,
+                 int nbinsx, double minx, double maxx, double minchi = -1);
+
+  TH1* SqrtSlice(const IExperiment* expt,
+                 osc::IOscCalcAdjustable* calc, const ISyst* s,
                  int nbinsx, double minx, double maxx, double minchi = -1);
 
   /// \brief Find the minimum in one variable as a function of another
