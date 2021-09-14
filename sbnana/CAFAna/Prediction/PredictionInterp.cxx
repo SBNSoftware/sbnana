@@ -631,7 +631,7 @@ namespace ana
                                 nom->GetXaxis()->GetBinLowEdge(bin+1),
                                 nom->GetXaxis()->GetTitle(),
                                 nom->GetXaxis()->GetBinUpEdge(bin+1)),
-                100, -4, +4, 100, .5, 1.5))->Draw();
+                100, -5, +5, 100, .5, 1.5))->Draw();
       curves[bin]->Draw("l same");
       points[bin]->SetMarkerStyle(kFullDotMedium);
       points[bin]->Draw("p same");

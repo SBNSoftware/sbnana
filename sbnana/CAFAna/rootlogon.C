@@ -49,9 +49,12 @@ void rootlogon()
   // No border on legends
   sbnStyle->SetLegendBorderSize(0);
 
+  // Increase Left and Bottom Margins
+  sbnStyle->SetPadBottomMargin(0.13);
   // Axis titles
   sbnStyle->SetTitleSize(.055, "xyz");
   sbnStyle->SetTitleOffset(.8, "xyz");
+  sbnStyle->SetTitleOffset(.9, "x");
   // More space for y-axis to avoid clashing with big numbers
   sbnStyle->SetTitleOffset(.9, "y");
   // This applies the same settings to the overall plot title

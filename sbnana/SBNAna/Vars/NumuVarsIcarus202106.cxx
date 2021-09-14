@@ -31,7 +31,7 @@ namespace ana
 		      pow( slc->vertex.z - trk.start.z, 2.0 ) );
 	// We require that the distance of the track from the slice is less than
 	// 10 cm and that the parent of the track has been marked as the primary.
-	AtSlice = ( Atslc < 10.0 && trk.pfp.parent_is_primary);
+	AtSlice = ( Atslc < 10.0);// && trk.pfp.parent_is_primary);
 	
 	if (trk.bestplane == 0)
 	{
