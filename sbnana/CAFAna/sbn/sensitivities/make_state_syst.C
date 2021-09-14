@@ -158,9 +158,9 @@ void make_state_syst(const std::string anatype = numuStr)
 
   PredictionInterp pred_nd(systs, &calc, nom_gen, loaders_nd);
   PredictionInterp pred_fd(systs, &calc, nom_genFD, loaders_fd);
-  PredictionInterp pred_ub(systs, &calc, nom_genUB, loaders_fd);
+  //PredictionInterp pred_ub(systs, &calc, nom_genUB, loaders_fd);
 
-//  loaders_nd.Go();
+  loaders_nd.Go();
   loaders_fd.Go();
 //  loaders_ub.Go();
 
@@ -168,9 +168,9 @@ void make_state_syst(const std::string anatype = numuStr)
 
   TFile fout(("cafe_state_syst_"+anatype+"_uboone.root").c_str(), "RECREATE");
 
-  //pred_nd.SaveTo(fout.mkdir("pred_nd"));
-  //pred_fd.SaveTo(fout.mkdir("pred_fd"));
-  pred_ub.SaveTo(fout.mkdir("pred_ub"));
+  pred_nd.SaveTo(fout.mkdir("pred_nd"));
+  pred_fd.SaveTo(fout.mkdir("pred_fd"));
+  //pred_ub.SaveTo(fout.mkdir("pred_ub"));
 }
 
 
