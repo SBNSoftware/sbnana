@@ -46,7 +46,9 @@ namespace ana
   public:
     SBNWeightSyst(const std::string& systName,
                   const std::string& knobName = "", // if it differs
-                  const SliceCut& cut = kNoCut);
+                  const SliceCut& cut = kNoCut,
+                  double min = -3, double max = 3,
+                  bool applyClamp = false);
 
     void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
 

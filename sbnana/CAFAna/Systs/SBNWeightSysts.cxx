@@ -65,8 +65,9 @@ namespace ana
   // --------------------------------------------------------------------------
   SBNWeightSyst::SBNWeightSyst(const std::string& systName,
                                const std::string& knobName,
-                               const SliceCut& cut)
-    : ISyst(systName, systName),
+                               const SliceCut& cut, 
+                               double min, double max, bool applyClamp)
+    : ISyst(systName, systName, true, min, max, applyClamp),
       fIdx(-1),
       fKnobName(knobName.empty() ? systName : knobName),
       fCut(cut)
@@ -155,7 +156,13 @@ namespace ana
                                             "NCResVector",
                                             "QEMA"};
 
-    for(const std::string& name: names) ret.push_back(new SBNWeightSyst(name));
+    for(const std::string& name: names) {
+      if (name.find("IntraNuke") == std::string::npos) {
+        ret.push_back(new SBNWeightSyst(name));
+      } else {
+        ret.push_back(new SBNWeightSyst(name, "", kNoCut, -2, 2, true));
+      }
+    }
 
     // These ones have to be handled specially
     const std::string prefix = "NonResR";

@@ -16,230 +16,184 @@
 namespace ana
 {
 
-  // Muon energy scale syst (correlated among all three experiments)
-  class EnergyScaleMuon: public ISyst
-  {
-  public:
-  EnergyScaleMuon() : ISyst("EnergyScaleMuon", "2% Scale Uncertainty on Muon Energy") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
-    {
-      double scale = 0.02 * sigma;
-      //For dummying up from existing info, use truth
-      //if (numu cc) {
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && !isnan(sr->freco.lepton.ke)) {
-	//reco_energy = (reco_energy - muon_energy) + muon_energy(1. + scale);
-	sr->freco.nuE += sr->freco.lepton.ke * scale;
-      }
-    }
+  enum class EnergyScaleSystTerm {
+    Constant,
+    Sqrt,
+    InverseSqrt
   };
-  extern const EnergyScaleMuon kEnergyScaleMuon;
 
-  //////////////////////////////////////////////
-
-  // Muon energy scale syst (SBND only)
-  class EnergyScaleMuonND: public ISyst
-  {
-  public:
-  EnergyScaleMuonND() : ISyst("EnergyScaleMuonND", "2% Scale Uncertainty on Muon Energy in SBND") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
-    {
-      double scale = 0.02 * sigma;
-      //For dummying up from existing info, use truth
-      //if (numu cc) {
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && !isnan(sr->freco.lepton.ke) && int(sr->truth.baseline) < 120) {
-	//reco_energy = (reco_energy - muon_energy) + muon_energy(1. + scale);
-	sr->freco.nuE += sr->freco.lepton.ke * scale;
-      }
-    }
+  enum class EnergyScaleSystParticle {
+    Muon,
+    Hadron,
+    Neutron,
+    Pi0,
+    ChargedHadron
   };
-  extern const EnergyScaleMuonND kEnergyScaleMuonND;
 
-  //////////////////////////////////////////////
-
-//  // Muon energy scale syst (uBooNE only)
-//  class EnergyScaleMuonMB: public ISyst
-//  {
-//  public:
-//  EnergyScaleMuonMB() : ISyst("EnergyScaleMuonMB", "2% Scale Uncertainty on Muon Energy in uBooNE") {}
-//    void Shift(double sigma,
-//	       caf::SRSliceProxy* sr, double& weight) const override
-//    {
-//      double scale = 0.02 * sigma;
-//      //For dummying up from existing info, use truth
-//      //if (numu cc) {
-//      if (sr->truth[0].neutrino.iscc and abs(sr->truth[0].neutrino.pdg)==14 and int(sr->experiment) == kMicroBoone) {
-//	//reco_energy = (reco_energy - muon_energy) + muon_energy(1. + scale);
-//	sr->reco.reco_energy += sr->truth[0].lepton.energy * scale;
-//      }
-//    }
-//  };
-//  extern const EnergyScaleMuonMB kEnergyScaleMuonMB;
-//
-  //////////////////////////////////////////////
-
-  // Muon energy scale syst (ICARUS only)
-  class EnergyScaleMuonFD: public ISyst
-  {
-  public:
-  EnergyScaleMuonFD() : ISyst("EnergyScaleMuonFD", "2% Scale Uncertainty on Muon Energy in ICARUS") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
-    {
-      double scale = 0.02 * sigma;
-      //For dummying up from existing info, use truth
-      //if (numu cc) {
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && int(sr->truth.baseline) > 500 && !isnan(sr->freco.lepton.ke)) {
-	//reco_energy = (reco_energy - muon_energy) + muon_energy(1. + scale);
-	sr->freco.nuE += sr->freco.lepton.ke * scale;
-      }
-    }
+  enum class EnergyScaleSystDetector {
+    SBND,
+    ICARUS,
+    Both
   };
-  extern const EnergyScaleMuonFD kEnergyScaleMuonFD;
 
-  // Muon energy scale syst (ICARUS only)
-  class EnergyScaleMuonFD5p: public ISyst
+  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part, EnergyScaleSystDetector detector = EnergyScaleSystDetector::Both>
+  class EnergyScaleSyst: public ISyst
   {
   public:
-  EnergyScaleMuonFD5p() : ISyst("EnergyScaleMuonFD5p", "5% Scale Uncertainty on Muon Energy in ICARUS") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
+    EnergyScaleSyst(double _uncertainty, std::string name) : 
+      ISyst(name, name), uncertainty(_uncertainty) {}
+    void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override
     {
-      double scale = 0.05 * sigma;
-      //For dummying up from existing info, use truth
-      //if (numu cc) {
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && int(sr->truth.baseline) > 500 && !isnan(sr->freco.lepton.ke)) {
-	//reco_energy = (reco_energy - muon_energy) + muon_energy(1. + scale);
-	sr->freco.nuE += sr->freco.lepton.ke * scale;
-      }
-    }
-  };
-  extern const EnergyScaleMuonFD5p kEnergyScaleMuonFD5p;
-
-  // Muon energy scale syst (ICARUS only)
-  class EnergyScaleMuonFD10p: public ISyst
-  {
-  public:
-  EnergyScaleMuonFD10p() : ISyst("EnergyScaleMuonFD10p", "10% Scale Uncertainty on Muon Energy in ICARUS") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
-    {
-      double scale = 0.10 * sigma;
-      //For dummying up from existing info, use truth
-      //if (numu cc) {
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && int(sr->truth.baseline) > 500 && !isnan(sr->freco.lepton.ke)) {
-	//reco_energy = (reco_energy - muon_energy) + muon_energy(1. + scale);
-	sr->freco.nuE += sr->freco.lepton.ke * scale;
-      }
-    }
-  };
-  extern const EnergyScaleMuonFD10p kEnergyScaleMuonFD10p;
-
-  // Muon energy scale syst (ICARUS only)
-  class EnergyScaleMuonFD20p: public ISyst
-  {
-  public:
-  EnergyScaleMuonFD20p() : ISyst("EnergyScaleMuonFD20p", "20% Scale Uncertainty on Muon Energy in ICARUS") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
-    {
-      double scale = 0.20 * sigma;
-      //For dummying up from existing info, use truth
-      //if (numu cc) {
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && int(sr->truth.baseline) > 500 && !isnan(sr->freco.lepton.ke)) {
-	//reco_energy = (reco_energy - muon_energy) + muon_energy(1. + scale);
-	sr->freco.nuE += sr->freco.lepton.ke * scale;
-      }
-    }
-  };
-  extern const EnergyScaleMuonFD20p kEnergyScaleMuonFD20p;
-  //////////////////////////////////////////////
-
-  // Hadron energy scale syst (correlated among all three experiments)
-  class EnergyScaleHadron: public ISyst
-  {
-  public:
-  EnergyScaleHadron() : ISyst("EnergyScaleHadron", "5% Scale Uncertainty on Hadron Energy") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
-    {
-      double scale = 0.05 * sigma;
-      //For dummying up from existing info, use truth
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && sr->freco.nhad > 0) {
-        for (size_t i = 0; i < sr->freco.hadrons.size(); ++i) {
-          sr->freco.nuE += sr->freco.hadrons[i].ke * scale;
+      double scale = uncertainty * sigma;
+      auto baseline_cut = [](double baseline){ 
+        auto both = (detector == EnergyScaleSystDetector::Both);
+        auto nd = (detector == EnergyScaleSystDetector::SBND && baseline < 120);
+        auto fd = (detector == EnergyScaleSystDetector::ICARUS && baseline > 500);
+        return both || nd || fd; 
+      };
+      if(sr->truth.iscc && abs(sr->truth.pdg) == 14 && !isnan(sr->freco.nuE) && baseline_cut(sr->truth.baseline)) {
+        double particle_energy = 0.0;
+        switch(part) {
+        case EnergyScaleSystParticle::Muon:
+          particle_energy += sr->freco.lepton.ke;
+          break;
+        case EnergyScaleSystParticle::Hadron:
+          for (size_t i = 0; i < sr->freco.hadrons.size(); ++i) {
+            particle_energy += sr->freco.hadrons[i].ke;
+          }
+          break;
+        case EnergyScaleSystParticle::Neutron:
+          for (size_t i = 0; i < sr->freco.hadrons.size(); ++i) {
+            if(sr->freco.hadrons[i].pid == 2112) {
+              particle_energy += sr->freco.hadrons[i].ke;
+            }
+          }
+          break;
+        case EnergyScaleSystParticle::Pi0:
+          for (size_t i = 0; i < sr->freco.hadrons.size(); ++i) {
+            if(sr->freco.hadrons[i].pid == 111) {
+              particle_energy += sr->freco.hadrons[i].ke;
+            }
+          }
+          break;
+        case EnergyScaleSystParticle::ChargedHadron:
+          for (size_t i = 0; i < sr->freco.hadrons.size(); ++i) {
+            auto pid = sr->freco.hadrons[i].pid;
+            if(pid == 2212 || abs(pid) == 211) {
+              particle_energy += sr->freco.hadrons[i].ke;
+            }
+          }
+          break;
         }
-	//sr->reco.reco_energy += (sr->reco.reco_energy - sr->truth[0].lepton.energy) * scale;
-      }
-    }
-  };
-  extern const EnergyScaleHadron kEnergyScaleHadron;
-
-  //////////////////////////////////////////////
-
-  // Hadron energy scale syst (SBND only)
-  class EnergyScaleHadronND: public ISyst
-  {
-  public:
-  EnergyScaleHadronND() : ISyst("EnergyScaleHadronND", "5% Scale Uncertainty on Hadron Energy in SBND") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
-    {
-      double scale = 0.05 * sigma;
-      //For dummying up from existing info, use truth
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && sr->freco.nhad > 0 && int(sr->truth.baseline) < 120) {
-        for (size_t i = 0; i < sr->freco.hadrons.size(); ++i) {
-          sr->freco.nuE += sr->freco.hadrons[i].ke * scale;
+        switch(term) {
+        case EnergyScaleSystTerm::Constant:
+          break;
+        case EnergyScaleSystTerm::Sqrt:
+          scale *= std::sqrt(particle_energy);
+          break;
+        case EnergyScaleSystTerm::InverseSqrt:
+          scale /= std::sqrt(particle_energy + 0.1);
+          break;
         }
-	//sr->reco.reco_energy += (sr->reco.reco_energy - sr->truth[0].lepton.energy) * scale;
+        sr->freco.nuE += particle_energy * scale;
       }
     }
+  private:
+    double uncertainty;
   };
-  extern const EnergyScaleHadronND kEnergyScaleHadronND;
 
-//  //////////////////////////////////////////////
-//
-//  // Hadron energy scale syst (uBOONE only)
-//  class EnergyScaleHadronMB: public ISyst
-//  {
-//  public:
-//  EnergyScaleHadronMB() : ISyst("EnergyScaleHadronMB", "5% Scale Uncertainty on Hadron Energy in uBOONE") {}
-//    void Shift(double sigma,
-//	       caf::SRSliceProxy* sr, double& weight) const override
-//    {
-//      double scale = 0.05 * sigma;
-//      //For dummying up from existing info, use truth
-//      if (sr->truth[0].neutrino.iscc and abs(sr->truth[0].neutrino.pdg)==14 and int(sr->experiment) == kMicroBoone) {
-//	sr->reco.reco_energy += (sr->reco.reco_energy - sr->truth[0].lepton.energy) * scale;
-//      }
-//    }
-//  };
-//  extern const EnergyScaleHadronMB kEnergyScaleHadronMB;
-//
-//  //////////////////////////////////////////////
-//
-  // Hadron energy scale syst (ICARUS only)
-  class EnergyScaleHadronFD: public ISyst
-  {
-  public:
-  EnergyScaleHadronFD() : ISyst("EnergyScaleHadronFD", "5% Scale Uncertainty on Hadron Energy in ICARUS") {}
-    void Shift(double sigma,
-	       caf::SRSliceProxy* sr, double& weight) const override
-    {
-      double scale = 0.05 * sigma;
-      //For dummying up from existing info, use truth
-      if (sr->truth.iscc && abs(sr->truth.pdg)==14 && sr->freco.nhad > 0 && int(sr->truth.baseline) > 500) {
-        for (size_t i = 0; i < sr->freco.hadrons.size(); ++i) {
-          sr->freco.nuE += sr->freco.hadrons[i].ke * scale;
-        }
-	//sr->reco.reco_energy += (sr->reco.reco_energy - sr->truth[0].lepton.energy) * scale;
-      }
-    }
-  };
-  extern const EnergyScaleHadronFD kEnergyScaleHadronFD;
+  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part>
+  using EnergyScaleSystCorr = EnergyScaleSyst<term, part, EnergyScaleSystDetector::Both>;
 
-  //////////////////////////////////////////////
+  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part>
+  using EnergyScaleSystUncorrND = EnergyScaleSyst<term, part, EnergyScaleSystDetector::SBND>;
+
+  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part>
+  using EnergyScaleSystUncorrFD = EnergyScaleSyst<term, part, EnergyScaleSystDetector::ICARUS>;
+
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::Constant, 
+                                   EnergyScaleSystParticle::Muon>        kEnergyScaleMuon;
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::Sqrt, 
+                                   EnergyScaleSystParticle::Muon>        kEnergyScaleMuonSqrt;
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::InverseSqrt, 
+                                   EnergyScaleSystParticle::Muon>        kEnergyScaleMuonInvSqrt;
+
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::Constant, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonND;
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::Sqrt, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonSqrtND;
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::InverseSqrt, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonInvSqrtND;
+
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::Constant, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonFD;
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::Sqrt, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonSqrtFD;
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::InverseSqrt, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonInvSqrtFD;
+
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::Constant, 
+                                   EnergyScaleSystParticle::Hadron>      kEnergyScaleHadron;
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::Sqrt, 
+                                   EnergyScaleSystParticle::Hadron>      kEnergyScaleHadronSqrt;
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::InverseSqrt, 
+                                   EnergyScaleSystParticle::Hadron>      kEnergyScaleHadronInvSqrt;
+
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::Constant, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronND;
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::Sqrt, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronSqrtND;
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::InverseSqrt, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronInvSqrtND;
+
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::Constant, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronFD;
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::Sqrt, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronSqrtFD;
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::InverseSqrt, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronInvSqrtFD;
+
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::Constant, 
+                                   EnergyScaleSystParticle::Muon>        kEnergyScaleMuonBig;
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::Sqrt, 
+                                   EnergyScaleSystParticle::Muon>        kEnergyScaleMuonSqrtBig;
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::InverseSqrt, 
+                                   EnergyScaleSystParticle::Muon>        kEnergyScaleMuonInvSqrtBig;
+
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::Constant, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonNDBig;
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::Sqrt, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonSqrtNDBig;
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::InverseSqrt, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonInvSqrtNDBig;
+
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::Constant, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonFDBig;
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::Sqrt, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonSqrtFDBig;
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::InverseSqrt, 
+                                       EnergyScaleSystParticle::Muon>    kEnergyScaleMuonInvSqrtFDBig;
+
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::Constant, 
+                                   EnergyScaleSystParticle::Hadron>      kEnergyScaleHadronBig;
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::Sqrt, 
+                                   EnergyScaleSystParticle::Hadron>      kEnergyScaleHadronSqrtBig;
+  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::InverseSqrt, 
+                                   EnergyScaleSystParticle::Hadron>      kEnergyScaleHadronInvSqrtBig;
+
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::Constant, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronNDBig;
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::Sqrt, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronSqrtNDBig;
+  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::InverseSqrt, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronInvSqrtNDBig;
+
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::Constant, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronFDBig;
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::Sqrt, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronSqrtFDBig;
+  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::InverseSqrt, 
+                                       EnergyScaleSystParticle::Hadron>  kEnergyScaleHadronInvSqrtFDBig;
 
   // Vector of energy scale systematics
   struct EnergySystVector: public std::vector<const ISyst*>
@@ -248,5 +202,6 @@ namespace ana
   };
 
 EnergySystVector GetEnergySysts();
+EnergySystVector GetBigEnergySysts();
 
 }

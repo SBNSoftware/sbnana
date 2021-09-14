@@ -2,14 +2,17 @@
 
 namespace ana
 {
-  // const NumuFHCSyst kNumuFHCSyst;
-  // const NumuRHCSyst kNumuRHCSyst;
-  // const NueFHCSyst kNueFHCSyst;
-  // const NueRHCSyst kNueRHCSyst;
-  // const NCDisSyst kNCDisSyst;
-  // const NCAppSyst kNCAppSyst;
-  // const NutauSyst kNutauSyst;
-  // const NueBeamFHCSyst kNueBeamFHCSyst;
-  // const NueBeamRHCSyst kNueBeamRHCSyst;
+  const std::vector<const ISyst*>& GetMiscSysts()
+  {
+    static std::vector<const ISyst*> ret(5);
+    if(ret.empty()) {
+      ret.push_back(&GetMECSyst());
+      ret.push_back(&GetPOTSyst());
+      ret.push_back(&GetNormSyst());
+      ret.push_back(&GetNormSystND());
+      ret.push_back(&GetNormSystFD());
+    }
+    return ret;
+  }
 }
 
