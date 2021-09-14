@@ -8,6 +8,9 @@
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
+#include "sbnana/CAFAna/Systs/SBNFluxSysts.h"
+#include "sbnana/CAFAna/Systs/EnergySysts.h"
+#include "sbnana/CAFAna/Systs/Systs.h"
 #include "sbnana/CAFAna/Systs/UniverseOracle.h"
 using namespace ana;
 
@@ -39,6 +42,12 @@ void make_surfaces(const std::string anatype = numuStr)
   const auto genie_systs = GetSBNGenieWeightSysts();
   const auto flux_systs = GetSBNFluxHadronSysts(30);
   const auto energy_systs = GetEnergySysts();
+  const auto big_energy_systs = GetBigEnergySysts();
+  GetMECSyst();
+  GetPOTSyst();
+  GetNormSyst();
+  GetNormSystND();
+  GetNormSystFD();
   
   const char* name_in;
   const char* name_out;
@@ -56,11 +65,12 @@ void make_surfaces(const std::string anatype = numuStr)
   }
 
   TFile fin(name_in);
+  TFile fin2("cafe_state_syst_numu_uboone.root");
   TFile fout(name_out,"RECREATE");
 
   PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-  //PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-  //PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
+  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin2.GetDirectory("pred_ub")).release();
 
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
   OscCalcSterileApproxAdjustable* seed = DefaultSterileApproxCalc();
@@ -72,7 +82,14 @@ void make_surfaces(const std::string anatype = numuStr)
     seed->calc.SetDmsq(1.32);
     p_nd->SetOscSeed(seed);
     p_fd->SetOscSeed(seed);
-    p_ub->SetOscSeed(seed);
+    //p_ub->SetOscSeed(seed);
+  }
+  if (anatype == numuStr) {
+    seed->calc.SetSinSq2ThetaMuMu(3e-3);
+    seed->calc.SetDmsq(1.32);
+    p_nd->SetOscSeed(seed);
+    p_fd->SetOscSeed(seed);
+    //p_ub->SetOscSeed(seed);
   }
     
   //Define fit axes
@@ -86,60 +103,157 @@ void make_surfaces(const std::string anatype = numuStr)
     SterileTh = &kFitSinSq2ThetaMuE;
     thlim = 5e-5;
   }
-  const FitAxis kAxForTh(SterileTh, 10, thlim, 1, true);
-  const FitAxis kAxDmSq(&kFitDmSqSterile, 10, 1e-2, 1e2, true);
+  const FitAxis kAxForTh(SterileTh, 40, thlim, 1, true);
+  const FitAxis kAxDmSq(&kFitDmSqSterile, 40, 1e-2, 1e2, true);
 
   // We'll call zero nominal
-  const Spectrum data_nd = p_nd->Predict(calc).FakeData(sbndPOT);
-  //const Spectrum data_fd = p_fd->Predict(calc).FakeData(icarusPOT);
-  //const Spectrum data_ub = p_ub->Predict(calc).FakeData(uboonePOT);
+  osc::NoOscillations noosc;
+  const Spectrum data_nd = p_nd->Predict(&noosc).FakeData(sbndPOT);
+  const Spectrum data_fd = p_fd->Predict(&noosc).FakeData(icarusPOT);
+  const Spectrum data_fd_1y = p_fd->Predict(&noosc).FakeData(icarusPOT/3.0);
+  const Spectrum data_ub = p_ub->Predict(calc).FakeData(uboonePOT);
 
   SingleSampleExperiment expt_nd(p_nd, data_nd);
-  //SingleSampleExperiment expt_fd(p_fd, data_fd);
-  //SingleSampleExperiment expt_ub(p_ub, data_ub);
+  SingleSampleExperiment expt_fd(p_fd, data_fd);
+  //SingleSampleExperiment expt_fd_1y(p_fd, data_fd_1y);
+  SingleSampleExperiment expt_ub(p_ub, data_ub);
 
-  //MultiExperimentSBN multiExpt({&expt_nd, &expt_fd, &expt_ub}, {kSBND, kICARUS, kMicroBoone});
-  //MultiExperimentSBN fd_nd({&expt_nd, &expt_fd}, {kSBND, kICARUS});
+  MultiExperimentSBN multiExpt({&expt_nd, &expt_fd, &expt_ub}, {kSBND, kICARUS, kMicroBoone});
+  MultiExperimentSBN fd_nd({&expt_nd, &expt_fd}, {kSBND, kICARUS});
+  MultiExperimentSBN fd_ub({&expt_ub, &expt_fd}, {kMicroBoone, kICARUS});
 
-  //Surface surf_nom(&multiExpt, calc, kAxForTh, kAxDmSq);
-  //Surface surf_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq);
+  Surface surf_nom(&multiExpt, calc, kAxForTh, kAxDmSq);
+  Surface surf_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq);
+  Surface surf_ub_fd(&fd_ub, calc, kAxForTh, kAxDmSq);
   Surface surf_nom_nd(&expt_nd, calc, kAxForTh, kAxDmSq);
-  //Surface surf_nom_fd(&expt_fd, calc, kAxForTh, kAxDmSq);
-  //Surface surf_nom_ub(&expt_ub, calc, kAxForTh, kAxDmSq);
+  Surface surf_nom_fd(&expt_fd, calc, kAxForTh, kAxDmSq);
+  //Surface surf_nom_fd_1y(&expt_fd_1y, calc, kAxForTh, kAxDmSq);
+  Surface surf_nom_ub(&expt_ub, calc, kAxForTh, kAxDmSq);
 
   fout.mkdir("exclusion");
   fout.cd("exclusion");    
 
-  //surf_nom.SaveTo(gDirectory->mkdir("nom"));
+  surf_nom.SaveTo(gDirectory->mkdir("nom"));
   surf_nom_nd.SaveTo(gDirectory->mkdir("nom_nd"));
-  //surf_nom_fd.SaveTo(gDirectory->mkdir("nom_fd"));
-  //surf_nom_ub.SaveTo(gDirectory->mkdir("nom_ub"));
-  //surf_nd_fd.SaveTo(gDirectory->mkdir("nom_nd_fd"));
+  surf_nom_fd.SaveTo(gDirectory->mkdir("nom_fd"));
+  //surf_nom_fd_1y.SaveTo(gDirectory->mkdir("nom_fd_1y"));
+  surf_nom_ub.SaveTo(gDirectory->mkdir("nom_ub"));
+  surf_nd_fd.SaveTo(gDirectory->mkdir("nom_nd_fd"));
+  surf_ub_fd.SaveTo(gDirectory->mkdir("nom_ub_fd"));
 
   std::map<std::string, std::vector<const ISyst*>> slists;
   std::vector<const ISyst*> systs = genie_systs;
+  systs.push_back(&GetMECSyst());
   systs.insert(systs.end(), flux_systs.begin(), flux_systs.end());
-  systs.push_back(kEnergyScaleMuon);
-  systs.push_back(kEnergyScaleMuonND);
-  systs.push_back(kEnergyScaleHadron);
-  systs.push_back(kEnergyScaleHadronND);
-  slists["all_systs"] = systs; 
+  std::vector<const ISyst*> fewer_systs;
+  std::copy_if(systs.begin(), systs.end(), std::back_inserter(fewer_systs),
+               [](auto s){ return s->ShortName().find("IntraNuke") == std::string::npos; });
+  std::vector<const ISyst*> intra_nuke;
+  std::copy_if(systs.begin(), systs.end(), std::back_inserter(intra_nuke),
+               [](auto s){ return s->ShortName().find("IntraNuke") != std::string::npos; });
+  slists["genie_flux"] = systs;
+  //slists["fewer_genie_flux"] = fewer_systs;
+  auto muon_systs = systs;
+  auto hadron_systs = systs;
+  auto corr_systs = systs;
+  auto corr_systs2 = systs;
+  auto all_systs = systs;
+  auto all_systs_big = systs;
+  all_systs.insert(all_systs.end(), energy_systs.begin(), energy_systs.end());
+  all_systs_big.insert(all_systs_big.end(), big_energy_systs.begin(), big_energy_systs.end());
+  all_systs.push_back(&GetPOTSyst());
+  all_systs.push_back(&GetNormSystND());
+  all_systs.push_back(&GetNormSystFD());
+  all_systs_big.push_back(&GetPOTSyst());
+  all_systs_big.push_back(&GetNormSystND());
+  all_systs_big.push_back(&GetNormSystFD());
+  muon_systs.push_back(&kEnergyScaleMuonND);
+  muon_systs.push_back(&kEnergyScaleMuonFD);
+  //slists["uncorr_muon_const"] = muon_systs;
+  muon_systs.push_back(&kEnergyScaleMuonSqrtND);
+  muon_systs.push_back(&kEnergyScaleMuonInvSqrtND);
+  muon_systs.push_back(&kEnergyScaleMuonSqrtFD);
+  muon_systs.push_back(&kEnergyScaleMuonInvSqrtFD);
+  //slists["uncorr_muon"] = muon_systs;
+  muon_systs.push_back(&kEnergyScaleMuon);
+  muon_systs.push_back(&kEnergyScaleMuonSqrt);
+  muon_systs.push_back(&kEnergyScaleMuonInvSqrt);
+  //slists["all_muon"] = muon_systs;
+  hadron_systs.push_back(&kEnergyScaleHadronND);
+  hadron_systs.push_back(&kEnergyScaleHadronFD);
+  //slists["uncorr_hadron_const"] = hadron_systs;
+  hadron_systs.push_back(&kEnergyScaleHadronSqrtND);
+  hadron_systs.push_back(&kEnergyScaleHadronInvSqrtND);
+  hadron_systs.push_back(&kEnergyScaleHadronSqrtFD);
+  hadron_systs.push_back(&kEnergyScaleHadronInvSqrtFD);
+  //slists["uncorr_hadron"] = hadron_systs;
+  hadron_systs.push_back(&kEnergyScaleHadron);
+  hadron_systs.push_back(&kEnergyScaleHadronSqrt);
+  hadron_systs.push_back(&kEnergyScaleHadronInvSqrt);
+  //slists["all_hadron"] = hadron_systs;
+  corr_systs.push_back(&kEnergyScaleMuon);
+  //slists["corr_muon_const"] = corr_systs;
+  corr_systs.push_back(&kEnergyScaleMuonSqrt);
+  corr_systs.push_back(&kEnergyScaleMuonInvSqrt);
+  //slists["corr_muon"] = corr_systs;
+  corr_systs2.push_back(&kEnergyScaleHadron);
+  //slists["corr_hadron_const"] = corr_systs2;
+  corr_systs2.push_back(&kEnergyScaleHadronSqrt);
+  corr_systs2.push_back(&kEnergyScaleHadronInvSqrt);
+  //slists["corr_hadron"] = corr_systs2;
+  corr_systs.push_back(&kEnergyScaleHadron);
+  corr_systs.push_back(&kEnergyScaleHadronSqrt);
+  corr_systs.push_back(&kEnergyScaleHadronInvSqrt);
+  //slists["corr_energy"] = corr_systs;
+  systs.push_back(&kEnergyScaleMuonND);
+  systs.push_back(&kEnergyScaleMuonSqrtND);
+  systs.push_back(&kEnergyScaleMuonInvSqrtND);
+  systs.push_back(&kEnergyScaleMuonFD);
+  systs.push_back(&kEnergyScaleMuonSqrtFD);
+  systs.push_back(&kEnergyScaleMuonInvSqrtFD);
+  systs.push_back(&kEnergyScaleHadronND);
+  systs.push_back(&kEnergyScaleHadronSqrtND);
+  systs.push_back(&kEnergyScaleHadronInvSqrtND);
+  systs.push_back(&kEnergyScaleHadronFD);
+  systs.push_back(&kEnergyScaleHadronSqrtFD);
+  systs.push_back(&kEnergyScaleHadronInvSqrtFD);
+  //slists["uncorr_energy"] = systs; 
+  systs.push_back(&kEnergyScaleMuon);
+  systs.push_back(&kEnergyScaleHadron);
+  slists["all_systs"] = all_systs; 
+  slists["all_systs_big"] = all_systs_big; 
+
+  for(auto ins: intra_nuke) {
+    std::vector<const ISyst *> loop_systs;
+    std::copy_if(systs.begin(), systs.end(), std::back_inserter(loop_systs),
+                 [ins](auto s){ return s->ShortName() != ins->ShortName(); });
+  //  slists["without_"+ins->ShortName()] = loop_systs;
+  }
 
   for(auto syst_pair: slists){
     std::string suffix = syst_pair.first;
     std::vector<const ISyst*> slist = syst_pair.second;    
+    
+    //auto syst_seed = SystShifts::RandomThrow(slist);
 
-    //Surface surf_syst(&multiExpt, calc, kAxForTh, kAxDmSq, {}, slist);
-    //Surface surf_syst_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq, {}, slist);
+    Surface surf_syst(&multiExpt, calc, kAxForTh, kAxDmSq, {}, slist);
+    Surface surf_syst_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq, {}, slist);
+    Surface surf_syst_ub_fd(&fd_ub, calc, kAxForTh, kAxDmSq, {}, slist);
     Surface surf_syst_nd(&expt_nd, calc, kAxForTh, kAxDmSq, {}, slist);
-    //Surface surf_syst_fd(&expt_fd, calc, kAxForTh, kAxDmSq, {}, slist);
-    //Surface surf_syst_ub(&expt_ub, calc, kAxForTh, kAxDmSq, {}, slist);
+    //Surface surf_syst_fd(&expt_fd, calc, kAxForTh, kAxDmSq, {}, slist, {}, {syst_seed});
+    //Surface surf_syst_fd_1y(&expt_fd_1y, calc, kAxForTh, kAxDmSq, {}, slist, {}, {syst_seed});
+    Surface surf_syst_ub(&expt_ub, calc, kAxForTh, kAxDmSq, {}, slist);
+
+    Surface surf_syst_fd(&expt_fd, calc, kAxForTh, kAxDmSq, {}, slist);
+    //Surface surf_syst_fd_1y(&expt_fd_1y, calc, kAxForTh, kAxDmSq, {}, slist);
 
     surf_syst_nd.SaveTo(gDirectory->mkdir(("nd_"+suffix).c_str()));
-    //surf_syst_fd.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
-    //surf_syst_ub.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
-    //surf_syst.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
-    //surf_syst_nd_fd.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
+    surf_syst_fd.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
+    //surf_syst_fd_1y.SaveTo(gDirectory->mkdir(("fd_1y_"+suffix).c_str()));
+    surf_syst_ub.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
+    surf_syst.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
+    surf_syst_nd_fd.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
+    surf_syst_ub_fd.SaveTo(gDirectory->mkdir(("ub_fd_"+suffix).c_str()));
   } // end for s
 
 
