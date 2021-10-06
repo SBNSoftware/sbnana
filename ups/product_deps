@@ -36,23 +36,25 @@ fwdir   product_dir scripts
 product          version
 sbnanaobj        v09_16_11
 #SAM tools?
-ifdhc            v2_5_13
+ifdhc            v2_5_14
 # For CAFAna
 srproxy          v00.25
 osclib           v00.15
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers
-cetbuildtools v7_17_01 - only_for_build
+cetbuildtools v8_14_02 - only_for_build
+end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the dependencies.
 # Make the table by adding columns before "notes".
 
 qualifier     sbnanaobj	      ifdhc   	       srproxy  osclib                   notes
-e20:debug     e20:debug	      e20:debug:p383b  py3      e20:debug:n309:stanfree  -nq-
-e20:prof      e20:prof	      e20:prof:p383b   py3      e20:prof:n309:stanfree   -nq-
-c7:debug      c7:debug	      c7:debug:p383b   py3      c7:debug:n309:stanfree   -nq-
-c7:prof       c7:prof	      c7:prof:p383b    py3      c7:prof:n309:stanfree    -nq-
+e20:debug     e20:debug	      e20:debug:p392  py3      e20:debug:n309:stanfree  -nq-
+e20:prof      e20:prof	      e20:prof:p392   py3      e20:prof:n309:stanfree   -nq-
+c7:debug      c7:debug	      c7:debug:p392   py3      c7:debug:n309:stanfree   -nq-
+c7:prof       c7:prof	      c7:prof:p392    py3      c7:prof:n309:stanfree    -nq-
+end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
 
