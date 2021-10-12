@@ -22,6 +22,6 @@ include_directories($ENV{SRPROXY_INC})
 
 cet_make_library(LIBRARY_NAME StandardRecordProxy
                  SOURCE       SRProxy.cxx Instantiations.cxx
-                 LIBRARIES    ${ROOT_BASIC_LIB_LIST} ${ROOT_TREEPLAYER})
+                 LIBRARIES    ${ROOT_BASIC_LIB_LIST} ROOT::TreePlayer)
 
 install_headers(EXTRAS $ENV{MRB_BUILDDIR}/sbnana/sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h $ENV{MRB_BUILDDIR}/sbnana/sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h)
