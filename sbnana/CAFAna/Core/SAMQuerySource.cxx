@@ -89,7 +89,7 @@ namespace ana
     // between the jobs, because trying to create an exact duplicate of an
     // existing definition counts as success.
     std::cout << "Checking lock " << snaplock << std::endl;
-    if(system(TString::Format("samweb create-definition %s nova.special %s",
+    if(system(TString::Format("samweb create-definition %s file_name %s",
                               snaplock.c_str(), process).Data()) == 0){
       // No one took the lock, it's up to us. Make the actual snapshot
       std::cout << "Snapshotting " << def << " as " << snap << std::endl;
