@@ -94,10 +94,10 @@ target_link_libraries(
   sbnanalysis_Event
   sbnanalysis_util_Interaction
   sbnanalysis_ProviderManager
-  canvas
-  cetlib
+  canvas::canvas
+  cetlib::cetlib
   gallery
-  nusimdata_SimulationBase
+  nusimdata::SimulationBase
   larcoreobj_SummaryData
   lardataobj_RecoBase
   lardataobj_MCBase
