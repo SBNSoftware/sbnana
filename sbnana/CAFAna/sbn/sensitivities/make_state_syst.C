@@ -12,6 +12,13 @@
 
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
 #include "sbnana/CAFAna/Systs/SBNFluxSysts.h"
+#include "sbnana/CAFAna/Systs/EnergySysts.h"
+#include "sbnana/CAFAna/Systs/Systs.h"
+
+#include "sbnana/SBNAna/Vars/reco_vars.h"
+#include "sbnana/SBNAna/Cuts/NumuCutsIcarus202106.h"
+#include "sbnana/SBNAna/Cuts/NumuCutsSBND202106.h"
+#include "sbnana/SBNAna/Cuts/Cuts.h"
 
 #include "OscLib/IOscCalc.h"
 
@@ -29,14 +36,16 @@ void make_state_syst(const std::string anatype = numuStr)
   Loaders loaders_nd, loaders_fd, loaders_ub;
 
   if(anatype == numuStr) {
-    const std::string dir = "/sbnd/data/users/jlarkin/workshop_samples/";
-    const std::string fnameBeam_nd = dir + "output_SBNOsc_NumuSelection_Modern_SBND.flat.root";
-    const std::string fnameBeam_fd = dir + "output_SBNOsc_NumuSelection_Modern_Icarus.flat.root";
-    const std::string fnameBeam_ub = dir + "output_SBNOsc_NumuSelection_Modern_Uboone.flat.root";
+    const std::string dir = "/sbnd/data/users/jlarkin/cafs/";
+    //const std::string fnameBeam_nd = dir + "sbnd_numu.flat.root";
+  //const std::string fnameBeam_nd = "official_MC2021Bv1_prodoverlay_corsika_cosmics_proton_genie_nu_spill_gsimple-configh-v1_tpc_reco2_flat_caf_sbnd";
+    //const std::string fnameBeam_fd = "IcarusProd2021B_BNB_Nu_Cosmics_v09_28_01_01_01_caf";
+    const std::string fnameBeam_nd = dir + "sbnd/sbnd_numu_aug21.flat.root";
+    const std::string fnameBeam_fd = dir + "icarus/icarus_numu.flat.root";
 
     loaders_nd.SetLoaderPath(fnameBeam_nd, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
+    //loaders_ub.SetLoaderPath(fnameBeam_ub, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
     loaders_fd.SetLoaderPath(fnameBeam_fd, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
-    loaders_ub.SetLoaderPath(fnameBeam_ub, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
   }
 
   else if (anatype == nueStr) {
@@ -79,33 +88,52 @@ void make_state_syst(const std::string anatype = numuStr)
     return;
   }
 
-  const Var kRecoE = SIMPLEVAR(reco.reco_energy);
-  const Var kWeight = SIMPLEVAR(reco.weight);
-  const Cut kOneTrue([](const caf::SRProxy* sr)
+  const Var kTrueE = SIMPLEVAR(truth.E);
+  const Var kRecoE = SIMPLEVAR(fake_reco.nuE);
+  const Var kWeight = SIMPLEVAR(fake_reco.wgt);
+  const Var kWeightUB = Scaled(kWeight, 80.0/500.0);
+
+  const Cut kFakeRecoMatched([](const caf::SRSliceProxy* slc)
          {
-           return (sr->truth.size() == 1);
+           return kHasMatchedNu(slc) && !std::isnan(slc->fake_reco.nuE)
+                                     && !std::isinf(slc->fake_reco.nuE);
          });
+
+  const Cut kNumuSelFD = kNuMuCC_FullSelection;
+  const Cut kNumuSelND = kSlcNuScoreCut && kInFV && kSlcFlashMatchTimeCut && kSlcFlashMatchScoreCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut;
 
   const vector<double> binEdges = {0.2, 0.3, 0.4, 0.45, 0.5,
                            0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0,
                            1.25, 1.5, 2.0, 2.5, 3.0};
   const Binning binsEnergy = Binning::Custom(binEdges);
   const HistAxis axEnergy("Reconstructed energy (GeV)", binsEnergy, kRecoE);
+  //const HistAxis axEnergy("True Energy (GeV)", binsEnergy, kTrueE);
 
-  NoExtrapPredictionGenerator nom_gen(axEnergy, kOneTrue, kWeight);
+  NoExtrapPredictionGenerator nom_gen(axEnergy, kNoSpillCut, kFakeRecoMatched, kWeight);
+  //NoExtrapPredictionGenerator nom_gen(axEnergy, kNoSpillCut, kNumuSelND && kFakeRecoMatched);
+  //NoExtrapPredictionGenerator nom_genFD(axEnergy, kNoSpillCut, kNumuSelFD && kFakeRecoMatched);
+  //NoExtrapPredictionGenerator nom_gen(axEnergyND, kNoSpillCut, kNumuSelND);
+  //NoExtrapPredictionGenerator nom_genFD(axEnergyFD, kNoSpillCut, kNumuSelFD);
+  //NoExtrapPredictionGenerator nom_genUB(axEnergy, kNoSpillCut, kFakeRecoMatched, kWeightUB);
 
-  std::vector<const ISyst*> systs = GetSBNWeightSysts();
+  std::vector<const ISyst*> systs = GetSBNGenieWeightSysts();
+  //std::vector<const ISyst*> systs;
   for(const ISyst* s: GetSBNFluxHadronSysts(30)) systs.push_back(s);
+  for(const ISyst* s: GetEnergySysts()) systs.push_back(s);
+  //for(const ISyst* s: GetBigEnergySysts()) systs.push_back(s);
+  for(const ISyst* s: GetNormSysts()) systs.push_back(s);
+  //for(const ISyst* s: GetMiscSysts()) systs.push_back(s);
+  systs.push_back(&GetMECSyst());
 
   osc::NoOscillations calc;
 
   PredictionInterp pred_nd(systs, &calc, nom_gen, loaders_nd);
   PredictionInterp pred_fd(systs, &calc, nom_gen, loaders_fd);
-  PredictionInterp pred_ub(systs, &calc, nom_gen, loaders_ub);
+  //PredictionInterp pred_ub(systs, &calc, nom_genUB, loaders_fd);
 
   loaders_nd.Go();
   loaders_fd.Go();
-  loaders_ub.Go();
+//  loaders_ub.Go();
 
   std::cout << "Creating file " << ("cafe_state_syst_"+anatype+".root").c_str() << std::endl;
 
@@ -113,7 +141,7 @@ void make_state_syst(const std::string anatype = numuStr)
 
   pred_nd.SaveTo(fout.mkdir("pred_nd"));
   pred_fd.SaveTo(fout.mkdir("pred_fd"));
-  pred_ub.SaveTo(fout.mkdir("pred_ub"));
+  //pred_ub.SaveTo(fout.mkdir("pred_ub"));
 }
 
 
