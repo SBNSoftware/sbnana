@@ -18,7 +18,8 @@ namespace ana
           const std::string& latexName,
 	  bool applyPenalty = true,
 	  double min = -3,
-	  double max = +3);
+	  double max = +3,
+          bool applyClamp = false);
     ISyst(const ISyst &) = delete;   // no copying.
     ISyst(ISyst && rhs) = delete;    // no moving either.
     virtual ~ISyst();
@@ -36,6 +37,8 @@ namespace ana
 
     /// Should a penalty be applied for this shift?
     virtual bool ApplyPenalty() const {return fApplyPenalty;}
+
+    virtual bool ApplyClamp() const {return fApplyClamp;}
 
     /// Return the min/max value for this syst
     virtual double Min() const{return fMin;}
@@ -55,7 +58,7 @@ namespace ana
     /// function to specify different behaviour for this systematic.
     virtual int PredInterpMaxNSigma() const
     {
-      return 3;
+      return 4;
     }
 
   private:
@@ -64,6 +67,7 @@ namespace ana
     bool fApplyPenalty;
     double fMin;
     double fMax;
+    bool fApplyClamp;
   };
 
 } // namespace

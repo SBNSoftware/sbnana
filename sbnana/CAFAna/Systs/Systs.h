@@ -1,151 +1,101 @@
 #pragma once
 
 #include "sbnana/CAFAna/Core/ISyst.h"
+#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+
+#include <vector>
 
 namespace ana
 {
-  // *** If these systs are reinstated their definition should be in the .cxx
-  // *** file ***
+  class MECSyst: public ISyst
+  {
+  public:
+    MECSyst() : ISyst("mec", "MEC Syst") {}
+    void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const override
+    {
+      if(sigma < -1) sigma = -1.0;
+      if(sr->truth.genie_intcode == 10) weight *= 1.0 + sigma;
+    }
+  };
 
-  // ///ETW Rework of Normalization Systematics
+  const MECSyst& GetMECSyst()
+  {
+    static const MECSyst mSyst;
+    return mSyst;
+  }
 
-  // //Signal normalization
+  enum class NormSystTerm {
+    Constant,
+    Sqrt,
+    InvSqrt
+  };
 
-  // /// 5% normalization syst for numu signal
-  // class NumuFHCSyst: public ISyst
-  // {
-  // public:
-  //   NumuFHCSyst() : ISyst("numufhcnorm", "Numu FHC Norm Syst") {}
+  enum class NormSystDet {
+    All,
+    SBND,
+    MicroBooNE,
+    ICARUS
+  };
 
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if(sr->dune.isCC && abs(sr->dune.nuPDG)==14 && sr->dune.run==20000001) weight *= 1 + .05*sigma;
-  //   }
-  // };
+  template<NormSystTerm term, NormSystDet detector = NormSystDet::All>
+  class NormalizationSyst: public ISyst
+  {
+  public:
+    NormalizationSyst(double _uncertainty, std::string name) : 
+      ISyst(name, name), uncertainty(_uncertainty) {}
+    void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override
+    {
+      auto baseline_cut = [](double baseline){ 
+        auto all = (detector == NormSystDet::All);
+        auto nd = (detector == NormSystDet::SBND && baseline < 120);
+        auto ub = (detector == NormSystDet::MicroBooNE && baseline > 800);
+        auto fd = (detector == NormSystDet::ICARUS && baseline > 500);
+        return all || nd || ub || fd; 
+      };
+      if(sr->truth.iscc && abs(sr->truth.pdg) == 14 && baseline_cut(sr->truth.baseline) && !std::isnan(sr->fake_reco.nuE)) {
+        double energy_term = 1;
+        switch(term) {
+        case NormSystTerm::Constant:
+          energy_term = 1;
+          break;
+        case NormSystTerm::Sqrt:
+          energy_term = std::sqrt(sr->fake_reco.nuE);
+          break;
+        case NormSystTerm::InvSqrt:
+          energy_term = 1.0/std::sqrt(sr->fake_reco.nuE + 0.1);
+          break;
+        }
+        weight *= (1.0 + uncertainty*sigma*energy_term);
+      }
+    }   
+  private:
+    double uncertainty;
+  };
 
-  // extern const NumuFHCSyst kNumuFHCSyst;
+  template<NormSystTerm term>
+  using NormSystCorr = NormalizationSyst<term, NormSystDet::All>;
+  template<NormSystTerm term>
+  using NormSystUncorrND = NormalizationSyst<term, NormSystDet::SBND>;
+  template<NormSystTerm term>
+  using NormSystUncorrUB = NormalizationSyst<term, NormSystDet::MicroBooNE>;
+  template<NormSystTerm term>
+  using NormSystUncorrFD = NormalizationSyst<term, NormSystDet::ICARUS>;
 
-  // /// 5% normalization syst for numubar
-  // class NumuRHCSyst: public ISyst
-  // {
-  // public:
-  //   NumuRHCSyst() : ISyst("numurhcnorm", "Numu RHC Norm Syst") {}
+  extern const NormSystCorr<NormSystTerm::Constant> kNormSyst;
+  extern const NormSystCorr<NormSystTerm::Sqrt>     kNormSystSqrt;
+  extern const NormSystCorr<NormSystTerm::InvSqrt>  kNormSystInvSqrt;
+ 
+  extern const NormSystUncorrND<NormSystTerm::Constant> kNormSystND;
+  extern const NormSystUncorrND<NormSystTerm::Sqrt>     kNormSystSqrtND;
+  extern const NormSystUncorrND<NormSystTerm::InvSqrt>  kNormSystInvSqrtND;
 
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if(sr->dune.isCC && abs(sr->dune.nuPDG)==14 && sr->dune.run==20000004) weight *= 1 + .05*sigma;
-  //   }
-  // };
+  extern const NormSystUncorrUB<NormSystTerm::Constant> kNormSystUB;
+  extern const NormSystUncorrUB<NormSystTerm::Sqrt>     kNormSystSqrtUB;
+  extern const NormSystUncorrUB<NormSystTerm::InvSqrt>  kNormSystInvSqrtUB;
 
-  // extern const NumuRHCSyst kNumuRHCSyst;
+  extern const NormSystUncorrFD<NormSystTerm::Constant> kNormSystFD;
+  extern const NormSystUncorrFD<NormSystTerm::Sqrt>     kNormSystSqrtFD;
+  extern const NormSystUncorrFD<NormSystTerm::InvSqrt>  kNormSystInvSqrtFD;
 
-  // /// 2% normalization syst for nue
-  // class NueFHCSyst: public ISyst
-  // {
-  // public:
-  //   NueFHCSyst() : ISyst("nuefhcnorm", "Nue FHC Norm Syst") {}
-
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if(sr->dune.isCC && abs(sr->dune.nuPDG)==12 && sr->dune.run==20000002) weight *= 1 + .02*sigma;
-  //   }
-  // };
-
-  // extern const NueFHCSyst kNueFHCSyst;
-
-  // /// 2% normalization syst for nuebar
-  // class NueRHCSyst: public ISyst
-  // {
-  // public:
-  //   NueRHCSyst() : ISyst("nuerhcnorm", "Nue RHC Norm Syst") {}
-
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if(sr->dune.isCC && abs(sr->dune.nuPDG)==12 && sr->dune.run==20000005) weight *= 1 + .02*sigma;
-  //   }
-  // };
-
-  // extern const NueRHCSyst kNueRHCSyst;
-
-  // //Background normalization following CDR
-
-  // /// 10% normalization syst for NC on disappearance analysis (uncorrelated to NC on appearance analysis)
-  // class NCDisSyst: public ISyst
-  // {
-  // public:
-  //   NCDisSyst() : ISyst("NCDis", "NC Dis Norm Syst") {}
-
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if(!sr->dune.isCC && sr->dune.cvnnumu > 0.5 && sr->dune.cvnnue < 0.5) weight *= 1 + .1*sigma;
-  //   }
-  // };
-
-  // extern const NCDisSyst kNCDisSyst;
-
-  // /// 5% normalization syst for NC on nue analysis, correlated with numu-CC background
-  // class NCAppSyst: public ISyst
-  // {
-  // public:
-  //   NCAppSyst() : ISyst("NCApp", "NC App Norm Syst") {}
-
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if((!sr->dune.isCC && sr->dune.cvnnue > 0.5 && sr->dune.cvnnumu < 0.5) || (sr->dune.isCC && abs(sr->dune.nuPDG)==14)) weight *= 1 + .05*sigma;
-  //   }
-  // };
-
-  // extern const NCAppSyst kNCAppSyst;
-
-  // /// 20% normalization syst for nutau - correlated for app/dis and fhc/rhc
-  // class NutauSyst: public ISyst
-  // {
-  // public:
-  //   NutauSyst() : ISyst("nutau", "nutau Norm Syst") {}
-
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if(sr->dune.isCC && abs(sr->dune.nuPDG)==16) weight *= 1 + .2*sigma;
-  //   }
-  // };
-
-  // extern const NutauSyst kNutauSyst;
-
-  // /// 5% normalization syst for beam nues - uncorrelated in fhc/rhc
-  // class NueBeamFHCSyst: public ISyst
-  // {
-  // public:
-  //   NueBeamFHCSyst() : ISyst("nuebeamfhc", "Nue Beam FHC Norm Syst") {}
-
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if(sr->dune.isCC && abs(sr->dune.nuPDG) == 12 && abs(sr->dune.nuPDGunosc) == 12 && sr->dune.run<20000004) weight *= 1 + .05*sigma;
-  //   }
-  // };
-
-  // extern const NueBeamFHCSyst kNueBeamFHCSyst;
-
-  // /// 5% normalization syst for beam nues
-  // class NueBeamRHCSyst: public ISyst
-  // {
-  // public:
-  //   NueBeamRHCSyst() : ISyst("nuebeamrhc", "Nue Beam RHC Norm Syst") {}
-
-  //   void Shift(double sigma,
-  //              caf::SRProxy* sr, double& weight) const override
-  //   {
-  //     if(sr->dune.isCC && abs(sr->dune.nuPDG) == 12 && abs(sr->dune.nuPDGunosc) == 12 && !(sr->dune.run<20000004)) weight *= 1 + .05*sigma;
-  //   }
-  // };
-
-  // extern const NueBeamRHCSyst kNueBeamRHCSyst;
-
+  const std::vector<const ISyst*> GetNormSysts();
 }

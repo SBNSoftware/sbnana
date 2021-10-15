@@ -23,8 +23,6 @@ namespace ana
     std::vector<std::string> fNames;
     int fUnivIdx;
     mutable std::vector<unsigned int> fSystIdxs;
-    mutable std::vector<int> fUnivOffsets;
-    mutable std::vector<Cut> fUnivCuts;
   };
 
   Var GetUniverseWeight(const std::string& syst, int univIdx)
@@ -48,7 +46,9 @@ namespace ana
   public:
     SBNWeightSyst(const std::string& systName,
                   const std::string& knobName = "", // if it differs
-                  const SliceCut& cut = kNoCut);
+                  const SliceCut& cut = kNoCut,
+                  double min = -3, double max = 3,
+                  bool applyClamp = false);
 
     void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
 
