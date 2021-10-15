@@ -15,7 +15,6 @@
 #include "sbnana/CAFAna/Systs/EnergySysts.h"
 #include "sbnana/CAFAna/Systs/Systs.h"
 
-#include "sbnana/SBNAna/Vars/reco_vars.h"
 #include "sbnana/SBNAna/Cuts/NumuCutsIcarus202106.h"
 #include "sbnana/SBNAna/Cuts/NumuCutsSBND202106.h"
 #include "sbnana/SBNAna/Cuts/Cuts.h"
