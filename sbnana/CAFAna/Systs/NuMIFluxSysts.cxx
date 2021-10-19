@@ -34,13 +34,15 @@ namespace ana
     }
 
     if(!fScale[0][0][0]){
-      // This file is available from
-      // https://gitlab.com/apwood93/numi-at-icarus-flux-systematics.git and is
-      // currently expected to be in the pwd.
-      //
-      // TODO - this should live somewhere official (sbndata?)
-      TFile f("icarus_numi_flux_syst_ana.root");
-      assert(!f.IsZombie());
+      const std::string fname = "icarus_numi_flux_syst_ana.root";
+      TFile f(fname.c_str());
+      if(f.IsZombie()){
+        std::cout << "NuMIFluxSysts: Failed to open " << fname << "\n"
+                  << "For now, this is available from https://gitlab.com/apwood93/numi-at-icarus-flux-systematics.git and is expected to be in the pwd\n"
+                  << "Long term, it will hopefully come from sbndata"
+                  << std::endl;
+        abort();
+      }
 
       for(int hcIdx: {0, 1}){
         for(int flavIdx: {0, 1}){
