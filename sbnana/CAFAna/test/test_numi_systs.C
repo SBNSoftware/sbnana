@@ -15,7 +15,7 @@ void test_numi_systs()
 {
   const std::string fname = "/icarus/data/users/mmr/CAFMaker/v09_20_00/NuMIBeamWindow/ICARUS_prod_2020A_00_numioffaxis_v09_10_01_reco2/ICARUS_prod_2020A_00_numioffaxis_v09_10_01_reco2_CAFMaker_out_flat.root";
 
-  const std::vector<const ISyst*> systs = GetAllNuMIFluxSysts();
+  const std::vector<const ISyst*> systs = GetAllNuMIFluxSysts(5);
 
   SpectrumLoader loader(fname);
 
