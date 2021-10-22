@@ -226,6 +226,7 @@ namespace ana
     DontAddDirectory guard;
 
     TH2D* ret = new TH2D(*fHist);
+    ret->SetName(UniqueName().c_str());
     if(fPOT){
       ret->Scale(pot/fPOT);
     }
