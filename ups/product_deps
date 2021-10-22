@@ -1,7 +1,6 @@
 # This @product_deps@ file defines dependencies for this package.
 
-# The *parent* line must the first non-commented line and defines this product and version
-# The version should be of the form vxx_yy_zz (e.g. v01_02_03)
+# The *parent* line must the first non-commented line and defines this product
 parent sbnana
 defaultqual e20
 
@@ -31,14 +30,15 @@ fcldir  product_dir
 fwdir   product_dir scripts
 
 # With "product  version" table below, we now define dependencies
+# The version should be of the form vxx_yy_zz (e.g. v01_02_03)
 # Add the dependent product and version
 
 product          version
-sbnanaobj        v09_17_02
+sbnanaobj        v09_17_03
 #SAM tools?
 ifdhc            v2_5_16
 # For CAFAna
-srproxy          v00.31
+srproxy          v00.32
 osclib           v00.17
 
 
