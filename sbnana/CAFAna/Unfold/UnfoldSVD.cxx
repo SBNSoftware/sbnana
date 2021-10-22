@@ -29,6 +29,8 @@ namespace ana
     // Enforce matching normalization
     h_unf->Scale(reco.Integral(pot)/h_unf->Integral(0, -1));
 
+    // TODO in principle these should be the true labels and bins. Will be
+    // easier with cafanacore
     return Spectrum(std::move(h_unf), reco.GetLabels(), reco.GetBinnings(),
                     pot, reco.Livetime());
   }
