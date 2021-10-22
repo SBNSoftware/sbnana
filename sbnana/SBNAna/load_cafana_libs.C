@@ -70,6 +70,7 @@ void load_cafana_libs()
       // "StandardRecord_dict",
       "OscLib",
       "CAFAnaCore",
+      "CAFAnaUnfold",
       "CAFAnaVars",
       "CAFAnaCuts",
       "SBNAnaVars",
