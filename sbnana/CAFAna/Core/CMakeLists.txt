@@ -16,7 +16,7 @@ cet_make(LIBRARY_NAME CAFAnaCore
                    CAFAnaCoreExt
                    pthread
                    ${ROOT_BASIC_LIB_LIST}
-                   ${IFDH}
+                   IFDH
         )
 
 install_headers()

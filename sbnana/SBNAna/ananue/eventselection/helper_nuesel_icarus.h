@@ -75,7 +75,7 @@ struct SelDefSpill
 };
 
 // Define all the variables and cuts first, including binnings
-const Binning kEnergyBinning    = Binning::Simple(40,0.,3000.); // to define
+const Binning kEnergyBinning    = Binning::Simple(40,0.,3.); // to define
 const Binning kDedxBinning      = Binning::Simple(40,0.,10); // to define
 const Binning kGapBinning       = Binning::Simple(40,0.,10);
 const Binning kDensityBinning   = Binning::Simple(50,0.,10);

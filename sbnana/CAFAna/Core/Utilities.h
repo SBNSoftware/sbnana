@@ -268,4 +268,8 @@ namespace ana
   Eigen::ArrayXd GetMaskArray(const Spectrum& s,
                               double xmin=0, double xmax=-1,
                               double ymin=0, double ymax=-1);
+
+  /// /param frac Quantile to find, eg 0.9
+  /// /param xs Values to search in -- this will be sorted
+  double FindQuantile(double frac, std::vector<double>& xs);
 }

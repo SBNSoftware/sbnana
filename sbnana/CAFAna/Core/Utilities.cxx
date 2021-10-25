@@ -731,4 +731,33 @@ namespace ana
 
     return ret;
   }
+
+  //----------------------------------------------------------------------
+  double FindQuantile(double frac, std::vector<double>& xs)
+  {
+    // This turns out to be a much more fraught issue than you would naively
+    // expect. This algorithm is equivalent to R-6 here:
+    // https://en.wikipedia.org/wiki/Quantile#Estimating_quantiles_from_a_sample
+
+    // In principle we could use std::nth_element(). Probably doesn't matter
+    // much in practice since this is only for plotting.
+    std::sort(xs.begin(), xs.end());
+
+    const int N = xs.size();
+    // The index we would ideally be sampling at
+    const double h = frac*(N+1);
+    // The indices on either side where we have to actually evaluate
+    const unsigned int h0 = std::floor(h);
+    const unsigned int h1 = std::ceil(h);
+    if(h0 == 0) return xs[0]; // Don't underflow indexing
+    if(h1 > xs.size()) return xs.back(); // Don't overflow indexing
+    // The values at those indices
+    const double x0 = xs[h0-1]; // wikipedia is using 1-based indexing
+    const double x1 = xs[h1-1];
+
+    if(h0 == h1) return x0;
+
+    // Linear interpolation
+    return (h1-h)*x0 + (h-h0)*x1;
+  }
 }
