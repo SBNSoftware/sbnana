@@ -1,6 +1,10 @@
 #pragma once
 
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
+
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "sbnana/CAFAna/Core/Weight.h"
 
 #include <cassert>
 
@@ -21,14 +25,14 @@ namespace ana
                      const SpillCut& spillcut,
                      const Cut& cut,
                      const std::vector<SystShifts>& univ_shifts,
-                     const Var& cv_wei = kUnweighted);
+                     const Weight& cv_wei = kUnweighted);
 
     EnsembleSpectrum(SpectrumLoaderBase& loader,
                      const HistAxis& axis,
                      const SpillCut& spillcut,
                      const Cut& cut,
-                     const std::vector<Var>& univ_weis,
-                     const Var& cv_wei = kUnweighted);
+                     const std::vector<Weight>& univ_weis,
+                     const Weight& cv_wei = kUnweighted);
 
     Spectrum Nominal() const {return fNom;}
     unsigned int NUniverses() const {return fUnivs.size();}
@@ -61,8 +65,9 @@ namespace ana
     EnsembleSpectrum& operator/=(const EnsembleRatio& rhs);
     EnsembleSpectrum operator/(const EnsembleRatio& rhs) const;
 
-    void SaveTo(TDirectory* dir) const;
-    static std::unique_ptr<EnsembleSpectrum> LoadFrom(TDirectory* dir);
+    void SaveTo(TDirectory* dir, const std::string& name) const;
+    static std::unique_ptr<EnsembleSpectrum> LoadFrom(TDirectory* dir,
+                                                      const std::string& name);
 
     unsigned int NDimensions() const{return fNom.NDimensions();}
     std::vector<std::string> GetLabels() const {return fNom.GetLabels();}

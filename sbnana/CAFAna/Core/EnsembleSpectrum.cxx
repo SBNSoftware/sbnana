@@ -2,6 +2,8 @@
 
 #include "sbnana/CAFAna/Core/EnsembleRatio.h"
 
+#include "sbnana/CAFAna/Core/Utilities.h"
+
 #include "TDirectory.h"
 #include "TGraphAsymmErrors.h"
 #include "TH1.h"
@@ -16,7 +18,7 @@ namespace ana
                                      const SpillCut& spillcut,
                                      const Cut& cut,
                                      const std::vector<SystShifts>& univ_shifts,
-                                     const Var& cv_wei)
+                                     const Weight& cv_wei)
     : fNom(loader, axis, spillcut, cut, kNoShift, cv_wei)
   {
     fUnivs.reserve(univ_shifts.size());
@@ -30,12 +32,12 @@ namespace ana
                                      const HistAxis& axis,
                                      const SpillCut& spillcut,
                                      const Cut& cut,
-                                     const std::vector<Var>& univ_weis,
-                                     const Var& cv_wei)
+                                     const std::vector<Weight>& univ_weis,
+                                     const Weight& cv_wei)
     : fNom(loader, axis, spillcut, cut, kNoShift, cv_wei)
   {
     fUnivs.reserve(univ_weis.size());
-    for(const Var& w: univ_weis){
+    for(const Weight& w: univ_weis){
       fUnivs.emplace_back(loader, axis, spillcut, cut, kNoShift, cv_wei * w);
     }
   }
@@ -156,24 +158,32 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void EnsembleSpectrum::SaveTo(TDirectory* dir) const
+  void EnsembleSpectrum::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
+
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
 
     TObjString("EnsembleSpectrum").Write("type");
 
-    fNom.SaveTo(dir->mkdir("nom"));
+    fNom.SaveTo(dir, "nom");
     for(unsigned int i = 0; i < fUnivs.size(); ++i){
-      fUnivs[i].SaveTo(dir->mkdir(("univ"+std::to_string(i)).c_str()));
+      fUnivs[i].SaveTo(dir, ("univ"+std::to_string(i)).c_str());
     }
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<EnsembleSpectrum> EnsembleSpectrum::LoadFrom(TDirectory* dir)
+  std::unique_ptr<EnsembleSpectrum> EnsembleSpectrum::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     DontAddDirectory guard;
 
     TObjString* tag = (TObjString*)dir->Get("type");
@@ -181,13 +191,16 @@ namespace ana
     assert(tag->GetString() == "EnsembleSpectrum");
     delete tag;
 
-    std::unique_ptr<EnsembleSpectrum> ret(new EnsembleSpectrum(*Spectrum::LoadFrom(dir->GetDirectory("nom"))));
+    std::unique_ptr<EnsembleSpectrum> ret(new EnsembleSpectrum(*Spectrum::LoadFrom(dir, "nom")));
 
     for(unsigned int i = 0; ; ++i){
-      TDirectory* d = dir->GetDirectory(("univ"+std::to_string(i)).c_str());
+      const std::string uname = "univ"+std::to_string(i);
+      TDirectory* d = dir->GetDirectory(uname.c_str());
       if(!d) break;
-      ret->fUnivs.push_back(*Spectrum::LoadFrom(d));
+      ret->fUnivs.push_back(*Spectrum::LoadFrom(dir, uname));
     }
+
+    delete dir;
 
     return ret;
   }

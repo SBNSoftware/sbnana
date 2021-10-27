@@ -2,6 +2,8 @@
 
 #include "sbnana/CAFAna/Core/EnsembleSpectrum.h"
 
+#include "sbnana/CAFAna/Core/Utilities.h"
+
 #include "TGraphAsymmErrors.h"
 #include "TH1.h"
 
