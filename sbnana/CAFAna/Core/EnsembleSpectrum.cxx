@@ -13,33 +13,29 @@
 namespace ana
 {
   //----------------------------------------------------------------------
-  EnsembleSpectrum::EnsembleSpectrum(SpectrumLoaderBase& loader,
+  EnsembleSpectrum::EnsembleSpectrum(ISliceSource& src,
                                      const HistAxis& axis,
-                                     const SpillCut& spillcut,
-                                     const Cut& cut,
-                                     const std::vector<SystShifts>& univ_shifts,
-                                     const Weight& cv_wei)
-    : fNom(loader, axis, spillcut, cut, kNoShift, cv_wei)
+                                     const std::vector<SystShifts>& univ_shifts)
+    : fNom(src, axis)
   {
-    fUnivs.reserve(univ_shifts.size());
-    for(const SystShifts& ss: univ_shifts){
-      fUnivs.emplace_back(loader, axis, spillcut, cut, ss, cv_wei);
-    }
+    // TODO TODO no way to shift a source yet
+    //    fUnivs.reserve(univ_shifts.size());
+    //    for(const SystShifts& ss: univ_shifts){
+    //      fUnivs.emplace_back(src[ss], axis);
+    //    }
   }
 
   //----------------------------------------------------------------------
-  EnsembleSpectrum::EnsembleSpectrum(SpectrumLoaderBase& loader,
+  EnsembleSpectrum::EnsembleSpectrum(ISliceSource& src,
                                      const HistAxis& axis,
-                                     const SpillCut& spillcut,
-                                     const Cut& cut,
-                                     const std::vector<Weight>& univ_weis,
-                                     const Weight& cv_wei)
-    : fNom(loader, axis, spillcut, cut, kNoShift, cv_wei)
+                                     const std::vector<Weight>& univ_weis)
+    : fNom(src, axis)
   {
-    fUnivs.reserve(univ_weis.size());
-    for(const Weight& w: univ_weis){
-      fUnivs.emplace_back(loader, axis, spillcut, cut, kNoShift, cv_wei * w);
-    }
+    // TODO TODO no way to weight a source yet
+    //    fUnivs.reserve(univ_weis.size());
+    //    for(const Weight& w: univ_weis){
+    //      fUnivs.emplace_back(loader, axis, spillcut, cut, kNoShift, cv_wei * w);
+    //    }
   }
 
   //----------------------------------------------------------------------

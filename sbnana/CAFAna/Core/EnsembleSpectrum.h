@@ -4,6 +4,7 @@
 
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/HistAxis.h"
+#include "sbnana/CAFAna/Core/IRecordSource.h"
 #include "sbnana/CAFAna/Core/Weight.h"
 
 #include <cassert>
@@ -20,19 +21,13 @@ namespace ana
   class EnsembleSpectrum
   {
   public:
-    EnsembleSpectrum(SpectrumLoaderBase& loader,
+    EnsembleSpectrum(ISliceSource& src,
                      const HistAxis& axis,
-                     const SpillCut& spillcut,
-                     const Cut& cut,
-                     const std::vector<SystShifts>& univ_shifts,
-                     const Weight& cv_wei = kUnweighted);
+                     const std::vector<SystShifts>& univ_shifts);
 
-    EnsembleSpectrum(SpectrumLoaderBase& loader,
+    EnsembleSpectrum(ISliceSource& src,
                      const HistAxis& axis,
-                     const SpillCut& spillcut,
-                     const Cut& cut,
-                     const std::vector<Weight>& univ_weis,
-                     const Weight& cv_wei = kUnweighted);
+                     const std::vector<Weight>& univ_weis);
 
     Spectrum Nominal() const {return fNom;}
     unsigned int NUniverses() const {return fUnivs.size();}
