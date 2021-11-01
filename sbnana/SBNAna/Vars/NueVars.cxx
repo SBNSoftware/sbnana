@@ -65,8 +65,7 @@ const Var kRecoShower_Density(
 
 const Var kRecoShower_Energy(
     [](const caf::SRSliceProxy* slc) -> double {
-      const caf::SRShowerProxy* shw = LargestRecoShower(slc);
-      return shw ? double(shw->plane[1].energy) : -5.; // so far taking whatever plane 1 is and first shw
+      return -5.;
     });
 
 const Var kRecoShower_Length(

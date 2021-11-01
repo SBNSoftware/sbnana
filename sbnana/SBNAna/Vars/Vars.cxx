@@ -117,4 +117,8 @@ namespace ana
        {
          return !slc->is_clear_cosmic;
        });
+  const Var kSlcFlashTime([](const caf::SRSliceProxy *slc) -> double
+       {
+         return slc->fmatch.time;
+       });
 }

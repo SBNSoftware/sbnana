@@ -90,10 +90,10 @@ namespace ana{
        {
          return slc->fmatch.present;
        });
-  
+ 
   const Cut kSlcFlashMatchCut([](const caf::SRSliceProxy *slc)
        {
-         return (kSlcHasFlashMatch(slc) && slc->fmatch.score>0 && slc->fmatch.score<6);
+         return (kSlcHasFlashMatch(slc) && slc->fmatch.score>0 && slc->fmatch.score<6 && slc->fmatch.time > 0 && slc->fmatch.time < 10); // NuMI beam window
        });
 
 } // namespace

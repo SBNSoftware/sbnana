@@ -33,5 +33,6 @@ namespace ana
   extern const Var kSlcNuScore;
   extern const Var kSlcHasFlash;
   extern const Var kSlcFlashScore;
+  extern const Var kSlcFlashTime;
 
 }

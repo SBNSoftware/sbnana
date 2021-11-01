@@ -25,9 +25,9 @@ void make_spectra_nuesel_icarus(std::string finname = "nucosmics", int setno = 1
 
   std::string settag = std::to_string(setno);
 
-  std::string findir = "/inputdir_path/";
-  std::string foutdir = "/outputdir_path/";
-  const std::string finsample = findir + finname + "_hadded"+settag+".flatcaf.root";
+  std::string findir = "/icarus/data/users/rhowell/";
+  std::string foutdir = "/icarus/app/users/rhowell/Selection/fullselection/new_cuts/";
+  const std::string finsample = findir + finname + "_hadded.root";
   const std::string foutname = foutdir + finname + "_spectra_hadded"+settag+(selspill ? "_spill" : "_slice")+".root";
 
   // Source of events
