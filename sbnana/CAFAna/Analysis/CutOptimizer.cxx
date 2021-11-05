@@ -80,7 +80,7 @@ namespace ana
       const double cut = FindOptimumCut(hsig, hbkg, fom);
 
       if(fom > best_fom){
-        best_fom = best_fom;
+        best_fom = fom;
         best_cut = cut;
         best_idx = cutIdx;
       }
