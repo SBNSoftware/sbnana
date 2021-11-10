@@ -37,15 +37,14 @@ namespace ana
     if(!fScale[0][0][0]){
       const char* sbndata = getenv("SBNDATA_DIR");
       if(!sbndata){
-        std::cout << "NuMIFluxSyst: $SBNDATA_DIR environment variable not set. Please setup the sbndata product." << std::endl;
+        std::cout << "NuMIFluxSysts: $SBNDATA_DIR environment variable not set. Please setup the sbndata product." << std::endl;
         abort();
       }
 
-      const std::string fname = sbndata+"/beamData/NuMIdata/icarus_numi_flux_syst_ana.root";
+      const std::string fname = std::string(sbndata)+"/beamData/NuMIdata/icarus_numi_flux_syst_ana.root";
       TFile f(fname.c_str());
       if(f.IsZombie()){
-        std::cout << "NuMIFluxSysts: Failed to open " << fname;
-                  << std::endl;
+        std::cout << "NuMIFluxSysts: Failed to open " << fname << std::endl;
         abort();
       }
 
