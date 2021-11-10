@@ -8,6 +8,7 @@
 #include "TH1.h"
 
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 
 namespace ana
@@ -34,12 +35,16 @@ namespace ana
     }
 
     if(!fScale[0][0][0]){
-      const std::string fname = "icarus_numi_flux_syst_ana.root";
+      const char* sbndata = getenv("SBNDATA_DIR");
+      if(!sbndata){
+        std::cout << "NuMIFluxSyst: $SBNDATA_DIR environment variable not set. Please setup the sbndata product." << std::endl;
+        abort();
+      }
+
+      const std::string fname = sbndata+"/beamData/NuMIdata/icarus_numi_flux_syst_ana.root";
       TFile f(fname.c_str());
       if(f.IsZombie()){
-        std::cout << "NuMIFluxSysts: Failed to open " << fname << "\n"
-                  << "For now, this is available from https://gitlab.com/apwood93/numi-at-icarus-flux-systematics.git and is expected to be in the pwd\n"
-                  << "Long term, it will hopefully come from sbndata"
+        std::cout << "NuMIFluxSysts: Failed to open " << fname;
                   << std::endl;
         abort();
       }
