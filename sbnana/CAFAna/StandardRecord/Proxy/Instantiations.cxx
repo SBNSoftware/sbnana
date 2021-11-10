@@ -13,7 +13,8 @@ namespace caf
   template class Proxy<Wall_t>;
   template class Proxy<MCType_t>;
   template class Proxy<generator_>;
-  template class Proxy<interaction_mode_>;
+  template class Proxy<genie_interaction_mode_>;
+  template class Proxy<genie_interaction_type_>;
   template class Proxy<genie_status_>;
   template class Proxy<g4_process_>;
   template class Proxy<mevprtlchannel_>;
