@@ -40,7 +40,8 @@ ifdhc            v2_5_16
 # For CAFAna
 srproxy          v00.32
 osclib           v00.17
-
+# flux syst histograms etc
+sbndata          v01_01
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers
@@ -50,11 +51,11 @@ end_product_list
 # We now define allowed qualifiers and the corresponding qualifiers for the dependencies.
 # Make the table by adding columns before "notes".
 
-qualifier     sbnanaobj	      ifdhc   	       srproxy  osclib                   notes
-e20:debug     e20:debug	      e20:debug:p392  py3      e20:debug:n309:stanfree  -nq-
-e20:prof      e20:prof	      e20:prof:p392   py3      e20:prof:n309:stanfree   -nq-
-c7:debug      c7:debug	      c7:debug:p392   py3      c7:debug:n309:stanfree   -nq-
-c7:prof       c7:prof	      c7:prof:p392    py3      c7:prof:n309:stanfree    -nq-
+qualifier     sbnanaobj	      ifdhc   	      srproxy  osclib                   sbndata  notes
+e20:debug     e20:debug	      e20:debug:p392  py3      e20:debug:n309:stanfree  -nq-     -nq-
+e20:prof      e20:prof	      e20:prof:p392   py3      e20:prof:n309:stanfree   -nq-     -nq-
+c7:debug      c7:debug	      c7:debug:p392   py3      c7:debug:n309:stanfree   -nq-     -nq-
+c7:prof       c7:prof	      c7:prof:p392    py3      c7:prof:n309:stanfree    -nq-     -nq-
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
