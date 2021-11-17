@@ -1,4 +1,4 @@
-#include "sbnana/CAFAna/Systs/SBNFluxSysts.h"
+#include "sbnana/CAFAna/Systs/BoosterFluxSysts.h"
 
 #include "sbnana/CAFAna/Core/Utilities.h"
 
@@ -12,19 +12,19 @@
 namespace ana {
 
 //----------------------------------------------------------------------
-SBNFluxHadronSyst::~SBNFluxHadronSyst()
+BoosterFluxHadronSyst::~BoosterFluxHadronSyst()
 {
   for(int i = 0; i < 3; ++i) delete fScale[i];
 }
 
 //----------------------------------------------------------------------
-void SBNFluxHadronSyst::Shift(double sigma, caf::SRSliceProxy* slc, double &weight) const
+void BoosterFluxHadronSyst::Shift(double sigma, caf::SRSliceProxy* slc, double &weight) const
 {
   // Only implemented for numus so far
   if(/*sr->mc.nnu == 0 ||*/ slc->truth.initpdg != 14) return;
 
   if(!fScale[0]){
-    TFile f((FindCAFAnaDir() + "/Systs/flux_shifts.root").c_str());
+    TFile f((FindCAFAnaDir() + "/Systs/booster_flux_shifts.root").c_str());
     assert(!f.IsZombie());
 
     for(int det = 0; det < 3; ++det){
@@ -60,24 +60,24 @@ void SBNFluxHadronSyst::Shift(double sigma, caf::SRSliceProxy* slc, double &weig
 }
 
 //----------------------------------------------------------------------
-const SBNFluxHadronSyst* GetSBNFluxHadronSyst(unsigned int i)
+const BoosterFluxHadronSyst* GetBoosterFluxHadronSyst(unsigned int i)
 {
   // Make sure we always give the same one back
-  static std::vector<const SBNFluxHadronSyst*> cache;
+  static std::vector<const BoosterFluxHadronSyst*> cache;
 
   if(i >= cache.size()) cache.resize(i+1);
 
-  if(!cache[i]) cache[i] = new SBNFluxHadronSyst(i);
+  if(!cache[i]) cache[i] = new BoosterFluxHadronSyst(i);
 
   return cache[i];
 }
 
 //----------------------------------------------------------------------
-SBNFluxHadronSystVector GetSBNFluxHadronSysts(unsigned int N)
+BoosterFluxHadronSystVector GetBoosterFluxHadronSysts(unsigned int N)
 {
-  SBNFluxHadronSystVector ret;
+  BoosterFluxHadronSystVector ret;
   for(unsigned int i = 0; i < N; ++i)
-    ret.push_back(GetSBNFluxHadronSyst(i));
+    ret.push_back(GetBoosterFluxHadronSyst(i));
 
   return ret;
 }
