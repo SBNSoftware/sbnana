@@ -8,7 +8,7 @@
 #include "sbnana/CAFAna/Core/Utilities.h"
 #include "sbnana/CAFAna/Core/WildcardSource.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "ifdh.h"
 

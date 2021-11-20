@@ -6,7 +6,7 @@
 #include "TTree.h"
 
 #include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <iostream>
 

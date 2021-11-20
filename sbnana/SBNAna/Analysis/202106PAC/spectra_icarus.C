@@ -7,7 +7,7 @@
 
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "sbnana/SBNAna/Cuts/NumuCutsIcarus202106.h"
 

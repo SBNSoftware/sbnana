@@ -3,7 +3,7 @@
 #include "sbnana/CAFAna/Core/Progress.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "sbnanaobj/StandardRecord/StandardRecord.h"
 #include "sbnanaobj/StandardRecord/SRGlobal.h"

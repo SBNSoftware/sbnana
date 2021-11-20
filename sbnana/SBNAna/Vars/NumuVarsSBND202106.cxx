@@ -1,6 +1,6 @@
 #include "sbnana/SBNAna/Vars/NumuVarsSBND202106.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/SBNAna/Cuts/VolumeDefinitions.h"
 #include <cassert>
 

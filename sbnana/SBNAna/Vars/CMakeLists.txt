@@ -3,7 +3,7 @@ include_directories(..)
 
 cet_make(LIBRARY_NAME SBNAnaVars
          LIBRARIES CAFAnaCore
-                   StandardRecordProxy
+                   sbnanaobj_StandardRecordProxy
                    OscLib
         )
 
