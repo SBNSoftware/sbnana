@@ -1,7 +1,6 @@
 #include "sbnanaobj/StandardRecord/StandardRecord.h"
 #include "sbnanaobj/StandardRecord/SRGlobal.h"
-
-#include "sbnana/FlatMaker/FlatRecord.h"
+#include "sbnanaobj/StandardRecord/Flat/FlatRecord.h"
 
 #include "sbnana/CAFAna/Core/Progress.h"
 
