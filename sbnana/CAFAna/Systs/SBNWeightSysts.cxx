@@ -243,7 +243,7 @@ namespace ana
 
   // --------------------------------------------------------------------------
   /*
-  const std::vector<const ISyst*>& GetSBNFluxWeightSysts()
+  const std::vector<const ISyst*>& GetBoosterFluxWeightSysts()
   {
     static std::vector<const ISyst*> ret;
     if(ret.empty()){
@@ -263,7 +263,7 @@ namespace ana
     static std::vector<const ISyst*> ret;
     if(ret.empty()){
       const std::vector<const ISyst*>& g = GetSBNGenieWeightSysts();
-      const std::vector<const ISyst*>& f = GetSBNFluxWeightSysts();
+      const std::vector<const ISyst*>& f = GetBoosterFluxWeightSysts();
       ret.reserve(g.size()+f.size());
       ret.insert(ret.end(), g.begin(), g.end());
       ret.insert(ret.end(), f.begin(), f.end());

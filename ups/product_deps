@@ -34,13 +34,14 @@ fwdir   product_dir scripts
 # Add the dependent product and version
 
 product          version
-sbnanaobj        v09_17_05
+sbnanaobj        v09_17_06
 #SAM tools?
 ifdhc            v2_5_16
 # For CAFAna
 srproxy          v00.32
 osclib           v00.17
-sbndata		 v01_02
+# flux syst histograms etc
+sbndata		 v01_03
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers

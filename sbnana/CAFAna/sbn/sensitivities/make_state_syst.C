@@ -11,7 +11,7 @@
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
-#include "sbnana/CAFAna/Systs/SBNFluxSysts.h"
+#include "sbnana/CAFAna/Systs/BoosterFluxSysts.h"
 
 #include "OscLib/IOscCalc.h"
 
@@ -95,7 +95,7 @@ void make_state_syst(const std::string anatype = numuStr)
   NoExtrapPredictionGenerator nom_gen(axEnergy, kOneTrue, kWeight);
 
   std::vector<const ISyst*> systs = GetSBNWeightSysts();
-  for(const ISyst* s: GetSBNFluxHadronSysts(30)) systs.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts(30)) systs.push_back(s);
 
   osc::NoOscillations calc;
 
