@@ -38,7 +38,7 @@ void make_surfaces(const std::string anatype = numuStr)
 {
   const std::vector<const ISyst*>& systs = GetSBNWeightSysts();
 
-  auto systs_flux = GetSBNFluxWeightSysts();
+  auto systs_flux = GetBoosterFluxWeightSysts();
   auto systs_genie = GetSBNGenieWeightSysts();
   
   std::vector<const ISyst*> systs_to_process;
