@@ -14,7 +14,7 @@ cet_make(LIBRARY_NAME CAFAnaCore
                    OscLib
                    pthread
                    ${ROOT_BASIC_LIB_LIST}
-                   IFDH
+                   ifdh::ifdh
         )
 
 install_headers()
