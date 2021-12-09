@@ -17,6 +17,7 @@ add_definitions(-Wno-vla)
 add_subdirectory(StandardRecord)
 
 add_subdirectory(Core)
+add_subdirectory(Unfold)
 add_subdirectory(Vars)
 add_subdirectory(Cuts)
 add_subdirectory(Systs)
