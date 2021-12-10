@@ -34,9 +34,9 @@ fwdir   product_dir scripts
 # Add the dependent product and version
 
 product          version
-sbnanaobj        v09_17_06
+sbnanaobj        v09_17_07
 #SAM tools?
-ifdhc            v2_5_16
+ifdhc            v2_5_18
 # For CAFAna
 srproxy          v00.32
 osclib           v00.17
