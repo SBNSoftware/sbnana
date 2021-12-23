@@ -53,6 +53,9 @@ namespace ana
                         const std::set<std::string>& mask,
                         const std::vector<std::string>& fnames) const;
 
+    /// Strip all information out of this record and tag it as a husk
+    void Huskify(caf::StandardRecord* sr) const;
+
     std::string fOutfile;
     SpillCut*   fSpillCut;
     SliceCut*   fSliceCut;
