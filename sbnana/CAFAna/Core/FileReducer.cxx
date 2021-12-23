@@ -172,14 +172,24 @@ namespace ana
                                              srProxy.hdr.subrun,
                                              srProxy.hdr.evt))) continue;
 
-        /// see if we want to omit the event
-        if(!fSpillCut || (*fSpillCut)(&srProxy)){
+        /// Do we need to include the event? Either based on the selection...
+        const bool passesSpillCut = !fSpillCut || (*fSpillCut)(&srProxy);
+        // Or if it carries POT or spill counting information
+        if(passesSpillCut || srProxy.hdr.pot > 0 || srProxy.hdr.ngenevt > 0){
           recTree->GetEntry(n);
 
           if(sr != oldsr){
             trOut->SetBranchAddress("rec", &sr);
             oldsr = sr;
           }
+
+          if(!passesSpillCut){
+            // We're only keeping this one for the exposure info
+            Huskify(sr);
+            trOut->Fill();
+            continue;
+          }
+          // Otherwise, need to proceed to keep/reject individual slices
 
           std::vector<int> tocut;
           for(unsigned int i = 0; i < srProxy.slc.size(); ++i){
@@ -289,4 +299,37 @@ namespace ana
     for(auto it: fMetaMap) meta[it.first] = it.second;
   }
 
+  //----------------------------------------------------------------------
+  void FileReducer::Huskify(caf::StandardRecord* sr) const
+  {
+    sr->hdr.husk = true;
+
+    // It's not actually necessary for correctness to clear all these fields
+    // out, so not a disaster if we happen to miss one that gets added in
+    // future, for example. But it does help to minimize the size of the
+    // resulting CAF.
+
+    sr->slc.clear();
+    sr->nslc = 0;
+    sr->fake_reco.clear();
+    sr->nfake_reco = 0;
+    sr->true_particles.clear();
+    sr->ntrue_particles = 0;
+    sr->crt_hits.clear();
+    sr->ncrt_hits = 0;
+    sr->crt_tracks.clear();
+    sr->ncrt_tracks = 0;
+
+    sr->reco.trk.clear();
+    sr->reco.ntrk = 0;
+    sr->reco.shw.clear();
+    sr->reco.nshw = 0;
+    sr->reco.stub.clear();
+    sr->reco.nstub = 0;
+
+    sr->mc.nu.clear();
+    sr->mc.nnu = 0;
+    sr->mc.prtl.clear();
+    sr->mc.nprtl = 0;
+  }
 } // namespace

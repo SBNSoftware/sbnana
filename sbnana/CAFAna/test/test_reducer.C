@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Core/FileReducer.h"
 
-#include "SBNAna/Cuts/Cuts.h"
+#include "sbnana/SBNAna/Cuts/Cuts.h"
 
 using namespace ana;
 
