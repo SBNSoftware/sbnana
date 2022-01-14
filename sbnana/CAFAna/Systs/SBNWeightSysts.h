@@ -4,7 +4,7 @@
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
 #include <unordered_map>
 #include <vector>

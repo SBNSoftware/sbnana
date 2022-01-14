@@ -1,3 +1,3 @@
 add_subdirectory(CAFAna)
-add_subdirectory(FlatMaker)
 add_subdirectory(SBNAna)
+add_subdirectory(FlattenCAF)

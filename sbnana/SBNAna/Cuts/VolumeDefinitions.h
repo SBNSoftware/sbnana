@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
 // =================================================================== //
 // These values have been used for the nue event selection as of       //
