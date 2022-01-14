@@ -6,7 +6,7 @@
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
 #include "sbnana/CAFAna/Analysis/Calcs.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"

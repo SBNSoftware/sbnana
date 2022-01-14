@@ -1,6 +1,6 @@
 #include <iostream>
 #include "sbnana/SBNAna/Cuts/NumuCuts.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include <cassert>
 
 namespace ana{

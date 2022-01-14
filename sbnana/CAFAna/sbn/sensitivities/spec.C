@@ -16,7 +16,7 @@
 #include "OscLib/OscCalcSterile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "TCanvas.h"

@@ -1,6 +1,6 @@
 #include <cmath>
 #include "sbnana/SBNAna/Vars/NumuVarsIcarus202106.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana
 {
