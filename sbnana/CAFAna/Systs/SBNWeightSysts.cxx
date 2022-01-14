@@ -4,7 +4,7 @@
 
 #include "sbnana/CAFAna/Systs/UniverseOracle.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <cassert>
 #include <iostream>
