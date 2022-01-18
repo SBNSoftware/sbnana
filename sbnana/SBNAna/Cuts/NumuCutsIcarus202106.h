@@ -27,6 +27,8 @@ namespace ana
 
   extern const Cut kFMScore;
 
+  extern const Cut kFMScoreNuMI;
+
   extern const Cut kPTrack;
 
   extern const Cut kPTrackContained;
@@ -78,6 +80,8 @@ namespace ana
 
   // The full selection cut using only reco information.
   extern const Cut kNuMuCC_FullSelection;
+
+  extern const Cut kNumuCC_NuMI_Selection;
 
   // Spill level cuts.
   extern const SpillCut kLongTrack;

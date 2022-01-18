@@ -51,6 +51,10 @@ namespace ana
       return ( !isnan(slc->fmatch.score) && slc->fmatch.score < 7.0 );
     });
 
+  const Cut kFMScoreNuMI([](const caf::SRSliceProxy* slc) {
+      return ( !isnan(slc->fmatch.score) && slc->fmatch.score < 7.0 && (slc->fmatch.time>-0.2 && slc->fmatch.time<9.9) );
+    });
+
   const Cut kPTrack([](const caf::SRSliceProxy* slc) {
       return ( kPTrackInd(slc) >= 0 );
     });
@@ -133,6 +137,9 @@ namespace ana
   
   // The full selection cut using only reco information.
   const Cut kNuMuCC_FullSelection = ( kCryo0 && kRFiducial && kNotClearCosmic && kNuScore && kFMScore && kPTrack );
+
+  // NuMI selection
+  const Cut kNumuCC_NuMI_Selection = kRFiducial && kNotClearCosmic && kNuScore && kFMScoreNuMI && kPTrack;
 
   const SpillCut kLongTrack([](const caf::SRSpillProxy* sr){
       bool ProgCut = false;

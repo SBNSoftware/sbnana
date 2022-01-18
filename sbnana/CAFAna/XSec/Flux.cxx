@@ -52,6 +52,14 @@ namespace ana
                });
   }
 
+  Cut IsNCQEOnArgonCut(int pdg)
+  {
+    return Cut([pdg](const caf::SRSliceProxy* slc)
+               {
+                 if(slc->truth.index < 0) return false;
+                 return IsNCQEOnArgon(&slc->truth, pdg);
+               });
+  }
   //----------------------------------------------------------------------
   FluxTimesNuclei::FluxTimesNuclei(SpectrumLoaderBase& loader,
                                    const Binning& bins,

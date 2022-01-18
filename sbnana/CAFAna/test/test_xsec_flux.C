@@ -30,7 +30,7 @@ void test_xsec_flux()
                               ( v.z > -895.95 + 30 && v.z < 895.95 - 50 ) ));
                    });
 
-  FluxTimesNuclei flux(loader, Binning::Simple(40, 0, 10), fidvol, 14);
+  FluxTimesNuclei flux(loader, Binning::Simple(50, 0, 10), fidvol, 14);
 
   loader.Go();
 
@@ -51,7 +51,7 @@ void test_xsec_flux()
 
   //  new TCanvas;
   TFile* fin = new TFile("/sbnd/app/users/bckhouse/dev/numi-at-icarus-flux-systematics/icarus_numi_flux_syst_ana.root");
-  if(fin->IsZombie()){
+  if(!fin->IsZombie()){
     TH1* hnom = (TH1*)fin->Get("ppfx_output/run15/fhc/nom/hnom_numu");
     hnom->SetLineColor(kRed);
     hnom->Draw("hist same");
