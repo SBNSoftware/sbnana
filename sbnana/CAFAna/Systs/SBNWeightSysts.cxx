@@ -33,52 +33,10 @@ namespace ana
       const UniverseOracle& uo = UniverseOracle::Instance();
       for(const std::string& name: fNames){
 
-        // These ones have to be handled specially
-        const std::string prefix = "NonResR";
+        fSystIdxs.push_back(uo.SystIndex(name));
+        fUnivOffsets.push_back(0);
+        fUnivCuts.push_back(kNoCut);
 
-        if(name.find(prefix) == 0){
-          // This logic is copied from GetSBNGenieWeightSysts()
-          for(std::string npi: {"1pi", "2pi"}){
-            // They need to be split into CC and NC variants
-            for(std::string ccncStr: {"CC", "NC"}){
-              const Cut& ccncCut = (ccncStr == "CC") ? kIsCC : kIsNC;
-
-              // And restricted to either neutrino or antineutrino, taking
-              // advantage of symmetries to implement both proton and neutron
-              // versions.
-
-              // Originals
-              if(name == prefix + "vp" + npi + ccncStr){
-                fSystIdxs.push_back(uo.SystIndex(prefix + "vp" + npi));
-                fUnivOffsets.push_back(0);
-                fUnivCuts.push_back(ccncCut && !kIsAntiNu);
-              }
-              if(name == prefix + "vbarp" + npi + ccncStr){
-                fSystIdxs.push_back(uo.SystIndex(prefix + "vbarp" + npi));
-                fUnivOffsets.push_back(1);
-                fUnivCuts.push_back(ccncCut &&  kIsAntiNu);
-              }
-
-              // Switched variants
-              if(name == prefix + "vbarn" + npi + ccncStr){
-                fSystIdxs.push_back(uo.SystIndex(prefix + "vp" + npi));
-                fUnivOffsets.push_back(2);
-                fUnivCuts.push_back(ccncCut &&  kIsAntiNu);
-              }
-              if(name == prefix + "vn" + npi + ccncStr){
-                fSystIdxs.push_back(uo.SystIndex(prefix + "vbarp" + npi));
-                fUnivOffsets.push_back(3);
-                fUnivCuts.push_back(ccncCut && !kIsAntiNu);
-              }
-            }
-          }
-        }
-        else{
-          // "Normal" syst
-          fSystIdxs.push_back(uo.SystIndex(name));
-          fUnivOffsets.push_back(0);
-          fUnivCuts.push_back(kNoCut);
-        }
       }
     }
 
@@ -155,6 +113,15 @@ namespace ana
     u.i0 = uo.ClosestShiftIndex(fKnobName, x, ESide::kBelow, &x0);
     u.i1 = uo.ClosestShiftIndex(fKnobName, x, ESide::kAbove, &x1);
     // Interpolation weights
+
+    //==== When x1==x2; we are comparing two doubles, so "==" is dangerous
+    //==== for now using absolute difference < tolerance
+    if( (fabs(x1-x0)<1e-5) ){
+      u.w0 = 0.5;
+      u.w1 = 0.5;
+      return u;
+    }
+
     u.w0 = (x1-x)/(x1-x0);
     u.w1 = (x-x0)/(x1-x0);
 
@@ -178,65 +145,50 @@ namespace ana
 
     // We can't ask the UniverseOracle about this, because it doesn't get
     // properly configured until it's seen its first CAF file.
-    const std::vector<std::string> names = {"DISAth",
-                                            "DISBth",
-                                            "DISCv1u",
-                                            "DISCv2u",
-                                            "IntraNukeNabs",
-                                            "IntraNukeNcex",
-                                            "IntraNukeNinel",
-                                            "IntraNukeNmfp",
-                                            "IntraNukeNpi",
-                                            "IntraNukePIabs",
-                                            "IntraNukePIcex",
-                                            "IntraNukePIinel",
-                                            "IntraNukePImfp",
-                                            "IntraNukePIpi",
-                                            "NC",
-                                            "ResDecayGamma",
-                                            "CCResAxial",
-                                            "CCResVector",
-                                            // Disabled due to NaNs
-                                            // "CohMA",
-                                            // "CohR0",
-                                            "NCELaxial",
-                                            "NCELeta",
-                                            "NCResAxial",
-                                            "NCResVector",
-                                            "QEMA"};
+
+    const std::vector<std::string> names = {
+    //==== multisigma
+    "AhtBY",
+    "BhtBY",
+    "CV1uBY",
+    "CV2uBY",
+    "EtaNCEL",
+    "FormZone",
+    "FrAbs_N",
+    "FrAbs_pi",
+    "FrCEx_N",
+    "FrCEx_pi",
+    "FrInel_N",
+    "FrInel_pi",
+    "FrPiProd_N",
+    "FrPiProd_pi",
+    "MFP_N",
+    "MFP_pi",
+    "MaCCQE",
+    "MaCCRES",
+    "MaNCEL",
+    "MaNCRES",
+    "MvCCRES",
+    "MvNCRES",
+    "NonRESBGvbarnCC1pi",
+    "NonRESBGvbarnCC2pi",
+    "NonRESBGvbarnNC1pi",
+    "NonRESBGvbarnNC2pi",
+    "NonRESBGvbarpCC1pi",
+    "NonRESBGvbarpCC2pi",
+    "NonRESBGvbarpNC1pi",
+    "NonRESBGvbarpNC2pi",
+    "NonRESBGvnCC1pi",
+    "NonRESBGvnCC2pi",
+    "NonRESBGvnNC1pi",
+    "NonRESBGvnNC2pi",
+    "NonRESBGvpCC1pi",
+    "NonRESBGvpCC2pi",
+    "NonRESBGvpNC1pi",
+    "NonRESBGvpNC2pi",
+    };
 
     for(const std::string& name: names) ret.push_back(new SBNWeightSyst(name));
-
-    // These ones have to be handled specially
-    const std::string prefix = "NonResR";
-
-    for(std::string npi: {"1pi", "2pi"}){
-      // They need to be split into CC and NC variants
-      for(std::string ccncStr: {"CC", "NC"}){
-        const Cut& ccncCut = (ccncStr == "CC") ? kIsCC : kIsNC;
-
-        // And restricted to either neutrino or antineutrino, taking advantage
-        // of symmetries to implement both proton and neutron versions.
-
-        // First constructor argument is the syst name, second the knob to use
-
-        // Originals
-        ret.push_back(new SBNWeightSyst(prefix + "vp"    + npi + ccncStr,
-                                        prefix + "vp"    + npi,
-                                        ccncCut && !kIsAntiNu));
-        ret.push_back(new SBNWeightSyst(prefix + "vbarp" + npi + ccncStr,
-                                        prefix + "vbarp" + npi,
-                                        ccncCut &&  kIsAntiNu));
-
-        // Switched variants
-        ret.push_back(new SBNWeightSyst(prefix + "vbarn" + npi + ccncStr,
-                                        prefix + "vp"    + npi,
-                                        ccncCut &&  kIsAntiNu));
-        ret.push_back(new SBNWeightSyst(prefix + "vn"    + npi + ccncStr,
-                                        prefix + "vbarp" + npi,
-                                        ccncCut && !kIsAntiNu));
-      }
-    }
 
     return ret;
   }
