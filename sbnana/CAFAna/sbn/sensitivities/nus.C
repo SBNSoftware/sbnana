@@ -7,7 +7,7 @@
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Analysis/Calcs.h"
 #include "OscLib/OscCalcSterile.h"
-#include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/StandardRecord.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterile.h"
 #include "sbnana/CAFAna/Analysis/FitAxis.h"
 

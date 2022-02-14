@@ -5,7 +5,7 @@
 #include "TFile.h"
 #include "TTree.h"
 
-#include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/StandardRecord.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <iostream>
