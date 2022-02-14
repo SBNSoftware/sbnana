@@ -34,28 +34,28 @@ fwdir   product_dir scripts
 # Add the dependent product and version
 
 product          version
-sbnanaobj        v09_17_03
+sbnanaobj        v09_17_11
 #SAM tools?
-ifdhc            v2_5_16
+ifdhc            v2_6_1
 # For CAFAna
-srproxy          v00.32
 osclib           v00.17
-cafanacore       v01.22
-
+cafanacore       v01.25
+# flux syst histograms etc
+sbndata		 v01_03
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers
-cetbuildtools v8_18_05 - only_for_build
+cetbuildtools v8_19_02 - only_for_build
 end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the dependencies.
 # Make the table by adding columns before "notes".
 
-qualifier     sbnanaobj       ifdhc            srproxy  osclib               cafanacore      notes
-e20:debug     e20:debug       e20:debug:p392   py3      e20:debug:n311:stan  e20:debug:n311  -nq-
-e20:prof      e20:prof        e20:prof:p392    py3      e20:prof:n311:stan   e20:prof:n311   -nq-
-c7:debug      c7:debug        c7:debug:p392    py3      c7:debug:n311:stan   c7:debug:n311   -nq-
-c7:prof       c7:prof         c7:prof:p392     py3      c7:prof:n311:stan    c7:prof:n311    -nq-
+qualifier     sbnanaobj       ifdhc            sbndata  srproxy  osclib               cafanacore      notes
+e20:debug     e20:debug       e20:debug:p392   -nq-     py3      e20:debug:n311:stan  e20:debug:n311  -nq-
+e20:prof      e20:prof        e20:prof:p392    -nq-     py3      e20:prof:n311:stan   e20:prof:n311   -nq-
+c7:debug      c7:debug        c7:debug:p392    -nq-     py3      c7:debug:n311:stan   c7:debug:n311   -nq-
+c7:prof       c7:prof         c7:prof:p392     -nq-     py3      c7:prof:n311:stan    c7:prof:n311    -nq-
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:

@@ -6,7 +6,7 @@ include_directories(..)
 include_directories($ENV{OSCLIB_INC})
 
 cet_make(LIBRARY_NAME CAFAnaCore
-         LIBRARIES StandardRecordProxy
+         LIBRARIES sbnanaobj_StandardRecordProxy
                    sbnanaobj_StandardRecord
                    # TODO how am I supposed to link to an external library?
 #                  ${OSCLIB}
@@ -16,7 +16,7 @@ cet_make(LIBRARY_NAME CAFAnaCore
                    CAFAnaCoreExt
                    pthread
                    ${ROOT_BASIC_LIB_LIST}
-                   IFDH
+                   ifdh::ifdh
         )
 
 install_headers()

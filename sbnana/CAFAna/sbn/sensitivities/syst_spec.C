@@ -34,7 +34,7 @@ void syst_spec(const std::string anatype = numuStr)
   // ETW 12/18/2019 Just use the agreed list for all. Should fix the flux and genie separate ones too but didn't do that yet
   const std::vector<const ISyst*>& systs = GetSBNWeightSysts();
 
-  auto systs_flux = GetSBNFluxWeightSysts();
+  auto systs_flux = GetBoosterFluxWeightSysts();
   auto systs_genie = GetSBNGenieWeightSysts();
 
   std::vector<const ISyst*> systs_to_process;

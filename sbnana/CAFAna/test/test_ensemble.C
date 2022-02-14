@@ -14,7 +14,7 @@
 
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "sbnana/SBNAna/Cuts/NumuCutsSBND202106.h"
 #include "sbnana/SBNAna/Cuts/Cuts.h"

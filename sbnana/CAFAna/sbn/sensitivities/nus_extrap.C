@@ -19,7 +19,7 @@
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
-#include "sbnana/CAFAna/Systs/SBNFluxSysts.h"
+#include "sbnana/CAFAna/Systs/BoosterFluxSysts.h"
 
 #include "TCanvas.h"
 #include "TH1.h"
@@ -44,9 +44,9 @@ void nus_extrap(const char* stateFname = basicFname)
   std::vector<const ISyst*> systs = GetSBNWeightSysts();
 
   // Make sure all hadronization systs exist
-  for(const ISyst* s: GetSBNFluxHadronSysts(30));
+  for(const ISyst* s: GetBoosterFluxHadronSysts(30));
   // But only use the first 10 of them
-  for(const ISyst* s: GetSBNFluxHadronSysts(10)) systs.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts(10)) systs.push_back(s);
 
   std::cout << "Loading state from " << stateFname << std::endl; 
   TFile fin(stateFname);

@@ -5,7 +5,7 @@
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
 using namespace ana;
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "sbnana/SBNAna/Cuts/TruthCuts.h"
 

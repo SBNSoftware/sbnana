@@ -7,14 +7,14 @@
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "OscLib/OscCalcSterile.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/CAFAna/Core/Loaders.h"
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 #include "TFile.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "toysysts.h"
 
