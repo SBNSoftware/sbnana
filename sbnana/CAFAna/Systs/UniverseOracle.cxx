@@ -80,14 +80,16 @@ namespace ana
 
     for(unsigned int i = 0; i < global.wgts.size(); ++i){
       const caf::SRWeightPSet& pset = global.wgts[i];
+
       // For now, don't try to handle any parameter sets that have shifted more
       // than one knob at once.
-      if(pset.map.size() != 1) continue;
+      //if(pset.map.size() != 1) continue;
 
       // Save which position in the vector this was
-      fSystIdxs[pset.map[0].param.name] = i;
-      // Save all the knob values
-      fShiftVals[pset.map[0].param.name] = pset.map[0].vals;
+      // using the full pset name as the key; e.g., "genie_AhtBY_multisigma_Genie"
+      fSystIdxs[pset.name] = i;
+      // TODO For now, save the knob values of first parameter if this pset
+      fShiftVals[pset.name] = pset.map[0].vals;
     }
   }
 

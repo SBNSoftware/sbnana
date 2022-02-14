@@ -72,10 +72,13 @@ namespace ana
 
   // --------------------------------------------------------------------------
   SBNWeightSyst::SBNWeightSyst(const std::string& systName,
+                               const std::string& latexName,
+                               const caf::ReweightType_t& type,
                                const std::string& knobName,
                                const SliceCut& cut)
-    : ISyst(systName, systName),
+    : ISyst(systName, latexName),
       fIdx(-1),
+      fType(type),
       fKnobName(knobName.empty() ? systName : knobName),
       fCut(cut)
   {
@@ -114,7 +117,9 @@ namespace ana
     u.i1 = uo.ClosestShiftIndex(fKnobName, x, ESide::kAbove, &x1);
     // Interpolation weights
 
-    //==== When x1==x2; we are comparing two doubles, so "==" is dangerous
+    //==== When the requested x exists in UniverseOracle::fShiftVals, we get x1==x2
+    //==== e.g., x=1 with multisigma modes
+    //==== We are comparing two doubles, so "==" is dangerous
     //==== for now using absolute difference < tolerance
     if( (fabs(x1-x0)<1e-5) ){
       u.w0 = 0.5;
@@ -138,16 +143,14 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
-  const std::vector<const ISyst*>& GetSBNGenieWeightSysts()
-  {
-    static std::vector<const ISyst*> ret;
-    if(!ret.empty()) return ret;
 
-    // We can't ask the UniverseOracle about this, because it doesn't get
-    // properly configured until it's seen its first CAF file.
+  std::vector<std::string> GetSBNGenieWeightPSet(const caf::ReweightType_t& rwType){
 
-    const std::vector<std::string> names = {
-    //==== multisigma
+    std::vector<std::string> names_multisim = {
+    "sbnd",
+    };
+
+    std::vector<std::string> names_multisigma = {
     "AhtBY",
     "BhtBY",
     "CV1uBY",
@@ -188,7 +191,35 @@ namespace ana
     "NonRESBGvpNC2pi",
     };
 
-    for(const std::string& name: names) ret.push_back(new SBNWeightSyst(name));
+    if(rwType==caf::kMultisim) return names_multisim;
+    else if(rwType==caf::kMultisigma) return names_multisigma;
+    else{
+      return std::vector<std::string>();
+    }
+
+
+  }
+
+  std::vector<const ISyst*> GetSBNGenieWeightSysts(const caf::ReweightType_t& rwType)
+  {
+    std::vector<const ISyst*> ret;
+    if(!ret.empty()) return ret;
+
+    // We can't ask the UniverseOracle about this, because it doesn't get
+    // properly configured until it's seen its first CAF file.
+
+    const std::vector<std::string> names = GetSBNGenieWeightPSet(rwType);
+
+    for(const std::string& name: names){
+      std::string psetname(name);
+      if(rwType==caf::kMultisim){
+        psetname = "genie_"+name+"_multisim_Genie";
+      }
+      else if(rwType==caf::kMultisigma){
+        psetname = "genie_"+name+"_multisigma_Genie";
+      }
+      ret.push_back(new SBNWeightSyst(psetname, name, rwType));
+    }
 
     return ret;
   }
