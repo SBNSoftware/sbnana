@@ -2,8 +2,9 @@
 
 #include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
-#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "CAFAna/Core/Spectrum.h"
+
+#include "sbnana/CAFAna/Core/IRecordSource.h"
 
 #include <string>
 
@@ -14,14 +15,14 @@ namespace ana
   /// This function does *not* call Go() on the loader, allowing you to combine
   /// it with other spectra-filling if desired.
   ///
-  /// \param loader  SpectrumLoader to associate spectra with
+  /// \param src     Source to associate spectra with
   /// \param sigcut  Definition of signal (inverse defines background)
   /// \param presel  Cuts that will always be applied
   /// \param axes    Variables that will be cut on
   /// \param cut_pos Cut position for each variable
   /// \param[out] sigs Resulting signal spectra
   /// \param[out] bkgs Resulting background spectra
-  void MakeNMinusOneSpectra(SpectrumLoader& loader,
+  void MakeNMinusOneSpectra(ISliceSource& src,
                             const Cut& sigcut,
                             const Cut& presel,
                             const std::vector<HistAxis>& axes,

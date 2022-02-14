@@ -1,5 +1,7 @@
 #include "sbnana/CAFAna/Analysis/CutOptimizer.h"
 
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+
 #include "TH1.h"
 
 #include <iostream>
@@ -7,7 +9,7 @@
 namespace ana
 {
   // --------------------------------------------------------------------------
-  void MakeNMinusOneSpectra(SpectrumLoader& loader,
+  void MakeNMinusOneSpectra(ISliceSource& src,
                             const Cut& sigcut,
                             const Cut& presel,
                             const std::vector<HistAxis>& axes,
@@ -28,8 +30,8 @@ namespace ana
         nminusone = nminusone && axes[j].GetVars()[0] > cut_pos[j];
       } // end for j
 
-      sigs.emplace_back(loader, axes[i], nminusone && sigcut);
-      bkgs.emplace_back(loader, axes[i], nminusone && !sigcut);
+      sigs.emplace_back(src[nminusone][ sigcut], axes[i]);
+      bkgs.emplace_back(src[nminusone][!sigcut], axes[i]);
     } // end for i
   }
 
