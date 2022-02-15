@@ -1,11 +1,16 @@
 #!/bin/env python
 
+from __future__ import print_function
+
 # Welcome banner
-print('** Common Analysis Format Executor -- SBN edition **')
+print('** NOvA Common Analysis Format Executor **')
 
 import os, sys
 import argparse
 import tempfile
+import getpass
+import datetime
+import subprocess
 import code
 
 
@@ -18,12 +23,12 @@ def makeParser():
                           help = 'quit at end of job')
     parser.add_argument('-bq', action = 'store_true',
                           help = 'shorthand for -b -q')
-    parser.add_argument('-nr', '--no-recompile', action = 'store_true',
-                        help = "don't unconditionally recompile, ie .C+ not .C++")
 
     stridegroup = parser.add_argument_group('dataset modifiers')
     stridegroup.add_argument('-s', '--stride', metavar='N', type=int,
                              help = 'use only every Nth file of datasets')
+    stridegroup.add_argument('-l', '--limit', metavar='N', type=int,
+                             help = 'use only the first N files of datasets')
     stridegroup.add_argument('-o', '--offset', metavar='M', type=int,
                              help = 'skip first M files of dataset (for use with -s)')
     stridegroup.add_argument('-ss', '--snapshot', action = 'store_true',
@@ -53,15 +58,6 @@ def makeParser():
     return parser
 
 
-def libsPath():
-    if 'SBNANA_FQ_DIR' in os.environ:
-        # ups product
-        return os.environ['SBNANA_FQ_DIR']+'/bin/load_cafana_libs.C'
-    else:
-        # checked out under mrb
-        return os.environ['SBNANA_DIR']+'/sbnana/SBNAna/load_cafana_libs.C'
-
-
 def escapeArg(arg):
     try:
         # If it's "true" or "false" or we can parse it as a number,
@@ -75,61 +71,32 @@ def escapeArg(arg):
 
 def toFunctionParams(args):
     """Comma seperated list of parameters"""
-    return "("+','.join([escapeArg(a) for a in args])+")"
+    return "("+', '.join([escapeArg(a) for a in args])+")"
 
 
 if __name__ == '__main__':
-    # This is a bit of a hack. If you start cafe with no script argument,
-    # this will make it think it's opening a ROOT file. The eventual effect is
-    # just to start ROOT with the right libraries loaded.
-    sys.argv += ' '
+    # Hack to allow the case of `cafe' with no script argument
+    sys.argv += [' ']
 
     parser = makeParser()
 
     opts = vars(parser.parse_args())
 
+    script = opts['script.C']
+
+    if script != ' ': opts['args'] = opts['args'][:-1] # drop the stray space
+
     if opts['bq']:
         opts['batch'] = True
         opts['quit'] = True
-
-    # Suppress splash screen and default rootlogon (load_libs calls the
-    # official one)
-    exe = 'root'
-    rootargs = ['-l', '-n']
-    script = opts['script.C']
-    while script[-1] == '+': script = script[:-1] # Strip back to raw .C
-    # Drop the last argument, because it's the space hack from above
-    args = opts['args'][:-1]
-
-    if opts['batch']: rootargs.append('-b')
-    if opts['quit']: rootargs.append('-q')
-
-    if opts['gdb']:
-        exe = 'gdb'
-        rootargs = ['--args', 'root.exe'] + rootargs
-    if opts['valgrind']:
-        exe = 'valgrind'
-        rootargs = ['--leak-check=no',
-                    '--suppressions='+os.environ['ROOTSYS']+'/etc/valgrind-root.supp',
-                    'root.exe'] + rootargs
-    if opts['leakcheck']:
-        exe = 'valgrind'
-        rootargs = ['--leak-check=full',
-                    '--suppressions='+os.environ['ROOTSYS']+'/etc/valgrind-root.supp',
-                    'root.exe'] + rootargs
-    if opts['massif']:
-        exe = 'valgrind'
-        rootargs = ['--tool=massif',
-                    '--suppressions='+os.environ['ROOTSYS']+'/etc/valgrind-root.supp',
-                    'root.exe'] + rootargs
-    if opts['totalview']:
-        exe = 'totalview'
-        rootargs = ['root.exe', '-a'] + rootargs
 
     if opts['gdb'] or opts['valgrind'] or opts['leakcheck'] or opts['massif'] or opts['totalview']:
         # Disable the default backtrace printouts since presumably the user
         # intends to get their own
         os.environ['CAFE_NO_BACKTRACE'] = '1'
+    else:
+        # Otherwise need to opt-in, since we don't have a root.exe command line
+        os.environ['CAFE_YES_BACKTRACE'] = '1'
 
     if opts['prof']:
         os.environ['CPUPROFILE'] = tempfile.mkstemp()[1] # 'perf/cprof.prof'
@@ -139,6 +106,11 @@ if __name__ == '__main__':
             print('Illegal value for --stride:', opts['stride'])
             sys.exit(1)
         os.environ['CAFANA_STRIDE'] = str(opts['stride'])
+    if opts['limit'] != None:
+        if opts['limit'] <= 0:
+            print('Illegal value for --limit:', opts['limit'])
+            sys.exit(1)
+        os.environ['CAFANA_LIMIT'] = str(opts['limit'])
     if opts['offset'] != None:
         if opts['stride'] == None:
             print('Cannot specify --offset without --stride')
@@ -151,20 +123,25 @@ if __name__ == '__main__':
     if opts['snapshot']:
         os.environ['CAFANA_USE_SNAPSHOTS'] = 'yes'
 
-    # Take manual control of $ROOT_INCLUDE_PATH so we can decide what is and
-    # isn't accesssible.
-    os.environ['ROOT_INCLUDE_PATH'] = \
-      ':'.join([os.environ['MRB_SOURCE']+'/sbnana/sbnana',
-                os.environ['CAFANACORE_INC'],
-#                os.environ['OSCLIB_INC'],
-                os.environ['SRPROXY_INC'],
-                os.environ['ROOT_INC'],
-                os.environ['STAN_MATH_INC'],
-                os.environ['BOOST_INC'],
-                os.environ['EIGEN_INC']])
+    path = [os.environ['SBNANA_INC'],
+            os.environ['SBNANAOBJ_INC'],
+            os.environ['CAFANACORE_INC'],
+            os.environ['OSCLIB_INC'],
+            os.environ['SRPROXY_INC'],
+            os.environ['ROOT_INC'],
+            os.environ['STAN_MATH_INC'],
+            os.environ['BOOST_INC'],
+            os.environ['EIGEN_INC'],
+            os.environ['OSCLIB_INC']]
 
     if script.endswith('.py'):
-        for a in ['gdb', 'valgrind', 'leakcheck', 'massif', 'totalview', 'prof']:
+
+        # Take manual control of $ROOT_INCLUDE_PATH so we can decide what is
+        # and isn't accesssible.
+        os.environ['ROOT_INCLUDE_PATH'] = ':'.join(path)
+
+        for a in ['gdb', 'valgrind', 'leakcheck', 'massif', 'totalview', 'prof',
+                  'numubarccinc', 'numucc2p2h', 'nuebarccinc', 'numubarccpi0', 'numuccpi0', 'ndid']:
             if opts[a]:
                 print('Warning: option --'+a, 'not supported for python scripts')
 
@@ -172,38 +149,143 @@ if __name__ == '__main__':
             import ROOT
             ROOT.gROOT.SetBatch(True)
 
-        # Add cafana.py to the path
-        if 'SBNANA_FQ_DIR' in os.environ:
-            # ups product
-            sys.path.append(os.environ['SBNANA_FQ_DIR']+'/bin/')
-        else:
-            # checked out under mrb
-            sys.path.append(os.environ['SBNANA_DIR']+'/sbnana/CAFAna/')
-
-        sys.argv = args
+        sys.argv = opts['args']
         exec(open(script).read())
         if not opts['quit']: code.interact(banner='press Ctrl-D to quit')
         sys.exit(0)
 
 
-    if (script.endswith('.C') or script.endswith('.C+')):
-        # Usually use .C++ to ensure the macro will always be recompiled, with
-        # no possibility of version skew. .C+ if the speed-freak option has
-        # been enabled.
-        suffix = '+' if opts['no_recompile'] else '++'
+    d = tempfile.TemporaryDirectory('', 'cafana_'+getpass.getuser()+'_'+datetime.datetime.now().strftime('%Y%m%d_%H%M%S')+'_')
 
-        # root, then library loading, then script, then the function parameters
-        rootargs.append(libsPath())
-        rootargs.append(script+suffix+toFunctionParams(args))
+    # Suppress splash screen and default rootlogon
+    args = ['-l', '-n']
+    if opts['batch']: args += ['-b']
+    if opts['quit']: args += ['-q']
+
+    if script.endswith('.C'):
+        inc = os.path.abspath(script)
+        bname = os.path.basename(script)
+        fname = bname[0:bname.find('.')]
     else:
-        # Not a .C script. Maybe the user's trying to open a root file. In any
-        # case, just pass through all the arguments uninterpreted.
-        rootargs.append(libsPath())
-        if script != ' ': rootargs.append(script)
-        rootargs += args
+        inc = '/dev/null' # harmless to include
+        fname = 'void' # harmless to "execute"
+        args += [script] + opts['args']
+        opts['args'] = []
 
+    with open(d.name+'/'+fname+'.cxx', 'w') as fsrc:
+        fsrc.write('''// Autogenerated by cafe
+#include "{INC}" // the user's macro
 
-    # Show the user what we're doing in case we got it wrong
-    print(exe, ' '.join(rootargs))
-    # Replace the whole process
-    os.execvp(exe, [exe]+rootargs)
+#include "TRint.h"
+#include "TROOT.h"
+#include "TSystem.h"
+
+#include <iostream>
+
+int main(int argc, char** argv)
+{{
+  // Do this at runtime so the profiler library is unloaded before our main
+  // libraries, meaning that the code in ProfilerSupport runs at the right time
+  // (after the profile file is made). This does mean that we aren't able to
+  // profile library loading/startup.
+  if(gSystem->Getenv("CPUPROFILE")){{
+    // We were passed the --prof option
+    const std::string cpuprof = gSystem->Getenv("CPUPROFILE");
+
+    std::cout << "Profiling enabled." << std::endl;
+
+    const char* pd = getenv("GPERFTOOLS_DIR");
+    if(pd){{
+      gSystem->Load((std::string(pd)+"/lib/libprofiler.so").c_str());
+      // Somehow the library load manages to corrupt the env var? Put it back.
+      gSystem->Setenv("CPUPROFILE", cpuprof.c_str());
+    }}
+    else{{
+      std::cout << "Couldn't find gperftools library" << std::endl;
+    }}
+  }}
+
+  TRint app("cafe", &argc, argv);
+  app.SetPrompt("cafe [%d] ");
+  gROOT->Macro("$SBNANA_DIR/sbnana/CAFAna/rootlogon.C");
+  gROOT->ForceStyle();
+  {FUNC}{ARGS}; // execute the user's macro
+  app.Run();
+  return 0;
+}}
+'''.format(INC = inc,
+           FUNC = fname,
+           ARGS = toFunctionParams(opts['args'])))
+
+    libdirs = [os.environ['SBNANAOBJ_LIB'],
+               os.environ['SBNANA_LIB'],
+               os.environ['OSCLIB_LIB'],
+               os.environ['CAFANACORE_LIB'],
+               os.environ['BOOST_LIB'],
+               os.environ['TBB_LIB'],]
+
+    libs = ['tbb',
+            'Minuit2',
+            'OscLib',
+            'sbnanaobj_StandardRecordProxy',
+            'CAFAnaCoreExt',
+            'CAFAnaCore',
+            'CAFAnaVars',
+            'CAFAnaCuts',
+            'CAFAnaSysts',
+            'CAFAnaExtrap',
+            'CAFAnaPrediction',
+            'CAFAnaExperiment',
+            'CAFAnaAnalysis',
+            'SBNAnaCuts',
+            'SBNAnaVars',
+            ]
+
+    print('Compiling macro...')
+    incs = ' '.join(['-I '+p for p in path])
+    compile_cmd = 'g++ -c -g '+d.name+'/'+fname+'.cxx -o '+d.name+'/'+fname+'.o' + ' -pthread -std=c++17 -m64 -UNDEBUG -fdiagnostics-color=auto -DTBB_INTERFACE_NEW '+incs
+#    print(compile_cmd)
+    ret = subprocess.run(compile_cmd, shell=True).returncode
+    if ret != 0: sys.exit(ret)
+
+    print('Linking macro...')
+    libdirstr = ' '.join(['-L '+l for l in libdirs])     
+    libstr = ' '.join(['-l '+l for l in libs])
+    link_cmd = 'g++ '+d.name+'/'+fname+'.o'+' -o '+d.name+'/'+fname+' '+libdirstr+' '+libstr+' `root-config --libs` -lEG'
+#    print(link_cmd)
+    ret = subprocess.run(link_cmd, shell=True).returncode
+    if ret != 0: sys.exit(ret)
+
+    cmd = [d.name+'/'+fname] + args
+
+    if opts['gdb']: cmd = ['gdb', '--args'] + cmd
+
+    # Suppressions file for various valgrind modes
+    supp = os.environ['ROOTSYS']+'/etc/valgrind-root.supp'
+
+    if opts['valgrind']:
+        cmd = ['valgrind', '--leak-check=no', '--suppressions='+supp] + cmd
+
+    if opts['leakcheck']:
+        cmd = ['valgrind', '--leak-check=full', '--suppressions='+supp] + cmd
+
+    if opts['massif']:
+        cmd = ['valgrind', '--tool=massif', '--suppressions='+supp] + cmd
+
+    if opts['totalview']: cmd = ['totalview'] + cmd
+
+    print('Executing macro...')
+
+    p = subprocess.Popen(cmd)
+    while True:
+        try:
+            p.wait()
+            break
+        except KeyboardInterrupt:
+            # We want to forward the signal to the subprocess so it can
+            # potentially be handled gracefully rather than quitting python
+            # itself.
+            p.terminate()
+
+    # Return back the script's return code to the system
+    sys.exit(p.returncode)
