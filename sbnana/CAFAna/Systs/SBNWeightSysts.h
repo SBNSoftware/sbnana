@@ -3,6 +3,7 @@
 #include "sbnana/CAFAna/Core/ISyst.h"
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Weight.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
@@ -27,19 +28,19 @@ namespace ana
     mutable std::vector<Cut> fUnivCuts;
   };
 
-  Var GetUniverseWeight(const std::string& syst, int univIdx)
+  Weight GetUniverseWeight(const std::string& syst, int univIdx)
   {
-    return Var(UniverseWeight(std::vector<std::string>(1, syst), univIdx));
+    return Weight(UniverseWeight(std::vector<std::string>(1, syst), univIdx));
   }
 
-  Var GetUniverseWeight(const std::vector<std::string>& systs, int univIdx)
+  Weight GetUniverseWeight(const std::vector<std::string>& systs, int univIdx)
   {
-    return Var(UniverseWeight(systs, univIdx));
+    return Weight(UniverseWeight(systs, univIdx));
   }
 
-  Var GetUniverseWeight(const std::vector<const ISyst*> systs, int univIdx)
+  Weight GetUniverseWeight(const std::vector<const ISyst*> systs, int univIdx)
   {
-    return Var(UniverseWeight(systs, univIdx));
+    return Weight(UniverseWeight(systs, univIdx));
   }
 
 
