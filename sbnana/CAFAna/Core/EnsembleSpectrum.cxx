@@ -31,11 +31,10 @@ namespace ana
                                      const std::vector<Weight>& univ_weis)
     : fNom(src, axis)
   {
-    // TODO TODO no way to weight a source yet
-    //    fUnivs.reserve(univ_weis.size());
-    //    for(const Weight& w: univ_weis){
-    //      fUnivs.emplace_back(loader, axis, spillcut, cut, kNoShift, cv_wei * w);
-    //    }
+    fUnivs.reserve(univ_weis.size());
+    for(const Weight& w: univ_weis){
+      fUnivs.emplace_back(src.Weighted(w), axis);
+    }
   }
 
   //----------------------------------------------------------------------

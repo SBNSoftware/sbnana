@@ -44,26 +44,26 @@ void test_ensemble(bool reload = false)
 
     const HistAxis axEnergy("True energy (GeV)", binsEnergy, kTrueE);
 
-    std::vector<Var> weis;
+    std::vector<Weight> weis;
     weis.reserve(100);
 
     // We need these essentially as the list of knob names
     const std::vector<const ISyst*>& systs = GetSBNGenieWeightSysts();
     for(int i = 0; i < 100; ++i) weis.push_back(GetUniverseWeight(systs, i));
 
-    EnsembleSpectrum sCC(loader, axEnergy, kNoSpillCut, kNumuSel && kIsNumuCC, weis);
-    EnsembleSpectrum sNC(loader, axEnergy, kNoSpillCut, kNumuSel && kIsNC, weis);
+    EnsembleSpectrum sCC(loader[kNumuSel][kIsNumuCC], axEnergy, weis);
+    EnsembleSpectrum sNC(loader[kNumuSel][kIsNC],     axEnergy, weis);
 
     loader.Go();
 
     TFile fout(state_fname.c_str(), "RECREATE");
-    sCC.SaveTo(fout.mkdir("cc"));
-    sNC.SaveTo(fout.mkdir("nc"));
+    sCC.SaveTo(&fout, "cc");
+    sNC.SaveTo(&fout, "nc");
   }
 
   TFile fin(state_fname.c_str());
-  EnsembleSpectrum* sCC = LoadFrom<EnsembleSpectrum>(fin.GetDirectory("cc")).release();
-  EnsembleSpectrum* sNC = LoadFrom<EnsembleSpectrum>(fin.GetDirectory("nc")).release();
+  EnsembleSpectrum* sCC = LoadFrom<EnsembleSpectrum>(&fin, "cc").release();
+  EnsembleSpectrum* sNC = LoadFrom<EnsembleSpectrum>(&fin, "nc").release();
 
   sCC->Nominal().ToTH1(kPOTnominal, kRed)->Draw("hist");
   sNC->Nominal().ToTH1(kPOTnominal, kBlue)->Draw("hist same");
