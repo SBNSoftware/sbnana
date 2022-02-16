@@ -21,8 +21,6 @@ add_subdirectory(bin)
 
 # These are in SBNAna for now
 #cet_script(cafe)
-# same place as cafe script so we can find it
-#cet_script(load_cafana_libs.C)
 cet_script(cafana.py)
 cet_script(rootlogon.C)
 
