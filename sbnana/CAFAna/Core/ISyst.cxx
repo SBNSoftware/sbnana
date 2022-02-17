@@ -11,9 +11,9 @@ namespace ana
 	       bool applyPenalty,
 	       double min,
 	       double max)
-    : fShortName(shortName), fLatexName(latexName), fApplyPenalty(applyPenalty), fMin(min), fMax(max)
+    : _ISyst(shortName, latexName), fApplyPenalty(applyPenalty), fMin(min), fMax(max)
   {
-    SystRegistry::Register(this);
+    Registry<ISyst>::Register(this);
   }
 
   //----------------------------------------------------------------------
@@ -21,7 +21,7 @@ namespace ana
   {
     // Normally ISysts should last for the life of the process, but in case one
     // is deleted it's best not to leave a dangling pointer in SystRegistry.
-    SystRegistry::UnRegister(this);
+    Registry<ISyst>::UnRegister(this);
   }
 
   //----------------------------------------------------------------------
