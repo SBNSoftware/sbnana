@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Core/ISyst.h"
 
-#include "sbnana/CAFAna/Core/SystRegistry.h"
+#include "CAFAna/Core/Registry.h"
 #include "sbnana/CAFAna/Core/MathUtil.h"
 
 namespace ana

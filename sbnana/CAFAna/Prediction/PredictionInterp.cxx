@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "CAFAna/Core/Ratio.h"
-#include "sbnana/CAFAna/Core/SystRegistry.h"
+#include "CAFAna/Core/Registry.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TDirectory.h"
@@ -511,7 +511,7 @@ namespace ana
         ShiftedPreds sp;
         sp.systName = hSystNames->GetXaxis()->GetBinLabel(systIdx+1);
 
-        const ISyst* syst = SystRegistry::ShortNameToSyst(sp.systName);
+        const ISyst* syst = Registry<ISyst>::ShortNameToPtr(sp.systName);
 
         if(std::find(veto.begin(), veto.end(), syst) != veto.end()) continue;
 

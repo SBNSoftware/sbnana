@@ -4,7 +4,7 @@
 #include "sbnana/CAFAna/Core/MathUtil.h"
 #include "CAFAna/Core/Progress.h"
 #include "CAFAna/Core/Ratio.h"
-#include "sbnana/CAFAna/Core/SystRegistry.h"
+#include "CAFAna/Core/Registry.h"
 
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 
@@ -515,7 +515,7 @@ namespace ana
     TH1* hSystNames = (TH1*)dir->Get("syst_names");
     if(hSystNames){
       for(int systIdx = 0; systIdx < hSystNames->GetNbinsX(); ++systIdx){
-        systs.push_back(SystRegistry::ShortNameToSyst(hSystNames->GetXaxis()->GetBinLabel(systIdx+1)));
+        systs.push_back(Registry<ISyst>::ShortNameToPtr(hSystNames->GetXaxis()->GetBinLabel(systIdx+1)));
       }
     }
 
