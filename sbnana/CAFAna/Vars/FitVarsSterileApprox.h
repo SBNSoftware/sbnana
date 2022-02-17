@@ -10,17 +10,17 @@ namespace ana
   class FitDmSqSterile: public IConstrainedFitVar
   {
   public:
+    FitDmSqSterile() : IConstrainedFitVar("dmsq", "#Deltam^{2} (eV^{2})") {}
+
     virtual double GetValue(const osc::IOscCalcAdjustable* osc) const;
     virtual void SetValue(osc::IOscCalcAdjustable* osc, double val) const;
-    virtual std::string ShortName() const {return "dmsq";}
-    virtual std::string LatexName() const {return "#Deltam^{2} (eV^{2})";}
 
     virtual double LowLimit() const {return 0;}
     virtual double HighLimit() const {return 1e6;}
   };
 
   /// \Delta m^2 \f$
-  const FitDmSqSterile kFitDmSqSterile = FitDmSqSterile();
+  const FitDmSqSterile kFitDmSqSterile;
 
   //----------------------------------------------------------------------
 
@@ -28,17 +28,17 @@ namespace ana
   class FitSinSq2ThetaMuMu: public IConstrainedFitVar
   {
   public:
+    FitSinSq2ThetaMuMu() : IConstrainedFitVar("ss2thmm", "sin^{2}2#theta_{#mu#mu}") {}
+
     virtual double GetValue(const osc::IOscCalcAdjustable* osc) const;
     virtual void SetValue(osc::IOscCalcAdjustable* osc, double val) const;
-    virtual std::string ShortName() const {return "ss2thmm";}
-    virtual std::string LatexName() const {return "sin^{2}2#theta_{#mu#mu}";}
 
     virtual double LowLimit() const {return 0;}
     virtual double HighLimit() const {return 1;}
   };
 
   /// \f$ \sin^22\theta_{\mu\mu} \f$
-  const FitSinSq2ThetaMuMu kFitSinSq2ThetaMuMu = FitSinSq2ThetaMuMu();
+  const FitSinSq2ThetaMuMu kFitSinSq2ThetaMuMu;
 
   //----------------------------------------------------------------------
 
@@ -46,16 +46,16 @@ namespace ana
   class FitSinSq2ThetaMuE: public IConstrainedFitVar
   {
   public:
+    FitSinSq2ThetaMuE() : IConstrainedFitVar("ss2thme", "sin^{2}2#theta_{#mue}") {}
+
     virtual double GetValue(const osc::IOscCalcAdjustable* osc) const;
     virtual void SetValue(osc::IOscCalcAdjustable* osc, double val) const;
-    virtual std::string ShortName() const {return "ss2thme";}
-    virtual std::string LatexName() const {return "sin^{2}2#theta_{#mue}";}
 
     virtual double LowLimit() const {return 0;}
     virtual double HighLimit() const {return 1;}
   };
 
   /// \f$ \sin^22\theta_{\mu e} \f$
-  const FitSinSq2ThetaMuE kFitSinSq2ThetaMuE = FitSinSq2ThetaMuE();
+  const FitSinSq2ThetaMuE kFitSinSq2ThetaMuE;
 
 } // namespace

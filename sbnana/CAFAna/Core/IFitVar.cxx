@@ -7,6 +7,19 @@
 namespace ana
 {
   //----------------------------------------------------------------------
+  IFitVar::IFitVar(const std::string& shortName, const std::string& latexName)
+    : INamed(shortName, latexName)
+  {
+  }
+
+  //----------------------------------------------------------------------
+  IConstrainedFitVar::IConstrainedFitVar(const std::string& shortName,
+                                         const std::string& latexName)
+    : IFitVar(shortName, latexName)
+  {
+  }
+
+  //----------------------------------------------------------------------
   double IConstrainedFitVar::Penalty(double val,
                                      osc::IOscCalcAdjustable*) const
   {
