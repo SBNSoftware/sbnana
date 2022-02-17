@@ -31,12 +31,23 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void SBNSpillSource::HandleRecord(const caf::SRSpillProxy* spill, double weight)
+  void SBNSpillSource::HandleRecord(const caf::SRSpillProxy* spill, double weight, int universeId)
   {
-    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandleRecord(spill, weight);
+    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandleRecord(spill, weight, universeId);
     for(caf::SRSliceProxy& slc: spill->slc){
       for(ISliceSink* s: ISliceSource::fSinks){
-        s->HandleRecord(&slc, 1);
+        s->HandleRecord(&slc, weight, universeId);
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------
+  void SBNSpillSource::HandleEnsemble(const caf::SRSpillProxy* spill, const std::vector<double>& weights, int multiverseId)
+  {
+    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandleEnsemble(spill, weights, multiverseId);
+    for(caf::SRSliceProxy& slc: spill->slc){
+      for(ISliceSink* s: ISliceSource::fSinks){
+        s->HandleEnsemble(&slc, weights, multiverseId);
       }
     }
   }
@@ -211,7 +222,7 @@ namespace ana
       // shouldn't be included in any selected spectra.
       if(has_husk && sr.hdr.husk) continue;
 
-      HandleRecord(&sr, 1);
+      HandleRecord(&sr, 1, 0 /* nominal */);
 
       if(prog) prog->SetProgress(double(n)/Nentries);
     } // end for n

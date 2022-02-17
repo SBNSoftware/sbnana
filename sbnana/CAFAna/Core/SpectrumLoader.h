@@ -32,7 +32,18 @@ namespace ana
     using ISpillSource::GetVars;
     beta::IValueSource& operator[](const SpillVar& var){return GetVar(var);}
 
-    virtual void HandleRecord(const caf::SRSpillProxy* spill, double weight) override;
+    ISliceSource& Ensemble(const std::vector<Weight>& weis, int multiverseId)
+    {
+      return ISliceSource::Ensemble(weis, multiverseId);
+    }
+
+    ISpillSource& Ensemble(const std::vector<SpillWeight>& weis, int multiverseId)
+    {
+      return ISpillSource::Ensemble(weis, multiverseId);
+    }
+
+    virtual void HandleRecord(const caf::SRSpillProxy* spill, double weight, int universeId) override;
+    virtual void HandleEnsemble(const caf::SRSpillProxy* spill, const std::vector<double>& weights, int multiverseId) override;
 
     virtual void HandlePOT(double pot) override;
 

@@ -18,9 +18,12 @@ namespace ana
   // TODO Multiverse class encapsulating a vector of shifts/weights and an ID
   // number?
 
-  class EnsembleSpectrum
+  class EnsembleSpectrum : public beta::IValueSink
   {
   public:
+    EnsembleSpectrum(beta::IValueSource& src, const LabelsAndBins& axis);
+    EnsembleSpectrum(ISliceSource& src, const HistAxis& axis);
+    /*
     EnsembleSpectrum(ISliceSource& src,
                      const HistAxis& axis,
                      const std::vector<SystShifts>& univ_shifts);
@@ -28,7 +31,7 @@ namespace ana
     EnsembleSpectrum(ISliceSource& src,
                      const HistAxis& axis,
                      const std::vector<Weight>& univ_weis);
-
+    */
     Spectrum Nominal() const {return fNom;}
     unsigned int NUniverses() const {return fUnivs.size();}
     Spectrum Universe(unsigned int i) const
@@ -45,6 +48,14 @@ namespace ana
     TGraphAsymmErrors* ErrorBand(double exposure,
                                  EExposureType expotype = kPOT,
                                  EBinType bintype = kBinContent) const;
+
+    virtual void Fill(double x, double w, int universeId) override;
+
+    virtual void FillEnsemble(double x, const std::vector<double>& ws, int multiverseId) override;
+
+    virtual void FillPOT(double pot) override;
+
+    virtual void FillLivetime(double livetime) override;
 
     void Scale(double c);
 

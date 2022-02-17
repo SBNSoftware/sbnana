@@ -13,6 +13,26 @@
 namespace ana
 {
   //----------------------------------------------------------------------
+  EnsembleSpectrum::EnsembleSpectrum(beta::IValueSource& src,
+                                     const LabelsAndBins& axis)
+    : fNom(beta::kNullValueSource, axis)
+  {
+    // 100 is a HACK HACK HACK
+    fUnivs.reserve(100);
+    for(unsigned int i = 0; i < 100; ++i) fUnivs.push_back(fNom);
+
+    src.Register(this);
+  }
+
+  //----------------------------------------------------------------------
+  EnsembleSpectrum::EnsembleSpectrum(ISliceSource& src,
+                                     const HistAxis& axis)
+    : EnsembleSpectrum(src[axis.GetVar1D()], axis)
+  {
+  }
+
+  /*
+  //----------------------------------------------------------------------
   EnsembleSpectrum::EnsembleSpectrum(ISliceSource& src,
                                      const HistAxis& axis,
                                      const std::vector<SystShifts>& univ_shifts)
@@ -35,6 +55,43 @@ namespace ana
     for(const Weight& w: univ_weis){
       fUnivs.emplace_back(src.Weighted(w), axis);
     }
+  }
+  */
+
+  //----------------------------------------------------------------------
+  void EnsembleSpectrum::Fill(double x, double w, int universeId)
+  {
+    // Filling a single constituent universe
+    if(universeId == 0){
+      fNom.Fill(x, w, 0);
+    }
+    else{
+      fUnivs[universeId % 10000 - 1].Fill(x, w, 0);
+    }
+  }
+
+  //----------------------------------------------------------------------
+  void EnsembleSpectrum::FillEnsemble(double x, const std::vector<double>& ws, int multiverseId)
+  {
+    assert(!ws.empty());
+    // TODO checking for consistent multiverse etc
+    // TODO check ws is same length as univs+1
+    fNom.Fill(x, ws[0], 0);
+    for(unsigned int i = 1; i < ws.size(); ++i) fUnivs[i-1].Fill(x, ws[i], 0);
+  }
+
+  //----------------------------------------------------------------------
+  void EnsembleSpectrum::FillPOT(double pot)
+  {
+    fNom.FillPOT(pot);
+    for(Spectrum& s: fUnivs) s.FillPOT(pot);
+  }
+
+  //----------------------------------------------------------------------
+  void EnsembleSpectrum::FillLivetime(double livetime)
+  {
+    fNom.FillLivetime(livetime);
+    for(Spectrum& s: fUnivs) s.FillLivetime(livetime);
   }
 
   //----------------------------------------------------------------------
