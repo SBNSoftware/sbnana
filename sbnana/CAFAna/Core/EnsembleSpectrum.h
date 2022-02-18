@@ -21,8 +21,18 @@ namespace ana
   class EnsembleSpectrum : public beta::IValueEnsembleSink
   {
   public:
+    /// Construct an ensemble spectrum from a source of values and an axis
+    /// definition
     EnsembleSpectrum(beta::IValueEnsembleSource& src, const LabelsAndBins& axis);
-    EnsembleSpectrum(ISliceEnsembleSource& src, const HistAxis& axis);
+
+    /// \brief Shorthand construction with a source of records and a HistAxis
+    /// defining the Var to extract from those records.
+    template<class RecT>
+    EnsembleSpectrum(beta::_IRecordEnsembleSource<RecT>& src,
+                     const _HistAxis<_Var<RecT>>& axis)
+      : EnsembleSpectrum(src[axis.GetVar1D()], axis)
+    {
+    }
 
     Spectrum Nominal() const {return fNom;}
     unsigned int NUniverses() const {return fUnivs.size();}

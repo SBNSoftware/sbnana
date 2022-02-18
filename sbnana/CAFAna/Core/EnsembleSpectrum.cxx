@@ -25,13 +25,6 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  EnsembleSpectrum::EnsembleSpectrum(ISliceEnsembleSource& src,
-                                     const HistAxis& axis)
-    : EnsembleSpectrum(src[axis.GetVar1D()], axis)
-  {
-  }
-
-  //----------------------------------------------------------------------
   void EnsembleSpectrum::FillSingle(double x, double w, int universeId)
   {
     // Filling a single constituent universe
