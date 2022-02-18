@@ -5,6 +5,7 @@
 #include "sbnana/CAFAna/Core/Var.h"
 
 #include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnanaobj/StandardRecord/SREnums.h"
 
 #include <unordered_map>
 #include <vector>
@@ -47,6 +48,8 @@ namespace ana
   {
   public:
     SBNWeightSyst(const std::string& systName,
+                  const std::string& latexName="",
+                  const caf::ReweightType_t& type=caf::kMultiSim,
                   const std::string& knobName = "", // if it differs
                   const SliceCut& cut = kNoCut);
 
@@ -54,6 +57,8 @@ namespace ana
 
   protected:
     mutable int fIdx;
+
+    caf::ReweightType_t fType;
 
     std::string fKnobName;
 
@@ -70,7 +75,8 @@ namespace ana
     Univs GetUnivs(double x) const;
   };
 
-  const std::vector<const ISyst*>& GetSBNGenieWeightSysts();
+  std::vector<std::string> GetSBNGenieWeightPSet(const caf::ReweightType_t& rwType);
+  std::vector<const ISyst*> GetSBNGenieWeightSysts(const caf::ReweightType_t& rwType=caf::kMultiSim);
 
   //  const std::vector<const ISyst*>& GetSBNBoosterWeightSysts();
   //  const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
