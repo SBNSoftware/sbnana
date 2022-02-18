@@ -66,7 +66,7 @@ namespace ana
   {
     SpectrumLoader loader(wildcard);
     std::vector<Spectrum> sigs, bkgs;
-    MakeNMinusOneSpectra(loader, sigcut, presel, axes, cut_pos, sigs, bkgs);
+    MakeNMinusOneSpectra(loader.Slices(), sigcut, presel, axes, cut_pos, sigs, bkgs);
     loader.Go();
 
     double best_fom = 0;

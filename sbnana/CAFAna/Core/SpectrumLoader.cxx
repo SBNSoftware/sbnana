@@ -21,61 +21,6 @@
 namespace ana
 {
   //----------------------------------------------------------------------
-  SBNSpillSource& SBNSpillSource::GetCut(const SpillCut& cut)
-  {
-    // TODO don't leak - ret needs to be saved somewhere
-    // TODO cacheing for when it's the same cut
-    SBNSpillSource* ret = new SBNSpillSource;
-    ISpillSource::GetCut(cut).Register(ret);
-    return *ret;
-  }
-
-  //----------------------------------------------------------------------
-  void SBNSpillSource::HandleRecord(const caf::SRSpillProxy* spill, double weight, int universeId)
-  {
-    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandleRecord(spill, weight, universeId);
-    for(caf::SRSliceProxy& slc: spill->slc){
-      for(ISliceSink* s: ISliceSource::fSinks){
-        s->HandleRecord(&slc, weight, universeId);
-      }
-    }
-  }
-
-  //----------------------------------------------------------------------
-  void SBNSpillSource::HandleEnsemble(const caf::SRSpillProxy* spill, const std::vector<double>& weights, int multiverseId)
-  {
-    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandleEnsemble(spill, weights, multiverseId);
-    for(caf::SRSliceProxy& slc: spill->slc){
-      for(ISliceSink* s: ISliceSource::fSinks){
-        s->HandleEnsemble(&slc, weights, multiverseId);
-      }
-    }
-  }
-
-  //----------------------------------------------------------------------
-  void SBNSpillSource::HandlePOT(double pot)
-  {
-    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandlePOT(pot);
-    for(ISliceSink* sink: ISliceSource::fSinks) sink->HandlePOT(pot);
-  }
-
-  //----------------------------------------------------------------------
-  void SBNSpillSource::HandleLivetime(double livetime)
-  {
-    for(ISpillSink* sink: ISpillSource::fSinks) sink->HandleLivetime(livetime);
-    for(ISliceSink* sink: ISliceSource::fSinks) sink->HandleLivetime(livetime);
-  }
-
-  //----------------------------------------------------------------------
-  unsigned int SBNSpillSource::NSinks() const
-  {
-    unsigned int totsinks = 0;
-    for(const ISpillSink* s: ISpillSource::fSinks) totsinks += s->NSinks();
-    for(const ISliceSink* s: ISliceSource::fSinks) totsinks += s->NSinks();
-    return totsinks;
-  }
-
-  //----------------------------------------------------------------------
   SpectrumLoader::SpectrumLoader(const std::string& wildcard, int max)
     : SpectrumLoaderBase(wildcard), max_entries(max)
   {
@@ -107,16 +52,6 @@ namespace ana
   {
   }
 
-  /*
-  struct CompareByID
-  {
-    bool operator()(const Cut& a, const Cut& b) const
-    {
-      return a.ID() < b.ID();
-    }
-  };
-  */
-
   //----------------------------------------------------------------------
   void SpectrumLoader::Go()
   {
@@ -125,17 +60,6 @@ namespace ana
       abort();
     }
     fGone = true;
-
-    // Find all the unique cuts
-    //    std::set<Cut, CompareByID> cuts;
-    //    for(auto& shiftdef: fHistDefs)
-    //      for(auto& cutdef: shiftdef.second)
-    //        cuts.insert(cutdef.first);
-    //    for(const Cut& cut: cuts) fAllCuts.push_back(cut);
-
-    //    fLivetimeByCut.resize(fAllCuts.size());
-    //    fPOTByCut.resize(fAllCuts.size());
-
 
     const int Nfiles = NFiles();
 
@@ -148,7 +72,10 @@ namespace ana
       ++fileIdx;
 
       if(Nfiles >= 0 && !prog){
-        prog = new Progress(TString::Format("Filling %u spectra from %d files matching '%s'", NSinks(), Nfiles, fWildcard.c_str()).Data());
+        unsigned int totsinks = 0;
+        for(const ISpillSink* s: fSinks) totsinks += s->NSinks();
+
+        prog = new Progress(TString::Format("Filling %u spectra from %d files matching '%s'", totsinks, Nfiles, fWildcard.c_str()).Data());
       }
 
       HandleFile(f, Nfiles == 1 ? prog : 0);
@@ -240,21 +167,6 @@ namespace ana
 
     HandlePOT(fPOT);
     HandleLivetime(fNGenEvt);
-  }
-
-  //----------------------------------------------------------------------
-  NullLoader::NullLoader()
-  {
-  }
-
-  //----------------------------------------------------------------------
-  NullLoader::~NullLoader()
-  {
-  }
-
-  //----------------------------------------------------------------------
-  void NullLoader::Go()
-  {
   }
 
 } // namespace

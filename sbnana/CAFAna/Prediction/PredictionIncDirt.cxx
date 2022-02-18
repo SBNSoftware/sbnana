@@ -15,7 +15,7 @@ namespace ana
                                        ISliceSource& srcDirt,
                                        const HistAxis& axis)
     : fDet(srcNonswap, srcNue, srcNuTau, srcIntrinsic, axis),
-      fDirt(srcDirt, kNullLoader, kNullLoader, kNullLoader, axis)
+      fDirt(srcDirt, kNullSliceSource, kNullSliceSource, kNullSliceSource, axis)
   {
   }
 
@@ -24,7 +24,7 @@ namespace ana
                                        ISliceSource& srcDirt,
                                        const HistAxis& axis)
     : fDet(srcs, axis),
-      fDirt(srcDirt, kNullLoader, kNullLoader, kNullLoader, axis)
+      fDirt(srcDirt, kNullSliceSource, kNullSliceSource, kNullSliceSource, axis)
   {
   }
 

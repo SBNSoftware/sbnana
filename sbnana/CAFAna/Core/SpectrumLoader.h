@@ -5,55 +5,44 @@
 #include "sbnana/CAFAna/Core/IRecordSource.h"
 #include "sbnana/CAFAna/Core/IRecordSink.h"
 
+#include "CAFAna/Core/Passthrough.h"
+
 class TFile;
+
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h" // todo move to cxx
 
 namespace ana
 {
   class Progress;
 
-  // TODO drop the "SBN" and define all this in RecordSource?
-  /// SBNSpillSource is special since it also knows how to loop over slices
-  class SBNSpillSource: public ISpillSink, public ISpillSource, public ISliceSource
+  class SliceAdaptor : public beta::PassthroughUnlike<caf::SRSpillProxy, caf::SRSliceProxy>
   {
   public:
-
-    using ISliceSource::GetVar;
-    using ISliceSource::GetVars;
-    beta::IValueSource& operator[](const Var& var){return GetVar(var);}
-
-    using ISliceSource::GetCut;
-    ISliceSource& operator[](const Cut& cut){return ISliceSource::GetCut(cut);}
-
-    SBNSpillSource& GetCut(const SpillCut& cut);
-
-    SBNSpillSource& operator[](const SpillCut& cut){return GetCut(cut);}
-
-    using ISpillSource::GetVar;
-    using ISpillSource::GetVars;
-    beta::IValueSource& operator[](const SpillVar& var){return GetVar(var);}
-
-    ISliceSource& Ensemble(const std::vector<Weight>& weis, int multiverseId)
+    virtual void HandleRecord(const caf::SRSpillProxy* spill, double weight, int universeId) override
     {
-      return ISliceSource::Ensemble(weis, multiverseId);
+      for(const caf::SRSliceProxy& slc: spill->slc)
+        for(auto& sink: fSinks) sink->HandleRecord(&slc, weight, universeId);
     }
 
-    ISpillSource& Ensemble(const std::vector<SpillWeight>& weis, int multiverseId)
+    virtual void HandleEnsemble(const caf::SRSpillProxy* spill, const std::vector<double>& weights, int multiverseId) override
     {
-      return ISpillSource::Ensemble(weis, multiverseId);
+      for(const caf::SRSliceProxy& slc: spill->slc)
+        for(auto& sink: fSinks) sink->HandleEnsemble(&slc, weights, multiverseId);
     }
+  };
 
-    virtual void HandleRecord(const caf::SRSpillProxy* spill, double weight, int universeId) override;
-    virtual void HandleEnsemble(const caf::SRSpillProxy* spill, const std::vector<double>& weights, int multiverseId) override;
-
-    virtual void HandlePOT(double pot) override;
-
-    virtual void HandleLivetime(double livetime) override;
-
-    virtual unsigned int NSinks() const override;
+  // Spill sources are also slice sources (they just loop over the slices)
+  template<> class beta::_IRecordSource<caf::SRSpillProxy> : public beta::_IRecordSourceDefaultImpl<caf::SRSpillProxy>
+  {
+  public:
+    ISliceSource& Slices() {return fSlices;}
 
   protected:
-    SBNSpillSource(){}
+    _IRecordSource() {Register(&fSlices);}
+
+    SliceAdaptor fSlices;
   };
+
 
   /// \brief Collaborates with \ref Spectrum and \ref OscillatableSpectrum to
   /// fill spectra from CAF files.
@@ -63,7 +52,7 @@ namespace ana
   /// need. They will register with this loader. Finally, calling \ref Go will
   /// cause all the spectra to be filled at once. After this the loader may not
   /// be used again.
-  class SpectrumLoader: public SpectrumLoaderBase, public SBNSpillSource
+  class SpectrumLoader: public SpectrumLoaderBase, public beta::Passthrough<caf::SRSpillProxy>
   {
   public:
     SpectrumLoader(const std::string& wildcard, int max = 0);
@@ -91,26 +80,16 @@ namespace ana
     /// Save accumulated exposures into the individual spectra
     virtual void StoreExposures();
 
-    /// All unique cuts contained in fHistDefs
-    //    std::vector<Cut> fAllCuts;
-    //    std::vector<double> fLivetimeByCut; ///< Indexing matches fAllCuts
-    //    std::vector<double> fPOTByCut;      ///< Indexing matches fAllCuts
     int max_entries;
   };
 
-  // TODO does this actually work right?
-  /// \brief Dummy loader that doesn't load any files
-  ///
-  /// Useful when a loader is required for a component you want to ignore
   class NullLoader: public SpectrumLoader
   {
   public:
-    NullLoader();
-    virtual ~NullLoader();
-    virtual void Go() override;
+    virtual void Go() override {}
   };
-  /// \brief Dummy loader that doesn't load any files
-  ///
-  /// Useful when a loader is required for a component you want to ignore
   static NullLoader kNullLoader;
+
+  static beta::NullSource<caf::SRSpillProxy> kNullSpillSource;
+  static beta::NullSource<caf::SRSliceProxy> kNullSliceSource;
 }

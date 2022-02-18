@@ -1,6 +1,5 @@
 #include "sbnana/CAFAna/Core/Loaders.h"
 
-#include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include <cassert>
@@ -17,36 +16,6 @@ namespace ana
   template<class SrcT> Sources<SrcT>::~Sources()
   {
     // for(auto it: fSources) delete it.second;
-  }
-
-  //----------------------------------------------------------------------
-  template<class SrcT> void Sources<SrcT>::SetLoaderPath(const std::string& path,
-                                                         DataMC datamc,
-                                                         SwappingConfig swap)
-  {
-    assert(datamc == kMC || swap == kNonSwap);
-
-    const Key_t key(datamc, swap);
-
-    // Clear out the old one if necessary
-    DisableLoader(datamc, swap);
-
-    fLoaderPaths[key] = path;
-  }
-
-  //----------------------------------------------------------------------
-  template<class SrcT> void Sources<SrcT>::SetLoaderFiles(const std::vector<std::string>& files,
-                                                          DataMC datamc,
-                                                          SwappingConfig swap)
-  {
-    assert(datamc == kMC || swap == kNonSwap);
-
-    const Key_t key(datamc, swap);
-
-    // Clear out the old one if necessary
-    DisableLoader(datamc, swap);
-
-    fLoaderFiles[key] = files;
   }
 
   //----------------------------------------------------------------------
@@ -78,9 +47,6 @@ namespace ana
       delete it->second;
       fSources.erase(it);
     }
-
-    fLoaderPaths.erase(key);
-    fLoaderFiles.erase(key);
   }
 
   //----------------------------------------------------------------------
@@ -95,23 +61,16 @@ namespace ana
     auto itLoader = fSources.find(key);
     if(itLoader != fSources.end()) return *itLoader->second;
 
-    auto itPath = fLoaderPaths.find(key);
-    if(itPath != fLoaderPaths.end()){
-      fSources[key] = new SpectrumLoader(itPath->second);
-      return *fSources[key];
+    if constexpr(std::is_same_v<SrcT, SpectrumLoader>){
+      return kNullLoader;
     }
-    auto itFiles = fLoaderFiles.find(key);
-    if(itFiles != fLoaderFiles.end()){
-      fSources[key] = new SpectrumLoader(itFiles->second);
-      return *fSources[key];
+    else{
+      static beta::NullSource<typename SrcT::Record_t> null;
+      return null;
     }
-
-    return kNullLoader;
   }
 
   // Instantiate the ones we need
-  template class Sources<SpectrumLoader>;
-  template class Sources<SBNSpillSource>;
   template class Sources<ISpillSource>;
   template class Sources<ISliceSource>;
 }

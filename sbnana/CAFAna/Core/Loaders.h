@@ -20,16 +20,6 @@ namespace ana
     Sources();
     ~Sources();
 
-    /// Configure loader via wildcard \a path
-    void SetLoaderPath(const std::string& path,
-                       DataMC datamc,
-                       SwappingConfig swap = kNonSwap);
-
-    /// Configure loader via explicit file list
-    void SetLoaderFiles(const std::vector<std::string>& files,
-                        DataMC datamc,
-                        SwappingConfig swap = kNonSwap);
-
     void AddLoader(SrcT*,
                    DataMC datamc,
                    SwappingConfig swap = kNonSwap);
@@ -59,17 +49,12 @@ namespace ana
   protected:
     typedef std::tuple<DataMC, SwappingConfig> Key_t;
 
-    // Hold a list of paths that have been set
-    std::map<Key_t, std::string> fLoaderPaths;
-    std::map<Key_t, std::vector<std::string>> fLoaderFiles;
-    // Only reify them when someone actually calls GetLoader()
     std::map<Key_t, SrcT*> fSources;
   };
 
 
   using SpillSources = Sources<ISpillSource>;
   using SliceSources = Sources<ISliceSource>;
-
 
   class Loaders: public Sources<SpectrumLoader>
   {
@@ -80,7 +65,7 @@ namespace ana
       for(int dmc = 0; dmc < kNumDataMCs; ++dmc){
         for(int swap = 0; swap < kNumSwappingConfigs; ++swap){
           if(dmc == kData && swap != kNonSwap) continue;
-          ret->AddLoader(&GetLoader(DataMC(dmc), SwappingConfig(swap)),
+          ret->AddLoader(&GetLoader(DataMC(dmc), SwappingConfig(swap)).Slices(),
                          DataMC(dmc), SwappingConfig(swap));
         }
       }
