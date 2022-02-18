@@ -24,24 +24,50 @@
 
 using namespace ana;
 
-//==== GENIE interaction code
-//==== https://internal.dunescience.org/doxygen/namespacesimb.html#a2cce734d1b71408bbc7d98d148ac4360
+//====  Var
 const Var varGENIEIntCode([](const caf::SRSliceProxy* slc) -> int {
+	//==== GENIE interaction code
+	//==== https://internal.dunescience.org/doxygen/namespacesimb.html#a2cce734d1b71408bbc7d98d148ac4360
   if(slc->truth.genie_mode<0) return -1;
   else if(slc->truth.genie_mode>13) return 14;
   else return slc->truth.genie_mode;
 });
+const Var varNPiBeforeFSI([](const caf::SRSliceProxy* slc) -> int {
+  return slc->truth.npiminus + slc->truth.npiplus + slc->truth.npizero;
+});
+const Var varHitNuc([](const caf::SRSliceProxy* slc) -> int {
+  return slc->truth.hitnuc;
+});
+
+//==== Cut
 const Cut cutIsQE = (varGENIEIntCode==0);
 const Cut cutIsRes = (varGENIEIntCode==1);
 const Cut cutIsDIS = (varGENIEIntCode==2);
+const Cut cutIsCC([](const caf::SRSliceProxy* slc) {
+  return ( kIsNuSlice(slc) && slc->truth.iscc );
+});
+const Cut cutIsNC([](const caf::SRSliceProxy* slc) {
+  return ( kIsNuSlice(slc) && slc->truth.isnc );
+});
+const Cut cutIs1Pi = (varNPiBeforeFSI==1);
+const Cut cutIs2Pi = (varNPiBeforeFSI==2);
+const Cut cutIsNuMu([](const caf::SRSliceProxy* slc) {
+  return ( kIsNuSlice(slc) && slc->truth.pdg==14 );
+});
+const Cut cutIsNuMuBar([](const caf::SRSliceProxy* slc) {
+  return ( kIsNuSlice(slc) && slc->truth.pdg==-14 );
+});
+const Cut cutHitProton = kIsNuSlice && (varHitNuc==2212);
+const Cut cutHitNeutron = kIsNuSlice && (varHitNuc==2112);
 
+//==== fwd decl
 void setCanvas(TCanvas* c1, TPad* c1_up, TPad* c1_down);
 void setAxis(TH1D* hist_up, TH1D* hist_down);
 
 void test_GENIESyst(){
 
   //==== Input
-  SpectrumLoader loader("/pnfs/icarus/scratch/users/jskim/mc/NUMI_Nu_Cosmics/flatcaf/v09_42_00/MultiSigmaAdded/*.root");
+  SpectrumLoader loader("/pnfs/icarus/scratch/users/jskim/mc/NUMI_Nu_Cosmics/flatcaf/v09_37_01_03p02/MultiSigmaAdded_FromConcat/*.root");
 
   //==== output; where plots are saved
   TString outputPath = "./test_GENIESyst/";
@@ -51,22 +77,55 @@ void test_GENIESyst(){
   const Var kTrueE = SIMPLEVAR(truth.E);
 
   //==== (Truth) Cut
-  const Cut kSel = kIsNuSlice;
+
   std::vector<Cut> vec_Cuts = {
     kIsNuSlice, 
     cutIsQE,
     cutIsRes,
-    cutIsDIS
+    cutIsDIS,
+
+    cutIsDIS && cutIsNuMuBar && cutHitNeutron && cutIsCC,
+    cutIsDIS && cutIsNuMuBar && cutHitNeutron && cutIsNC,
+    cutIsDIS && cutIsNuMuBar && cutHitProton && cutIsCC,
+    cutIsDIS && cutIsNuMuBar && cutHitProton && cutIsNC,
+    cutIsDIS && cutIsNuMu && cutHitNeutron && cutIsCC,
+    cutIsDIS && cutIsNuMu && cutHitNeutron && cutIsNC,
+    cutIsDIS && cutIsNuMu && cutHitProton && cutIsCC,
+    cutIsDIS && cutIsNuMu && cutHitProton && cutIsNC,
   };
   std::vector<std::string> vec_CutNames = {
     "All",
     "QE",
     "Res",
     "DIS",
+    //==== below for NonResBG
+    "DIS_vbarnCC",
+    "DIS_vbarnNC",
+    "DIS_vbarpCC",
+    "DIS_vbarpNC",
+    "DIS_vnCC",
+    "DIS_vnNC",
+    "DIS_vpCC",
+    "DIS_vpNC",
+  };
+  std::vector<std::string> vec_CutLatexNames = {
+    "All interactions",
+    "QE",
+    "Resonance",
+    "DIS",
+
+    "DIS, #bar{#nu_{#mu}}, n, CC",
+    "DIS, #bar{#nu_{#mu}}, n, NC",
+    "DIS, #bar{#nu_{#mu}}, p, CC",
+    "DIS, #bar{#nu_{#mu}}, p, NC",
+    "DIS, #nu_{#mu}, n, CC",
+    "DIS, #nu_{#mu}, n, NC",
+    "DIS, #nu_{#mu}, p, CC",
+    "DIS, #nu_{#mu}, p, NC",
   };
 
   //==== Binning
-  const Binning binsEnergy = Binning::Simple(25, 0, 5);
+  const Binning binsEnergy = Binning::Simple(30, 0, 6);
   const HistAxis axEnergy("True neutrino energy (GeV)", binsEnergy, kTrueE);
 
   //==== Spectrum maps
@@ -74,9 +133,9 @@ void test_GENIESyst(){
   std::map<TString, EnsembleSpectrum*> map_EnsembleSpectrums;
 
   //==== Systematics; multisigma
-  const std::vector<const ISyst*> IGENIEMultisigmaSysts = GetSBNGenieWeightSysts(caf::kMultisigma);
+  const std::vector<const ISyst*> IGENIEMultisigmaSysts = GetSBNGenieWeightSysts(caf::kMultiSigma);
   //==== Systematics; multisim; single element, "genie_sbnd_multisim_Genie"
-  const std::vector<const ISyst*> IGENIEMultisimSysts = GetSBNGenieWeightSysts(caf::kMultisim);
+  const std::vector<const ISyst*> IGENIEMultisimSysts = GetSBNGenieWeightSysts(caf::kMultiSim);
   std::vector<Var> weis;
   weis.reserve(1000);
   for(int i = 0; i < 1000; ++i) weis.push_back(GetUniverseWeight(IGENIEMultisimSysts, i));
@@ -119,9 +178,10 @@ void test_GENIESyst(){
   x_1[1] = -9000;  y_1[1] = 1;
   TGraph *g1 = new TGraph(2, x_1, y_1);
 
-  for(unsigned int i_cut=0; i_cut<vec_CutNames.size(); i_cut++){
+  for(unsigned int i_cut=0; i_cut<vec_Cuts.size(); i_cut++){
 
     TString this_CutName = vec_CutNames.at(i_cut);
+    TString this_CutLatexName = vec_CutLatexNames.at(i_cut);
 
     //==== CV
     TH1D *h_CV = map_Spectrums[this_CutName+"_CV"]->ToTH1(kPOTnominal);
@@ -156,7 +216,7 @@ void test_GENIESyst(){
       h_3Dn->SetLineStyle(2);
 
       //==== Legend
-      TLegend *lg = new TLegend(0.67, 0.67, 0.92, 0.92);
+      TLegend *lg = new TLegend(0.62, 0.62, 0.95, 0.95);
       lg->SetBorderSize(0);
       lg->SetFillStyle(0);
       lg->AddEntry(h_CV, "CV", "l");
@@ -227,7 +287,7 @@ void test_GENIESyst(){
 
       lg->Draw();
       tl.DrawLatex(0.30, 0.96, TString::Format("%1.2e POT",kPOTnominal) );
-      tl.DrawLatex(0.65, 0.96, "Interaction : "+this_CutName);
+      tl.DrawLatex(0.60, 0.96, "Interaction : "+this_CutLatexName);
 
       c->SaveAs(outputPath+this_CutName+"_"+knobName+".pdf");
       c->Close();
@@ -313,11 +373,10 @@ void test_GENIESyst(){
     lg_es->Draw();
 
     tl.DrawLatex(0.30, 0.96, TString::Format("%1.2e POT",kPOTnominal) );
-    tl.DrawLatex(0.65, 0.96, "Interaction : "+this_CutName);
+    tl.DrawLatex(0.60, 0.96, "Interaction : "+this_CutLatexName);
 
     c_es->SaveAs(outputPath+this_CutName+"_Multisim.pdf");
     c_es->Close();
-
 
   } // END cut loop
 

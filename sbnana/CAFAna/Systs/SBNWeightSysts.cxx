@@ -191,8 +191,8 @@ namespace ana
     "NonRESBGvpNC2pi",
     };
 
-    if(rwType==caf::kMultisim) return names_multisim;
-    else if(rwType==caf::kMultisigma) return names_multisigma;
+    if(rwType==caf::kMultiSim) return names_multisim;
+    else if(rwType==caf::kMultiSigma) return names_multisigma;
     else{
       return std::vector<std::string>();
     }
@@ -212,10 +212,10 @@ namespace ana
 
     for(const std::string& name: names){
       std::string psetname(name);
-      if(rwType==caf::kMultisim){
+      if(rwType==caf::kMultiSim){
         psetname = "genie_"+name+"_multisim_Genie";
       }
-      else if(rwType==caf::kMultisigma){
+      else if(rwType==caf::kMultiSigma){
         psetname = "genie_"+name+"_multisigma_Genie";
       }
       ret.push_back(new SBNWeightSyst(psetname, name, rwType));

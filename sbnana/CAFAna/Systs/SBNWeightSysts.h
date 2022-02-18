@@ -49,7 +49,7 @@ namespace ana
   public:
     SBNWeightSyst(const std::string& systName,
                   const std::string& latexName="",
-                  const caf::ReweightType_t& type=caf::kMultisim,
+                  const caf::ReweightType_t& type=caf::kMultiSim,
                   const std::string& knobName = "", // if it differs
                   const SliceCut& cut = kNoCut);
 
@@ -76,7 +76,7 @@ namespace ana
   };
 
   std::vector<std::string> GetSBNGenieWeightPSet(const caf::ReweightType_t& rwType);
-  std::vector<const ISyst*> GetSBNGenieWeightSysts(const caf::ReweightType_t& rwType=caf::kMultisim);
+  std::vector<const ISyst*> GetSBNGenieWeightSysts(const caf::ReweightType_t& rwType=caf::kMultiSim);
 
   //  const std::vector<const ISyst*>& GetSBNBoosterWeightSysts();
   //  const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
