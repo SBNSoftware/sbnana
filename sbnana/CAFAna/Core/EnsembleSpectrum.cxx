@@ -13,71 +13,44 @@
 namespace ana
 {
   //----------------------------------------------------------------------
-  EnsembleSpectrum::EnsembleSpectrum(beta::IValueSource& src,
+  EnsembleSpectrum::EnsembleSpectrum(beta::IValueEnsembleSource& src,
                                      const LabelsAndBins& axis)
     : fNom(beta::kNullValueSource, axis)
   {
-    // 100 is a HACK HACK HACK
-    fUnivs.reserve(100);
-    for(unsigned int i = 0; i < 100; ++i) fUnivs.push_back(fNom);
+    // TODO TODO
+    fUnivs.reserve(100);//src.NUniverses());
+    for(int i = 0; i < 100/*src.NUniverses()*/; ++i) fUnivs.push_back(fNom);
 
     src.Register(this);
   }
 
   //----------------------------------------------------------------------
-  EnsembleSpectrum::EnsembleSpectrum(ISliceSource& src,
+  EnsembleSpectrum::EnsembleSpectrum(ISliceEnsembleSource& src,
                                      const HistAxis& axis)
     : EnsembleSpectrum(src[axis.GetVar1D()], axis)
   {
   }
 
-  /*
   //----------------------------------------------------------------------
-  EnsembleSpectrum::EnsembleSpectrum(ISliceSource& src,
-                                     const HistAxis& axis,
-                                     const std::vector<SystShifts>& univ_shifts)
-    : fNom(src, axis)
-  {
-    // TODO TODO no way to shift a source yet
-    //    fUnivs.reserve(univ_shifts.size());
-    //    for(const SystShifts& ss: univ_shifts){
-    //      fUnivs.emplace_back(src[ss], axis);
-    //    }
-  }
-
-  //----------------------------------------------------------------------
-  EnsembleSpectrum::EnsembleSpectrum(ISliceSource& src,
-                                     const HistAxis& axis,
-                                     const std::vector<Weight>& univ_weis)
-    : fNom(src, axis)
-  {
-    fUnivs.reserve(univ_weis.size());
-    for(const Weight& w: univ_weis){
-      fUnivs.emplace_back(src.Weighted(w), axis);
-    }
-  }
-  */
-
-  //----------------------------------------------------------------------
-  void EnsembleSpectrum::Fill(double x, double w, int universeId)
+  void EnsembleSpectrum::FillSingle(double x, double w, int universeId)
   {
     // Filling a single constituent universe
     if(universeId == 0){
-      fNom.Fill(x, w, 0);
+      fNom.Fill(x, w);
     }
     else{
-      fUnivs[universeId % 10000 - 1].Fill(x, w, 0);
+      fUnivs[universeId-1].Fill(x, w);
     }
   }
 
   //----------------------------------------------------------------------
-  void EnsembleSpectrum::FillEnsemble(double x, const std::vector<double>& ws, int multiverseId)
+  void EnsembleSpectrum::FillEnsemble(double x, const std::vector<double>& ws)
   {
     assert(!ws.empty());
     // TODO checking for consistent multiverse etc
     // TODO check ws is same length as univs+1
-    fNom.Fill(x, ws[0], 0);
-    for(unsigned int i = 1; i < ws.size(); ++i) fUnivs[i-1].Fill(x, ws[i], 0);
+    fNom.Fill(x, ws[0]);
+    for(unsigned int i = 1; i < ws.size(); ++i) fUnivs[i-1].Fill(x, ws[i]);
   }
 
   //----------------------------------------------------------------------

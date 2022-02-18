@@ -27,14 +27,14 @@ namespace ana
 
   //----------------------------------------------------------------------
   void SliceAdaptor::HandleRecord(const caf::SRSpillProxy* spill,
-                                  double weight,
-                                  int universeId)
+                                  double weight)
   {
     for(const caf::SRSliceProxy& slc: spill->slc)
       for(auto& sink: fSinks)
-        sink->HandleRecord(&slc, weight, universeId);
+        sink->HandleRecord(&slc, weight);
   }
 
+  /*
   //----------------------------------------------------------------------
   void SliceAdaptor::HandleEnsemble(const caf::SRSpillProxy* spill,
                                     const std::vector<double>& weights,
@@ -44,6 +44,7 @@ namespace ana
       for(auto& sink: fSinks)
         sink->HandleEnsemble(&slc, weights, multiverseId);
   }
+  */
 
   //----------------------------------------------------------------------
   SpectrumLoader::SpectrumLoader(const std::string& wildcard, int max)
@@ -174,7 +175,7 @@ namespace ana
       // shouldn't be included in any selected spectra.
       if(has_husk && sr.hdr.husk) continue;
 
-      HandleRecord(&sr, 1, 0 /* nominal */);
+      HandleRecord(&sr, 1);
 
       if(prog) prog->SetProgress(double(n)/Nentries);
     } // end for n
@@ -190,8 +191,8 @@ namespace ana
 
     std::cout << fPOT << " POT over " << fNGenEvt << " readouts" << std::endl;
 
-    HandlePOT(fPOT);
-    HandleLivetime(fNGenEvt);
+    FillPOT(fPOT);
+    FillLivetime(fNGenEvt);
   }
 
 } // namespace

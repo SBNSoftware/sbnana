@@ -13,30 +13,6 @@ namespace ana
 {
   class Progress;
 
-  class SliceAdaptor : public beta::PassthroughUnlike<caf::SRSpillProxy, caf::SRSliceProxy>
-  {
-  public:
-    SliceAdaptor(ISpillSource& src);
-
-    virtual void HandleRecord(const caf::SRSpillProxy* spill, double weight, int universeId) override;
-
-    virtual void HandleEnsemble(const caf::SRSpillProxy* spill, const std::vector<double>& weights, int multiverseId) override;
-  };
-
-
-  // Spill sources are also slice sources (they just loop over the slices)
-  template<> class beta::_IRecordSource<caf::SRSpillProxy> : public beta::_IRecordSourceDefaultImpl<caf::SRSpillProxy>
-  {
-  public:
-    ISliceSource& Slices() {return fSlices;}
-
-  protected:
-    _IRecordSource() : fSlices(*this) {}
-
-    SliceAdaptor fSlices;
-  };
-
-
   /// \brief Collaborates with \ref Spectrum and \ref OscillatableSpectrum to
   /// fill spectra from CAF files.
   ///
