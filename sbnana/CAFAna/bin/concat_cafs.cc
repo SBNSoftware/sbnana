@@ -8,10 +8,10 @@ using namespace ana;
 int main(int argc, char** argv)
 {
   if(argc < 3){
-    std::cout << "usage: cafe -bq concat_cafs INFILES    OUTFILE\n"
-              << "       cafe -bq concat_cafs INFILES... OUTFILE\n"
-              << "       cafe -bq concat_cafs 'WILDCARD' OUTFILE\n"
-              << "       cafe -bq concat_cafs SAMDEF     OUTFILE\n"
+    std::cout << "usage: concat_cafs INFILES    OUTFILE\n"
+              << "       concat_cafs INFILES... OUTFILE\n"
+              << "       concat_cafs 'WILDCARD' OUTFILE\n"
+              << "       concat_cafs SAMDEF     OUTFILE\n"
               << "Warning: this argument order is different to hadd"
               << std::endl;
     exit(1);
