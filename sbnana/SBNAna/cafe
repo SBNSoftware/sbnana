@@ -207,7 +207,7 @@ int main(int argc, char** argv)
 
   TRint app("cafe", &argc, argv);
   app.SetPrompt("cafe [%d] ");
-  gROOT->Macro("$SBNANA_DIR/sbnana/CAFAna/rootlogon.C");
+  gROOT->Macro("$SBNANA_FQ_DIR/bin/rootlogon.C");
   gROOT->ForceStyle();
   {FUNC}{ARGS}; // execute the user's macro
   app.Run();
