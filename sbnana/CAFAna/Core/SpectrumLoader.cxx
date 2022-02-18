@@ -15,11 +15,36 @@
 #include <cmath>
 
 #include "TFile.h"
-#include "TH2.h"
 #include "TTree.h"
 
 namespace ana
 {
+  //----------------------------------------------------------------------
+  SliceAdaptor::SliceAdaptor(ISpillSource& src)
+  {
+    src.Register(this);
+  }
+
+  //----------------------------------------------------------------------
+  void SliceAdaptor::HandleRecord(const caf::SRSpillProxy* spill,
+                                  double weight,
+                                  int universeId)
+  {
+    for(const caf::SRSliceProxy& slc: spill->slc)
+      for(auto& sink: fSinks)
+        sink->HandleRecord(&slc, weight, universeId);
+  }
+
+  //----------------------------------------------------------------------
+  void SliceAdaptor::HandleEnsemble(const caf::SRSpillProxy* spill,
+                                    const std::vector<double>& weights,
+                                    int multiverseId)
+  {
+    for(const caf::SRSliceProxy& slc: spill->slc)
+      for(auto& sink: fSinks)
+        sink->HandleEnsemble(&slc, weights, multiverseId);
+  }
+
   //----------------------------------------------------------------------
   SpectrumLoader::SpectrumLoader(const std::string& wildcard, int max)
     : SpectrumLoaderBase(wildcard), max_entries(max)

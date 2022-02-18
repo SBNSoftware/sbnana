@@ -9,8 +9,6 @@
 
 class TFile;
 
-#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h" // todo move to cxx
-
 namespace ana
 {
   class Progress;
@@ -18,18 +16,13 @@ namespace ana
   class SliceAdaptor : public beta::PassthroughUnlike<caf::SRSpillProxy, caf::SRSliceProxy>
   {
   public:
-    virtual void HandleRecord(const caf::SRSpillProxy* spill, double weight, int universeId) override
-    {
-      for(const caf::SRSliceProxy& slc: spill->slc)
-        for(auto& sink: fSinks) sink->HandleRecord(&slc, weight, universeId);
-    }
+    SliceAdaptor(ISpillSource& src);
 
-    virtual void HandleEnsemble(const caf::SRSpillProxy* spill, const std::vector<double>& weights, int multiverseId) override
-    {
-      for(const caf::SRSliceProxy& slc: spill->slc)
-        for(auto& sink: fSinks) sink->HandleEnsemble(&slc, weights, multiverseId);
-    }
+    virtual void HandleRecord(const caf::SRSpillProxy* spill, double weight, int universeId) override;
+
+    virtual void HandleEnsemble(const caf::SRSpillProxy* spill, const std::vector<double>& weights, int multiverseId) override;
   };
+
 
   // Spill sources are also slice sources (they just loop over the slices)
   template<> class beta::_IRecordSource<caf::SRSpillProxy> : public beta::_IRecordSourceDefaultImpl<caf::SRSpillProxy>
@@ -38,7 +31,7 @@ namespace ana
     ISliceSource& Slices() {return fSlices;}
 
   protected:
-    _IRecordSource() {Register(&fSlices);}
+    _IRecordSource() : fSlices(*this) {}
 
     SliceAdaptor fSlices;
   };
@@ -83,12 +76,14 @@ namespace ana
     int max_entries;
   };
 
+
   class NullLoader: public SpectrumLoader
   {
   public:
     virtual void Go() override {}
   };
   static NullLoader kNullLoader;
+
 
   static beta::NullSource<caf::SRSpillProxy> kNullSpillSource;
   static beta::NullSource<caf::SRSliceProxy> kNullSliceSource;
