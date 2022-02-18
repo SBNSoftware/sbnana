@@ -83,7 +83,7 @@ void test_GENIESyst(){
     cutIsQE,
     cutIsRes,
     cutIsDIS,
-
+    //==== below for NonResBG
     cutIsDIS && cutIsNuMuBar && cutHitNeutron && cutIsCC,
     cutIsDIS && cutIsNuMuBar && cutHitNeutron && cutIsNC,
     cutIsDIS && cutIsNuMuBar && cutHitProton && cutIsCC,
@@ -113,7 +113,7 @@ void test_GENIESyst(){
     "QE",
     "Resonance",
     "DIS",
-
+    //==== below for NonResBG
     "DIS, #bar{#nu_{#mu}}, n, CC",
     "DIS, #bar{#nu_{#mu}}, n, NC",
     "DIS, #bar{#nu_{#mu}}, p, CC",
