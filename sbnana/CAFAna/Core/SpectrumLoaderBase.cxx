@@ -184,7 +184,7 @@ namespace ana
       // the project doesn't exist.  (suggested by Robert I. in
       // INC000000925362)
       try{
-        ifdh_util_ns::WebAPI webapi(i.findProject(str, Experiment()) +  "/status");
+        ifdh_util_ns::WebAPI webapi(i.findProject(str, SAMExperiment()) +  "/status");
         return new SAMProjectSource(str);
       }
       catch(ifdh_util_ns::WebAPIException &e){
