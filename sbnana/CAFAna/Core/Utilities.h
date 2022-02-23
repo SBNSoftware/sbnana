@@ -231,20 +231,6 @@ namespace ana
   void WriteCAFMetadata(TDirectory* dir,
                         const std::map<std::string, std::string>& meta);
 
-  /// Is this a grid (condor) job?
-  bool RunningOnGrid();
-
-  /// Value passed to --stride, or 1 if not specified
-  size_t Stride(bool allow_default = true);
-  /// Value passed to --offset, or 0 if not specified
-  size_t Offset(bool allow_default = true);
-  /// Value passed to --limit, or -1 if not specified
-  int Limit();
-
-  /// What's the process number for a grid job?
-  size_t JobNumber();
-  size_t NumJobs();
-
   // Calling this function will return a Fourier series, fit to the input
   // histogram.  Assumes x-axis covers one period
   class FitToFourier

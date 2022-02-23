@@ -7,6 +7,7 @@
 #include "CAFAna/Core/Progress.h"
 #include "CAFAna/Core/ThreadPool.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
+#include "CAFAna/Core/UtilsExt.h"
 
 #include "OscLib/IOscCalc.h"
 
