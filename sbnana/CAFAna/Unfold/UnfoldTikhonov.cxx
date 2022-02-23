@@ -1,8 +1,5 @@
 #include "sbnana/CAFAna/Unfold/UnfoldTikhonov.h"
 
-//#include "sbnana/CAFAna/Core/Utilities.h"
-#include "sbnana/CAFAna/Core/HistCache.h"
-
 #include "TH2.h"
 
 #include <Eigen/Dense>
@@ -51,7 +48,7 @@ namespace ana
     TH1D* hy = reco.ToTH1(reco.POT());
     Eigen::VectorXd y(Nreco);
     for(unsigned int i = 0; i < Nreco; ++i) y[i] = hy->GetBinContent(i+1);
-    HistCache::Delete(hy);
+    delete hy;
 
     // Matrix penalizing true distributions with large second derivative. Would
     // also need an update here for multi-dimensional distribution. I think you
@@ -79,15 +76,10 @@ namespace ana
     Eigen::ColPivHouseholderQR<Eigen::MatrixXd> dec(lhs);
     const Eigen::VectorXd ret = dec.solve(rhs);
 
-
-    // To get the correct binning
-    std::unique_ptr<TH1D> hret(recoVsTrue.WeightingVariable().ToTH1(reco.POT()));
-    hret->Reset();
-    for(unsigned int i = 0; i < Ntrue; ++i) hret->SetBinContent(i+1, ret[i]);
-
     // TODO in principle these should be the true labels and bins. Will be
     // easier with cafanacore
-    return Spectrum(std::move(hret), {""}, {recoVsTrue.GetBinnings()[1]},
+    return Spectrum(Eigen::ArrayXd(ret.array()),
+                    LabelsAndBins(reco.GetLabels(), recoVsTrue.GetTrueBinnings()),
                     reco.POT(), reco.Livetime());
   }
 }

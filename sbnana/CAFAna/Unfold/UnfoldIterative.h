@@ -1,4 +1,4 @@
-#include "sbnana/CAFAna/Core/ReweightableSpectrum.h"
+#include "CAFAna/Core/ReweightableSpectrum.h"
 
 namespace ana
 {
