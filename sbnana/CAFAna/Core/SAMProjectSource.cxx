@@ -43,9 +43,9 @@ namespace ana
 
     fIFDH->set_debug("0"); // shut up
 
-    fProjectURL = fIFDH->findProject(proj, Experiment());
+    fProjectURL = fIFDH->findProject(proj, SAMExperiment());
 
-    fProcessID = fIFDH->establishProcess(fProjectURL, "CAFAna", "v0.9", getenv("HOSTNAME"), getenv("USER"), Experiment(), "", fileLimit);
+    fProcessID = fIFDH->establishProcess(fProjectURL, "CAFAna", "v0.9", getenv("HOSTNAME"), getenv("USER"), SAMExperiment(), "", fileLimit);
   }
 
   //----------------------------------------------------------------------
