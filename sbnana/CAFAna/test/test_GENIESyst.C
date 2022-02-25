@@ -136,7 +136,7 @@ void test_GENIESyst(){
   const std::vector<const ISyst*> IGENIEMultisigmaSysts = GetSBNGenieWeightSysts();
   std::vector<Var> weis;
   weis.reserve(1000);
-  for(int i = 0; i < 1000; ++i) weis.push_back(GetUniverseWeight(GetSBNGenieWeightNames(), i));
+  for(int i = 0; i < 1000; ++i) weis.push_back(GetUniverseWeight("genie_sbnd_multisim_Genie", i));
 
   //==== Loop over cuts and define (Ensemble)Spectrums
   for(unsigned int i_cut=0; i_cut<vec_CutNames.size(); i_cut++){

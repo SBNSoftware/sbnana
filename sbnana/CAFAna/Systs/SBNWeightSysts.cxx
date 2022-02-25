@@ -12,16 +12,9 @@
 namespace ana
 {
   // --------------------------------------------------------------------------
-  UniverseWeight::UniverseWeight(const std::vector<std::string>& systs, int univIdx)
-    : fNames(systs), fUnivIdx(univIdx)
+  UniverseWeight::UniverseWeight(const std::string& psetName, int univIdx)
+    : fPSetName(psetName), fPSetIdx(-1), fUnivIdx(univIdx)
   {
-  }
-
-  // --------------------------------------------------------------------------
-  UniverseWeight::UniverseWeight(const std::vector<const ISyst*>& systs, int univIdx)
-    : fUnivIdx(univIdx)
-  {
-    for(const ISyst* s: systs) fNames.push_back(s->ShortName());
   }
 
   // --------------------------------------------------------------------------
@@ -29,39 +22,25 @@ namespace ana
   {
     if(sr->truth.index < 0) return 1;
 
-    if(fSystIdxs.empty()){
+    if(fPSetIdx == -1){
       const UniverseOracle& uo = UniverseOracle::Instance();
-      for(const std::string& name: fNames){
-        fSystIdxs.push_back(uo.SystIndex(name));
-      }
+      fPSetIdx = uo.ParameterSetIndex(fPSetName);
     }
 
     const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
     if(wgts.empty()) return 1;
 
-    // This hack can improve throughput vastly when doing true multiverse mode
-    /*
-    if(fUnivIdx == 0){
-      for(unsigned int i = 0; i < fNames.size(); ++i){
-        for(const auto& b: wgts[fUnivIdx].univ) (void)((float)b);
-      }
-    }
-    */
+    const int Nwgts = wgts[fPSetIdx].univ.size();
 
-    double w = 1;
-
-    for(unsigned int i = 0; i < fNames.size(); ++i){
-      const unsigned int idx = fSystIdxs[i];
-
-      // TODO: might want to "wrap around" differently in different systs to
-      // avoid unwanted correlations between systs with the same number of
-      // universes.
-      const unsigned int unividx = fUnivIdx % wgts[idx].univ.size();
-
-      w *= wgts[idx].univ[unividx];
+    static bool once = true;
+    if(!once && fUnivIdx >= Nwgts){
+      once = false;
+      std::cout << "UniverseWeight: WARNING requesting universe " << fUnivIdx << " in parameter set " << fPSetName << " which only has size " << Nwgts << ". Will wrap-around and suppress future warnings." << std::endl;
     }
 
-    return w;
+    const unsigned int unividx = fUnivIdx % Nwgts;
+
+    return wgts[fPSetIdx].univ[unividx];
   }
 
   // --------------------------------------------------------------------------
