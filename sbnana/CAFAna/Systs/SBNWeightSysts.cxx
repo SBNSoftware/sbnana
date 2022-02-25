@@ -39,7 +39,7 @@ namespace ana
     const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
     if(wgts.empty()) return 1;
 
-    // This hack improves throughput vastly
+    // This hack can improve throughput vastly when doing true multiverse mode
     /*
     if(fUnivIdx == 0){
       for(unsigned int i = 0; i < fNames.size(); ++i){
@@ -83,10 +83,11 @@ namespace ana
 
     const Univs u = GetUnivs(x);
 
-    const double y0 = wgts[fIdx].univ[u.i0];
-    const double y1 = wgts[fIdx].univ[u.i1];
+    double y = 0;
+    if(u.w0 != 0) y += u.w0 * wgts[fIdx].univ[u.i0];
+    if(u.w1 != 0) y += u.w1 * wgts[fIdx].univ[u.i1];
 
-    weight *= u.w0*y0 + u.w1*y1;
+    weight *= y;
   }
 
   // --------------------------------------------------------------------------
@@ -100,6 +101,18 @@ namespace ana
     // Neighbours
     double x0, x1;
     u.i0 = uo.ClosestShiftIndex(ShortName(), x, ESide::kBelow, &x0);
+
+    if(x0 == x){
+      // Found an exact match (this is OK for small integer shifts, even with
+      // floating point comparisons
+      u.i1 = -1;
+      u.w0 = 1;
+      u.w1 = 0;
+      fUnivs[x] = u;
+      return u;
+    }
+
+    // Otherwise we're interpolating
     u.i1 = uo.ClosestShiftIndex(ShortName(), x, ESide::kAbove, &x1);
     // Interpolation weights
     u.w0 = (x1-x)/(x1-x0);
@@ -118,54 +131,59 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
+  std::vector<std::string> GetSBNGenieWeightNames()
+  {
+    // We can't ask the UniverseOracle about this, because it doesn't get
+    // properly configured until it's seen its first CAF file.
+    return {"AhtBY",
+        "BhtBY",
+        "CV1uBY",
+        "CV2uBY",
+        "EtaNCEL",
+        "FormZone",
+        "FrAbs_N",
+        "FrAbs_pi",
+        "FrCEx_N",
+        "FrCEx_pi",
+        "FrInel_N",
+        "FrInel_pi",
+        "FrPiProd_N",
+        "FrPiProd_pi",
+        "MFP_N",
+        "MFP_pi",
+        "MaCCQE",
+        "MaCCRES",
+        "MaNCEL",
+        "MaNCRES",
+        "MvCCRES",
+        "MvNCRES",
+        "NonRESBGvbarnCC1pi",
+        "NonRESBGvbarnCC2pi",
+        "NonRESBGvbarnNC1pi",
+        "NonRESBGvbarnNC2pi",
+        "NonRESBGvbarpCC1pi",
+        "NonRESBGvbarpCC2pi",
+        "NonRESBGvbarpNC1pi",
+        "NonRESBGvbarpNC2pi",
+        "NonRESBGvnCC1pi",
+        "NonRESBGvnCC2pi",
+        "NonRESBGvnNC1pi",
+        "NonRESBGvnNC2pi",
+        "NonRESBGvpCC1pi",
+        "NonRESBGvpCC2pi",
+        "NonRESBGvpNC1pi",
+        "NonRESBGvpNC2pi",
+    };
+  }
+
+  // --------------------------------------------------------------------------
   const std::vector<const ISyst*>& GetSBNGenieWeightSysts()
   {
     static std::vector<const ISyst*> ret;
     if(!ret.empty()) return ret;
 
-    // We can't ask the UniverseOracle about this, because it doesn't get
-    // properly configured until it's seen its first CAF file.
-    const std::vector<std::string> names = {"AhtBY",
-                                            "BhtBY",
-                                            "CV1uBY",
-                                            "CV2uBY",
-                                            "EtaNCEL",
-                                            "FormZone",
-                                            "FrAbs_N",
-                                            "FrAbs_pi",
-                                            "FrCEx_N",
-                                            "FrCEx_pi",
-                                            "FrInel_N",
-                                            "FrInel_pi",
-                                            "FrPiProd_N",
-                                            "FrPiProd_pi",
-                                            "MFP_N",
-                                            "MFP_pi",
-                                            "MaCCQE",
-                                            "MaCCRES",
-                                            "MaNCEL",
-                                            "MaNCRES",
-                                            "MvCCRES",
-                                            "MvNCRES",
-                                            "NonRESBGvbarnCC1pi",
-                                            "NonRESBGvbarnCC2pi",
-                                            "NonRESBGvbarnNC1pi",
-                                            "NonRESBGvbarnNC2pi",
-                                            "NonRESBGvbarpCC1pi",
-                                            "NonRESBGvbarpCC2pi",
-                                            "NonRESBGvbarpNC1pi",
-                                            "NonRESBGvbarpNC2pi",
-                                            "NonRESBGvnCC1pi",
-                                            "NonRESBGvnCC2pi",
-                                            "NonRESBGvnNC1pi",
-                                            "NonRESBGvnNC2pi",
-                                            "NonRESBGvpCC1pi",
-                                            "NonRESBGvpCC2pi",
-                                            "NonRESBGvpNC1pi",
-                                            "NonRESBGvpNC2pi",
-    };
-
-    for(const std::string& name: names) ret.push_back(new SBNWeightSyst(name));
+    for(const std::string& name: GetSBNGenieWeightNames())
+      ret.push_back(new SBNWeightSyst(name));
 
     return ret;
   }

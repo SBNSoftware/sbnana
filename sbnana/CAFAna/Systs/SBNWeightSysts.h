@@ -62,6 +62,8 @@ namespace ana
     Univs GetUnivs(double x) const;
   };
 
+  std::vector<std::string> GetSBNGenieWeightNames();
+
   const std::vector<const ISyst*>& GetSBNGenieWeightSysts();
 
   //  const std::vector<const ISyst*>& GetSBNBoosterWeightSysts();

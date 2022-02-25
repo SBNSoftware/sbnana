@@ -133,12 +133,10 @@ void test_GENIESyst(){
   std::map<TString, EnsembleSpectrum*> map_EnsembleSpectrums;
 
   //==== Systematics; multisigma
-  const std::vector<const ISyst*> IGENIEMultisigmaSysts = GetSBNGenieWeightSysts(caf::kMultiSigma);
-  //==== Systematics; multisim; single element, "genie_sbnd_multisim_Genie"
-  const std::vector<const ISyst*> IGENIEMultisimSysts = GetSBNGenieWeightSysts(caf::kMultiSim);
+  const std::vector<const ISyst*> IGENIEMultisigmaSysts = GetSBNGenieWeightSysts();
   std::vector<Var> weis;
   weis.reserve(1000);
-  for(int i = 0; i < 1000; ++i) weis.push_back(GetUniverseWeight(IGENIEMultisimSysts, i));
+  for(int i = 0; i < 1000; ++i) weis.push_back(GetUniverseWeight(GetSBNGenieWeightNames(), i));
 
   //==== Loop over cuts and define (Ensemble)Spectrums
   for(unsigned int i_cut=0; i_cut<vec_CutNames.size(); i_cut++){
