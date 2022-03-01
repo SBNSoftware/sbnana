@@ -67,7 +67,7 @@ void setAxis(TH1D* hist_up, TH1D* hist_down);
 void test_GENIESyst(){
 
   //==== Input
-  SpectrumLoader loader("/pnfs/icarus/scratch/users/jskim/mc/NUMI_Nu_Cosmics/flatcaf/v09_37_01_03p02/MultiSigmaAdded_FromConcat/*.root");
+  SpectrumLoader loader("/pnfs/icarus/scratch/users/jskim/mc/NUMI_Nu_Cosmics/flatcaf/v09_37_01_03p02/MultiSigmaAdded_RenamedPSet/*.root");
 
   //==== output; where plots are saved
   TString outputPath = "./test_GENIESyst/";
