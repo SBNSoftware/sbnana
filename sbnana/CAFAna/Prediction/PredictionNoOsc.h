@@ -9,24 +9,7 @@ namespace ana
   class PredictionNoOsc: public IPrediction
   {
   public:
-    // TODO TODO TODO
-    /*
-    PredictionNoOsc(SpectrumLoaderBase& loader,
-                    const HistAxis& axis,
-                    const SpillCut& spillcut,
-                    const Cut& cut,
-                    const SystShifts& shift = kNoShift,
-                    const Weight& wei = kUnweighted);
-
-    PredictionNoOsc(SpectrumLoaderBase& loader,
-                    const std::string& label,
-                    const Binning& bins,
-                    const Var& var,
-                    const SpillCut& spillcut,
-                    const Cut& cut,
-                    const SystShifts& shift = kNoShift,
-                    const Weight& wei = kUnweighted);
-    */
+    PredictionNoOsc(ISliceSource& src, const HistAxis& axis);
 
     static std::unique_ptr<PredictionNoOsc> LoadFrom(TDirectory* dir);
     virtual void SaveTo(TDirectory* dir) const override;

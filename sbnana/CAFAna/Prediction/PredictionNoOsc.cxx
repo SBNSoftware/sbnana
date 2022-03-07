@@ -14,36 +14,16 @@
 
 namespace ana
 {
-  /*
   //----------------------------------------------------------------------
-  PredictionNoOsc::PredictionNoOsc(SpectrumLoaderBase& loader,
-                                   const std::string& label,
-                                   const Binning& bins,
-                                   const Var& var,
-                                   const SpillCut& spillcut,
-                                   const Cut& cut,
-                                   const SystShifts& shift,
-                                   const Weight& wei)
-    : PredictionNoOsc(loader, HistAxis(label, bins, var), spillcut, cut, shift, wei)
+  PredictionNoOsc::PredictionNoOsc(ISliceSource& src, const HistAxis& axis)
+    : fSpectrum       (src, axis),
+      fSpectrumNC     (src[ kIsNC], axis),
+      fSpectrumNumu   (src[!kIsNC][kIsNumuCC ][!kIsAntiNu], axis),
+      fSpectrumNumubar(src[!kIsNC][kIsNumuCC ][ kIsAntiNu], axis),
+      fSpectrumNue    (src[!kIsNC][kIsBeamNue][!kIsAntiNu], axis),
+      fSpectrumNuebar (src[!kIsNC][kIsBeamNue][ kIsAntiNu], axis)
   {
   }
-
-  //----------------------------------------------------------------------
-  PredictionNoOsc::PredictionNoOsc(SpectrumLoaderBase& loader,
-                                   const HistAxis& axis,
-                                   const SpillCut& spillcut,
-                                   const Cut& cut,
-                                   const SystShifts& shift,
-                                   const Weight& wei)
-    : fSpectrum(       loader, axis, spillcut, cut,                                        shift, wei),
-      fSpectrumNC(     loader, axis, spillcut, cut &&  kIsNC,                              shift, wei),
-      fSpectrumNumu(   loader, axis, spillcut, cut && !kIsNC && kIsNumuCC &&  !kIsAntiNu,  shift, wei),
-      fSpectrumNumubar(loader, axis, spillcut, cut && !kIsNC && kIsNumuCC &&   kIsAntiNu,  shift, wei),
-      fSpectrumNue(    loader, axis, spillcut, cut && !kIsNC && kIsBeamNue && !kIsAntiNu,  shift, wei),
-      fSpectrumNuebar( loader, axis, spillcut, cut && !kIsNC && kIsBeamNue &&  kIsAntiNu,  shift, wei)
-  {
-  }
-  */
 
   //----------------------------------------------------------------------
   Spectrum PredictionNoOsc::PredictComponent(osc::IOscCalc* /*calc*/,
