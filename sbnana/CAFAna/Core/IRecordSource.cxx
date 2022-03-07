@@ -1,5 +1,7 @@
 #include "sbnana/CAFAna/Core/IRecordSource.h"
 
+#include "sbnana/CAFAna/Core/SystShifts.h"
+
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana
@@ -105,27 +107,64 @@ namespace ana
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
 
-  SliceAdaptor::SliceAdaptor(ISpillSource& src)
+  class SliceAdaptor: public beta::PassthroughExposure<ISpillSink,
+                                                       ISliceSource>
   {
-    src.Register(this);
+  public:
+    SliceAdaptor(ISpillSource& src){src.Register(this);}
+
+    virtual void HandleRecord(const caf::SRSpillProxy* spill,
+                              double weight) override;
+
+    // Will need an EnsembleSliceAdaptor if we ever have syst weights that
+    // apply at the spill level.
+  };
+
+  //----------------------------------------------------------------------
+  class TrackAdaptor: public beta::PassthroughExposure<ISliceRecoBranchSink,
+                                                       ITrackSource>
+  {
+  public:
+    TrackAdaptor(ISliceRecoBranchSource& src){src.Register(this);}
+
+    virtual void HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
+                              double weight) override;
+  };
+
+  //----------------------------------------------------------------------
+  class ShowerAdaptor: public beta::PassthroughExposure<ISliceRecoBranchSink,
+                                                        IShowerSource>
+  {
+  public:
+    ShowerAdaptor(ISliceRecoBranchSource& src){src.Register(this);}
+
+    virtual void HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
+                              double weight) override;
+  };
+
+  //----------------------------------------------------------------------
+  class StubAdaptor: public beta::PassthroughExposure<ISliceRecoBranchSink,
+                                                      IStubSource>
+  {
+  public:
+    StubAdaptor(ISliceRecoBranchSource& src){src.Register(this);}
+
+    virtual void HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
+                              double weight) override;
+  };
+
+  //----------------------------------------------------------------------
+  beta::_IRecordSource<caf::SRSpillProxy>::_IRecordSource()
+    : fSlices(std::make_unique<SliceAdaptor>(*this))
+  {
   }
 
   //----------------------------------------------------------------------
-  TrackAdaptor::TrackAdaptor(ISliceRecoBranchSource& src)
+  beta::_IRecordSource<caf::SRSliceRecoBranchProxy>::_IRecordSource()
+    : fTracks(std::make_unique<TrackAdaptor>(*this)),
+      fShowers(std::make_unique<ShowerAdaptor>(*this)),
+      fStubs(std::make_unique<StubAdaptor>(*this))
   {
-    src.Register(this);
-  }
-
-  //----------------------------------------------------------------------
-  ShowerAdaptor::ShowerAdaptor(ISliceRecoBranchSource& src)
-  {
-    src.Register(this);
-  }
-
-  //----------------------------------------------------------------------
-  StubAdaptor::StubAdaptor(ISliceRecoBranchSource& src)
-  {
-    src.Register(this);
   }
 
   //----------------------------------------------------------------------
@@ -164,6 +203,67 @@ namespace ana
     for(const caf::SRStubProxy& stub: reco->stub)
       for(auto& sink: fSinks)
         sink->HandleRecord(&stub, weight);
+  }
+
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+
+  class TrackEnsembleAdaptor
+    : public beta::PassthroughExposure<ISliceRecoBranchEnsembleSink,
+                                       ITrackEnsembleSource>
+  {
+  public:
+    TrackEnsembleAdaptor(ISliceRecoBranchEnsembleSource& src){src.Register(this);}
+
+    virtual void HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
+                                    double weight,
+                                    int universeIdx) override;
+
+    virtual void HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
+                                const std::vector<double>& weights) override;
+  };
+
+  //----------------------------------------------------------------------
+  class ShowerEnsembleAdaptor
+    : public beta::PassthroughExposure<ISliceRecoBranchEnsembleSink,
+                                       IShowerEnsembleSource>
+  {
+  public:
+    ShowerEnsembleAdaptor(ISliceRecoBranchEnsembleSource& src){src.Register(this);}
+
+    virtual void HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
+                                    double weight,
+                                    int universeIdx) override;
+
+    virtual void HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
+                                const std::vector<double>& weights) override;
+  };
+
+  //----------------------------------------------------------------------
+  class StubEnsembleAdaptor
+    : public beta::PassthroughExposure<ISliceRecoBranchEnsembleSink,
+                                       IStubEnsembleSource>
+  {
+  public:
+    StubEnsembleAdaptor(ISliceRecoBranchEnsembleSource& src){src.Register(this);}
+
+    virtual void HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
+                                    double weight,
+                                    int universeIdx) override;
+
+    virtual void HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
+                                const std::vector<double>& weights) override;
+  };
+
+  //----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+
+  beta::_IRecordEnsembleSource<caf::SRSliceRecoBranchProxy>::
+  _IRecordEnsembleSource()
+    : fTracks(std::make_unique<TrackEnsembleAdaptor>(*this)),
+      fShowers(std::make_unique<ShowerEnsembleAdaptor>(*this)),
+      fStubs(std::make_unique<StubEnsembleAdaptor>(*this))
+  {
   }
 
   //----------------------------------------------------------------------
