@@ -26,4 +26,13 @@ namespace ana
 
   /// The simplest possible cut: pass everything, used as a default
   const SpillCut kNoSpillCut(NoCut<caf::SRSpillProxy>{});
+
+
+  typedef _Cut<caf::SRTrackProxy> TrackCut;
+  typedef _Cut<caf::SRShowerProxy> ShowerCut;
+  typedef _Cut<caf::SRStubProxy> StubCut;
+
+  const TrackCut kNoTrackCut(NoCut<caf::SRTrackProxy>{});
+  const ShowerCut kNoShowerCut(NoCut<caf::SRShowerProxy>{});
+  const StubCut kNoStubCut(NoCut<caf::SRStubProxy>{});
 } // namespace

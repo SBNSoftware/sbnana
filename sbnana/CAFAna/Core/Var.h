@@ -19,8 +19,17 @@ namespace ana
   /// \brief For Vars where literally all you need is a single CAF variable
   ///
   /// eg Var myVar = SIMPLEVAR(my.var.str);
-  /// NB lack of quotes quotes around my.var.str
+  /// NB lack of quotes around my.var.str
 #define SIMPLEVAR(CAFNAME) Var([](const caf::SRSliceProxy* sr) -> double {return sr->CAFNAME;})
 
 #define SIMPLESPILLVAR(CAFNAME) SpillVar([](const caf::SRSpillProxy* sr) -> double {return sr->CAFNAME;})
+
+
+  typedef _Var<caf::SRTrackProxy> TrackVar;
+  typedef _Var<caf::SRShowerProxy> ShowerVar;
+  typedef _Var<caf::SRStubProxy> StubVar;
+
+#define SIMPLETRACKVAR(CAFNAME) TrackVar([](const caf::SRTrackProxy* trk) -> double {return trk->CAFNAME;})
+#define SIMPLESHOWERVAR(CAFNAME) ShowerVar([](const caf::SRShowerProxy* shw) -> double {return shw->CAFNAME;})
+#define SIMPLESTUBVAR(CAFNAME) StubVar([](const caf::SRStubProxy* stub) -> double {return stub->CAFNAME;})
 } // namespace
