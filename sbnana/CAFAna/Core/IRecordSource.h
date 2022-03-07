@@ -15,7 +15,6 @@ namespace ana
   using ISliceEnsembleSource = beta::_IRecordEnsembleSource<caf::SRSliceProxy>;
 
 
-
   class SliceAdaptor : public beta::PassthroughExposure<ISpillSink, ISliceSource>
   {
   public:
