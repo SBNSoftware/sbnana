@@ -4,6 +4,8 @@
 
 #include "sbnana/CAFAna/Core/IRecordSink.h"
 
+#include "sbnana/CAFAna/Core/SystShifts.h"
+
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
 namespace ana
@@ -14,6 +16,23 @@ namespace ana
   using ISpillEnsembleSource = beta::_IRecordEnsembleSource<caf::SRSpillProxy>;
   using ISliceEnsembleSource = beta::_IRecordEnsembleSource<caf::SRSliceProxy>;
 
+  //----------------------------------------------------------------------
+
+  template<> class beta::_IRecordSource<caf::SRSliceProxy> : public beta::_IRecordSourceDefaultImpl<caf::SRSliceProxy>
+  {
+  public:
+    // Weight-based ensembles are still supported
+    using _IRecordSourceDefaultImpl::Ensemble;
+
+    // But also support an ensemble basd on SystShifts
+    ISliceEnsembleSource& Ensemble(const std::vector<SystShifts>& shifts,
+                                   int multiverseId);
+
+  protected:
+    IDDict<ISliceEnsembleSource> fEnsembleSources;
+  };
+
+  //----------------------------------------------------------------------
 
   class SliceAdaptor : public beta::PassthroughExposure<ISpillSink, ISliceSource>
   {
@@ -157,6 +176,7 @@ namespace ana
     virtual void HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
                                 const std::vector<double>& weights) override;
   };
+
 
   template<> class beta::_IRecordEnsembleSource<caf::SRSliceRecoBranchProxy> : public beta::_IRecordEnsembleSourceDefaultImpl<caf::SRSliceRecoBranchProxy>
   {
