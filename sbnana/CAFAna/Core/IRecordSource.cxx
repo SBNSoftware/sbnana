@@ -107,230 +107,89 @@ namespace ana
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
 
-  class SliceAdaptor: public beta::PassthroughExposure<ISpillSink,
-                                                       ISliceSource>
+  template<class FromT, class ToT> VectorAdaptor<FromT, ToT>::
+  VectorAdaptor(beta::_IRecordSource<caf::Proxy<FromT>>& src,
+                Func_t vecGetter)
+    : fVecGetter(vecGetter)
   {
-  public:
-    SliceAdaptor(ISpillSource& src){src.Register(this);}
-
-    virtual void HandleRecord(const caf::SRSpillProxy* spill,
-                              double weight) override;
-
-    // Will need an EnsembleSliceAdaptor if we ever have syst weights that
-    // apply at the spill level.
-  };
-
-  //----------------------------------------------------------------------
-  class TrackAdaptor: public beta::PassthroughExposure<ISliceRecoBranchSink,
-                                                       ITrackSource>
-  {
-  public:
-    TrackAdaptor(ISliceRecoBranchSource& src){src.Register(this);}
-
-    virtual void HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                              double weight) override;
-  };
-
-  //----------------------------------------------------------------------
-  class ShowerAdaptor: public beta::PassthroughExposure<ISliceRecoBranchSink,
-                                                        IShowerSource>
-  {
-  public:
-    ShowerAdaptor(ISliceRecoBranchSource& src){src.Register(this);}
-
-    virtual void HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                              double weight) override;
-  };
-
-  //----------------------------------------------------------------------
-  class StubAdaptor: public beta::PassthroughExposure<ISliceRecoBranchSink,
-                                                      IStubSource>
-  {
-  public:
-    StubAdaptor(ISliceRecoBranchSource& src){src.Register(this);}
-
-    virtual void HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                              double weight) override;
-  };
-
-  //----------------------------------------------------------------------
-  beta::_IRecordSource<caf::SRSpillProxy>::_IRecordSource()
-    : fSlices(std::make_unique<SliceAdaptor>(*this))
-  {
+    src.Register(this);
   }
 
   //----------------------------------------------------------------------
-  beta::_IRecordSource<caf::SRSliceRecoBranchProxy>::_IRecordSource()
-    : fTracks(std::make_unique<TrackAdaptor>(*this)),
-      fShowers(std::make_unique<ShowerAdaptor>(*this)),
-      fStubs(std::make_unique<StubAdaptor>(*this))
+  template<class FromT, class ToT> void VectorAdaptor<FromT, ToT>::
+  HandleRecord(const caf::Proxy<FromT>* rec, double weight)
   {
+    for(const caf::Proxy<ToT>& to: fVecGetter(rec))
+      for(auto& sink: beta::_IRecordSource<caf::Proxy<ToT>>::fSinks)
+        sink->HandleRecord(&to, weight);
   }
 
   //----------------------------------------------------------------------
-  //----------------------------------------------------------------------
-
-  void SliceAdaptor::HandleRecord(const caf::SRSpillProxy* spill,
-                                  double weight)
+  template<class FromT, class ToT> EnsembleVectorAdaptor<FromT, ToT>::
+  EnsembleVectorAdaptor(beta::_IRecordEnsembleSource<caf::Proxy<FromT>>& src,
+                        Func_t vecGetter)
+    : fVecGetter(vecGetter)
   {
-    for(const caf::SRSliceProxy& slc: spill->slc)
-      for(auto& sink: fSinks)
-        sink->HandleRecord(&slc, weight);
+    src.Register(this);
   }
 
   //----------------------------------------------------------------------
-  void TrackAdaptor::HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                                  double weight)
-  {
-    for(const caf::SRTrackProxy& trk: reco->trk)
-      for(auto& sink: fSinks)
-        sink->HandleRecord(&trk, weight);
-  }
-
-  //----------------------------------------------------------------------
-  void ShowerAdaptor::HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                                   double weight)
-  {
-    for(const caf::SRShowerProxy& shw: reco->shw)
-      for(auto& sink: fSinks)
-        sink->HandleRecord(&shw, weight);
-  }
-
-  //----------------------------------------------------------------------
-  void StubAdaptor::HandleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                                 double weight)
-  {
-    for(const caf::SRStubProxy& stub: reco->stub)
-      for(auto& sink: fSinks)
-        sink->HandleRecord(&stub, weight);
-  }
-
-  //----------------------------------------------------------------------
-  //----------------------------------------------------------------------
-
-  class TrackEnsembleAdaptor
-    : public beta::PassthroughExposure<ISliceRecoBranchEnsembleSink,
-                                       ITrackEnsembleSource>
-  {
-  public:
-    TrackEnsembleAdaptor(ISliceRecoBranchEnsembleSource& src){src.Register(this);}
-
-    virtual void HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                                    double weight,
-                                    int universeIdx) override;
-
-    virtual void HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
-                                const std::vector<double>& weights) override;
-  };
-
-  //----------------------------------------------------------------------
-  class ShowerEnsembleAdaptor
-    : public beta::PassthroughExposure<ISliceRecoBranchEnsembleSink,
-                                       IShowerEnsembleSource>
-  {
-  public:
-    ShowerEnsembleAdaptor(ISliceRecoBranchEnsembleSource& src){src.Register(this);}
-
-    virtual void HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                                    double weight,
-                                    int universeIdx) override;
-
-    virtual void HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
-                                const std::vector<double>& weights) override;
-  };
-
-  //----------------------------------------------------------------------
-  class StubEnsembleAdaptor
-    : public beta::PassthroughExposure<ISliceRecoBranchEnsembleSink,
-                                       IStubEnsembleSource>
-  {
-  public:
-    StubEnsembleAdaptor(ISliceRecoBranchEnsembleSource& src){src.Register(this);}
-
-    virtual void HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                                    double weight,
-                                    int universeIdx) override;
-
-    virtual void HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
-                                const std::vector<double>& weights) override;
-  };
-
-  //----------------------------------------------------------------------
-  //----------------------------------------------------------------------
-
-  beta::_IRecordEnsembleSource<caf::SRSliceRecoBranchProxy>::
-  _IRecordEnsembleSource()
-    : fTracks(std::make_unique<TrackEnsembleAdaptor>(*this)),
-      fShowers(std::make_unique<ShowerEnsembleAdaptor>(*this)),
-      fStubs(std::make_unique<StubEnsembleAdaptor>(*this))
-  {
-  }
-
-  //----------------------------------------------------------------------
-  //----------------------------------------------------------------------
-
-  void TrackEnsembleAdaptor::
-  HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
+  template<class FromT, class ToT> void EnsembleVectorAdaptor<FromT, ToT>::
+  HandleSingleRecord(const caf::Proxy<FromT>* rec,
                      double weight,
-                     int universeIdx)
+                     int universeId)
   {
-    for(const caf::SRTrackProxy& trk: reco->trk)
-      for(auto& sink: fSinks)
-        sink->HandleSingleRecord(&trk, weight, universeIdx);
+    for(const caf::Proxy<ToT>& to: fVecGetter(rec))
+      for(auto& sink: beta::_IRecordEnsembleSource<caf::Proxy<ToT>>::fSinks)
+        sink->HandleSingleRecord(&to, weight, universeId);
   }
 
   //----------------------------------------------------------------------
-  void ShowerEnsembleAdaptor::
-  HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                     double weight,
-                     int universeIdx)
-  {
-    for(const caf::SRShowerProxy& shw: reco->shw)
-      for(auto& sink: fSinks)
-        sink->HandleSingleRecord(&shw, weight, universeIdx);
-  }
-
-  //----------------------------------------------------------------------
-  void StubEnsembleAdaptor::
-  HandleSingleRecord(const caf::SRSliceRecoBranchProxy* reco,
-                     double weight,
-                     int universeIdx)
-  {
-    for(const caf::SRStubProxy& stub: reco->stub)
-      for(auto& sink: fSinks)
-        sink->HandleSingleRecord(&stub, weight, universeIdx);
-  }
-
-  //----------------------------------------------------------------------
-  //----------------------------------------------------------------------
-
-  void TrackEnsembleAdaptor::
-  HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
+  template<class FromT, class ToT> void EnsembleVectorAdaptor<FromT, ToT>::
+  HandleEnsemble(const caf::Proxy<FromT>* rec,
                  const std::vector<double>& weights)
   {
-    for(const caf::SRTrackProxy& trk: reco->trk)
-      for(auto& sink: fSinks)
-        sink->HandleEnsemble(&trk, weights);
+    for(const caf::Proxy<ToT>& to: fVecGetter(rec))
+      for(auto& sink: beta::_IRecordEnsembleSource<caf::Proxy<ToT>>::fSinks)
+        sink->HandleEnsemble(&to, weights);
   }
 
   //----------------------------------------------------------------------
-  void ShowerEnsembleAdaptor::
-  HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
-                 const std::vector<double>& weights)
+  const caf::Proxy<std::vector<caf::SRSlice>>&
+  GetSlices(const caf::SRSpillProxy* spill)
   {
-    for(const caf::SRShowerProxy& shw: reco->shw)
-      for(auto& sink: fSinks)
-        sink->HandleEnsemble(&shw, weights);
+    return spill->slc;
+  }
+
+  const caf::Proxy<std::vector<caf::SRTrack>>&
+  GetTracks(const caf::SRSliceRecoBranchProxy* reco)
+  {
+    return reco->trk;
+  }
+
+  const caf::Proxy<std::vector<caf::SRShower>>&
+  GetShowers(const caf::SRSliceRecoBranchProxy* reco)
+  {
+    return reco->shw;
+  }
+
+  const caf::Proxy<std::vector<caf::SRStub>>&
+  GetStubs(const caf::SRSliceRecoBranchProxy* reco)
+  {
+    return reco->stub;
   }
 
   //----------------------------------------------------------------------
-  void StubEnsembleAdaptor::
-  HandleEnsemble(const caf::SRSliceRecoBranchProxy* reco,
-                 const std::vector<double>& weights)
-  {
-    for(const caf::SRStubProxy& stub: reco->stub)
-      for(auto& sink: fSinks)
-        sink->HandleEnsemble(&stub, weights);
-  }
+  //----------------------------------------------------------------------
 
+  // Instantiations
+  template class VectorAdaptor<caf::StandardRecord, caf::SRSlice>;
+
+  template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack>;
+  template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower>;
+  template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub>;
+
+  template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack>;
+  template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower>;
+  template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub>;
 }

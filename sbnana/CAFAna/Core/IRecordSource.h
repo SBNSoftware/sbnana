@@ -56,17 +56,43 @@ namespace ana
 
   //----------------------------------------------------------------------
 
+  /// Helper class for implementing looping over slices, tracks, etc
+  template<class FromT, class ToT> class VectorAdaptor:
+    public beta::PassthroughExposure<beta::_IRecordSink<caf::Proxy<FromT>>,
+                                     beta::_IRecordSource<caf::Proxy<ToT>>>
+  {
+  public:
+    typedef std::function<const caf::Proxy<std::vector<ToT>>&(const caf::Proxy<FromT>*)> Func_t;
+
+    VectorAdaptor(beta::_IRecordSource<caf::Proxy<FromT>>& src, Func_t vecGetter);
+    virtual void HandleRecord(const caf::Proxy<FromT>* rec, double weight) override;
+  protected:
+    Func_t fVecGetter;
+  };
+
+  //----------------------------------------------------------------------
+
+  // Accessors needed by VectorAdaptor
+
+  const caf::Proxy<std::vector<caf::SRSlice>>& GetSlices(const caf::SRSpillProxy* spill);
+
+  const caf::Proxy<std::vector<caf::SRTrack>>& GetTracks(const caf::SRSliceRecoBranchProxy* reco);
+
+  const caf::Proxy<std::vector<caf::SRShower>>& GetShowers(const caf::SRSliceRecoBranchProxy* reco);
+
+  const caf::Proxy<std::vector<caf::SRStub>>& GetStubs(const caf::SRSliceRecoBranchProxy* reco);
+
+  //----------------------------------------------------------------------
+
   // Spill sources also provide a slice source (which loops over the slices)
   template<> class beta::_IRecordSource<caf::SRSpillProxy>
     : public beta::_IRecordSourceDefaultImpl<caf::SRSpillProxy>
   {
   public:
-    ISliceSource& Slices() {return *fSlices;}
+    ISliceSource& Slices() {return fSlices;}
 
   protected:
-    _IRecordSource();
-
-    std::unique_ptr<ISliceSource> fSlices;
+    VectorAdaptor<caf::StandardRecord, caf::SRSlice> fSlices{*this, GetSlices};
   };
 
   //----------------------------------------------------------------------
@@ -78,16 +104,36 @@ namespace ana
     : public beta::_IRecordSourceDefaultImpl<caf::SRSliceRecoBranchProxy>
   {
   public:
-    ITrackSource& Tracks() {return *fTracks;}
-    IShowerSource& Showers() {return *fShowers;}
-    IStubSource& Stubs() {return *fStubs;}
+    ITrackSource& Tracks() {return fTracks;}
+    IShowerSource& Showers() {return fShowers;}
+    IStubSource& Stubs() {return fStubs;}
 
   protected:
-    _IRecordSource();
+    VectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack> fTracks{*this, GetTracks};
+    VectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower> fShowers{*this, GetShowers};
+    VectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub> fStubs{*this, GetStubs};
+  };
 
-    std::unique_ptr<ITrackSource> fTracks;
-    std::unique_ptr<IShowerSource> fShowers;
-    std::unique_ptr<IStubSource> fStubs;
+  //----------------------------------------------------------------------
+
+  /// Helper class for implementing looping over slices, tracks, etc
+  template<class FromT, class ToT> class EnsembleVectorAdaptor:
+    public beta::PassthroughExposure<beta::_IRecordEnsembleSink<caf::Proxy<FromT>>,
+                                     beta::_IRecordEnsembleSource<caf::Proxy<ToT>>>
+  {
+  public:
+    typedef std::function<const caf::Proxy<std::vector<ToT>>&(const caf::Proxy<FromT>*)> Func_t;
+
+    EnsembleVectorAdaptor(beta::_IRecordEnsembleSource<caf::Proxy<FromT>>& src, Func_t vecGetter);
+
+    virtual void HandleSingleRecord(const caf::Proxy<FromT>* rec,
+                                    double weight,
+                                    int universeIdx) override;
+
+    virtual void HandleEnsemble(const caf::Proxy<FromT>* rec,
+                                const std::vector<double>& weight) override;
+  protected:
+    Func_t fVecGetter;
   };
 
   //----------------------------------------------------------------------
@@ -99,15 +145,13 @@ namespace ana
     : public beta::_IRecordEnsembleSourceDefaultImpl<caf::SRSliceRecoBranchProxy>
   {
   public:
-    ITrackEnsembleSource& Tracks() {return *fTracks;}
-    IShowerEnsembleSource& Showers() {return *fShowers;}
-    IStubEnsembleSource& Stubs() {return *fStubs;}
+    ITrackEnsembleSource& Tracks() {return fTracks;}
+    IShowerEnsembleSource& Showers() {return fShowers;}
+    IStubEnsembleSource& Stubs() {return fStubs;}
 
   protected:
-    _IRecordEnsembleSource();
-
-    std::unique_ptr<ITrackEnsembleSource> fTracks;
-    std::unique_ptr<IShowerEnsembleSource> fShowers;
-    std::unique_ptr<IStubEnsembleSource> fStubs;
+    EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack> fTracks{*this, GetTracks};
+    EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower> fShowers{*this, GetShowers};
+    EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub> fStubs{*this, GetStubs};
   };
 }
