@@ -189,6 +189,8 @@ namespace ana
   template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower>;
   template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub>;
 
+  template class EnsembleVectorAdaptor<caf::StandardRecord, caf::SRSlice>;
+
   template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack>;
   template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower>;
   template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub>;

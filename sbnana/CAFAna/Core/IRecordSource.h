@@ -137,6 +137,18 @@ namespace ana
   };
 
   //----------------------------------------------------------------------
+  // Spill sources also provide a slice source (which loops over the slices)
+  template<> class beta::_IRecordEnsembleSource<caf::SRSpillProxy>
+    : public beta::_IRecordEnsembleSourceDefaultImpl<caf::SRSpillProxy>
+  {
+  public:
+    ISliceEnsembleSource& Slices() {return fSlices;}
+
+  protected:
+    EnsembleVectorAdaptor<caf::StandardRecord, caf::SRSlice> fSlices{*this, GetSlices};
+  };
+
+  //----------------------------------------------------------------------
 
   // Provide ability to get track / shower / stub sources from the reco branch
   // ensemble source.
