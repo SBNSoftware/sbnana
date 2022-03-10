@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/XSec/Flux.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TH1.h"
 

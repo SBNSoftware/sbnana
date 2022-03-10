@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Core/Spectrum.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
 namespace ana
 {
