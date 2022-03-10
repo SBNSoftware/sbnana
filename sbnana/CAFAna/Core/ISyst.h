@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/ISyst.h"
+#include "cafanacore/ISyst.h"
 
 #include <string>
 

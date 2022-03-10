@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/OscCurve.h"
-#include "CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"

@@ -1,6 +1,8 @@
-include_directories($ENV{SRPROXY_INC})
+include_directories(${SRPROXY_INC})
 
 include_directories($ENV{EIGEN_INC})
+
+include_directories(${CAFANACORE_INC})
 
 # CAFAna expects assert() to still function even in the prof build
 add_definitions(-UNDEBUG)

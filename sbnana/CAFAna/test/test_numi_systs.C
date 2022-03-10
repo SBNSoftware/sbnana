@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "sbnana/CAFAna/Systs/NuMIFluxSysts.h"

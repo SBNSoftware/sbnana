@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Analysis/Fit.h"
 
-#include "CAFAna/Core/Progress.h"
+#include "cafanacore/Progress.h"
 #include "sbnana/CAFAna/Core/IFitVar.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 #include "sbnana/CAFAna/Experiment/IExperiment.h"

@@ -2,9 +2,9 @@
 
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/MathUtil.h"
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/Registry.h"
+#include "cafanacore/Progress.h"
+#include "cafanacore/Ratio.h"
+#include "cafanacore/Registry.h"
 
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 

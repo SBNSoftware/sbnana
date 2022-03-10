@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Core/SystShifts.h"
 
 #include "sbnana/CAFAna/Core/MathUtil.h"
-#include "CAFAna/Core/Registry.h"
+#include "cafanacore/Registry.h"
 
 #include <cassert>
 

@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Experiment/RatioExperiment.h"
 
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "sbnana/CAFAna/Prediction/IPrediction.h"

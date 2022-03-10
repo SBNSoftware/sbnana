@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAnaCore/CAFAna/Core/Weight.h"
+#include "cafanacore/Weight.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 

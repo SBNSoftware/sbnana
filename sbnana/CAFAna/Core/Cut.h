@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAnaCore/CAFAna/Core/Cut.h"
+#include "cafanacore/Cut.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 

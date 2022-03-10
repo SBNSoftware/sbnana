@@ -1,15 +1,16 @@
 #pragma once
 
-#include "CAFAna/Core/ReweightableSpectrum.h"
+#include "cafanacore/ReweightableSpectrum.h"
+
+#include "cafanacore/FwdDeclare.h"
+#include "cafanacore/Spectrum.h"
+#include "cafanacore/ThreadLocal.h"
 
 #include "sbnana/CAFAna/Core/Binning.h"
-#include "CAFAna/Core/FwdDeclare.h"
-#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 #include "sbnana/CAFAna/Core/StanTypedefs.h"
 #include "sbnana/CAFAna/Core/IRecordSource.h"
-#include "CAFAna/Core/ThreadLocal.h"
 
 #include "TMD5.h"
 

@@ -1,11 +1,11 @@
 #include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Core/ReweightableSpectrum.h"
-#include "CAFAna/Core/SAMQuerySource.h"
-#include "CAFAna/Core/SAMProjectSource.h"
-#include "CAFAna/Core/Spectrum.h"
-#include "CAFAna/Core/WildcardSource.h"
+#include "cafanacore/Progress.h"
+#include "cafanacore/ReweightableSpectrum.h"
+#include "cafanacore/SAMQuerySource.h"
+#include "cafanacore/SAMProjectSource.h"
+#include "cafanacore/Spectrum.h"
+#include "cafanacore/WildcardSource.h"
 
 #include "sbnana/CAFAna/Core/Utilities.h"
 

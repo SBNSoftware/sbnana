@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAnaCore/CAFAna/Core/MultiVar.h"
+#include "cafanacore/MultiVar.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 

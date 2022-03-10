@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/HistAxis.h"

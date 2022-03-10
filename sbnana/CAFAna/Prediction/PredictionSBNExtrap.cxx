@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Prediction/PredictionSBNExtrap.h"
 
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 

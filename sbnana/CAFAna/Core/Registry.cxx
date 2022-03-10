@@ -1,4 +1,4 @@
-#include "CAFAna/Core/Registry.txx"
+#include "cafanacore/Registry.txx"
 
 #include "sbnana/CAFAna/Core/IFitVar.h"
 #include "sbnana/CAFAna/Core/ISyst.h"

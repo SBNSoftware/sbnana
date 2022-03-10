@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAnaCore/CAFAna/Core/IRecordSource.h"
+#include "cafanacore/IRecordSource.h"
 
 #include "sbnana/CAFAna/Core/IRecordSink.h"
 

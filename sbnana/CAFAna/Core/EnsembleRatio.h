@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 
 #include "TGraphAsymmErrors.h"
 

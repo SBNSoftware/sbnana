@@ -2,8 +2,8 @@
 
 #include "sbnana/CAFAna/Analysis/Style.h"
 #include "sbnana/CAFAna/Prediction/IPrediction.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/Spectrum.h"
+#include "cafanacore/Ratio.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/SystShifts.h"
 
 #include "sbnana/CAFAna/Core/MathUtil.h"

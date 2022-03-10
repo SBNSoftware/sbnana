@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "CAFAna/Core/IFileSource.h"
+#include "cafanacore/IFileSource.h"
 #include "sbnana/CAFAna/Core/IRecordSource.h"
 
 #include "sbnana/CAFAna/Core/Cut.h"

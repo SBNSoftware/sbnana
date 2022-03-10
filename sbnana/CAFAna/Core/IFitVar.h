@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAna/Core/INamed.h"
+#include "cafanacore/INamed.h"
 
 namespace osc
 {

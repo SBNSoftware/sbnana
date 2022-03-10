@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CAFAnaCore/CAFAna/Core/HistAxis.h"
+#include "cafanacore/HistAxis.h"
 
 #include "sbnana/CAFAna/Core/Var.h" // TODO do we want our own FwdDeclare.h?
 

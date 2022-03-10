@@ -4,10 +4,10 @@
 #include "sbnana/CAFAna/Analysis/Fit.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/IFitVar.h"
-#include "CAFAna/Core/Progress.h"
-#include "CAFAna/Core/ThreadPool.h"
+#include "cafanacore/Progress.h"
+#include "cafanacore/ThreadPool.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
-#include "CAFAna/Core/UtilsExt.h"
+#include "cafanacore/UtilsExt.h"
 
 #include "OscLib/IOscCalc.h"
 

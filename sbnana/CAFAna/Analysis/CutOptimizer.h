@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 
 #include "sbnana/CAFAna/Core/IRecordSource.h"
 

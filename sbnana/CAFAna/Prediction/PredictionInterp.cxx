@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Ratio.h"
-#include "CAFAna/Core/Registry.h"
+#include "cafanacore/Ratio.h"
+#include "cafanacore/Registry.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TDirectory.h"

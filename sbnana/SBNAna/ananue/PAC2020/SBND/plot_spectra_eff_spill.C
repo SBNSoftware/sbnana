@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 
 #include "helper_eff_spill.h"
 

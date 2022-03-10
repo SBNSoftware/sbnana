@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Core/FileReducer.h"
 
-#include "CAFAna/Core/Progress.h"
+#include "cafanacore/Progress.h"
 
 #include "sbnana/CAFAna/Core/Utilities.h"
 

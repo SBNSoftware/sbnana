@@ -3,7 +3,7 @@
 #include "sbnana/CAFAna/Experiment/IExperiment.h"
 #include "sbnana/CAFAna/Prediction/IPrediction.h"
 
-#include "CAFAna/Core/FwdDeclare.h"
+#include "cafanacore/FwdDeclare.h"
 
 namespace ana
 {

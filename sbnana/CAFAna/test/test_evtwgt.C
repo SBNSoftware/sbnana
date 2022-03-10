@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Core/Ratio.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/SystShifts.h"
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
 using namespace ana;

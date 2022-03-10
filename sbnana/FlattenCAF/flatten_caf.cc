@@ -2,7 +2,7 @@
 #include "sbnanaobj/StandardRecord/SRGlobal.h"
 #include "sbnanaobj/StandardRecord/Flat/FlatRecord.h"
 
-#include "CAFAna/Core/Progress.h"
+#include "cafanacore/Progress.h"
 
 #include "TFile.h"
 #include "TH1.h"

@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
 
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-//#include "CAFAna/Core/StanUtils.h"
+//#include "cafanacore/StanUtils.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "OscLib/IOscCalc.h"

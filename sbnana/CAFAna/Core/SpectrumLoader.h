@@ -5,7 +5,7 @@
 #include "sbnana/CAFAna/Core/IRecordSource.h"
 #include "sbnana/CAFAna/Core/IRecordSink.h"
 
-#include "CAFAna/Core/Passthrough.h"
+#include "cafanacore/Passthrough.h"
 
 class TFile;
 

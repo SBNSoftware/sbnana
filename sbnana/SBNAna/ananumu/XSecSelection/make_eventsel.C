@@ -1,7 +1,7 @@
 // Make a few spectra with different cuts.
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 
 #include "eventsel.h"
 
