@@ -2,7 +2,7 @@
 #include "sbnana/SBNAna/Vars/TruthVars.h"
 #include "sbnana/SBNAna/Cuts/VolumeDefinitions.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana{
 

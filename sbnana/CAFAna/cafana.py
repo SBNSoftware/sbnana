@@ -36,7 +36,7 @@ ROOT.gROOT.ForceStyle()
 
 print('Load libraries...')
 for lib in ['Minuit2',
-            'StandardRecordProxy',
+            'sbnanaobj_StandardRecordProxy',
             'CAFAnaCore',
             'SBNAnaVars',
             'SBNAnaCuts',
@@ -65,14 +65,14 @@ class PyCAFAna:
     def CSliceVar(self, body):
         '''Construct a new slice Var given the C++ body as a string'''
         var = 'pyvar_'+self._cppyy.gbl.ana.UniqueName()
-        text = '#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"\ndouble '+var+'_func(const caf::SRSliceProxy* srp){\nconst caf::SRSliceProxy& sr = *srp;\n'+body+'\n}\nconst ana::Var '+var+'('+var+'_func);'
+        text = '#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"\ndouble '+var+'_func(const caf::SRSliceProxy* srp){\nconst caf::SRSliceProxy& sr = *srp;\n'+body+'\n}\nconst ana::Var '+var+'('+var+'_func);'
         self._cppyy.cppdef(text)
         return getattr(self._cppyy.gbl, var)
 
     def CSpillVar(self, body):
         '''Construct a new spill Var given the C++ body as a string'''
         var = 'pyvar_'+self._cppyy.gbl.ana.UniqueName()
-        text = '#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"\ndouble '+var+'_func(const caf::SRSpillProxy* srp){\nconst caf::SRSpillProxy& sr = *srp;\n'+body+'\n}\nconst ana::Var '+var+'('+var+'_func);'
+        text = '#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"\ndouble '+var+'_func(const caf::SRSpillProxy* srp){\nconst caf::SRSpillProxy& sr = *srp;\n'+body+'\n}\nconst ana::Var '+var+'('+var+'_func);'
         self._cppyy.cppdef(text)
         return getattr(self._cppyy.gbl, var)
 
@@ -87,14 +87,14 @@ class PyCAFAna:
     def CSliceCut(self, body):
         '''Construct a new Cut given the C++ body as a string'''
         cut = 'pycut_'+self._cppyy.gbl.ana.UniqueName()
-        text = '#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"\nbool '+cut+'_func(const caf::SRSliceProxy* srp){\nconst caf::SRSliceProxy& sr = *srp;\n'+body+'\n}\nconst ana::Cut '+cut+'('+cut+'_func);'
+        text = '#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"\nbool '+cut+'_func(const caf::SRSliceProxy* srp){\nconst caf::SRSliceProxy& sr = *srp;\n'+body+'\n}\nconst ana::Cut '+cut+'('+cut+'_func);'
         self._cppyy.cppdef(text)
         return getattr(self._cppyy.gbl, cut)
 
     def CSpillCut(self, body):
         '''Construct a new Cut given the C++ body as a string'''
         cut = 'pycut_'+self._cppyy.gbl.ana.UniqueName()
-        text = '#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"\nbool '+cut+'_func(const caf::SRSpillProxy* srp){\nconst caf::SRSpillProxy& sr = *srp;\n'+body+'\n}\nconst ana::Cut '+cut+'('+cut+'_func);'
+        text = '#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"\nbool '+cut+'_func(const caf::SRSpillProxy* srp){\nconst caf::SRSpillProxy& sr = *srp;\n'+body+'\n}\nconst ana::Cut '+cut+'('+cut+'_func);'
         self._cppyy.cppdef(text)
         return getattr(self._cppyy.gbl, cut)
 

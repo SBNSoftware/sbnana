@@ -13,7 +13,7 @@
 
 using namespace ana;
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TCanvas.h"
 #include "TH2.h"

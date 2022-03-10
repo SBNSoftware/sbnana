@@ -4,7 +4,7 @@
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
 #include <unordered_map>
 #include <vector>
@@ -72,6 +72,6 @@ namespace ana
 
   const std::vector<const ISyst*>& GetSBNGenieWeightSysts();
 
-  //  const std::vector<const ISyst*>& GetSBNFluxWeightSysts();
+  //  const std::vector<const ISyst*>& GetSBNBoosterWeightSysts();
   //  const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
 }

@@ -94,7 +94,20 @@ namespace ana
     const char* ret = getenv("EXPERIMENT");
 
     if(!ret){
-      std::cout << "\nERROR: Environment variable $EXPERIMENT not set.\nThis is required for various ifdh/sam functionality.\nYou should probably setup sbndcode or icaruscode, though manually exporting the variable also seems to work." << std::endl;
+      std::cout << "\nERROR: Environment variable $EXPERIMENT not set." << std::endl;
+      exit(1);
+    }
+
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
+  std::string SAMExperiment()
+  {
+    const char* ret = getenv("SAM_EXPERIMENT");
+
+    if(!ret){
+      std::cout << "\nERROR: Environment variable $SAM_EXPERIMENT not set.\nThis is required for various ifdh/sam functionality.\nYou likely want it to be set to 'sbn', though it should have been set automatically by setup scripts." << std::endl;
       exit(1);
     }
 

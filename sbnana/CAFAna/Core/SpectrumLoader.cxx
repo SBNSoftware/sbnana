@@ -8,7 +8,7 @@
 
 #include "sbnana/CAFAna/Core/GenieWeightList.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <cassert>
 #include <iostream>
@@ -137,6 +137,12 @@ namespace ana
       assert(tr);
     }
 
+    // We try to access this field for every record. It was only added to the
+    // files in late 2021, and we don't want to render all earlier files
+    // unusable at a stroke. This logic can safely be removed once all extant
+    // files have such a field (estimate mid-2022?)
+    const bool has_husk = tr->GetLeaf("rec.hdr.husk");
+
     const caf::CAFType type = caf::GetCAFType(dir, tr);
 
     long n;
@@ -149,6 +155,9 @@ namespace ana
 
     for(n = 0; n < Nentries; ++n){
       if(type != caf::kFlatMultiTree) tr->LoadTree(n); // for all single-tree modes
+
+      // If there is no husk field there is no concept of husk events
+      if(!has_husk) sr.hdr.husk = false;
 
       HandleRecord(&sr);
 
@@ -194,6 +203,10 @@ namespace ana
       // hdr.pot, I think it may be file-based in practice too.
       fNGenEvt += sr->hdr.ngenevt;
     }
+
+    // This record was only kept as a receptacle for exposure information. It
+    // shouldn't be included in any selected spectra.
+    if(sr->hdr.husk) return;
 
     // Do the spill-level spectra first. Keep this very simple because we
     // intend to change it.

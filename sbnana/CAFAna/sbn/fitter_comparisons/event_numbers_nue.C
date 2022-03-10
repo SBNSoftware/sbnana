@@ -9,7 +9,7 @@
 
 // #include "sbnana/CAFAna/Cuts/TruthCuts.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
 #include "sbnana/CAFAna/Analysis/Calcs.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
@@ -17,7 +17,7 @@
 #include "OscLib/OscCalcSterile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TCanvas.h"
 #include "TH1.h"

@@ -1,6 +1,6 @@
 #include "sbnana/SBNAna/Vars/NumuVarsSBND202106.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/SBNAna/Cuts/VolumeDefinitions.h"
 #include <cassert>
 
@@ -32,6 +32,7 @@ namespace ana
 
    				 for(unsigned int trkidx = 0; trkidx < slc->reco.trk.size(); ++trkidx){
      				   const caf::SRTrackProxy& trk = slc->reco.trk[trkidx];
+                                   if(trk.bestplane == -1) continue;
 				   
 				   //atslc
   				   dist = sqrt((pow(trk.start.x - slc->vertex.x,2)) + (pow(trk.start.y - slc->vertex.y,2)) + (pow(trk.start.z  - slc->vertex.z,2)));
@@ -45,18 +46,8 @@ namespace ana
   				   contained = ( (-199.15 + 10) < trk.end.x && trk.end.x < (199.15 - 10) && (-200. + 10) < trk.end.y && trk.end.y < (200. - 10) && (0.0 + 10) < trk.end.z && trk.end.z < (500. - 50));
 
 				   //bestplane.chi2
-				   if (trk.bestplane == 0){
-	  			     chi2_proton = trk.chi2pid0.chi2_proton;
-	  			     chi2_muon = trk.chi2pid0.chi2_muon;
-				   }
-				   else if (trk.bestplane == 1){
-	  			     chi2_proton = trk.chi2pid1.chi2_proton;
-	  			     chi2_muon = trk.chi2pid1.chi2_muon;
-				   }
-				   else{
-	  			     chi2_proton = trk.chi2pid2.chi2_proton;
-	  			     chi2_muon = trk.chi2pid2.chi2_muon;
-				   }	
+                                   chi2_proton = trk.chi2pid[trk.bestplane].chi2_proton;
+                                   chi2_muon = trk.chi2pid[trk.bestplane].chi2_muon;
 
      				   maybe_muon_exiting = !contained && trk.len > 100;  
 				   maybe_muon_contained = contained && chi2_proton > 60 && chi2_muon < 30 && trk.len > 50;
