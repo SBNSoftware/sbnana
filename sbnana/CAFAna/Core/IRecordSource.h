@@ -15,9 +15,11 @@ namespace ana
 
   using ISpillSource = beta::_IRecordSource<caf::SRSpillProxy>;
   using ISliceSource = beta::_IRecordSource<caf::SRSliceProxy>;
+  using INuTruthSource = beta::_IRecordSource<caf::SRTrueInteractionProxy>;
 
   using ISpillEnsembleSource = beta::_IRecordEnsembleSource<caf::SRSpillProxy>;
   using ISliceEnsembleSource = beta::_IRecordEnsembleSource<caf::SRSliceProxy>;
+  using INuTruthEnsembleSource = beta::_IRecordEnsembleSource<caf::SRTrueInteractionProxy>;
 
   //----------------------------------------------------------------------
 
@@ -76,6 +78,8 @@ namespace ana
 
   const caf::Proxy<std::vector<caf::SRSlice>>& GetSlices(const caf::SRSpillProxy* spill);
 
+  const caf::Proxy<std::vector<caf::SRTrueInteraction>>& GetNuTruths(const caf::SRSpillProxy* spill);
+
   const caf::Proxy<std::vector<caf::SRTrack>>& GetTracks(const caf::SRSliceRecoBranchProxy* reco);
 
   const caf::Proxy<std::vector<caf::SRShower>>& GetShowers(const caf::SRSliceRecoBranchProxy* reco);
@@ -90,9 +94,11 @@ namespace ana
   {
   public:
     ISliceSource& Slices() {return fSlices;}
+    INuTruthSource& NuTruths() {return fNuTruths;}
 
   protected:
     VectorAdaptor<caf::StandardRecord, caf::SRSlice> fSlices{*this, GetSlices};
+    VectorAdaptor<caf::StandardRecord, caf::SRTrueInteraction> fNuTruths{*this, GetNuTruths};
   };
 
   //----------------------------------------------------------------------
@@ -143,9 +149,11 @@ namespace ana
   {
   public:
     ISliceEnsembleSource& Slices() {return fSlices;}
+    INuTruthEnsembleSource& NuTruths() {return fNuTruths;}
 
   protected:
     EnsembleVectorAdaptor<caf::StandardRecord, caf::SRSlice> fSlices{*this, GetSlices};
+    EnsembleVectorAdaptor<caf::StandardRecord, caf::SRTrueInteraction> fNuTruths{*this, GetNuTruths};
   };
 
   //----------------------------------------------------------------------

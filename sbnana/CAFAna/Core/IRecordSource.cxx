@@ -161,6 +161,12 @@ namespace ana
     return spill->slc;
   }
 
+  const caf::Proxy<std::vector<caf::SRTrueInteraction>>&
+  GetNuTruths(const caf::SRSpillProxy* spill)
+  {
+    return spill->mc.nu;
+  }
+
   const caf::Proxy<std::vector<caf::SRTrack>>&
   GetTracks(const caf::SRSliceRecoBranchProxy* reco)
   {
@@ -184,6 +190,7 @@ namespace ana
 
   // Instantiations
   template class VectorAdaptor<caf::StandardRecord, caf::SRSlice>;
+  template class VectorAdaptor<caf::StandardRecord, caf::SRTrueInteraction>;
 
   template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack>;
   template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower>;

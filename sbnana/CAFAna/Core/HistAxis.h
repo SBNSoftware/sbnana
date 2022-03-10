@@ -9,6 +9,7 @@ namespace ana
   typedef _HistAxis<Var> HistAxis;
   typedef _HistAxis<SpillVar> SpillHistAxis;
 
+  typedef _HistAxis<NuTruthVar> NuTruthHistAxis;
   typedef _HistAxis<TrackVar> TrackHistAxis;
   typedef _HistAxis<ShowerVar> ShowerHistAxis;
   typedef _HistAxis<StubVar> StubHistAxis;

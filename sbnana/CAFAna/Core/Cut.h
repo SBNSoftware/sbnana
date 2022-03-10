@@ -28,10 +28,12 @@ namespace ana
   const SpillCut kNoSpillCut(NoCut<caf::SRSpillProxy>{});
 
 
+  typedef _Cut<caf::SRTrueInteractionProxy> NuTruthCut;
   typedef _Cut<caf::SRTrackProxy> TrackCut;
   typedef _Cut<caf::SRShowerProxy> ShowerCut;
   typedef _Cut<caf::SRStubProxy> StubCut;
 
+  const NuTruthCut  kNoNuTruthCut(NoCut<caf::SRTrueInteractionProxy>{});
   const TrackCut kNoTrackCut(NoCut<caf::SRTrackProxy>{});
   const ShowerCut kNoShowerCut(NoCut<caf::SRShowerProxy>{});
   const StubCut kNoStubCut(NoCut<caf::SRStubProxy>{});
