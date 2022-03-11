@@ -30,7 +30,7 @@ namespace ana
   typedef _Var<caf::SRShowerProxy> ShowerVar;
   typedef _Var<caf::SRStubProxy> StubVar;
 
-#define SIMPLENUVAR(CAFNAME) NuTruthVar([](const caf::SRTrueInteractionProxy* nu) -> double {return nu->CAFNAME;})
+#define SIMPLENUTRUTHVAR(CAFNAME) NuTruthVar([](const caf::SRTrueInteractionProxy* nu) -> double {return nu->CAFNAME;})
 #define SIMPLETRACKVAR(CAFNAME) TrackVar([](const caf::SRTrackProxy* trk) -> double {return trk->CAFNAME;})
 #define SIMPLESHOWERVAR(CAFNAME) ShowerVar([](const caf::SRShowerProxy* shw) -> double {return shw->CAFNAME;})
 #define SIMPLESTUBVAR(CAFNAME) StubVar([](const caf::SRStubProxy* stub) -> double {return stub->CAFNAME;})
