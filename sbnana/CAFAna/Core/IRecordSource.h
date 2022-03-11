@@ -27,34 +27,11 @@ namespace ana
   using IShowerSource = beta::_IRecordSource<caf::SRShowerProxy>;
   using IStubSource = beta::_IRecordSource<caf::SRStubProxy>;
 
-  using ISliceRecoBranchSource = beta::_IRecordSource<caf::SRSliceRecoBranchProxy>;
-  using ISliceRecoBranchSink = beta::_IRecordSink<caf::SRSliceRecoBranchProxy>;
-
   //----------------------------------------------------------------------
 
   using ITrackEnsembleSource = beta::_IRecordEnsembleSource<caf::SRTrackProxy>;
   using IShowerEnsembleSource = beta::_IRecordEnsembleSource<caf::SRShowerProxy>;
   using IStubEnsembleSource = beta::_IRecordEnsembleSource<caf::SRStubProxy>;
-
-  using ISliceRecoBranchEnsembleSource = beta::_IRecordEnsembleSource<caf::SRSliceRecoBranchProxy>;
-  using ISliceRecoBranchEnsembleSink = beta::_IRecordEnsembleSink<caf::SRSliceRecoBranchProxy>;
-
-  //----------------------------------------------------------------------
-
-  template<> class beta::_IRecordSource<caf::SRSliceProxy>
-    : public beta::_IRecordSourceDefaultImpl<caf::SRSliceProxy>
-  {
-  public:
-    // Weight-based ensembles are still supported
-    using _IRecordSourceDefaultImpl::Ensemble;
-
-    // But also support an ensemble basd on SystShifts
-    ISliceEnsembleSource& Ensemble(const std::vector<SystShifts>& shifts,
-                                   int multiverseId);
-
-  protected:
-    IDDict<ISliceEnsembleSource> fEnsembleSources;
-  };
 
   //----------------------------------------------------------------------
 
@@ -80,11 +57,36 @@ namespace ana
 
   const caf::Proxy<std::vector<caf::SRTrueInteraction>>& GetNuTruths(const caf::SRSpillProxy* spill);
 
-  const caf::Proxy<std::vector<caf::SRTrack>>& GetTracks(const caf::SRSliceRecoBranchProxy* reco);
+  const caf::Proxy<std::vector<caf::SRTrack>>& GetTracks(const caf::SRSliceProxy* reco);
 
-  const caf::Proxy<std::vector<caf::SRShower>>& GetShowers(const caf::SRSliceRecoBranchProxy* reco);
+  const caf::Proxy<std::vector<caf::SRShower>>& GetShowers(const caf::SRSliceProxy* reco);
 
-  const caf::Proxy<std::vector<caf::SRStub>>& GetStubs(const caf::SRSliceRecoBranchProxy* reco);
+  const caf::Proxy<std::vector<caf::SRStub>>& GetStubs(const caf::SRSliceProxy* reco);
+
+  //----------------------------------------------------------------------
+
+  template<> class beta::_IRecordSource<caf::SRSliceProxy>
+    : public beta::_IRecordSourceDefaultImpl<caf::SRSliceProxy>
+  {
+  public:
+    // Weight-based ensembles are still supported
+    using _IRecordSourceDefaultImpl::Ensemble;
+
+    // But also support an ensemble basd on SystShifts
+    ISliceEnsembleSource& Ensemble(const std::vector<SystShifts>& shifts,
+                                   int multiverseId);
+
+    ITrackSource& Tracks() {return fTracks;}
+    IShowerSource& Showers() {return fShowers;}
+    IStubSource& Stubs() {return fStubs;}
+
+  protected:
+    IDDict<ISliceEnsembleSource> fEnsembleSources;
+
+    VectorAdaptor<caf::SRSlice, caf::SRTrack> fTracks{*this, GetTracks};
+    VectorAdaptor<caf::SRSlice, caf::SRShower> fShowers{*this, GetShowers};
+    VectorAdaptor<caf::SRSlice, caf::SRStub> fStubs{*this, GetStubs};
+  };
 
   //----------------------------------------------------------------------
 
@@ -100,27 +102,8 @@ namespace ana
     VectorAdaptor<caf::StandardRecord, caf::SRSlice> fSlices{*this, GetSlices};
     VectorAdaptor<caf::StandardRecord, caf::SRTrueInteraction> fNuTruths{*this, GetNuTruths};
   };
-
   //----------------------------------------------------------------------
 
-  // Provide ability to get track / shower / stub sources from the reco branch
-  // source.
-
-  template<> class beta::_IRecordSource<caf::SRSliceRecoBranchProxy>
-    : public beta::_IRecordSourceDefaultImpl<caf::SRSliceRecoBranchProxy>
-  {
-  public:
-    ITrackSource& Tracks() {return fTracks;}
-    IShowerSource& Showers() {return fShowers;}
-    IStubSource& Stubs() {return fStubs;}
-
-  protected:
-    VectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack> fTracks{*this, GetTracks};
-    VectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower> fShowers{*this, GetShowers};
-    VectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub> fStubs{*this, GetStubs};
-  };
-
-  //----------------------------------------------------------------------
 
   /// Helper class for implementing looping over slices, tracks, etc
   template<class FromT, class ToT> class EnsembleVectorAdaptor:
@@ -143,6 +126,25 @@ namespace ana
   };
 
   //----------------------------------------------------------------------
+
+  // Provide ability to get track / shower / stub sources from the reco branch
+  // ensemble source.
+
+  template<> class beta::_IRecordEnsembleSource<caf::SRSliceProxy>
+    : public beta::_IRecordEnsembleSourceDefaultImpl<caf::SRSliceProxy>
+  {
+  public:
+    ITrackEnsembleSource& Tracks() {return fTracks;}
+    IShowerEnsembleSource& Showers() {return fShowers;}
+    IStubEnsembleSource& Stubs() {return fStubs;}
+
+  protected:
+    EnsembleVectorAdaptor<caf::SRSlice, caf::SRTrack> fTracks{*this, GetTracks};
+    EnsembleVectorAdaptor<caf::SRSlice, caf::SRShower> fShowers{*this, GetShowers};
+    EnsembleVectorAdaptor<caf::SRSlice, caf::SRStub> fStubs{*this, GetStubs};
+  };
+
+  //----------------------------------------------------------------------
   // Spill sources also provide a slice source (which loops over the slices)
   template<> class beta::_IRecordEnsembleSource<caf::SRSpillProxy>
     : public beta::_IRecordEnsembleSourceDefaultImpl<caf::SRSpillProxy>
@@ -154,24 +156,5 @@ namespace ana
   protected:
     EnsembleVectorAdaptor<caf::StandardRecord, caf::SRSlice> fSlices{*this, GetSlices};
     EnsembleVectorAdaptor<caf::StandardRecord, caf::SRTrueInteraction> fNuTruths{*this, GetNuTruths};
-  };
-
-  //----------------------------------------------------------------------
-
-  // Provide ability to get track / shower / stub sources from the reco branch
-  // ensemble source.
-
-  template<> class beta::_IRecordEnsembleSource<caf::SRSliceRecoBranchProxy>
-    : public beta::_IRecordEnsembleSourceDefaultImpl<caf::SRSliceRecoBranchProxy>
-  {
-  public:
-    ITrackEnsembleSource& Tracks() {return fTracks;}
-    IShowerEnsembleSource& Showers() {return fShowers;}
-    IStubEnsembleSource& Stubs() {return fStubs;}
-
-  protected:
-    EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack> fTracks{*this, GetTracks};
-    EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower> fShowers{*this, GetShowers};
-    EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub> fStubs{*this, GetStubs};
   };
 }

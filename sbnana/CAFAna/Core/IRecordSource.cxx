@@ -168,21 +168,21 @@ namespace ana
   }
 
   const caf::Proxy<std::vector<caf::SRTrack>>&
-  GetTracks(const caf::SRSliceRecoBranchProxy* reco)
+  GetTracks(const caf::SRSliceProxy* slc)
   {
-    return reco->trk;
+    return slc->reco.trk;
   }
 
   const caf::Proxy<std::vector<caf::SRShower>>&
-  GetShowers(const caf::SRSliceRecoBranchProxy* reco)
+  GetShowers(const caf::SRSliceProxy* slc)
   {
-    return reco->shw;
+    return slc->reco.shw;
   }
 
   const caf::Proxy<std::vector<caf::SRStub>>&
-  GetStubs(const caf::SRSliceRecoBranchProxy* reco)
+  GetStubs(const caf::SRSliceProxy* slc)
   {
-    return reco->stub;
+    return slc->reco.stub;
   }
 
   //----------------------------------------------------------------------
@@ -192,13 +192,13 @@ namespace ana
   template class VectorAdaptor<caf::StandardRecord, caf::SRSlice>;
   template class VectorAdaptor<caf::StandardRecord, caf::SRTrueInteraction>;
 
-  template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack>;
-  template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower>;
-  template class VectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub>;
+  template class VectorAdaptor<caf::SRSlice, caf::SRTrack>;
+  template class VectorAdaptor<caf::SRSlice, caf::SRShower>;
+  template class VectorAdaptor<caf::SRSlice, caf::SRStub>;
 
   template class EnsembleVectorAdaptor<caf::StandardRecord, caf::SRSlice>;
 
-  template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRTrack>;
-  template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRShower>;
-  template class EnsembleVectorAdaptor<caf::SRSliceRecoBranch, caf::SRStub>;
+  template class EnsembleVectorAdaptor<caf::SRSlice, caf::SRTrack>;
+  template class EnsembleVectorAdaptor<caf::SRSlice, caf::SRShower>;
+  template class EnsembleVectorAdaptor<caf::SRSlice, caf::SRStub>;
 }
