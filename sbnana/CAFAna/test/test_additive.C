@@ -12,12 +12,13 @@ using namespace ana;
 #include "sbnana/SBNAna/Cuts/TruthCuts.h"
 
 #include "TCanvas.h"
-#include "TDecompLU.h"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TH2.h"
 #include "TPad.h"
 #include "TRandom3.h"
+
+#include <Eigen/Dense>
 
 template<class T> T sqr(T x){return x*x;}
 template<class T> T cube(T x){return x*x*x;}
@@ -61,16 +62,19 @@ const std::vector<std::string> systs = {
 };
 
 // Returns new predictions
-TVectorD local_linear(const TVectorD& xs,
-                      const TVectorD& ys,
-                      TVectorD* invgrads = 0)
+Eigen::VectorXd local_linear(const Eigen::VectorXd& xs,
+                             const Eigen::VectorXd& ys,
+                             Eigen::VectorXd* grads = 0)
 {
-  assert(xs.GetNrows() == ys.GetNrows());
-  const unsigned int Npts = xs.GetNrows();
+  assert(xs.size() == ys.size());
+  const unsigned int Npts = xs.size();
 
-  if(invgrads) invgrads->ResizeTo(Npts);
+  if(grads){
+    grads->resize(Npts);
+    grads->setZero();
+  }
 
-  TVectorD ret(Npts);
+  Eigen::VectorXd ret = Eigen::VectorXd::Zero(Npts);
 
   const double window = 1; // in sigmas
 
@@ -106,7 +110,7 @@ TVectorD local_linear(const TVectorD& xs,
       //      std::cout << "D IS ZERO!!!" << std::endl;
       // happens when there is a big gap. Just set the fit to the point itself
       ret[i] = ys[i];
-      if(invgrads) (*invgrads)[i] = std::numeric_limits<double>::infinity(); // TODO what should we do?
+      if(grads) (*grads)[i] = 0; // TODO what should we do?
       continue;
     }
 
@@ -114,71 +118,57 @@ TVectorD local_linear(const TVectorD& xs,
     const double c = (Swy*Swx2 - Swx*Swxy)/d;
 
     ret[i] = m*x0+c;
-    if(invgrads) (*invgrads)[i] = 1/m;
+    if(grads) (*grads)[i] = m;
   } // end for i
 
   return ret;
 }
 
-TVectorD total_prediction(const std::vector<TVectorD>& preds)
+Eigen::VectorXd total_prediction(const Eigen::MatrixXd& preds)
 {
-  TVectorD tot(preds[0].GetNrows());
-  for(const TVectorD& pred: preds) tot += pred;
-  return tot;
+  // Sum up the contents of each row
+  return preds.rowwise().sum();
 }
 
-double calc_mse(const std::vector<TVectorD>& preds,
-                const TVectorD& ys)
+double calc_mse(const Eigen::MatrixXd& preds,
+                const Eigen::VectorXd& ys)
 {
-  const unsigned int Npt = ys.GetNrows();
+  const unsigned int Npt = ys.size();
 
-  return (total_prediction(preds) - ys).Norm2Sqr() / Npt;
+  return (total_prediction(preds) - ys).squaredNorm() / Npt;
 }
 
-TVectorD project(const TVectorD& beta, const std::vector<TVectorD>& xs)
+Eigen::VectorXd projectSingle(const Eigen::VectorXd& beta, const Eigen::MatrixXd& xs)
 {
-  const int Nvar = beta.GetNrows();
-  const int Npt = xs[0].GetNrows();
-
-  TVectorD proj(Npt);
-  for(int i = 0; i < Npt; ++i){
-    for(int j = 0; j < Nvar; ++j){
-      proj[i] += beta[j]*xs[j][i];
-    }
-  }
-
-  return proj;
+  return xs*beta;
 }
 
-std::vector<TVectorD> project(const std::vector<TVectorD>& betas,
-                              const std::vector<TVectorD>& xs)
+Eigen::MatrixXd projectMulti(const Eigen::MatrixXd& betas,
+                             const Eigen::MatrixXd& xs)
 {
-  std::vector<TVectorD> ret;
-  ret.reserve(betas.size());
-  for(const TVectorD& beta: betas) ret.push_back(project(beta, xs));
-  return ret;
+  return xs*betas;
 }
 
 // Updates beta, returns new predictions
-TVectorD local_linear_update_basis(TVectorD& beta,
-                                   const std::vector<TVectorD>& xs,
-                                   const TVectorD& ys)
+Eigen::VectorXd local_linear_update_basis(Eigen::VectorXd& beta,
+                                          const Eigen::MatrixXd& xs,
+                                          const Eigen::VectorXd& ys)
 {
-  const unsigned int Npt = ys.GetNrows();
-  const unsigned int Nvar = xs.size();
+  const unsigned int Npt = ys.size();
+  const unsigned int Nvar = xs.cols();
 
   double old_mse = std::numeric_limits<double>::infinity();
 
-  TVectorD oldpreds(Npt);
-  TVectorD oldbeta(beta.GetNrows());
+  Eigen::VectorXd oldpreds = Eigen::VectorXd::Zero(Npt);
+  Eigen::VectorXd oldbeta = Eigen::VectorXd::Zero(beta.size());
 
   // try and learn a better beta
   while(true){
-    TVectorD bx = project(beta, xs);
-    TVectorD invgrads;
-    TVectorD preds = local_linear(bx, ys, &invgrads);
+    const Eigen::VectorXd bx = projectSingle(beta, xs);
+    Eigen::VectorXd grads;
+    const Eigen::VectorXd preds = local_linear(bx, ys, &grads);
 
-    const double mse = (preds-ys).Norm2Sqr() / Npt;
+    const double mse = (preds-ys).squaredNorm() / Npt;
     if(mse > old_mse){
       //      std::cout << mse << " " << old_mse << " bail after " << pass << std::endl;
       beta = oldbeta;
@@ -190,33 +180,22 @@ TVectorD local_linear_update_basis(TVectorD& beta,
 
     // This is taken from
     // https://en.wikipedia.org/wiki/Projection_pursuit_regression#Model_estimation
-    TMatrixD W(Npt, Npt);
+    Eigen::MatrixXd W = Eigen::MatrixXd::Zero(Npt, Npt);
     for(unsigned int i = 0; i < Npt; ++i){
-      if(!isinf(invgrads[i]) && !isnan(invgrads[i])) W(i, i) = sqr(1/invgrads[i]);
-    }
-    TVectorD b(Npt);
-    TMatrixD X(Npt, Nvar);
-    TMatrixD XT(Nvar, Npt);
-
-    for(unsigned int i = 0; i < Npt; ++i){
-      // TODO could almost write in one expression, but we don't have element-wise product
-      b[i] = bx[i];
-      if(!isinf(invgrads[i]) && !isnan(invgrads[i])) b[i] += (ys[i] - preds[i])*invgrads[i];
-      // TODO figure out what to do with zero gradient case!
-      //      if(grads[i] != 0) b(i, 0) += (ys[i] - preds[i])/grads[i]; else b(i, 0) += 1e8;
-      //      b(i, 0) += (ys[i] - preds[i])/grads[i];
-      for(unsigned int j = 0; j < Nvar; ++j){
-        X(i, j) = xs[j][i];
-        XT(j, i) = xs[j][i];
-      }
+      if(!isinf(grads[i]) && !isnan(grads[i])) W(i, i) = sqr(grads[i]);
     }
 
-    bool ok;
-    TVectorD newbeta = TDecompLU(XT*W*X).Solve(XT*W*b, ok);
-    if(!ok) return preds;
+    // TODO figure out what to do with zero gradient case!
+
+    // Conversions ensure element-wise operation
+    const Eigen::VectorXd b = bx + ((ys-preds).array() / grads.array()).matrix();
+
+    //    const Eigen::VectorXd newbeta = (xs.transpose()*W*xs).colPivHouseholderQr().solve(xs.transpose()*W*b);
+    const Eigen::VectorXd newbeta = (xs.transpose()*W*xs).ldlt().solve(xs.transpose()*W*b);
+    // TODO detect solution failure and just return existing preds
 
     // Normalize beta vector
-    double norm = newbeta.Norm2Sqr();
+    const double norm = newbeta.squaredNorm();
     if(isnan(norm) || isinf(norm)) return preds;/*{
       W.Print();
       b.Print();
@@ -227,21 +206,20 @@ TVectorD local_linear_update_basis(TVectorD& beta,
       abort();
       return preds; // bail out
       }*/
-    norm = sqrt(norm);
-    newbeta *= 1/norm;
-    beta = newbeta;
+
+    beta = newbeta/sqrt(norm);
   }
 
   abort(); // unreached
 }
 
-void plot_residuals(const std::vector<TVectorD>& preds,
-                    const TVectorD& ys)
+void plot_residuals(const Eigen::MatrixXd& preds,
+                    const Eigen::VectorXd& ys)
 {
-  const unsigned int Npt = ys.GetNrows();
-  const unsigned int Nvar = preds.size();
+  const unsigned int Npt = ys.size();
+  const unsigned int Nvar = preds.cols();
 
-  TVectorD p = total_prediction(preds);
+  Eigen::VectorXd p = total_prediction(preds);
   TGraph* g = new TGraph;
   for(unsigned int ipt = 0; ipt < Npt; ++ipt)
     g->SetPoint(ipt, p[ipt], ys[ipt]-p[ipt]);
@@ -250,12 +228,12 @@ void plot_residuals(const std::vector<TVectorD>& preds,
   g->Draw("ap");
 }
 
-void plot_preds(const std::vector<TVectorD>& xs,
-                const TVectorD& ys,
-                const std::vector<TVectorD>& preds)
+void plot_preds(const Eigen::MatrixXd& xs,
+                const Eigen::VectorXd& ys,
+                const Eigen::MatrixXd& preds)
 {
-  const unsigned int Npt = ys.GetNrows();
-  const unsigned int Nvar = xs.size();
+  const unsigned int Npt = ys.size();
+  const unsigned int Nvar = xs.cols();
 
   TCanvas* c = new TCanvas;
   unsigned int Nx = 0, Ny = 0;
@@ -270,11 +248,11 @@ void plot_preds(const std::vector<TVectorD>& xs,
       double p = 0;
       for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
         if(jvar == ivar) continue;
-        p += preds[jvar][ipt];
+        p += preds(ipt, jvar);
       }
 
-      gdat->SetPoint(gdat->GetN(), xs[ivar][ipt], ys[ipt]-p);
-      gpred->SetPoint(gpred->GetN(), xs[ivar][ipt], preds[ivar][ipt]);
+      gdat->SetPoint(gdat->GetN(), xs(ipt, ivar), ys[ipt]-p);
+      gpred->SetPoint(gpred->GetN(), xs(ipt, ivar), preds(ipt, ivar));
     }
 
     c->cd(ivar+1);
@@ -288,16 +266,16 @@ void plot_preds(const std::vector<TVectorD>& xs,
   c->cd(0);
 }
 
-std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
-                                     const TVectorD& ys)
+Eigen::MatrixXd additive_model(/*const*/ Eigen::MatrixXd& xs,
+                               const Eigen::VectorXd& ys)
 {
-  const unsigned int Npt = ys.GetNrows();
-  for(const TVectorD& x: xs) assert(x.GetNrows() == int(Npt));
-  const unsigned int Nvar = xs.size();
+  const unsigned int Npt = ys.size();
+  assert(xs.rows() == int(Npt));
+  const unsigned int Nvar = xs.cols();
 
   std::cout << "Solving model for " << Npt << " universes described by " << Nvar << " vars" << std::endl;
 
-  std::vector<TVectorD> preds(Nvar, TVectorD(Npt));
+  Eigen::MatrixXd preds = Eigen::MatrixXd::Zero(Npt, Nvar);
 
   double old_mse = calc_mse(preds, ys);
   std::cout << "MSE " << old_mse << " (" << sqrt(old_mse) << ")" << std::endl;
@@ -312,7 +290,7 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
   for(int pass = 0; pass < 100; ++pass){
     for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
       // Residual
-      const TVectorD dy = ys - (total_prediction(preds) - preds[ivar]);
+      const Eigen::VectorXd dy = ys - (total_prediction(preds) - preds[ivar]);
       preds[ivar] = local_linear(xs[ivar], dy);
     } // end for ivar
 
@@ -328,16 +306,15 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
   } // end for pass
   */
 
-  std::vector<TVectorD> betas(Nvar, TVectorD(Nvar));
   // Start with the same basis as the regular variables
-  for(unsigned int i = 0; i < Nvar; ++i) betas[i][i] = 1;
+  Eigen::MatrixXd betas = Eigen::MatrixXd::Identity(Nvar, Nvar);
 
   /* // random initialization
   for(unsigned int i = 0; i < Nvar; ++i){
     for(unsigned int j = 0; j < Nvar; ++j){
       betas[i][j] = gRandom->Gaus();
     }
-    betas[i] *= 1/sqrt(betas[i].Norm2Sqr()); // unit vector
+    betas[i] *= 1/sqrt(betas[i].squaredNorm()); // unit vector
   }
   */
 
@@ -345,11 +322,13 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
   while(true){
     for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
       // Residual
-      const TVectorD dy = ys - (total_prediction(preds) - preds[ivar]);
-      preds[ivar] = local_linear_update_basis(betas[ivar], xs, dy);
+      const Eigen::VectorXd dy = ys - (total_prediction(preds) - preds.col(ivar));
+      Eigen::VectorXd beta = betas.col(ivar);
+      preds.col(ivar) = local_linear_update_basis(beta, xs, dy);
+      betas.col(ivar) = beta; // TODO clunky, wanted to update in place
     } // end for ivar
 
-    plot_preds(project(betas, xs), ys, preds);
+    plot_preds(projectMulti(betas, xs), ys, preds);
     gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
     gPad->Print("preds_anim.pdf");
 
@@ -364,7 +343,7 @@ std::vector<TVectorD> additive_model(/*const*/ std::vector<TVectorD>& xs,
 
   gPad->Print("preds_anim.pdf]");
 
-  //  for(const TVectorD& beta: betas) beta.Print();
+  //  for(const Eigen::VectorXd& beta: betas) beta.Print();
 
   plot_residuals(preds, ys);
   gPad->Print("residuals.pdf");
@@ -409,14 +388,13 @@ void test_additive(bool reload = false)
   std::vector<Spectrum> multiverse;
   for(int i = 0; i < 100; ++i) multiverse.push_back(*LoadFrom<Spectrum>(fin->GetDirectory(TString::Format("multiverse_%d", i).Data())));
 
-  std::vector<TVectorD> xs;
+  Eigen::MatrixXd xs(100, systs.size());
   for(unsigned int i = 0; i < systs.size(); ++i){
     TVectorD* v = (TVectorD*)fin->Get(TString::Format("xs_%d", i).Data());
-    xs.emplace_back(100);
-    for(int j = 0; j < 100; ++j) xs.back()[j] = (*v)[j];
+    for(int j = 0; j < 100; ++j) xs(j, i) = (*v)[j];
   }
 
-  TVectorD ys(100);
+  Eigen::VectorXd ys(100);
 
   for(int i = 0; i < 100; ++i){
     // TODO leaks histogram
