@@ -19,6 +19,7 @@ namespace ana
     ///                  following these cuts.
     PredictionScaleComp(SpectrumLoaderBase& loader,
                         const HistAxis&     axis,
+                        SpillCut            spillcut,
                         Cut                 cut,
                         const std::vector<const SystComponentScale*>& systs,
                         const SystShifts&   shift = kNoShift,
@@ -27,6 +28,7 @@ namespace ana
     PredictionScaleComp(SpectrumLoaderBase& loader,
                         const HistAxis&     axis1,
                         const HistAxis&     axis2,
+                        SpillCut            spillcut,
                         Cut                 cut,
                         const std::vector<const SystComponentScale*>& systs,
                         const SystShifts&   shift = kNoShift,
@@ -38,6 +40,7 @@ namespace ana
                         SpectrumLoaderBase& loaderNuTau,
                         SpectrumLoaderBase& loaderIntrinsic,
                         const HistAxis&     axis,
+                        SpillCut            spillcut,
                         Cut                 cut,
                         const std::vector<const SystComponentScale*>& systs,
                         const SystShifts&   shift = kNoShift,

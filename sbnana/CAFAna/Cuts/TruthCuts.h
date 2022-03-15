@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/Cut.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
 namespace ana
 {
@@ -13,6 +13,8 @@ namespace ana
   /// In this case the selection function is simple enough that we can include
   /// it inline as a lambda function.
   extern const Cut kIsNC;
+
+  extern const Cut kIsCC;
 
   //----------------------------------------------------------------------
   /// Helper for defining true CC event cuts

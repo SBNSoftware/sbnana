@@ -8,14 +8,14 @@
 
 // #include "sbnana/CAFAna/Cuts/TruthCuts.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
 #include "sbnana/CAFAna/Analysis/Calcs.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Core/MultiVar.h"
 #include "OscLib/OscCalcSterile.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TCanvas.h"
 #include "TH1.h"
@@ -84,7 +84,7 @@ void event_numbers_finalstate(const std::string expt = "SBND")
   const Var kWeight = SIMPLEVAR(reco.weight);
 
   const Var kNumPiZeros(
-         [](const caf::SRProxy *sr)
+         [](const caf::SRSliceProxy *sr)
          {
           unsigned int nPis = 0;
           for(unsigned int part_idx = 0; part_idx < sr->truth[0].finalstate.size(); part_idx++){
@@ -94,7 +94,7 @@ void event_numbers_finalstate(const std::string expt = "SBND")
           });
 
   const Var kNumPiCharged(
-           [](const caf::SRProxy *sr)
+           [](const caf::SRSliceProxy *sr)
            {
             unsigned int nPis = 0;
             for(unsigned int part_idx = 0; part_idx < sr->truth[0].finalstate.size(); part_idx++){
@@ -104,7 +104,7 @@ void event_numbers_finalstate(const std::string expt = "SBND")
             });
 
   const Binning binsEnergy = Binning::Simple(30, 0, 3);
-  const HistAxis axEnergy("Rconstructed energy (GeV)", binsEnergy, kRecoE);
+  const HistAxis axEnergy("Reconstructed energy (GeV)", binsEnergy, kRecoE);
 
   const Var kCC = SIMPLEVAR(truth[0].neutrino.iscc);
   const Cut kIsCC = kCC > 0;

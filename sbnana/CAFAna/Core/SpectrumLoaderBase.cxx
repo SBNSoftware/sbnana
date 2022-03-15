@@ -8,7 +8,7 @@
 #include "sbnana/CAFAna/Core/Utilities.h"
 #include "sbnana/CAFAna/Core/WildcardSource.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "ifdh.h"
 
@@ -120,7 +120,7 @@ namespace ana
 
   //----------------------------------------------------------------------
   SpectrumLoaderBase::SpectrumLoaderBase(DataSource src)
-    : fSource(src), fGone(false), fPOT(0)
+    : fSource(src), fGone(false), fPOT(0), fPOTFromHist(0), fNGenEvt(0)
   {
   }
 
@@ -184,7 +184,7 @@ namespace ana
       // the project doesn't exist.  (suggested by Robert I. in
       // INC000000925362)
       try{
-        ifdh_util_ns::WebAPI webapi(i.findProject(str, Experiment()) +  "/status");
+        ifdh_util_ns::WebAPI webapi(i.findProject(str, SAMExperiment()) +  "/status");
         return new SAMProjectSource(str);
       }
       catch(ifdh_util_ns::WebAPIException &e){
@@ -288,6 +288,24 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddReweightableSpectrum(ReweightableSpectrum& spect,
+                                                   const Var& var,
+                                                   const SpillCut& spillcut,
+                                                   const SliceCut& slicecut,
+                                                   const SystShifts& shift,
+                                                   const Var& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fHistDefs[spillcut][shift][slicecut][wei][var].rwSpects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::
   RemoveReweightableSpectrum(ReweightableSpectrum* spect)
   {
@@ -308,23 +326,8 @@ namespace ana
 
     TH1* hPOT = (TH1*)f->Get("TotalPOT");
     assert(hPOT);
-    fPOT += hPOT->Integral(0, -1);
-    /*
-    TTree* trPot = new TTree();
-    if (f->GetListOfKeys()->Contains("sbnsubrun"))
-      trPot = (TTree*)f->Get("sbnsubrun");
-    assert(trPot);
+    fPOTFromHist  += hPOT->Integral(0, -1);
 
-    long n;
-    // TODO should be totgoodpot?
-    caf::Proxy<double> pot(0, trPot, "totpot", n, 0);
-
-    for(n = 0; n < trPot->GetEntries(); n++){
-      trPot->LoadTree(n);
-
-      fPOT += pot;
-    }
-    */
     return f;
   }
 

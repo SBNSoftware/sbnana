@@ -66,10 +66,11 @@ void load_cafana_libs()
     {
       "Minuit2",
       //      "StandardRecord",
-      "StandardRecordProxy",
+      "sbnanaobj_StandardRecordProxy",
       // "StandardRecord_dict",
       "OscLib",
       "CAFAnaCore",
+      "CAFAnaUnfold",
       "CAFAnaVars",
       "CAFAnaCuts",
       "SBNAnaVars",

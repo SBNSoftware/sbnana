@@ -13,7 +13,7 @@ namespace ana
   //--------------------------------------------------------------------------- 
   double FitDmSq32Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
-    const osc::OscCalcSterile* sterile = osc::DowncastToSterile(osc);
+    const osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
     double dm221 = sterile->GetDm(2);
     double dm231 = sterile->GetDm(3);
     return dm231 - dm221;
@@ -22,7 +22,7 @@ namespace ana
   //---------------------------------------------------------------------------                   
   void FitDmSq32Sterile::SetValue(osc::IOscCalcAdjustable* osc, double val) const
   {
-    osc::OscCalcSterile* sterile = osc::DowncastToSterile(osc);
+    osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
     double dm221 = sterile->GetDm(2);
     double dm231 = val + dm221;
     sterile->SetDm(3, dm231);
@@ -43,7 +43,7 @@ namespace ana
   //--------------------------------------------------------------------------- 
   double FitDmSq43Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
-    const osc::OscCalcSterile* sterile = osc::DowncastToSterile(osc);
+    const osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
     double dm241 = sterile->GetDm(4);
     double dm231 = sterile->GetDm(3);
     return dm241 - dm231;
@@ -52,7 +52,7 @@ namespace ana
   //---------------------------------------------------------------------------                   
   void FitDmSq43Sterile::SetValue(osc::IOscCalcAdjustable* osc, double val) const
   {
-    osc::OscCalcSterile* sterile = osc::DowncastToSterile(osc);
+    osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
     double dm231 = sterile->GetDm(3);
     double dm241 = val + dm231;
     sterile->SetDm(4, dm241);
@@ -61,7 +61,7 @@ namespace ana
   //----------------------------------------------------------------------
   double FitDelta13InPiUnitsSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
-    const osc::OscCalcSterile* sterile = osc::DowncastToSterile(osc);
+    const osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
     double ret = sterile->GetDelta(1, 3)/M_PI;
     while(ret < 0) ret += 2;
     while(ret > 2) ret -= 2;
@@ -77,7 +77,7 @@ namespace ana
   //----------------------------------------------------------------------
   double FitDelta14InPiUnitsSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
-    const osc::OscCalcSterile* sterile = osc::DowncastToSterile(osc);
+    const osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
     double ret = sterile->GetDelta(1, 4)/M_PI;
     while(ret < 0) ret += 2;
     while(ret > 2) ret -= 2;
@@ -93,7 +93,7 @@ namespace ana
   //----------------------------------------------------------------------
   double FitDelta24InPiUnitsSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
-    const osc::OscCalcSterile* sterile = osc::DowncastToSterile(osc);
+    const osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
     double ret = sterile->GetDelta(2, 4)/M_PI;
     while(ret < 0) ret += 2;
     while(ret > 2) ret -= 2;

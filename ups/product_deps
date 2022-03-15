@@ -1,9 +1,8 @@
 # This @product_deps@ file defines dependencies for this package.
 
-# The *parent* line must the first non-commented line and defines this product and version
-# The version should be of the form vxx_yy_zz (e.g. v01_02_03)
-parent sbnana v09_21_00
-defaultqual e19
+# The *parent* line must the first non-commented line and defines this product
+parent sbnana
+defaultqual e20
 
 # These optional lines define the installed directories where headers,
 # libraries, and executables will be found.
@@ -31,30 +30,32 @@ fcldir  product_dir
 fwdir   product_dir scripts
 
 # With "product  version" table below, we now define dependencies
+# The version should be of the form vxx_yy_zz (e.g. v01_02_03)
 # Add the dependent product and version
 
 product          version
-sbnanaobj        v09_16_06
+sbnanaobj        v09_17_12
 #SAM tools?
-ifdhc            v2_5_12
+ifdhc            v2_6_2
 # For CAFAna
-srproxy          v00.21
-osclib           v00.10
+osclib           v00.17
+# flux syst histograms etc
+sbndata		 v01_03
 
 # list products required ONLY for the build
 # any products here must NOT have qualifiers
-cetbuildtools v7_17_01 - only_for_build
+cetbuildtools v8_19_02 - only_for_build
+end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the dependencies.
 # Make the table by adding columns before "notes".
 
-qualifier     sbnanaobj  ifdhc     	  srproxy  osclib          notes
-e20:debug     e20:debug  e20:debug:p383b  py3      e20:debug:stanfree  -nq-
-e20:prof      e20:prof   e20:prof:p383b   py3      e20:prof:stanfree   -nq-
-e19:debug     e19:debug  e19:debug:p383b  py3      e19:debug:stanfree  -nq-
-e19:prof      e19:prof   e19:prof:p383b   py3      e19:prof:stanfree   -nq-
-c7:debug      c7:debug   c7:debug:p383b   py3      c7:debug:stanfree   -nq-
-c7:prof       c7:prof    c7:prof:p383b    py3      c7:prof:stanfree    -nq-
+qualifier     sbnanaobj	      ifdhc   	      osclib                  sbndata	notes
+e20:debug     e20:debug	      e20:debug:p392  e20:debug:n309:stanfree  -nq-	-nq-
+e20:prof      e20:prof	      e20:prof:p392   e20:prof:n309:stanfree   -nq-	-nq-
+c7:debug      c7:debug	      c7:debug:p392   c7:debug:n309:stanfree   -nq-	-nq-
+c7:prof       c7:prof	      c7:prof:p392    c7:prof:n309:stanfree    -nq-	-nq-
+end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
 

@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana
 {
@@ -15,7 +15,12 @@ namespace ana
   /// it inline as a lambda function.
   const Cut kIsNC([](const caf::SRSliceProxy* slc)
                   {
-                    return !slc->truth.iscc;
+                    return kHasMatchedNu(slc) && slc->truth.isnc;
+                  });
+
+  const Cut kIsCC([](const caf::SRSliceProxy* slc)
+                  {
+                    return kHasMatchedNu(slc) && slc->truth.iscc;
                   });
 
   const Cut kIsAntiNu([](const caf::SRSliceProxy* slc)

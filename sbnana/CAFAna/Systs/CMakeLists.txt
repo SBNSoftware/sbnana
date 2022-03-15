@@ -3,7 +3,8 @@ include_directories(..)
 
 cet_make(LIBRARY_NAME CAFAnaSysts
          LIBRARIES CAFAnaCore
-                   StandardRecordProxy
+                   CAFAnaCuts
+                   sbnanaobj_StandardRecordProxy
         )
 
 install_headers()

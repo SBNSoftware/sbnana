@@ -8,7 +8,7 @@
 
 #include "sbnana/CAFAna/Core/GenieWeightList.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <cassert>
 #include <iostream>
@@ -17,7 +17,6 @@
 #include "TFile.h"
 #include "TH2.h"
 #include "TTree.h"
-#include "TTreeFormula.h"
 
 namespace ana
 {
@@ -102,14 +101,12 @@ namespace ana
       if(Nfiles > 1 && prog) prog->SetProgress((fileIdx+1.)/Nfiles);
     } // end for fileIdx
 
-    StoreExposures();
-
     if(prog){
       prog->Done();
       delete prog;
     }
 
-    ReportExposures();
+    StoreExposures(); // also triggers the POT printout
 
     fHistDefs.RemoveLoader(this);
     fHistDefs.Clear();
@@ -140,6 +137,12 @@ namespace ana
       assert(tr);
     }
 
+    // We try to access this field for every record. It was only added to the
+    // files in late 2021, and we don't want to render all earlier files
+    // unusable at a stroke. This logic can safely be removed once all extant
+    // files have such a field (estimate mid-2022?)
+    const bool has_husk = tr->GetLeaf("rec.hdr.husk");
+
     const caf::CAFType type = caf::GetCAFType(dir, tr);
 
     long n;
@@ -152,6 +155,9 @@ namespace ana
 
     for(n = 0; n < Nentries; ++n){
       if(type != caf::kFlatMultiTree) tr->LoadTree(n); // for all single-tree modes
+
+      // If there is no husk field there is no concept of husk events
+      if(!has_husk) sr.hdr.husk = false;
 
       HandleRecord(&sr);
 
@@ -190,6 +196,18 @@ namespace ana
   //----------------------------------------------------------------------
   void SpectrumLoader::HandleRecord(caf::SRSpillProxy* sr)
   {
+    if(sr->hdr.first_in_subrun){
+      fPOT += sr->hdr.pot;
+      // TODO think about if this should be gated behind first_in_file. At the
+      // moment I think these will be synonymous. And despite the comment on
+      // hdr.pot, I think it may be file-based in practice too.
+      fNGenEvt += sr->hdr.ngenevt;
+    }
+
+    // This record was only kept as a receptacle for exposure information. It
+    // shouldn't be included in any selected spectra.
+    if(sr->hdr.husk) return;
+
     // Do the spill-level spectra first. Keep this very simple because we
     // intend to change it.
     for(auto& spillcutdef: fSpillHistDefs){
@@ -312,32 +330,28 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void SpectrumLoader::ReportExposures()
-  {
-    // The POT member variables we use here were filled as part of
-    // SpectrumLoaderBase::GetNextFile() as we looped through the input files.
-
-    // Let's just assume no-one is using the Cut::POT() function yet, so this
-    // printout remains relevant...
-
-    std::cout << fPOT << " POT" << std::endl;
-  }
-
-  //----------------------------------------------------------------------
-  void SpectrumLoader::AccumulateExposures(const caf::SRSpill* spill)
-  {
-  }
-
-  //----------------------------------------------------------------------
   void SpectrumLoader::StoreExposures()
   {
+    if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.001){
+      std::cout << fPOT << " POT from hdr differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
+      abort();
+    }
+
+    std::cout << fPOT << " POT over " << fNGenEvt << " readouts" << std::endl;
+
     for(auto& shiftdef: fHistDefs){
       for(auto& spillcutdef: shiftdef.second){
         for(auto& cutdef: spillcutdef.second){
           for(auto& weidef: cutdef.second){
             for(auto& vardef: weidef.second){
-              for(Spectrum* s: vardef.second.spects) s->fPOT += fPOT;
-              for(ReweightableSpectrum* rw: vardef.second.rwSpects) rw->fPOT += fPOT;
+              for(Spectrum* s: vardef.second.spects){
+                s->fPOT += fPOT;
+                s->fLivetime += fNGenEvt;
+              }
+              for(ReweightableSpectrum* rw: vardef.second.rwSpects){
+                rw->fPOT += fPOT;
+                rw->fLivetime += fNGenEvt;
+              }
             }
           }
         }
@@ -348,7 +362,10 @@ namespace ana
     for(auto& spillcutdef: fSpillHistDefs){
       for(auto& spillweidef: spillcutdef.second){
         for(auto spillvardef: spillweidef.second){
-          for(Spectrum* s: spillvardef.second.spects) s->fPOT += fPOT;
+          for(Spectrum* s: spillvardef.second.spects){
+            s->fPOT += fPOT;
+            s->fLivetime += fNGenEvt;
+          }
         }
       }
     }

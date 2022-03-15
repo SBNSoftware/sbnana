@@ -1,7 +1,7 @@
 #include "sbnana/SBNAna/Cuts/NueCuts.h"
 #include "sbnana/SBNAna/Vars/NueVars.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "sbnana/SBNAna/Cuts/VolumeDefinitions.h"
 
@@ -29,7 +29,7 @@ namespace ana{
       if ( largestShwIdx==-1 )
         return false;
 
-      return (slc->reco.shw[largestShwIdx].bestplane_energy > 200. &&
+      return (slc->reco.shw[largestShwIdx].bestplane_energy > 0.2f &&
           slc->reco.shw[largestShwIdx].bestplane_dEdx < 3 &&
           slc->reco.shw[largestShwIdx].conversion_gap < 3 );
   }
@@ -42,7 +42,7 @@ namespace ana{
       if ( largestShwIdx==-1 )
         return false;
 
-      return (slc->reco.shw[largestShwIdx].bestplane_energy > 200.f );
+      return (slc->reco.shw[largestShwIdx].bestplane_energy > 0.2f );
     }
     );
 
@@ -125,6 +125,35 @@ namespace ana{
     }
     );
 
+  const Cut kShowerRazzleElectronCut = kRecoShowerRazzlePID == 11;
+  const Cut kShowerRazzleElectronScoreCut = kRecoShowerRazzleElectronScore > 0.8;
+
+  const Cut kNueLongestTrackDazzleMuonCut = kLongestTrackDazzlePID != 13;
+  const Cut kNueLongestTrackDazzleMuonScoreCut = kLongestTrackDazzleMuonScore < 0.8;
+
+  const Cut kNueAllTrackDazzleMuonCut(
+    [](const caf::SRSliceProxy* slc)
+    {
+      for (auto const& trk : slc->reco.trk)
+      {
+        if (trk.dazzle.pdg==13)
+          return false;
+      }
+    return true;
+    }
+    );
+
+  const Cut kNueAllTrackDazzleMuonScoreCut(
+    [](const caf::SRSliceProxy* slc)
+    {
+      for (auto const& trk : slc->reco.trk)
+      {
+        if (trk.dazzle.muonScore > 0.8)
+          return false;
+      }
+    return true;
+    }
+    );
 
   // // Cut currently not working as it wants a caf::SRProxy and not caf::SRSliceProxy
   // // Workaround is definiting it with the explicit branch i.e. slc->reco.shw[0].start.z instead of kRecoShower_StartZ

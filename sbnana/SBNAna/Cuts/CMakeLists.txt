@@ -4,7 +4,7 @@ include_directories(..)
 cet_make(LIBRARY_NAME SBNAnaCuts
          LIBRARIES CAFAnaCore
                    SBNAnaVars
-                   StandardRecordProxy
+                   sbnanaobj_StandardRecordProxy
         )
 
 install_headers()

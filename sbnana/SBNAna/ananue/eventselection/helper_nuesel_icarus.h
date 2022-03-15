@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "SBNAna/Vars/Binnings.h"
 #include "SBNAna/Vars/NueVars.h"
@@ -75,7 +75,7 @@ struct SelDefSpill
 };
 
 // Define all the variables and cuts first, including binnings
-const Binning kEnergyBinning    = Binning::Simple(40,0.,3000.); // to define
+const Binning kEnergyBinning    = Binning::Simple(40,0.,3.); // to define
 const Binning kDedxBinning      = Binning::Simple(40,0.,10); // to define
 const Binning kGapBinning       = Binning::Simple(40,0.,10);
 const Binning kDensityBinning   = Binning::Simple(50,0.,10);

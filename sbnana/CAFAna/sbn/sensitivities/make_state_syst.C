@@ -5,13 +5,13 @@
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
 #include "sbnana/CAFAna/Analysis/Calcs.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/CAFAna/Core/Loaders.h"
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
-#include "sbnana/CAFAna/Systs/SBNFluxSysts.h"
+#include "sbnana/CAFAna/Systs/BoosterFluxSysts.h"
 
 #include "OscLib/IOscCalc.h"
 
@@ -92,10 +92,10 @@ void make_state_syst(const std::string anatype = numuStr)
   const Binning binsEnergy = Binning::Custom(binEdges);
   const HistAxis axEnergy("Reconstructed energy (GeV)", binsEnergy, kRecoE);
 
-  NoExtrapGenerator nom_gen(axEnergy, kOneTrue, kWeight);
+  NoExtrapPredictionGenerator nom_gen(axEnergy, kOneTrue, kWeight);
 
   std::vector<const ISyst*> systs = GetSBNWeightSysts();
-  for(const ISyst* s: GetSBNFluxHadronSysts(30)) systs.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts(30)) systs.push_back(s);
 
   osc::NoOscillations calc;
 

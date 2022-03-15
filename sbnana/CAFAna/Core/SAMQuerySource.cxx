@@ -29,12 +29,6 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  bool SAMQuerySource::RunningOnGrid() const
-  {
-    return getenv("_CONDOR_SCRATCH_DIR") != 0;
-  }
-
-  //----------------------------------------------------------------------
   std::string SAMQuerySource::EnsureDataset(const std::string& query) const
   {
     const char* user = getenv("GRID_USER");
@@ -53,8 +47,13 @@ namespace ana
 
     // I would be much much happier to do this in proper code, but I'm not sure
     // how, there's no samweb C++ API?
-    system(TString::Format("samweb list-definitions --defname %s | grep %s || samweb create-definition %s %s",
-                           dset.Data(), dset.Data(), dset.Data(), query.c_str()).Data());
+    system(TString::Format("samweb -e %s list-definitions --defname %s | grep %s || samweb -e %s create-definition %s %s",
+                           SAMExperiment().c_str(),
+                           dset.Data(),
+                           dset.Data(),
+                           SAMExperiment().c_str(),
+                           dset.Data(),
+                           query.c_str()).Data());
 
     return dset.Data();
   }
@@ -89,18 +88,25 @@ namespace ana
     // between the jobs, because trying to create an exact duplicate of an
     // existing definition counts as success.
     std::cout << "Checking lock " << snaplock << std::endl;
-    if(system(TString::Format("samweb create-definition %s nova.special %s",
-                              snaplock.c_str(), process).Data()) == 0){
+    if(system(TString::Format("samweb -e %s create-definition %s file_name %s",
+                              SAMExperiment().c_str(),
+                              snaplock.c_str(),
+                              process).Data()) == 0){
       // No one took the lock, it's up to us. Make the actual snapshot
       std::cout << "Snapshotting " << def << " as " << snap << std::endl;
-      system(TString::Format("samweb take-snapshot %s | xargs samweb create-definition %s snapshot_id",
-                             def.c_str(), snap.c_str()).Data());
+      system(TString::Format("samweb -e %s take-snapshot %s | xargs samweb -e %s create-definition %s snapshot_id",
+                             SAMExperiment().c_str(),
+                             def.c_str(),
+                             SAMExperiment().c_str(),
+                             snap.c_str()).Data());
     }
     else{
       // Lock already exists, just wait for the real snapshot to be created
       double period = 1;
-      while(system(TString::Format("samweb list-definitions --defname %s | grep %s",
-                                   snap.c_str(), snap.c_str()).Data()) != 0){
+      while(system(TString::Format("samweb -e %s list-definitions --defname %s | grep %s",
+                                   SAMExperiment().c_str(),
+                                   snap.c_str(),
+                                   snap.c_str()).Data()) != 0){
         sleep(int(period));
         period *= 1.5;
         if(period > 60*30){
@@ -112,6 +118,18 @@ namespace ana
     std::cout << "Will use " << snap << std::endl;
 
     return snap;
+  }
+
+  //----------------------------------------------------------------------
+  std::string SAMQuerySource::IFDHBaseURI() const
+  {
+    // This is the same logic as implemented in the default ifdh() constructor,
+    // but using $SAM_EXPERIMENT in place of $EXPERIMENT
+
+    // Allow user to override to arbitrary value
+    if(getenv("IFDH_BASE_URI")) return getenv("IFDH_BASE_URI");
+
+    return ifdh::_default_base_uri + SAMExperiment() + "/api";
   }
 
   //----------------------------------------------------------------------
@@ -151,7 +169,7 @@ namespace ana
 
     std::vector<std::string> files;
 
-    ifdh i;
+    ifdh i(IFDHBaseURI());
     i.set_debug("0"); // shut up
     try{
       files = i.translateConstraints(query.Data());
@@ -187,7 +205,7 @@ namespace ana
 
     Progress prog(TString::Format("Looking up locations of %ld files using SAM", fnames.size()).Data());
 
-    ifdh i;
+    ifdh i(IFDHBaseURI());
     i.set_debug("0"); // shut up
 
     // locateFiles() saves the roundtrip time of talking to the server about

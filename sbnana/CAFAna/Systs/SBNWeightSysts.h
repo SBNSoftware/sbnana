@@ -4,7 +4,7 @@
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
 #include <unordered_map>
 #include <vector>
@@ -23,6 +23,8 @@ namespace ana
     std::vector<std::string> fNames;
     int fUnivIdx;
     mutable std::vector<unsigned int> fSystIdxs;
+    mutable std::vector<int> fUnivOffsets;
+    mutable std::vector<Cut> fUnivCuts;
   };
 
   Var GetUniverseWeight(const std::string& syst, int univIdx)
@@ -44,12 +46,16 @@ namespace ana
   class SBNWeightSyst: public ISyst
   {
   public:
-    SBNWeightSyst(const std::string& name, const SliceCut& cut = kNoCut);
+    SBNWeightSyst(const std::string& systName,
+                  const std::string& knobName = "", // if it differs
+                  const SliceCut& cut = kNoCut);
 
     void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
 
   protected:
     mutable int fIdx;
+
+    std::string fKnobName;
 
     SliceCut fCut;
 
@@ -64,7 +70,8 @@ namespace ana
     Univs GetUnivs(double x) const;
   };
 
-  //  const std::vector<const ISyst*>& GetSBNGenieWeightSysts();
-  //  const std::vector<const ISyst*>& GetSBNFluxWeightSysts();
+  const std::vector<const ISyst*>& GetSBNGenieWeightSysts();
+
+  //  const std::vector<const ISyst*>& GetSBNBoosterWeightSysts();
   //  const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
 }
