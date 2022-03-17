@@ -64,21 +64,23 @@ const std::vector<std::string> systs = {
 // Returns new predictions
 Eigen::VectorXd local_linear(const Eigen::VectorXd& xs,
                              const Eigen::VectorXd& ys,
+                             const Eigen::VectorXd& xs_test,
                              Eigen::VectorXd* grads = 0)
 {
   assert(xs.size() == ys.size());
   const unsigned int Npts = xs.size();
+  const unsigned int Ntest = xs_test.size();
 
   if(grads){
-    grads->resize(Npts);
+    grads->resize(Ntest);
     grads->setZero();
   }
 
-  Eigen::VectorXd ret = Eigen::VectorXd::Zero(Npts);
+  Eigen::VectorXd ret = Eigen::VectorXd::Zero(Ntest);
 
   const double window = 1; // in sigmas
 
-  for(unsigned int i = 0; i < Npts; ++i){
+  for(unsigned int i = 0; i < Ntest; ++i){
     const double x0 = xs[i];
 
     // Linear fit variables
@@ -152,7 +154,9 @@ Eigen::MatrixXd projectMulti(const Eigen::MatrixXd& betas,
 // Updates beta, returns new predictions
 Eigen::VectorXd local_linear_update_basis(Eigen::VectorXd& beta,
                                           const Eigen::MatrixXd& xs,
-                                          const Eigen::VectorXd& ys)
+                                          const Eigen::VectorXd& ys,
+                                          const Eigen::MatrixXd& xs_test,
+                                          Eigen::VectorXd& preds_test)
 {
   const unsigned int Npt = ys.size();
   const unsigned int Nvar = xs.cols();
@@ -166,7 +170,10 @@ Eigen::VectorXd local_linear_update_basis(Eigen::VectorXd& beta,
   while(true){
     const Eigen::VectorXd bx = projectSingle(beta, xs);
     Eigen::VectorXd grads;
-    const Eigen::VectorXd preds = local_linear(bx, ys, &grads);
+    const Eigen::VectorXd preds = local_linear(bx, ys, bx, &grads);
+
+    const Eigen::VectorXd bx_test = projectSingle(beta, xs_test);
+    preds_test = local_linear(bx, ys, bx_test, 0);
 
     const double mse = (preds-ys).squaredNorm() / Npt;
     if(mse > old_mse){
@@ -230,9 +237,13 @@ void plot_residuals(const Eigen::MatrixXd& preds,
 
 void plot_preds(const Eigen::MatrixXd& xs,
                 const Eigen::VectorXd& ys,
-                const Eigen::MatrixXd& preds)
+                const Eigen::MatrixXd& preds,
+                const Eigen::MatrixXd& xs_test,
+                const Eigen::VectorXd& ys_test,
+                const Eigen::MatrixXd& preds_test)
 {
   const unsigned int Npt = ys.size();
+  const unsigned int Ntest = ys_test.size();
   const unsigned int Nvar = xs.cols();
 
   TCanvas* c = new TCanvas;
@@ -242,6 +253,7 @@ void plot_preds(const Eigen::MatrixXd& xs,
 
   for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
     TGraph* gdat = new TGraph;
+    TGraph* gdat_test = new TGraph;
     TGraph* gpred = new TGraph;
 
     for(unsigned int ipt = 0; ipt < Npt; ++ipt){
@@ -255,32 +267,49 @@ void plot_preds(const Eigen::MatrixXd& xs,
       gpred->SetPoint(gpred->GetN(), xs(ipt, ivar), preds(ipt, ivar));
     }
 
+    for(unsigned int itest = 0; itest < Ntest; ++itest){
+      double p = 0;
+      for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
+        if(jvar == ivar) continue;
+        p += preds_test(itest, jvar);
+      }
+
+      gdat_test->SetPoint(gdat_test->GetN(), xs_test(itest, ivar), ys_test[itest]-p);
+    }
+
     c->cd(ivar+1);
     gdat->SetMarkerStyle(kFullDotMedium);
     gdat->Draw("ap");
     gpred->Sort();
     gpred->SetLineColor(kRed);
     gpred->Draw("l same");
+    gdat_test->SetMarkerStyle(kFullDotMedium);
+    gdat_test->SetMarkerColor(kBlue);
+    gdat_test->Draw("p same");
   }
 
   c->cd(0);
 }
 
-Eigen::MatrixXd additive_model(/*const*/ Eigen::MatrixXd& xs,
-                               const Eigen::VectorXd& ys)
+Eigen::MatrixXd additive_model(const Eigen::MatrixXd& xs,
+                               const Eigen::VectorXd& ys,
+                               const Eigen::MatrixXd& xs_test,
+                               const Eigen::VectorXd& ys_test)
 {
   const unsigned int Npt = ys.size();
+  const unsigned int Ntest = ys_test.size();
   assert(xs.rows() == int(Npt));
   const unsigned int Nvar = xs.cols();
 
   std::cout << "Solving model for " << Npt << " universes described by " << Nvar << " vars" << std::endl;
 
   Eigen::MatrixXd preds = Eigen::MatrixXd::Zero(Npt, Nvar);
+  Eigen::MatrixXd preds_test = Eigen::MatrixXd::Zero(Ntest, Nvar);
 
   double old_mse = calc_mse(preds, ys);
   std::cout << "MSE " << old_mse << " (" << sqrt(old_mse) << ")" << std::endl;
 
-  plot_preds(xs, ys, preds);
+  plot_preds(xs, ys, preds, xs_test, ys_test, preds_test);
 
   gPad->Print("preds_anim.pdf[");
 
@@ -324,11 +353,14 @@ Eigen::MatrixXd additive_model(/*const*/ Eigen::MatrixXd& xs,
       // Residual
       const Eigen::VectorXd dy = ys - (total_prediction(preds) - preds.col(ivar));
       Eigen::VectorXd beta = betas.col(ivar);
-      preds.col(ivar) = local_linear_update_basis(beta, xs, dy);
+      Eigen::VectorXd preds_test_col = preds_test.col(ivar);
+      preds.col(ivar) = local_linear_update_basis(beta, xs, dy, xs_test, preds_test_col);
       betas.col(ivar) = beta; // TODO clunky, wanted to update in place
+      preds_test.col(ivar) = preds_test_col;
     } // end for ivar
 
-    plot_preds(projectMulti(betas, xs), ys, preds);
+    plot_preds(projectMulti(betas, xs), ys, preds,
+               projectMulti(betas, xs_test), ys_test, preds_test);
     gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
     gPad->Print("preds_anim.pdf");
 
@@ -388,13 +420,21 @@ void test_additive(bool reload = false)
   std::vector<Spectrum> multiverse;
   for(int i = 0; i < 100; ++i) multiverse.push_back(*LoadFrom<Spectrum>(fin->GetDirectory(TString::Format("multiverse_%d", i).Data())));
 
-  Eigen::MatrixXd xs(100, systs.size());
+  Eigen::MatrixXd xs(90, systs.size());
+  Eigen::MatrixXd xs_test(10, systs.size());
+
   for(unsigned int i = 0; i < systs.size(); ++i){
     TVectorD* v = (TVectorD*)fin->Get(TString::Format("xs_%d", i).Data());
-    for(int j = 0; j < 100; ++j) xs(j, i) = (*v)[j];
+    for(int j = 0; j < 100; ++j){
+      if(j < 90)
+        xs(j, i) = (*v)[j];
+      else
+        xs_test(j-90, i) = (*v)[j];
+    }
   }
 
-  Eigen::VectorXd ys(100);
+  Eigen::VectorXd ys(90);
+  Eigen::VectorXd ys_test(10);
 
   for(int i = 0; i < 100; ++i){
     // TODO leaks histogram
@@ -422,7 +462,10 @@ void test_additive(bool reload = false)
     }
     */
 
-    ys[i] = log(y);
+    if(i < 90)
+      ys[i] = log(y);
+    else
+      ys_test[i-90] = log(y);
   }
 
   /*
@@ -434,5 +477,5 @@ void test_additive(bool reload = false)
   gPad->Print("multiverse.pdf");
   */
 
-  additive_model(xs, ys);
+  additive_model(xs, ys, xs_test, ys_test);
 }
