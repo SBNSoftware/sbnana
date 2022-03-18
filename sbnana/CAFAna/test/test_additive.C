@@ -25,6 +25,8 @@ template<class T> T cube(T x){return x*x*x;}
 
 const double pot = 6e20;
 
+const int Ndim = 2; // dimensions in the model
+
 const std::vector<std::string> systs = {
   "DISAth",
   "DISBth",
@@ -229,7 +231,6 @@ void plot_residuals(const Eigen::MatrixXd& preds,
                     const Eigen::VectorXd& ys)
 {
   const unsigned int Npt = ys.size();
-  const unsigned int Nvar = preds.cols();
 
   Eigen::VectorXd p = total_prediction(preds);
   TGraph* g = new TGraph;
@@ -253,38 +254,38 @@ void plot_preds(const Eigen::MatrixXd& xs,
 
   TCanvas* c = new TCanvas;
   unsigned int Nx = 0, Ny = 0;
-  while(Nx*Ny < Nvar) if(Nx > Ny) ++Ny; else ++Nx;
+  while(Nx*Ny < Ndim) if(Nx > Ny) ++Ny; else ++Nx;
   c->Divide(Nx, Ny);
 
-  for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
+  for(unsigned int idim = 0; idim < Ndim; ++idim){
     TGraph* gdat = new TGraph;
     TGraph* gdat_test = new TGraph;
     TGraph* gpred = new TGraph;
 
     for(unsigned int ipt = 0; ipt < Npt; ++ipt){
       double p = 0;
-      for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
-        if(jvar == ivar) continue;
-        p += preds(ipt, jvar);
+      for(unsigned int jdim = 0; jdim < Ndim; ++jdim){
+        if(jdim == idim) continue;
+        p += preds(ipt, jdim);
       }
 
-      gdat->SetPoint(gdat->GetN(), xs(ipt, ivar), ys[ipt]-p);
-      gpred->SetPoint(gpred->GetN(), xs(ipt, ivar), preds(ipt, ivar));
+      gdat->SetPoint(gdat->GetN(), xs(ipt, idim), ys[ipt]-p);
+      gpred->SetPoint(gpred->GetN(), xs(ipt, idim), preds(ipt, idim));
     }
 
     for(unsigned int itest = 0; itest < Ntest; ++itest){
       double p = 0;
-      for(unsigned int jvar = 0; jvar < Nvar; ++jvar){
-        if(jvar == ivar) continue;
-        p += preds_test(itest, jvar);
+      for(unsigned int jdim = 0; jdim < Ndim; ++jdim){
+        if(jdim == idim) continue;
+        p += preds_test(itest, jdim);
       }
 
-      gdat_test->SetPoint(gdat_test->GetN(), xs_test(itest, ivar), ys_test[itest]-p);
+      gdat_test->SetPoint(gdat_test->GetN(), xs_test(itest, idim), ys_test[itest]-p);
       // Cross-check not using crazy predictions
-      gpred->SetPoint(gpred->GetN(), xs_test(itest, ivar), preds_test(itest, ivar));
+      gpred->SetPoint(gpred->GetN(), xs_test(itest, idim), preds_test(itest, idim));
     }
 
-    c->cd(ivar+1);
+    c->cd(idim+1);
     gdat->SetMarkerStyle(kFullDotMedium);
     gdat->Draw("ap");
     gpred->Sort();
@@ -310,8 +311,8 @@ Eigen::MatrixXd additive_model(const Eigen::MatrixXd& xs,
 
   std::cout << "Solving model for " << Npt << " universes described by " << Nvar << " vars" << std::endl;
 
-  Eigen::MatrixXd preds = Eigen::MatrixXd::Zero(Npt, Nvar);
-  Eigen::MatrixXd preds_test = Eigen::MatrixXd::Zero(Ntest, Nvar);
+  Eigen::MatrixXd preds = Eigen::MatrixXd::Zero(Npt, Ndim);
+  Eigen::MatrixXd preds_test = Eigen::MatrixXd::Zero(Ntest, Ndim);
 
   double old_mse = calc_mse(preds, ys);
   std::cout << "MSE " << old_mse << " (" << sqrt(old_mse) << ")" << std::endl;
@@ -343,7 +344,7 @@ Eigen::MatrixXd additive_model(const Eigen::MatrixXd& xs,
   */
 
   // Start with the same basis as the regular variables
-  Eigen::MatrixXd betas = Eigen::MatrixXd::Identity(Nvar, Nvar);
+  Eigen::MatrixXd betas = Eigen::MatrixXd::Identity(Nvar, Ndim);
 
   /* // random initialization
   for(unsigned int i = 0; i < Nvar; ++i){
@@ -357,14 +358,14 @@ Eigen::MatrixXd additive_model(const Eigen::MatrixXd& xs,
   int pass = 0;
   //  while(true){
   for(int k = 0; k < 10000; ++k){
-    for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
+    for(unsigned int idim = 0; idim < Ndim; ++idim){
       // Residual
-      const Eigen::VectorXd dy = ys - (total_prediction(preds) - preds.col(ivar));
-      Eigen::VectorXd beta = betas.col(ivar);
-      Eigen::VectorXd preds_test_col = preds_test.col(ivar);
-      preds.col(ivar) = local_linear_update_basis(beta, xs, dy, xs_test, preds_test_col);
-      betas.col(ivar) = beta; // TODO clunky, wanted to update in place
-      preds_test.col(ivar) = preds_test_col;
+      const Eigen::VectorXd dy = ys - (total_prediction(preds) - preds.col(idim));
+      Eigen::VectorXd beta = betas.col(idim);
+      Eigen::VectorXd preds_test_col = preds_test.col(idim);
+      preds.col(idim) = local_linear_update_basis(beta, xs, dy, xs_test, preds_test_col);
+      betas.col(idim) = beta; // TODO clunky, wanted to update in place
+      preds_test.col(idim) = preds_test_col;
     } // end for ivar
 
     if(k <= 100 || (k <= 1000 && k%10 == 9) || k%100 == 99){
