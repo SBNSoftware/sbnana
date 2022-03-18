@@ -78,10 +78,10 @@ Eigen::VectorXd local_linear(const Eigen::VectorXd& xs,
 
   Eigen::VectorXd ret = Eigen::VectorXd::Zero(Ntest);
 
-  const double window = 1; // in sigmas
+  const double window = 2;//1; // in sigmas
 
   for(unsigned int i = 0; i < Ntest; ++i){
-    const double x0 = xs[i];
+    const double x0 = xs_test[i];
 
     // Linear fit variables
     double Swx  = 0;
@@ -111,7 +111,7 @@ Eigen::VectorXd local_linear(const Eigen::VectorXd& xs,
       //      std::cout << i << std::endl;
       //      std::cout << "D IS ZERO!!!" << std::endl;
       // happens when there is a big gap. Just set the fit to the point itself
-      ret[i] = ys[i];
+      ret[i] = ys[i]; // TODO not right for test case
       if(grads) (*grads)[i] = 0; // TODO what should we do?
       continue;
     }
@@ -160,15 +160,18 @@ Eigen::VectorXd local_linear_update_basis(Eigen::VectorXd& beta,
 {
   const unsigned int Npt = ys.size();
   const unsigned int Nvar = xs.cols();
+  const unsigned int Ntest = xs_test.cols();
 
   double old_mse = std::numeric_limits<double>::infinity();
 
   Eigen::VectorXd oldpreds = Eigen::VectorXd::Zero(Npt);
+  Eigen::VectorXd oldpreds_test = Eigen::VectorXd::Zero(Ntest);
   Eigen::VectorXd oldbeta = Eigen::VectorXd::Zero(beta.size());
 
   // try and learn a better beta
   while(true){
     const Eigen::VectorXd bx = projectSingle(beta, xs);
+
     Eigen::VectorXd grads;
     const Eigen::VectorXd preds = local_linear(bx, ys, bx, &grads);
 
@@ -179,11 +182,13 @@ Eigen::VectorXd local_linear_update_basis(Eigen::VectorXd& beta,
     if(mse > old_mse){
       //      std::cout << mse << " " << old_mse << " bail after " << pass << std::endl;
       beta = oldbeta;
+      preds_test = oldpreds_test;
       return oldpreds;
     }
     old_mse = mse;
     oldbeta = beta;
     oldpreds = preds;
+    oldpreds_test = preds_test;
 
     // This is taken from
     // https://en.wikipedia.org/wiki/Projection_pursuit_regression#Model_estimation
@@ -275,6 +280,8 @@ void plot_preds(const Eigen::MatrixXd& xs,
       }
 
       gdat_test->SetPoint(gdat_test->GetN(), xs_test(itest, ivar), ys_test[itest]-p);
+      // Cross-check not using crazy predictions
+      gpred->SetPoint(gpred->GetN(), xs_test(itest, ivar), preds_test(itest, ivar));
     }
 
     c->cd(ivar+1);
@@ -348,7 +355,8 @@ Eigen::MatrixXd additive_model(const Eigen::MatrixXd& xs,
   */
 
   int pass = 0;
-  while(true){
+  //  while(true){
+  for(int k = 0; k < 10000; ++k){
     for(unsigned int ivar = 0; ivar < Nvar; ++ivar){
       // Residual
       const Eigen::VectorXd dy = ys - (total_prediction(preds) - preds.col(ivar));
@@ -359,15 +367,22 @@ Eigen::MatrixXd additive_model(const Eigen::MatrixXd& xs,
       preds_test.col(ivar) = preds_test_col;
     } // end for ivar
 
-    plot_preds(projectMulti(betas, xs), ys, preds,
-               projectMulti(betas, xs_test), ys_test, preds_test);
-    gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
-    gPad->Print("preds_anim.pdf");
+    if(k <= 100 || (k <= 1000 && k%10 == 9) || k%100 == 99){
+      plot_preds(projectMulti(betas, xs), ys, preds,
+                 projectMulti(betas, xs_test), ys_test, preds_test);
+      gPad->Print(TString::Format("preds_%d.pdf", pass).Data());
+      gPad->Print("preds_anim.pdf");
+    }
 
     const double mse = calc_mse(preds, ys);
-    std::cout << pass << ": MSE " << mse << " (" << sqrt(mse) << ")" << std::endl;
+    std::cout << pass << ": MSE " << mse << " (" << sqrt(mse) << ")"
+              << " test: " << sqrt(calc_mse(preds_test, ys_test))
+              << std::endl;
 
-    if(mse >= old_mse) break; // convergence
+    //    if(mse >= old_mse) break; // convergence
+    if(mse >= old_mse){
+      std::cout << "WOULD HAVE BROKEN HERE" << std::endl;
+    }
     old_mse = mse;
 
     ++pass;
@@ -428,7 +443,7 @@ void test_additive(bool reload = false)
     for(int j = 0; j < 100; ++j){
       if(j < 90)
         xs(j, i) = (*v)[j];
-      else
+      if(j >= 90)
         xs_test(j-90, i) = (*v)[j];
     }
   }
@@ -464,7 +479,7 @@ void test_additive(bool reload = false)
 
     if(i < 90)
       ys[i] = log(y);
-    else
+    if(i >= 90)
       ys_test[i-90] = log(y);
   }
 
