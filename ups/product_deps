@@ -34,7 +34,7 @@ fwdir   product_dir scripts
 # Add the dependent product and version
 
 product          version
-sbnanaobj        v09_17_12
+sbnanaobj        v09_17_13
 #SAM tools?
 ifdhc            v2_6_2
 # For CAFAna
