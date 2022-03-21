@@ -17,6 +17,7 @@ add_subdirectory(Systs)
 add_subdirectory(Extrap)
 add_subdirectory(Prediction)
 add_subdirectory(Experiment)
+add_subdirectory(XSec)
 add_subdirectory(Analysis)
 add_subdirectory(bin)
 
