@@ -16,8 +16,8 @@ namespace ana
   {
   public:
     /// pdg PDG code for neutrino, -14,-12,+12,14
-    FluxTimesNuclei(ISliceSource& src, const Binning& bins,
-                    const Cut& fidvol, int pdg);
+    FluxTimesNuclei(INuTruthSource& src, const Binning& bins,
+                    const NuTruthCut& fidvol, int pdg);
 
     TH1D* ToTH1(double pot,
                 Color_t col = kBlack,

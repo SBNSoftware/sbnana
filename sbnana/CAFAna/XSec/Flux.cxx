@@ -25,8 +25,8 @@ namespace ana
   //----------------------------------------------------------------------
   bool IsNCQEOnArgon(const caf::SRTrueInteractionProxy* nu, int pdg)
   {
-    // This process works for very low neutrino energy where the muon mass
-    // becomes relevant.
+    // The issue with the CC interaction is there is a threshold around the
+    // muon mass. This process works for lower neutrino energies too
     return nu->pdg == pdg && !nu->iscc &&
       nu->genie_mode == caf::kQE && nu->genie_inttype == caf::kNCQE &&
       nu->targetPDG == 1000180400 /* Argon 40 */ &&
@@ -35,38 +35,33 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  const Weight kInvXSec([](const caf::SRSliceProxy* sr)
-                        {
-                          // GENIE uses GeV internally. We ultimately want a
-                          // flux in m^-2
-                          const double GeV2perm2 = 2.56819e31;
+  const NuTruthWeight kInvXSec([](const caf::SRTrueInteractionProxy* nu)
+                             {
+                               // GENIE uses GeV internally. We ultimately want
+                               // a flux in m^-2
+                               const double GeV2perm2 = 2.56819e31;
 
-                          return GeV2perm2/sr->truth.xsec;
-                        });
+                               return GeV2perm2/nu->xsec;
+                             });
 
   //----------------------------------------------------------------------
-  // TODO can this operate completely in true interaction mode? Right now we
-  // are folding in a slicing efficiency
-  Cut IsCCQEOnArgonCut(int pdg)
+  NuTruthCut IsNCQEOnArgonCut(int pdg)
   {
-    return Cut([pdg](const caf::SRSliceProxy* slc)
-               {
-                 if(slc->truth.index < 0) return false;
-                 return IsCCQEOnArgon(&slc->truth, pdg);
-               });
+    return NuTruthCut([pdg](const caf::SRTrueInteractionProxy* nu)
+                      {
+                        return IsNCQEOnArgon(nu, pdg);
+                      });
   }
 
   //----------------------------------------------------------------------
-  FluxTimesNuclei::FluxTimesNuclei(ISliceSource& src,
+  FluxTimesNuclei::FluxTimesNuclei(INuTruthSource& src,
                                    const Binning& bins,
-                                   const Cut& fidvol,
+                                   const NuTruthCut& fidvol,
                                    int pdg)
-    : Spectrum(src[SIMPLEVAR(truth.index) >= 0 &&
-                   IsCCQEOnArgonCut(pdg) &&
-                   fidvol].Weighted(kInvXSec),
-               HistAxis("True neutrino energy (GeV)",
-                        bins,
-                        SIMPLEVAR(truth.E))),
+    : Spectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(kInvXSec),
+               NuTruthHistAxis("True neutrino energy (GeV)",
+                               bins,
+                               SIMPLENUTRUTHVAR(E))),
       fPdg(pdg)
   {
   }
