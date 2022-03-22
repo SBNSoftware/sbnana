@@ -31,7 +31,7 @@ void test_xsec_flux()
                               ( v.z > -895.95 + 30 && v.z < 895.95 - 50 ) ));
                    });
 
-  FluxTimesNuclei flux(loader.NuTruths(), Binning::Simple(25, 0, 5), fidvol, 14);
+  FluxTimesNuclei flux(loader.NuTruths(), Binning::Simple(50, 0, 5), fidvol, 14);
 
   loader.Go();
 
