@@ -18,7 +18,10 @@ using namespace ana;
 void test_xsec_flux()
 {
   // Need to export SAM_EXPERIMENT=sbn
-  SpectrumLoader loader("Official_icarusprod_2021C_NUMI_Nu_Cosmics_v09_37_01_03p01_caf");
+  //  SpectrumLoader loader("Official_icarusprod_2021C_NUMI_Nu_Cosmics_v09_37_01_03p01_caf");
+
+  // Far faster
+  SpectrumLoader loader("/sbnd/data/users/bckhouse/icarusprod_2021C_NUMI_Nu_Cosmics_v09_37_01_03p01_caf/flat*.root");
 
   const NuTruthCut fidvol([](const caf::SRTrueInteractionProxy* nu)
                    {
