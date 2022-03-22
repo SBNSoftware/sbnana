@@ -1,14 +1,16 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Ratio.h"
+#include "cafanacore/Spectrum.h"
 
 #include "sbnana/CAFAna/XSec/Flux.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TH2.h"
+
+#include <iostream>
 
 using namespace ana;
 
@@ -30,7 +32,7 @@ void test_xsec_flux()
                               ( v.z > -895.95 + 30 && v.z < 895.95 - 50 ) ));
                    });
 
-  FluxTimesNuclei flux(loader, Binning::Simple(40, 0, 10), fidvol, 14);
+  FluxTimesNuclei flux(loader.Slices(), Binning::Simple(25, 0, 5), fidvol, 14);
 
   loader.Go();
 

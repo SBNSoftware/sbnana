@@ -238,6 +238,7 @@ int main(int argc, char** argv)
             'CAFAnaPrediction',
             'CAFAnaExperiment',
             'CAFAnaAnalysis',
+            'CAFAnaXSec',
             'SBNAnaCuts',
             'SBNAnaVars',
             ]

@@ -1,5 +1,9 @@
 #include "sbnana/CAFAna/XSec/Flux.h"
 
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Weight.h"
+
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TH1.h"
@@ -25,20 +29,20 @@ namespace ana
     // becomes relevant.
     return nu->pdg == pdg && !nu->iscc &&
       nu->genie_mode == caf::kQE && nu->genie_inttype == caf::kNCQE &&
-      nu->targetPDG == 1000180400 /* Argon 40 */ && 
+      nu->targetPDG == 1000180400 /* Argon 40 */ &&
       !nu->ischarm &&
       nu->hitnuc == 2112;
   }
 
   //----------------------------------------------------------------------
-  const Var kInvXSec([](const caf::SRSliceProxy* sr)
-                     {
-                       // GENIE uses GeV internally. We ultimately want a flux
-                       // in m^-2
-                       const double GeV2perm2 = 2.56819e31;
+  const Weight kInvXSec([](const caf::SRSliceProxy* sr)
+                        {
+                          // GENIE uses GeV internally. We ultimately want a
+                          // flux in m^-2
+                          const double GeV2perm2 = 2.56819e31;
 
-                       return GeV2perm2/sr->truth.xsec;
-                     });
+                          return GeV2perm2/sr->truth.xsec;
+                        });
 
   //----------------------------------------------------------------------
   // TODO can this operate completely in true interaction mode? Right now we
@@ -53,25 +57,27 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  FluxTimesNuclei::FluxTimesNuclei(SpectrumLoaderBase& loader,
+  FluxTimesNuclei::FluxTimesNuclei(ISliceSource& src,
                                    const Binning& bins,
                                    const Cut& fidvol,
                                    int pdg)
-    : Spectrum("", bins, loader, SIMPLEVAR(truth.E),
-               SIMPLEVAR(truth.index) >= 0 && IsCCQEOnArgonCut(pdg) && fidvol,
-               kNoShift, kInvXSec),
+    : Spectrum(src[SIMPLEVAR(truth.index) >= 0 &&
+                   IsCCQEOnArgonCut(pdg) &&
+                   fidvol].Weighted(kInvXSec),
+               HistAxis("True neutrino energy (GeV)",
+                        bins,
+                        SIMPLEVAR(truth.E))),
       fPdg(pdg)
   {
   }
 
   //----------------------------------------------------------------------
-  TH1D* FluxTimesNuclei::ToTH1(double exposure,
+  TH1D* FluxTimesNuclei::ToTH1(double pot,
                                Color_t col,
                                Style_t style,
                                EBinType bintype)
   {
-    TH1D* ret = Spectrum::ToTH1(exposure, col, style, kPOT, bintype);
-    ret->GetXaxis()->SetTitle("True neutrino energy (GeV)");
+    TH1D* ret = Spectrum::ToTH1(pot, col, style, kPOT, bintype);
 
     std::string ytitle = "Flux #times nuclei (";
     switch(fPdg){

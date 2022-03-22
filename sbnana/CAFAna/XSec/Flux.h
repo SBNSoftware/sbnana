@@ -1,4 +1,8 @@
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
+
+#include "sbnana/CAFAna/Core/IRecordSource.h"
+
+#include "sbnana/CAFAna/Core/Cut.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
@@ -12,10 +16,10 @@ namespace ana
   {
   public:
     /// pdg PDG code for neutrino, -14,-12,+12,14
-    FluxTimesNuclei(SpectrumLoaderBase& loader, const Binning& bins,
+    FluxTimesNuclei(ISliceSource& src, const Binning& bins,
                     const Cut& fidvol, int pdg);
 
-    TH1D* ToTH1(double exposure,
+    TH1D* ToTH1(double pot,
                 Color_t col = kBlack,
                 Style_t style = kSolid,
                 EBinType bintype = kBinContent);
