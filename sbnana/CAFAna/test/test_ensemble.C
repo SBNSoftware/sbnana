@@ -51,8 +51,8 @@ void test_ensemble(bool reload = false)
     const std::vector<const ISyst*>& systs = GetSBNGenieWeightSysts();
     for(int i = 0; i < 100; ++i) weis.push_back(GetUniverseWeight(systs, i));
 
-    EnsembleSpectrum sCC(loader[kNumuSel][kIsNumuCC], axEnergy, weis);
-    EnsembleSpectrum sNC(loader[kNumuSel][kIsNC],     axEnergy, weis);
+    EnsembleSpectrum sCC(loader.Slices().Ensemble(weis, 0)[kNumuSel][kIsNumuCC], axEnergy);
+    EnsembleSpectrum sNC(loader.Slices().Ensemble(weis, 0)[kNumuSel][kIsNC],     axEnergy);
 
     loader.Go();
 
