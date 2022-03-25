@@ -89,7 +89,8 @@ namespace ana
 
     StoreExposures(); // also triggers the POT printout
 
-    // TODO TODO any need for a RemoveLoader() call now?
+    for(ISpillSink* sink: fSinks) sink->RemoveSource(this);
+    fSinks.clear();
   }
 
   //----------------------------------------------------------------------
