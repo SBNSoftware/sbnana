@@ -94,6 +94,21 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoader::PrintGraph(std::ostream& os) const
+  {
+    os << "digraph{" << std::endl;
+    os << "comment = \"Render me with a command like: dot -Tpdf graph.dot > graph.pdf\"" << std::endl << std::endl;
+    beta::Passthrough<caf::SRSpillProxy>::PrintGraph(os);
+    os << "}";
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoader::PrintGraph() const
+  {
+    PrintGraph(std::cout);
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoader::HandleFile(TFile* f, Progress* prog)
   {
     assert(!f->IsZombie());

@@ -33,6 +33,10 @@ namespace ana
 
     virtual void Go() override;
 
+    virtual void PrintGraph(std::ostream& os) const override;
+    // Print to stdout
+    virtual void PrintGraph() const;
+
   protected:
     SpectrumLoader();
 
