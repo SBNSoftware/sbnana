@@ -2,6 +2,7 @@
 
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/MultiVar.h"
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
@@ -115,6 +116,22 @@ namespace ana
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted);
 
+    /// 2D Spectrum of two MultiVars
+    Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+             const Binning& binsx, const MultiVar& varx,
+             const Binning& binsy, const MultiVar& vary,
+             const SpillCut& spillcut,
+	     const Cut& cut,
+             const SystShifts& shift = kNoShift,
+             const Var& wei = kUnweighted);
+
+    /// 2D Spectrum of two SpillMultiVars
+    Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+             const Binning& binsx, const SpillMultiVar& varx,
+             const Binning& binsy, const SpillMultiVar& vary,
+             const SpillCut& spillcut,
+             const SpillVar& wei = kSpillUnweighted);
+
     /// 2D Spectrum taking 2 HistAxis
     Spectrum(SpectrumLoaderBase& loader,
              const HistAxis& xAxis,
@@ -133,6 +150,24 @@ namespace ana
 	     const Cut& cut,
 	     const SystShifts& shift = kNoShift,
 	     const Var& wei = kUnweighted);
+
+    Spectrum(const std::string& xLabel,
+	     const std::string& yLabel,
+	     SpectrumLoaderBase& loader,
+	     const Binning& binsx, const MultiVar& varx,
+	     const Binning& binsy, const MultiVar& vary,
+             const SpillCut& spillcut,
+	     const Cut& cut,
+             const SystShifts& shift = kNoShift,
+	     const Var& wei = kUnweighted);
+
+    Spectrum(const std::string& xLabel,
+	     const std::string& yLabel,
+	     SpectrumLoaderBase& loader,
+	     const Binning& binsx, const SpillMultiVar& varx,
+	     const Binning& binsy, const SpillMultiVar& vary,
+             const SpillCut& spillcut,
+	     const SpillVar& wei = kSpillUnweighted);
 
     /// 3D Spectrum of three Vars
     Spectrum(const std::string& label, SpectrumLoaderBase& loader,
