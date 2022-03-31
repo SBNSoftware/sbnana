@@ -5,7 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+
+#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
 
 namespace ana
 {
@@ -31,6 +33,11 @@ namespace ana
 
     static int MaxID() {return fgNextID-1;}
   protected:
+    _MultiVar(const std::function<VarFunc_t>& fun, int id)
+      : fFunc(fun), fID(id)
+    {
+    }
+
     std::function<VarFunc_t> fFunc;
 
     int fID;
@@ -40,5 +47,9 @@ namespace ana
 
   typedef _MultiVar<caf::SRSliceProxy> MultiVar;
   typedef _MultiVar<caf::SRSpillProxy> SpillMultiVar;
+
+  template<class T> _MultiVar<T>
+  MultiVar2D(const _MultiVar<T>& a, const Binning& binsa,
+	     const _MultiVar<T>& b, const Binning& binsb);
 
 } // namespace
