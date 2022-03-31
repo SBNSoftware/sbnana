@@ -418,7 +418,7 @@ namespace ana
     // Make sure it's compatible with having been made with this binning
     assert(h1->GetNbinsX() == binsx.NBins()*binsy.NBins());
 
-    TH2* ret = MakeTH2D("", UniqueName().c_str(), binsx, binsy);
+    TH2* ret = MakeTH2D(UniqueName().c_str(), "", binsx, binsy);
 
     for(int i = 0; i < h1->GetNbinsX(); ++i){
       const double val = h1->GetBinContent(i+1);
