@@ -7,7 +7,7 @@
 
 #include "sbnana/CAFAna/Core/Binning.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/FwdDeclare.h"
+#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
 namespace ana
 {
