@@ -13,52 +13,53 @@ namespace ana {
       bool fd = (detector == EnergyScaleSystDetector::kICARUS && det == caf::kICARUS);
       return all || nd || ub || fd;
     };
-    if(sr->truth.iscc && abs(sr->truth.pdg) == 14 && !isnan(sr->fake_reco.nuE) && detector_cut(sr->truth.det)) {
-      double particle_energy = 0.0;
-      switch(part) {
-      case EnergyScaleSystParticle::kMuon:
-        particle_energy += sr->fake_reco.lepton.ke;
-        break;
-      case EnergyScaleSystParticle::kHadron:
-        for(const auto& hadron: sr->fake_reco.hadrons) {
+    if(!sr->truth.iscc || abs(sr->truth.pdg) != 14 || isnan(sr->fake_reco.nuE) || !detector_cut(sr->truth.det)) 
+      return ;
+    double particle_energy = 0.0;
+    switch(part) {
+    case EnergyScaleSystParticle::kMuon:
+      particle_energy += sr->fake_reco.lepton.ke;
+      break;
+    case EnergyScaleSystParticle::kHadron:
+      for(const auto& hadron: sr->fake_reco.hadrons) {
+        particle_energy += hadron.ke;
+      }
+      break;
+    case EnergyScaleSystParticle::kNeutron:
+      for(const auto& hadron: sr->fake_reco.hadrons) {
+        if(hadron.pid == 2112) {
           particle_energy += hadron.ke;
         }
-        break;
-      case EnergyScaleSystParticle::kNeutron:
-        for(const auto& hadron: sr->fake_reco.hadrons) {
-          if(hadron.pid == 2112) {
-            particle_energy += hadron.ke;
-          }
-        }
-        break;
-      case EnergyScaleSystParticle::kEM:
-        for(const auto& hadron: sr->fake_reco.hadrons) {
-          if(hadron.pid == 111) {
-            particle_energy += hadron.ke;
-          }
-        }
-        break;
-     case EnergyScaleSystParticle::kChargedHadron:
-        for(const auto& hadron: sr->fake_reco.hadrons) {
-          auto pid = hadron.pid;
-          if(pid == 2212 || abs(pid) == 211) {
-            particle_energy += hadron.ke;
-          }
-        }
-        break;
       }
-      switch(term) {
-      case EnergyScaleSystTerm::kConstant:
-        break;
-      case EnergyScaleSystTerm::kSqrt:
-        scale *= std::sqrt(particle_energy);
-        break;
-      case EnergyScaleSystTerm::kInverseSqrt:
-        scale /= std::sqrt(particle_energy + 0.1);
-        break;
+      break;
+    case EnergyScaleSystParticle::kEM:
+      for(const auto& hadron: sr->fake_reco.hadrons) {
+        if(hadron.pid == 111) {
+          particle_energy += hadron.ke;
+        }
       }
-      sr->fake_reco.nuE += particle_energy * scale;
+      break;
+   case EnergyScaleSystParticle::kChargedHadron:
+      for(const auto& hadron: sr->fake_reco.hadrons) {
+        auto pid = hadron.pid;
+        if(pid == 2212 || abs(pid) == 211) {
+          particle_energy += hadron.ke;
+        }
+      }
+      break;
     }
+    switch(term) {
+    case EnergyScaleSystTerm::kConstant:
+      break;
+    case EnergyScaleSystTerm::kSqrt:
+      scale *= std::sqrt(particle_energy);
+      break;
+    case EnergyScaleSystTerm::kInverseSqrt:
+      scale /= std::sqrt(particle_energy + 0.1);
+      break;
+    }
+    sr->fake_reco.nuE += particle_energy * scale;
+   
   }
 
    const EnergyScaleSyst kEnergyScaleMuon(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuon", "Correlated 2% scale systematic on E_{#mu}");
