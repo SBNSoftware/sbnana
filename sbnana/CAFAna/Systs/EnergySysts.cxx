@@ -20,29 +20,29 @@ namespace ana {
         particle_energy += sr->fake_reco.lepton.ke;
         break;
       case EnergyScaleSystParticle::kHadron:
-        for (size_t i = 0; i < sr->fake_reco.hadrons.size(); ++i) {
-          particle_energy += sr->fake_reco.hadrons[i].ke;
+        for(const auto& hadron: sr->fake_reco.hadrons) {
+          particle_energy += hadron.ke;
         }
         break;
       case EnergyScaleSystParticle::kNeutron:
-        for (size_t i = 0; i < sr->fake_reco.hadrons.size(); ++i) {
-          if(sr->fake_reco.hadrons[i].pid == 2112) {
-            particle_energy += sr->fake_reco.hadrons[i].ke;
+        for(const auto& hadron: sr->fake_reco.hadrons) {
+          if(hadron.pid == 2112) {
+            particle_energy += hadron.ke;
           }
         }
         break;
       case EnergyScaleSystParticle::kEM:
-        for (size_t i = 0; i < sr->fake_reco.hadrons.size(); ++i) {
-          if(sr->fake_reco.hadrons[i].pid == 111) {
-            particle_energy += sr->fake_reco.hadrons[i].ke;
+        for(const auto& hadron: sr->fake_reco.hadrons) {
+          if(hadron.pid == 111) {
+            particle_energy += hadron.ke;
           }
         }
         break;
      case EnergyScaleSystParticle::kChargedHadron:
-        for (size_t i = 0; i < sr->fake_reco.hadrons.size(); ++i) {
-          auto pid = sr->fake_reco.hadrons[i].pid;
+        for(const auto& hadron: sr->fake_reco.hadrons) {
+          auto pid = hadron.pid;
           if(pid == 2212 || abs(pid) == 211) {
-            particle_energy += sr->fake_reco.hadrons[i].ke;
+            particle_energy += hadron.ke;
           }
         }
         break;
