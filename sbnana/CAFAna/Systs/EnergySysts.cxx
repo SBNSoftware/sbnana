@@ -6,14 +6,13 @@ namespace ana {
   void EnergyScaleSyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
   {
     double scale = uncertainty * sigma;
-    auto detector_cut = [detector = detector](auto det){
-      bool all = (detector == EnergyScaleSystDetector::kAll);
-      bool nd = (detector == EnergyScaleSystDetector::kSBND && det == caf::kSBND);
-      bool ub = (detector == EnergyScaleSystDetector::kMicroBooNE && det == caf::kUNKNOWN);
-      bool fd = (detector == EnergyScaleSystDetector::kICARUS && det == caf::kICARUS);
-      return all || nd || ub || fd;
-    };
-    if(!sr->truth.iscc || abs(sr->truth.pdg) != 14 || isnan(sr->fake_reco.nuE) || !detector_cut(sr->truth.det)) 
+    auto& det = sr->truth.det;
+    bool all = (detector == EnergyScaleSystDetector::kAll);
+    bool nd = (detector == EnergyScaleSystDetector::kSBND && det == caf::kSBND);
+    bool ub = (detector == EnergyScaleSystDetector::kMicroBooNE && det == caf::kUNKNOWN);
+    bool fd = (detector == EnergyScaleSystDetector::kICARUS && det == caf::kICARUS);
+    bool detector_cut = all || nd || ub || fd;
+    if(!sr->truth.iscc || abs(sr->truth.pdg) != 14 || isnan(sr->fake_reco.nuE) || !detector_cut) 
       return ;
     double particle_energy = 0.0;
     switch(part) {
