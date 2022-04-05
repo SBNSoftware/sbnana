@@ -42,63 +42,7 @@ namespace ana
   public:
     EnergyScaleSyst(EnergyScaleSystTerm _term, EnergyScaleSystParticle _part, EnergyScaleSystDetector _detector, double _uncertainty, std::string name) : 
       ISyst(name, name), term(_term), part(_part), detector(_detector), uncertainty(_uncertainty) {}
-    void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override
-    {
-      double scale = uncertainty * sigma;
-      auto baseline_cut = [detector = detector](double baseline){ 
-        auto all = (detector == EnergyScaleSystDetector::kAll);
-        auto nd = (detector == EnergyScaleSystDetector::kSBND && baseline < 120);
-        auto ub = (detector == EnergyScaleSystDetector::kMicroBooNE && baseline > 120 && baseline < 500);
-        auto fd = (detector == EnergyScaleSystDetector::kICARUS && baseline > 500);
-        return all || nd || ub || fd; 
-      };
-      if(sr->truth.iscc && abs(sr->truth.pdg) == 14 && !isnan(sr->fake_reco.nuE) && baseline_cut(sr->truth.baseline)) {
-        double particle_energy = 0.0;
-        switch(part) {
-        case EnergyScaleSystParticle::kMuon:
-          particle_energy += sr->fake_reco.lepton.ke;
-          break;
-        case EnergyScaleSystParticle::kHadron:
-          for (size_t i = 0; i < sr->fake_reco.hadrons.size(); ++i) {
-            particle_energy += sr->fake_reco.hadrons[i].ke;
-          }
-          break;
-        case EnergyScaleSystParticle::kNeutron:
-          for (size_t i = 0; i < sr->fake_reco.hadrons.size(); ++i) {
-            if(sr->fake_reco.hadrons[i].pid == 2112) {
-              particle_energy += sr->fake_reco.hadrons[i].ke;
-            }
-          }
-          break;
-        case EnergyScaleSystParticle::kEM:
-          for (size_t i = 0; i < sr->fake_reco.hadrons.size(); ++i) {
-            if(sr->fake_reco.hadrons[i].pid == 111) {
-              particle_energy += sr->fake_reco.hadrons[i].ke;
-            }
-          }
-          break;
-        case EnergyScaleSystParticle::kChargedHadron:
-          for (size_t i = 0; i < sr->fake_reco.hadrons.size(); ++i) {
-            auto pid = sr->fake_reco.hadrons[i].pid;
-            if(pid == 2212 || abs(pid) == 211) {
-              particle_energy += sr->fake_reco.hadrons[i].ke;
-            }
-          }
-          break;
-        }
-        switch(term) {
-        case EnergyScaleSystTerm::kConstant:
-          break;
-        case EnergyScaleSystTerm::kSqrt:
-          scale *= std::sqrt(particle_energy);
-          break;
-        case EnergyScaleSystTerm::kInverseSqrt:
-          scale /= std::sqrt(particle_energy + 0.1);
-          break;
-        }
-        sr->fake_reco.nuE += particle_energy * scale;
-      }
-    }
+      void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
   private:
     EnergyScaleSystTerm term;
     EnergyScaleSystParticle part;
