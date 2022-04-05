@@ -3,15 +3,8 @@
 #pragma once
 
 #include "sbnana/CAFAna/Core/ISyst.h"
-#include "sbnana/CAFAna/Core/Utilities.h"
-#include "sbnana/CAFAna/Analysis/ExpInfo.h"
-#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
-#include "TFile.h"
-#include "TH1.h"
-#include "TRandom3.h"
-
-#include <cassert>
+#include <vector>
 
 namespace ana
 {

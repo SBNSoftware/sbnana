@@ -1,18 +1,19 @@
 #include "sbnana/CAFAna/Systs/EnergySysts.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana {
 
   void EnergyScaleSyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
   {
     double scale = uncertainty * sigma;
-    auto baseline_cut = [detector = detector](double baseline){
-      auto all = (detector == EnergyScaleSystDetector::kAll);
-      auto nd = (detector == EnergyScaleSystDetector::kSBND && baseline < 120);
-      auto ub = (detector == EnergyScaleSystDetector::kMicroBooNE && baseline > 120 && baseline < 500);
-      auto fd = (detector == EnergyScaleSystDetector::kICARUS && baseline > 500);
+    auto detector_cut = [detector = detector](auto det){
+      bool all = (detector == EnergyScaleSystDetector::kAll);
+      bool nd = (detector == EnergyScaleSystDetector::kSBND && det == caf::kSBND);
+      bool ub = (detector == EnergyScaleSystDetector::kMicroBooNE && det == caf::kUNKNOWN);
+      bool fd = (detector == EnergyScaleSystDetector::kICARUS && det == caf::kICARUS);
       return all || nd || ub || fd;
     };
-    if(sr->truth.iscc && abs(sr->truth.pdg) == 14 && !isnan(sr->fake_reco.nuE) && baseline_cut(sr->truth.baseline)) {
+    if(sr->truth.iscc && abs(sr->truth.pdg) == 14 && !isnan(sr->fake_reco.nuE) && detector_cut(sr->truth.det)) {
       double particle_energy = 0.0;
       switch(part) {
       case EnergyScaleSystParticle::kMuon:
