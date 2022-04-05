@@ -1,117 +1,69 @@
 #include "sbnana/CAFAna/Systs/EnergySysts.h"
 
 namespace ana {
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kConstant, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuon(0.02, "EnergyScaleMuon");
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kSqrt, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonSqrt(0.02, "EnergyScaleMuonSqrt");
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kInverseSqrt, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonInvSqrt(0.02, "EnergyScaleMuonInvSqrt");
+   const EnergyScaleSyst kEnergyScaleMuon(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuon");
+   const EnergyScaleSyst kEnergyScaleMuonSqrt(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuonSqrt");
+   const EnergyScaleSyst kEnergyScaleMuonInvSqrt(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuonInvSqrt");
 
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonND(0.02, "EnergyScaleMuonND");
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtND(0.02, "EnergyScaleMuonSqrtND");
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtND(0.02, "EnergyScaleMuonInvSqrtND");
+   const EnergyScaleSyst kEnergyScaleMuonND(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "EnergyScaleMuonND");
+   const EnergyScaleSyst kEnergyScaleMuonSqrtND(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "EnergyScaleMuonSqrtND");
+   const EnergyScaleSyst kEnergyScaleMuonInvSqrtND(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "EnergyScaleMuonInvSqrtND");
 
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonUB(0.02, "EnergyScaleMuonUB");
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtUB(0.02, "EnergyScaleMuonSqrtUB");
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtUB(0.02, "EnergyScaleMuonInvSqrtUB");
+   const EnergyScaleSyst kEnergyScaleMuonUB(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "EnergyScaleMuonUB");
+   const EnergyScaleSyst kEnergyScaleMuonSqrtUB(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "EnergyScaleMuonSqrtUB");
+   const EnergyScaleSyst kEnergyScaleMuonInvSqrtUB(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "EnergyScaleMuonInvSqrtUB");
 
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonFD(0.02, "EnergyScaleMuonFD");
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtFD(0.02, "EnergyScaleMuonSqrtFD");
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtFD(0.02, "EnergyScaleMuonInvSqrtFD");
+   const EnergyScaleSyst kEnergyScaleMuonFD(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "EnergyScaleMuonFD");
+   const EnergyScaleSyst kEnergyScaleMuonSqrtFD(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "EnergyScaleMuonSqrtFD");
+   const EnergyScaleSyst kEnergyScaleMuonInvSqrtFD(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "EnergyScaleMuonInvSqrtFD");
 
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kConstant, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadron(0.05, "EnergyScaleHadron");
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kSqrt, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronSqrt(0.05, "EnergyScaleHadronSqrt");
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kInverseSqrt, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronInvSqrt(0.05, "EnergyScaleHadronInvSqrt");
+   const EnergyScaleSyst kEnergyScaleHadron(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleHadron");
+   const EnergyScaleSyst kEnergyScaleHadronSqrt(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleHadronSqrt");
+   const EnergyScaleSyst kEnergyScaleHadronInvSqrt(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleHadronInvSqrt");
 
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronND(0.05, "EnergyScaleHadronND");
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtND(0.05, "EnergyScaleHadronSqrtND");
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtND(0.05, "EnergyScaleHadronInvSqrtND");
+   const EnergyScaleSyst kEnergyScaleHadronND(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleHadronND");
+   const EnergyScaleSyst kEnergyScaleHadronSqrtND(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleHadronSqrtND");
+   const EnergyScaleSyst kEnergyScaleHadronInvSqrtND(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleHadronInvSqrtND");
 
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronUB(0.05, "EnergyScaleHadronUB");
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtUB(0.05, "EnergyScaleHadronSqrtUB");
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtUB(0.05, "EnergyScaleHadronInvSqrtUB");
+   const EnergyScaleSyst kEnergyScaleHadronUB(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleHadronUB");
+   const EnergyScaleSyst kEnergyScaleHadronSqrtUB(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleHadronSqrtUB");
+   const EnergyScaleSyst kEnergyScaleHadronInvSqrtUB(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleHadronInvSqrtUB");
 
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronFD(0.05, "EnergyScaleHadronFD");
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtFD(0.05, "EnergyScaleHadronSqrtFD");
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtFD(0.05, "EnergyScaleHadronInvSqrtFD");
+   const EnergyScaleSyst kEnergyScaleHadronFD(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleHadronFD");
+   const EnergyScaleSyst kEnergyScaleHadronSqrtFD(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleHadronSqrtFD");
+   const EnergyScaleSyst kEnergyScaleHadronInvSqrtFD(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleHadronInvSqrtFD");
 
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kConstant, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonBig(0.05, "EnergyScaleMuonBig");
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kSqrt, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonSqrtBig(0.05, "EnergyScaleMuonSqrtBig");
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kInverseSqrt, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonInvSqrtBig(0.05, "EnergyScaleMuonInvSqrtBig");
+   const EnergyScaleSyst kEnergyScaleMuonBig(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleMuonBig");
+   const EnergyScaleSyst kEnergyScaleMuonSqrtBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleMuonSqrtBig");
+   const EnergyScaleSyst kEnergyScaleMuonInvSqrtBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleMuonInvSqrtBig");
 
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonNDBig(0.05, "EnergyScaleMuonNDBig");
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtNDBig(0.05, "EnergyScaleMuonSqrtNDBig");
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtNDBig(0.05, "EnergyScaleMuonInvSqrtNDBig");
+   const EnergyScaleSyst kEnergyScaleMuonNDBig(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleMuonNDBig");
+   const EnergyScaleSyst kEnergyScaleMuonSqrtNDBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleMuonSqrtNDBig");
+   const EnergyScaleSyst kEnergyScaleMuonInvSqrtNDBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleMuonInvSqrtNDBig");
 
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonUBBig(0.05, "EnergyScaleMuonUBBig");
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtUBBig(0.05, "EnergyScaleMuonSqrtUBBig");
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtUBBig(0.05, "EnergyScaleMuonInvSqrtUBBig");
+   const EnergyScaleSyst kEnergyScaleMuonUBBig(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleMuonUBBig");
+   const EnergyScaleSyst kEnergyScaleMuonSqrtUBBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleMuonSqrtUBBig");
+   const EnergyScaleSyst kEnergyScaleMuonInvSqrtUBBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleMuonInvSqrtUBBig");
 
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonFDBig(0.05, "EnergyScaleMuonFDBig");
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtFDBig(0.05, "EnergyScaleMuonSqrtFDBig");
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtFDBig(0.05, "EnergyScaleMuonInvSqrtFDBig");
+   const EnergyScaleSyst kEnergyScaleMuonFDBig(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleMuonFDBig");
+   const EnergyScaleSyst kEnergyScaleMuonSqrtFDBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleMuonSqrtFDBig");
+   const EnergyScaleSyst kEnergyScaleMuonInvSqrtFDBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleMuonInvSqrtFDBig");
 
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kConstant, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronBig(0.10, "EnergyScaleHadronBig");
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kSqrt, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronSqrtBig(0.10, "EnergyScaleHadronSqrtBig");
-   const EnergyScaleSystCorr<EnergyScaleSystTerm::kInverseSqrt, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronInvSqrtBig(0.10, "EnergyScaleHadronInvSqrtBig");
+   const EnergyScaleSyst kEnergyScaleHadronBig(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.10, "EnergyScaleHadronBig");
+   const EnergyScaleSyst kEnergyScaleHadronSqrtBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.10, "EnergyScaleHadronSqrtBig");
+   const EnergyScaleSyst kEnergyScaleHadronInvSqrtBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.10, "EnergyScaleHadronInvSqrtBig");
 
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronNDBig(0.10, "EnergyScaleHadronNDBig");
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtNDBig(0.10, "EnergyScaleHadronSqrtNDBig");
-   const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtNDBig(0.10, "EnergyScaleHadronInvSqrtNDBig");
+   const EnergyScaleSyst kEnergyScaleHadronNDBig(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.10, "EnergyScaleHadronNDBig");
+   const EnergyScaleSyst kEnergyScaleHadronSqrtNDBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.10, "EnergyScaleHadronSqrtNDBig");
+   const EnergyScaleSyst kEnergyScaleHadronInvSqrtNDBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.10, "EnergyScaleHadronInvSqrtNDBig");
 
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronUBBig(0.10, "EnergyScaleHadronUBBig");
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtUBBig(0.10, "EnergyScaleHadronSqrtUBBig");
-   const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtUBBig(0.10, "EnergyScaleHadronInvSqrtUBBig");
+   const EnergyScaleSyst kEnergyScaleHadronUBBig(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.10, "EnergyScaleHadronUBBig");
+   const EnergyScaleSyst kEnergyScaleHadronSqrtUBBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.10, "EnergyScaleHadronSqrtUBBig");
+   const EnergyScaleSyst kEnergyScaleHadronInvSqrtUBBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.10, "EnergyScaleHadronInvSqrtUBBig");
 
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronFDBig(0.10, "EnergyScaleHadronFDBig");
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtFDBig(0.10, "EnergyScaleHadronSqrtFDBig");
-   const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtFDBig(0.10, "EnergyScaleHadronInvSqrtFDBig");
+   const EnergyScaleSyst kEnergyScaleHadronFDBig(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.10, "EnergyScaleHadronFDBig");
+   const EnergyScaleSyst kEnergyScaleHadronSqrtFDBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.10, "EnergyScaleHadronSqrtFDBig");
+   const EnergyScaleSyst kEnergyScaleHadronInvSqrtFDBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.10, "EnergyScaleHadronInvSqrtFDBig");
 
   EnergySystVector GetEnergySysts() {
     // MicroBooNE, ChargedHadron, Neutron, and EM systs

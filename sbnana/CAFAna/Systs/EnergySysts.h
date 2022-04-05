@@ -37,16 +37,15 @@ namespace ana
     kAll
   };
 
-  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part, EnergyScaleSystDetector detector = EnergyScaleSystDetector::kAll>
   class EnergyScaleSyst: public ISyst
   {
   public:
-    EnergyScaleSyst(double _uncertainty, std::string name) : 
-      ISyst(name, name), uncertainty(_uncertainty) {}
+    EnergyScaleSyst(EnergyScaleSystTerm _term, EnergyScaleSystParticle _part, EnergyScaleSystDetector _detector, double _uncertainty, std::string name) : 
+      ISyst(name, name), term(_term), part(_part), detector(_detector), uncertainty(_uncertainty) {}
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override
     {
       double scale = uncertainty * sigma;
-      auto baseline_cut = [](double baseline){ 
+      auto baseline_cut = [detector = detector](double baseline){ 
         auto all = (detector == EnergyScaleSystDetector::kAll);
         auto nd = (detector == EnergyScaleSystDetector::kSBND && baseline < 120);
         auto ub = (detector == EnergyScaleSystDetector::kMicroBooNE && baseline > 120 && baseline < 500);
@@ -101,132 +100,75 @@ namespace ana
       }
     }
   private:
+    EnergyScaleSystTerm term;
+    EnergyScaleSystParticle part;
+    EnergyScaleSystDetector detector;
     double uncertainty;
   };
 
-  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part>
-  using EnergyScaleSystCorr = EnergyScaleSyst<term, part, EnergyScaleSystDetector::kAll>;
+  extern const EnergyScaleSyst kEnergyScaleMuon;
+  extern const EnergyScaleSyst kEnergyScaleMuonSqrt;
+  extern const EnergyScaleSyst kEnergyScaleMuonInvSqrt;
 
-  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part>
-  using EnergyScaleSystUncorrND = EnergyScaleSyst<term, part, EnergyScaleSystDetector::kSBND>;
+  extern const EnergyScaleSyst kEnergyScaleMuonND;
+  extern const EnergyScaleSyst kEnergyScaleMuonSqrtND;
+  extern const EnergyScaleSyst kEnergyScaleMuonInvSqrtND;
 
-  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part>
-  using EnergyScaleSystUncorrUB = EnergyScaleSyst<term, part, EnergyScaleSystDetector::kMicroBooNE>;
+  extern const EnergyScaleSyst kEnergyScaleMuonUB;
+  extern const EnergyScaleSyst kEnergyScaleMuonSqrtUB;
+  extern const EnergyScaleSyst kEnergyScaleMuonInvSqrtUB;
 
-  template<EnergyScaleSystTerm term, EnergyScaleSystParticle part>
-  using EnergyScaleSystUncorrFD = EnergyScaleSyst<term, part, EnergyScaleSystDetector::kICARUS>;
+  extern const EnergyScaleSyst kEnergyScaleMuonFD;
+  extern const EnergyScaleSyst kEnergyScaleMuonSqrtFD;
+  extern const EnergyScaleSyst kEnergyScaleMuonInvSqrtFD;
 
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kConstant, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuon;
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kSqrt, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonSqrt;
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kInverseSqrt, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonInvSqrt;
+  extern const EnergyScaleSyst kEnergyScaleHadron;
+  extern const EnergyScaleSyst kEnergyScaleHadronSqrt;
+  extern const EnergyScaleSyst kEnergyScaleHadronInvSqrt;
 
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonND;
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtND;
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtND;
+  extern const EnergyScaleSyst kEnergyScaleHadronND;
+  extern const EnergyScaleSyst kEnergyScaleHadronSqrtND;
+  extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtND;
 
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonUB;
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtUB;
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtUB;
+  extern const EnergyScaleSyst kEnergyScaleHadronUB;
+  extern const EnergyScaleSyst kEnergyScaleHadronSqrtUB;
+  extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtUB;
 
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonFD;
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtFD;
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtFD;
+  extern const EnergyScaleSyst kEnergyScaleHadronFD;
+  extern const EnergyScaleSyst kEnergyScaleHadronSqrtFD;
+  extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtFD;
 
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kConstant, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadron;
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kSqrt, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronSqrt;
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kInverseSqrt, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronInvSqrt;
+  extern const EnergyScaleSyst kEnergyScaleMuonBig;
+  extern const EnergyScaleSyst kEnergyScaleMuonSqrtBig;
+  extern const EnergyScaleSyst kEnergyScaleMuonInvSqrtBig;
 
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronND;
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtND;
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtND;
+  extern const EnergyScaleSyst kEnergyScaleMuonNDBig;
+  extern const EnergyScaleSyst kEnergyScaleMuonSqrtNDBig;
+  extern const EnergyScaleSyst kEnergyScaleMuonInvSqrtNDBig;
 
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronUB;
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtUB;
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtUB;
+  extern const EnergyScaleSyst kEnergyScaleMuonUBBig;
+  extern const EnergyScaleSyst kEnergyScaleMuonSqrtUBBig;
+  extern const EnergyScaleSyst kEnergyScaleMuonInvSqrtUBBig;
 
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronFD;
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtFD;
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtFD;
+  extern const EnergyScaleSyst kEnergyScaleMuonFDBig;
+  extern const EnergyScaleSyst kEnergyScaleMuonSqrtFDBig;
+  extern const EnergyScaleSyst kEnergyScaleMuonInvSqrtFDBig;
 
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kConstant, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonBig;
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kSqrt, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonSqrtBig;
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kInverseSqrt, 
-                                   EnergyScaleSystParticle::kMuon>        kEnergyScaleMuonInvSqrtBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronSqrtBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtBig;
 
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonNDBig;
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtNDBig;
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtNDBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronNDBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronSqrtNDBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtNDBig;
 
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonUBBig;
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtUBBig;
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtUBBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronUBBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronSqrtUBBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtUBBig;
 
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonFDBig;
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonSqrtFDBig;
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kMuon>    kEnergyScaleMuonInvSqrtFDBig;
-
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kConstant, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronBig;
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kSqrt, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronSqrtBig;
-  extern const EnergyScaleSystCorr<EnergyScaleSystTerm::kInverseSqrt, 
-                                   EnergyScaleSystParticle::kHadron>      kEnergyScaleHadronInvSqrtBig;
-
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronNDBig;
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtNDBig;
-  extern const EnergyScaleSystUncorrND<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtNDBig;
-
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronUBBig;
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtUBBig;
-  extern const EnergyScaleSystUncorrUB<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtUBBig;
-
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kConstant, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronFDBig;
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronSqrtFDBig;
-  extern const EnergyScaleSystUncorrFD<EnergyScaleSystTerm::kInverseSqrt, 
-                                       EnergyScaleSystParticle::kHadron>  kEnergyScaleHadronInvSqrtFDBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronFDBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronSqrtFDBig;
+  extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtFDBig;
 
   // Vector of energy scale systematics
   struct EnergySystVector: public std::vector<const ISyst*>
