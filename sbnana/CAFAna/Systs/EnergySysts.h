@@ -109,13 +109,7 @@ namespace ana
   extern const EnergyScaleSyst kEnergyScaleHadronSqrtFDBig;
   extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtFDBig;
 
-  // Vector of energy scale systematics
-  struct EnergySystVector: public std::vector<const ISyst*>
-  {
-
-  };
-
-EnergySystVector GetEnergySysts();
-EnergySystVector GetBigEnergySysts();
+std::vector<const EnergyScaleSyst*> GetEnergySysts();
+std::vector<const EnergyScaleSyst*> GetBigEnergySysts();
 
 }

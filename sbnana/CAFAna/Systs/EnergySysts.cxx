@@ -125,94 +125,87 @@ namespace ana {
    const EnergyScaleSyst kEnergyScaleHadronSqrtFDBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.10, "EnergyScaleHadronSqrtFDBig", "Uncorrelated 10% scale systematic on E_{had} * #sqrt{E_{had}} in ICARUS");
    const EnergyScaleSyst kEnergyScaleHadronInvSqrtFDBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.10, "EnergyScaleHadronInvSqrtFDBig", "Uncorrelated 10% scale systematic on E_{had} / #sqrt{E_{had}} in ICARUS");
 
-  EnergySystVector GetEnergySysts() {
+  std::vector<const EnergyScaleSyst*> GetEnergySysts() {
     // MicroBooNE, ChargedHadron, Neutron, and EM systs
     // not being used right now
-    EnergySystVector vec;
-    vec.push_back(&kEnergyScaleMuon);
-    vec.push_back(&kEnergyScaleMuonSqrt);
-    vec.push_back(&kEnergyScaleMuonInvSqrt);
-    vec.push_back(&kEnergyScaleMuonND);
-    vec.push_back(&kEnergyScaleMuonSqrtND);
-    vec.push_back(&kEnergyScaleMuonInvSqrtND);
-    //vec.push_back(&kEnergyScaleMuonUB);
-    //vec.push_back(&kEnergyScaleMuonSqrtUB);
-    //vec.push_back(&kEnergyScaleMuonInvSqrtUB);
-    vec.push_back(&kEnergyScaleMuonFD);
-    vec.push_back(&kEnergyScaleMuonSqrtFD);
-    vec.push_back(&kEnergyScaleMuonInvSqrtFD);
-    vec.push_back(&kEnergyScaleHadron);
-    //vec.push_back(&kEnergyScaleChargedHadron);
-    //vec.push_back(&kEnergyScaleEM);
-    //vec.push_back(&kEnergyScaleNeutron);
-    vec.push_back(&kEnergyScaleHadronSqrt);
-    //vec.push_back(&kEnergyScaleEMSqrt);
-    //vec.push_back(&kEnergyScaleNeutronSqrt);
-    vec.push_back(&kEnergyScaleHadronInvSqrt);
-    //vec.push_back(&kEnergyScaleEMInvSqrt);
-    //vec.push_back(&kEnergyScaleNeutronInvSqrt);
-    vec.push_back(&kEnergyScaleHadronND);
-    //vec.push_back(&kEnergyScaleChargedHadronND);
-    //vec.push_back(&kEnergyScaleEMND);
-    //vec.push_back(&kEnergyScaleNeutronND);
-    vec.push_back(&kEnergyScaleHadronSqrtND);
-    //vec.push_back(&kEnergyScaleEMSqrtND);
-    //vec.push_back(&kEnergyScaleNeutronSqrtND);
-    vec.push_back(&kEnergyScaleHadronInvSqrtND);
-    //vec.push_back(&kEnergyScaleEMInvSqrtND);
-    //vec.push_back(&kEnergyScaleNeutronInvSqrtND);
-    //vec.push_back(&kEnergyScaleHadronUB);
-    //vec.push_back(&kEnergyScaleChargedHadronUB);
-    //vec.push_back(&kEnergyScaleEMUB);
-    //vec.push_back(&kEnergyScaleNeutronUB);
-    //vec.push_back(&kEnergyScaleHadronSqrtUB);
-    //vec.push_back(&kEnergyScaleEMSqrtUB);
-    //vec.push_back(&kEnergyScaleNeutronSqrtUB);
-    //vec.push_back(&kEnergyScaleHadronInvSqrtUB);
-    //vec.push_back(&kEnergyScaleEMInvSqrtUB);
-    //vec.push_back(&kEnergyScaleNeutronInvSqrtUB);
-    vec.push_back(&kEnergyScaleHadronFD);
-    //vec.push_back(&kEnergyScaleChargedHadronFD);
-    //vec.push_back(&kEnergyScaleEMFD);
-    //vec.push_back(&kEnergyScaleNeutronFD);
-    vec.push_back(&kEnergyScaleHadronSqrtFD);
-    //vec.push_back(&kEnergyScaleEMSqrtFD);
-    //vec.push_back(&kEnergyScaleNeutronSqrtFD);
-    vec.push_back(&kEnergyScaleHadronInvSqrtFD);
-    //vec.push_back(&kEnergyScaleEMInvSqrtFD);
-    //vec.push_back(&kEnergyScaleNeutronInvSqrtFD);
-
-    return vec;
+    return {&kEnergyScaleMuon,
+            &kEnergyScaleMuonSqrt,
+            &kEnergyScaleMuonInvSqrt,
+            &kEnergyScaleMuonND,
+            &kEnergyScaleMuonSqrtND,
+            &kEnergyScaleMuonInvSqrtND,
+            //&kEnergyScaleMuonUB,
+            //&kEnergyScaleMuonSqrtUB,
+            //&kEnergyScaleMuonInvSqrtUB,
+            &kEnergyScaleMuonFD,
+            &kEnergyScaleMuonSqrtFD,
+            &kEnergyScaleMuonInvSqrtFD,
+            &kEnergyScaleHadron,
+            //&kEnergyScaleChargedHadron,
+            //&kEnergyScaleEM,
+            //&kEnergyScaleNeutron,
+            &kEnergyScaleHadronSqrt,
+            //&kEnergyScaleEMSqrt,
+            //&kEnergyScaleNeutronSqrt,
+            &kEnergyScaleHadronInvSqrt,
+            //&kEnergyScaleEMInvSqrt,
+            //&kEnergyScaleNeutronInvSqrt,
+            &kEnergyScaleHadronND,
+            //&kEnergyScaleChargedHadronND,
+            //&kEnergyScaleEMND,
+            //&kEnergyScaleNeutronND,
+            &kEnergyScaleHadronSqrtND,
+            //&kEnergyScaleEMSqrtND,
+            //&kEnergyScaleNeutronSqrtND,
+            &kEnergyScaleHadronInvSqrtND,
+            //&kEnergyScaleEMInvSqrtND,
+            //&kEnergyScaleNeutronInvSqrtND,
+            //&kEnergyScaleHadronUB,
+            //&kEnergyScaleChargedHadronUB,
+            //&kEnergyScaleEMUB,
+            //&kEnergyScaleNeutronUB,
+            //&kEnergyScaleHadronSqrtUB,
+            //&kEnergyScaleEMSqrtUB,
+            //&kEnergyScaleNeutronSqrtUB,
+            //&kEnergyScaleHadronInvSqrtUB,
+            //&kEnergyScaleEMInvSqrtUB,
+            //&kEnergyScaleNeutronInvSqrtUB,
+            &kEnergyScaleHadronFD,
+            //&kEnergyScaleChargedHadronFD,
+            //&kEnergyScaleEMFD,
+            //&kEnergyScaleNeutronFD,
+            &kEnergyScaleHadronSqrtFD,
+            //&kEnergyScaleEMSqrtFD,
+            //&kEnergyScaleNeutronSqrtFD,
+            //&kEnergyScaleEMInvSqrtFD,
+            //&kEnergyScaleNeutronInvSqrtFD,
+            &kEnergyScaleHadronInvSqrtFD};
   }
 
-  EnergySystVector GetBigEnergySysts() {
-
-    EnergySystVector vec;
-    vec.push_back(&kEnergyScaleMuonBig);
-    vec.push_back(&kEnergyScaleMuonSqrtBig);
-    vec.push_back(&kEnergyScaleMuonInvSqrtBig);
-    vec.push_back(&kEnergyScaleMuonNDBig);
-    vec.push_back(&kEnergyScaleMuonSqrtNDBig);
-    vec.push_back(&kEnergyScaleMuonInvSqrtNDBig);
-    //vec.push_back(&kEnergyScaleMuonUBBig);
-    //vec.push_back(&kEnergyScaleMuonSqrtUBBig);
-    //vec.push_back(&kEnergyScaleMuonInvSqrtUBBig);
-    vec.push_back(&kEnergyScaleMuonFDBig);
-    vec.push_back(&kEnergyScaleMuonSqrtFDBig);
-    vec.push_back(&kEnergyScaleMuonInvSqrtFDBig);
-    vec.push_back(&kEnergyScaleHadronBig);
-    vec.push_back(&kEnergyScaleHadronSqrtBig);
-    vec.push_back(&kEnergyScaleHadronInvSqrtBig);
-    vec.push_back(&kEnergyScaleHadronNDBig);
-    vec.push_back(&kEnergyScaleHadronSqrtNDBig);
-    vec.push_back(&kEnergyScaleHadronInvSqrtNDBig);
-    //vec.push_back(&kEnergyScaleHadronUBBig);
-    //vec.push_back(&kEnergyScaleHadronSqrtUBBig);
-    //vec.push_back(&kEnergyScaleHadronInvSqrtUBBig);
-    vec.push_back(&kEnergyScaleHadronFDBig);
-    vec.push_back(&kEnergyScaleHadronSqrtFDBig);
-    vec.push_back(&kEnergyScaleHadronInvSqrtFDBig);
-
-    return vec;
+  std::vector<const EnergyScaleSyst*> GetBigEnergySysts() {
+    return {&kEnergyScaleMuonBig,
+            &kEnergyScaleMuonSqrtBig,
+            &kEnergyScaleMuonInvSqrtBig,
+            &kEnergyScaleMuonNDBig,
+            &kEnergyScaleMuonSqrtNDBig,
+            &kEnergyScaleMuonInvSqrtNDBig,
+            //&kEnergyScaleMuonUBBig,
+            //&kEnergyScaleMuonSqrtUBBig,
+            //&kEnergyScaleMuonInvSqrtUBBig,
+            &kEnergyScaleMuonFDBig,
+            &kEnergyScaleMuonSqrtFDBig,
+            &kEnergyScaleMuonInvSqrtFDBig,
+            &kEnergyScaleHadronBig,
+            &kEnergyScaleHadronSqrtBig,
+            &kEnergyScaleHadronInvSqrtBig,
+            &kEnergyScaleHadronNDBig,
+            &kEnergyScaleHadronSqrtNDBig,
+            &kEnergyScaleHadronInvSqrtNDBig,
+            //&kEnergyScaleHadronUBBig,
+            //&kEnergyScaleHadronSqrtUBBig,
+            //&kEnergyScaleHadronInvSqrtUBBig,
+            &kEnergyScaleHadronFDBig,
+            &kEnergyScaleHadronSqrtFDBig,
+            &kEnergyScaleHadronInvSqrtFDBig};
   }
 } // namespace ana
