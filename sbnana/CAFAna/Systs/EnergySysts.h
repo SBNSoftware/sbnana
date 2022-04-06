@@ -109,7 +109,7 @@ namespace ana
   extern const EnergyScaleSyst kEnergyScaleHadronSqrtFDBig;
   extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtFDBig;
 
-std::vector<const EnergyScaleSyst*> GetEnergySysts();
-std::vector<const EnergyScaleSyst*> GetBigEnergySysts();
+std::vector<const ISyst*> GetEnergySysts();
+std::vector<const ISyst*> GetBigEnergySysts();
 
 }
