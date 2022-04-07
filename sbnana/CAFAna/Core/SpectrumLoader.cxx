@@ -192,7 +192,20 @@ namespace ana
       // TODO think about if this should be gated behind first_in_file. At the
       // moment I think these will be synonymous. And despite the comment on
       // hdr.pot, I think it may be file-based in practice too.
-      fNGenEvt += sr->hdr.ngenevt;
+      if(sr->hdr.ismc) fNReadouts += sr->hdr.ngenevt;
+    }
+
+    if(!sr->hdr.ismc){
+      const int nbnb  = sr->hdr.bnbinfo.size();
+      const int nnumi = sr->hdr.numiinfo.size();
+      if(nbnb > 0 && nnumi > 0){
+        std::cout << "SpectrumLoader: nonzero number of both BNB (" << nbnb
+                  << ") and NuMI (" << nnumi << ") triggers. I'm confused"
+                  << std::endl;
+        abort();
+      }
+
+      fNReadouts += nbnb + nnumi;
     }
 
     // Do the spill-level spectra first. Keep this very simple because we
@@ -324,7 +337,7 @@ namespace ana
       abort();
     }
 
-    std::cout << fPOT << " POT over " << fNGenEvt << " readouts" << std::endl;
+    std::cout << fPOT << " POT over " << fNReadouts << " readouts" << std::endl;
 
     for(auto& shiftdef: fHistDefs){
       for(auto& spillcutdef: shiftdef.second){
@@ -333,11 +346,11 @@ namespace ana
             for(auto& vardef: weidef.second){
               for(Spectrum* s: vardef.second.spects){
                 s->fPOT += fPOT;
-                s->fLivetime += fNGenEvt;
+                s->fLivetime += fNReadouts;
               }
               for(ReweightableSpectrum* rw: vardef.second.rwSpects){
                 rw->fPOT += fPOT;
-                rw->fLivetime += fNGenEvt;
+                rw->fLivetime += fNReadouts;
               }
             }
           }
@@ -351,7 +364,7 @@ namespace ana
         for(auto spillvardef: spillweidef.second){
           for(Spectrum* s: spillvardef.second.spects){
             s->fPOT += fPOT;
-            s->fLivetime += fNGenEvt;
+            s->fLivetime += fNReadouts;
           }
         }
       }
