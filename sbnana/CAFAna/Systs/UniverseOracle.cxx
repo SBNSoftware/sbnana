@@ -80,8 +80,12 @@ namespace ana
 
     for(unsigned int i = 0; i < global.wgts.size(); ++i){
       const caf::SRWeightPSet& pset = global.wgts[i];
-      // For now, don't try to handle any parameter sets that have shifted more
-      // than one knob at once.
+
+      // Save the pset index in all cases
+      fPSetIdxs[pset.name] = i;
+
+      // Only save the remaining fields in parameter sets where only a single
+      // knob is shifted
       if(pset.map.size() != 1) continue;
 
       // Save which position in the vector this was
@@ -114,16 +118,14 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
-  std::vector<SystShifts> UniverseOracle::ShiftsForSysts(const std::vector<const ISyst*>& systs, int nUniv) const
+  unsigned int UniverseOracle::ParameterSetIndex(const std::string& name) const
   {
-    std::vector<SystShifts> ret(nUniv);
-
-    for(const ISyst* s: systs){
-      const std::vector<float>& xs = ShiftsForSyst(s->ShortName());
-      for(int i = 0; i < nUniv; ++i) ret[i].SetShift(s, xs[i%xs.size()]);
+    auto it = fPSetIdxs.find(name);
+    if(it == fPSetIdxs.end()){
+      std::cout << "UniverseOracle: pset '" << name << "' not known" << std::endl;
+      abort();
     }
-
-    return ret;
+    return it->second;
   }
 
   // --------------------------------------------------------------------------
