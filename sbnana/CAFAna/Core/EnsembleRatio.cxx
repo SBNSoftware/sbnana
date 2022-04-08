@@ -6,7 +6,6 @@
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TGraphAsymmErrors.h"
-#include "TH1.h"
 
 namespace ana
 {
@@ -68,29 +67,26 @@ namespace ana
   //----------------------------------------------------------------------
   TGraphAsymmErrors* EnsembleRatio::ErrorBand() const
   {
-    // TODO implementation without histograms
+    // TODO lots of code duplication with EnsembleSpectrum
 
-    std::unique_ptr<TH1D> hnom(Nominal().ToTH1());
-
-    std::vector<std::unique_ptr<TH1D>> hunivs;
-    hunivs.reserve(NUniverses()-1);
-    for(unsigned int univIdx = 1; univIdx < NUniverses(); ++univIdx)
-      hunivs.emplace_back(Universe(univIdx).ToTH1());
+    const Eigen::ArrayXd arr = fHist.GetEigen();
 
     TGraphAsymmErrors* g = new TGraphAsymmErrors;
 
-    for(int binIdx = 0; binIdx < hnom->GetNbinsX()+2; ++binIdx){
-      const double xnom = hnom->GetXaxis()->GetBinCenter(binIdx);
-      const double ynom = hnom->GetBinContent(binIdx);
-      g->SetPoint(binIdx, xnom, ynom);
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    const std::vector<double>& edges = fAxis.GetBins1D().Edges();
 
-      const double dx = hnom->GetXaxis()->GetBinWidth(binIdx);
+    for(int binIdx = 1; binIdx+1 < nbins; ++binIdx){
+      const double xnom = (edges[binIdx-1] + edges[binIdx]) / 2; // bin center
+      const double ynom = arr[binIdx];
+      g->SetPoint(binIdx-1, xnom, ynom);
+
+      const double dx = edges[binIdx] - edges[binIdx-1];
 
       std::vector<double> ys;
-      ys.reserve(hunivs.size());
-      for(const std::unique_ptr<TH1D>& hu: hunivs){
-        ys.push_back(hu->GetBinContent(binIdx));
-      }
+      ys.reserve(NUniverses()-1);
+      for(unsigned int univIdx = 1; univIdx < NUniverses(); ++univIdx)
+        ys.push_back(arr[univIdx*nbins + binIdx]);
 
       // 1 sigma
       const double y0 = FindQuantile(.5-0.6827/2, ys);
@@ -98,7 +94,7 @@ namespace ana
 
       // It's theoretically possible for the central value to be outside the
       // error bands - clamp to zero in that case
-      g->SetPointError(binIdx, dx/2, dx/2,
+      g->SetPointError(binIdx-1, dx/2, dx/2,
                        std::max(ynom-y0, 0.),
                        std::max(y1-ynom, 0.));
     } // end for binIdx
