@@ -9,19 +9,20 @@
 namespace ana
 {
   class EnsembleSpectrum;
+  class Multiverse;
 
   class EnsembleRatio
   {
   public:
-    EnsembleRatio(const EnsembleSpectrum& nom, const EnsembleSpectrum& denom);
+    friend class EnsembleSpectrum;
 
-    Ratio Nominal() const {return fNom;}
-    unsigned int NUniverses() const {return fUnivs.size();}
-    Ratio Universe(unsigned int i) const
-    {
-      assert(i < fUnivs.size());
-      return fUnivs[i];
-    }
+    EnsembleRatio(const EnsembleSpectrum& num, const EnsembleSpectrum& denom);
+
+    Ratio Nominal() const {return Universe(0);}
+    unsigned int NUniverses() const;
+    Ratio Universe(unsigned int i) const;
+
+    const Multiverse& GetMultiverse() const {return *fMultiverse;}
 
     TGraphAsymmErrors* ErrorBand() const;
 
@@ -32,8 +33,12 @@ namespace ana
     EnsembleRatio operator/(const EnsembleRatio& rhs) const;
 
   protected:
-    Ratio fNom;
-    std::vector<Ratio> fUnivs;
+    void CheckMultiverses(const Multiverse& rhs,
+                          const std::string& func) const;
+
+    const Multiverse* fMultiverse;
+    Hist fHist;
+    LabelsAndBins fAxis;
   };
 
   inline EnsembleRatio operator/(const EnsembleSpectrum& lhs,

@@ -26,15 +26,14 @@
 
 using namespace ana;
 
-// Since I'm in the SBND group the SAM dataset works fine for me
-const std::string sbnd_wildcard = "workshop_SBNWorkshop0421_prodoverlay_corsika_cosmics_proton_genie_nu_spill_gsimple-configf-v1_tpc_flat_caf_sbnd";
+const std::string wildcard = "/pnfs/icarus/persistent/users/jskim/mc/NUMI_Nu_Cosmics/flatcaf/v09_37_01_03p02/MultiSigmaAdded_RenamedPSet/*.root";
 
 const std::string state_fname = "test_ensemble_state.root";
 
 void test_ensemble(bool reload = false)
 {
   if(reload || TFile(state_fname.c_str()).IsZombie()){
-    SpectrumLoader loader(sbnd_wildcard);
+    SpectrumLoader loader(wildcard);
 
     const Var kTrueE = SIMPLEVAR(truth.E);
 
@@ -45,11 +44,10 @@ void test_ensemble(bool reload = false)
     const HistAxis axEnergy("True energy (GeV)", binsEnergy, kTrueE);
 
     std::vector<Weight> weis;
-    weis.reserve(100);
+    weis.reserve(101);
 
-    // We need these essentially as the list of knob names
-    const std::vector<const ISyst*>& systs = GetSBNGenieWeightSysts();
-    for(int i = 0; i < 100; ++i) weis.push_back(GetUniverseWeight(systs, i));
+    weis.push_back(kUnweighted); // nominal
+    for(int i = 0; i < 99; ++i) weis.push_back(GetUniverseWeight("multisim_Genie", i));
 
     EnsembleSpectrum sCC(loader.Slices().Ensemble(weis, 0)[kNumuSel][kIsNumuCC], axEnergy);
     EnsembleSpectrum sNC(loader.Slices().Ensemble(weis, 0)[kNumuSel][kIsNC],     axEnergy);
@@ -94,6 +92,7 @@ void test_ensemble(bool reload = false)
   TH1* hratio = ratio.Nominal().ToTH1();
   hratio->Draw("hist ][");
   hratio->GetYaxis()->SetTitle("CC / NC ratio");
+  hratio->GetYaxis()->SetRangeUser(0, 10);
   for(unsigned int i = 0; i < ratio.NUniverses(); ++i){
     ratio.Universe(i).ToTH1(kGray)->Draw("hist ][ same");
   }

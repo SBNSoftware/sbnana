@@ -2,6 +2,7 @@
 
 #include "sbnana/CAFAna/Core/EnsembleRatio.h"
 
+#include "sbnana/CAFAna/Core/Multiverse.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TDirectory.h"
@@ -15,12 +16,11 @@ namespace ana
   //----------------------------------------------------------------------
   EnsembleSpectrum::EnsembleSpectrum(beta::IValueEnsembleSource& src,
                                      const LabelsAndBins& axis)
-    : fNom(beta::kNullValueSource, axis)
+    : fMultiverse(&Multiverse::RandomGas({}, 99, 42)/*&src.GetMultiverse()*/),
+      fHist(Hist::Zero((axis.GetBins1D().NBins()+2) * fMultiverse->NUniv())),
+      fPOT(0), fLivetime(0),
+      fAxis(axis)
   {
-    // TODO TODO
-    fUnivs.reserve(100);//src.NUniverses());
-    for(int i = 0; i < 100/*src.NUniverses()*/; ++i) fUnivs.push_back(fNom);
-
     src.Register(this);
   }
 
@@ -28,36 +28,53 @@ namespace ana
   void EnsembleSpectrum::FillSingle(double x, double w, int universeId)
   {
     // Filling a single constituent universe
-    if(universeId == 0){
-      fNom.Fill(x, w);
-    }
-    else{
-      fUnivs[universeId-1].Fill(x, w);
-    }
+    const int bin = fAxis.GetBins1D().FindBin(x);
+    fHist.Fill((fAxis.GetBins1D().NBins()+2) * universeId + bin, w);
   }
 
   //----------------------------------------------------------------------
   void EnsembleSpectrum::FillEnsemble(double x, const std::vector<double>& ws)
   {
-    assert(!ws.empty());
-    // TODO checking for consistent multiverse etc
-    // TODO check ws is same length as univs+1
-    fNom.Fill(x, ws[0]);
-    for(unsigned int i = 1; i < ws.size(); ++i) fUnivs[i-1].Fill(x, ws[i]);
+    const unsigned int bin = fAxis.GetBins1D().FindBin(x);
+    const unsigned int nbins = fAxis.GetBins1D().NBins()+2;
+
+    const unsigned int nuniv = fMultiverse->NUniv();
+    assert(ws.size() == nuniv);
+
+    for(unsigned int univIdx = 0; univIdx < nuniv; ++univIdx)
+      fHist.Fill(nbins * univIdx + bin, ws[univIdx]);
   }
 
   //----------------------------------------------------------------------
   void EnsembleSpectrum::FillPOT(double pot)
   {
-    fNom.FillPOT(pot);
-    for(Spectrum& s: fUnivs) s.FillPOT(pot);
+    fPOT += pot;
   }
 
   //----------------------------------------------------------------------
   void EnsembleSpectrum::FillLivetime(double livetime)
   {
-    fNom.FillLivetime(livetime);
-    for(Spectrum& s: fUnivs) s.FillLivetime(livetime);
+    fLivetime += livetime;
+  }
+
+  //----------------------------------------------------------------------
+  unsigned int EnsembleSpectrum::NUniverses() const
+  {
+    return fMultiverse->NUniv();
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum EnsembleSpectrum::Universe(unsigned int univIdx) const
+  {
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    if(fHist.HasStan()){
+      return Spectrum(Eigen::ArrayXstan(fHist.GetEigenStan().segment(nbins*univIdx, nbins)),
+                      fAxis, fPOT, fLivetime);
+    }
+    else{
+      return Spectrum(Eigen::ArrayXd(fHist.GetEigen().segment(nbins*univIdx, nbins)),
+                      fAxis, fPOT, fLivetime);
+    }
   }
 
   //----------------------------------------------------------------------
@@ -65,11 +82,14 @@ namespace ana
                                                  EExposureType expotype,
                                                  EBinType bintype) const
   {
-    std::unique_ptr<TH1D> hnom(fNom.ToTH1(exposure, expotype, bintype));
+    // TODO implement without histograms, straight from the eigen bins
+
+    std::unique_ptr<TH1D> hnom(Nominal().ToTH1(exposure, expotype, bintype));
 
     std::vector<std::unique_ptr<TH1D>> hunivs;
-    hunivs.reserve(fUnivs.size());
-    for(const Spectrum& u: fUnivs) hunivs.emplace_back(u.ToTH1(exposure, expotype, bintype));
+    hunivs.reserve(NUniverses()-1);
+    for(unsigned int i = 1; i < NUniverses(); ++i)
+      hunivs.emplace_back(Universe(i).ToTH1(exposure, expotype, bintype));
 
     TGraphAsymmErrors* g = new TGraphAsymmErrors;
 
@@ -103,17 +123,85 @@ namespace ana
   //----------------------------------------------------------------------
   void EnsembleSpectrum::Scale(double c)
   {
-    fNom.Scale(c);
-    for(Spectrum& s: fUnivs) s.Scale(c);
+    fHist.Scale(c);
+  }
+
+  //----------------------------------------------------------------------
+  EnsembleSpectrum& EnsembleSpectrum::PlusEqualsHelper(const EnsembleSpectrum& rhs, int sign, const std::string& func)
+  {
+    CheckMultiverses(rhs.GetMultiverse(), func);
+
+    // In this case it would be OK to have no POT/livetime
+    if(rhs.fHist.Initialized() && rhs.fHist.Integral() == 0) return *this;
+
+    if((!fPOT && !fLivetime) || (!rhs.fPOT && !rhs.fLivetime)){
+      std::cout << "Error: can't sum Spectrum with no POT or livetime: "
+                << fPOT << " " << rhs.fPOT << " " << fLivetime << " " << rhs.fL\
+ivetime
+                << std::endl;
+      abort();
+    }
+
+    if(!fLivetime && !rhs.fPOT){
+      std::cout << "Error: can't sum Spectrum with POT ("
+                << fPOT << ") but no livetime and Spectrum with livetime ("
+                << rhs.fLivetime << " sec) but no POT." << std::endl;
+      abort();
+    }
+
+    if(!fPOT && !rhs.fLivetime){
+      std::cout << "Error: can't sum Spectrum with livetime ("
+                << fLivetime << " sec) but no POT and Spectrum with POT ("
+                << rhs.fPOT << ") but no livetime." << std::endl;
+      abort();
+    }
+
+    // And now there are still a bunch of good cases to consider
+
+    if(fPOT && rhs.fPOT){
+      // Scale by POT when possible
+      fHist.Add(rhs.fHist, sign*fPOT/rhs.fPOT);
+
+      if(fLivetime && rhs.fLivetime){
+        // If POT/livetime ratios match, keep regular lifetime, otherwise zero
+        // it out.
+        if(!AlmostEqual(fLivetime*rhs.fPOT, rhs.fLivetime*fPOT))
+          fLivetime = 0;
+      }
+      if(!fLivetime && rhs.fLivetime){
+        // If the RHS has a livetime and we don't, copy it in (suitably scaled)
+        fLivetime = rhs.fLivetime * fPOT/rhs.fPOT;
+      }
+      // Otherwise, keep our own livetime (if any)
+
+      return *this;
+    }
+
+    if(fLivetime && rhs.fLivetime){
+      // Scale by livetime, the only thing in common
+      fHist.Add(rhs.fHist, sign*fLivetime/rhs.fLivetime);
+
+      if(!fPOT && rhs.fPOT){
+        // If the RHS has a POT and we don't, copy it in (suitably scaled)
+        fPOT = rhs.fPOT * fLivetime/rhs.fLivetime;
+      }
+      // Otherwise, keep our own POT (if any)
+
+      return *this;
+    }
+
+    // That should have been all the cases. I definitely want to know what
+    // happened if it wasn't.
+    std::cout << "EnsembleSpectrum::operator+=(). How did we get here? "
+              << fPOT << " " << fLivetime << " "
+              << rhs.fPOT << " " << rhs.fLivetime << std::endl;
+    abort();
   }
 
   //----------------------------------------------------------------------
   EnsembleSpectrum& EnsembleSpectrum::operator+=(const EnsembleSpectrum& rhs)
   {
-    fNom += rhs.fNom;
-    assert(fUnivs.size() == rhs.fUnivs.size());
-    for(unsigned int i = 0; i < fUnivs.size(); ++i) fUnivs[i] += rhs.fUnivs[i];
-    return *this;
+    return PlusEqualsHelper(rhs, +1, __func__);
   }
 
   //----------------------------------------------------------------------
@@ -127,10 +215,7 @@ namespace ana
   //----------------------------------------------------------------------
   EnsembleSpectrum& EnsembleSpectrum::operator-=(const EnsembleSpectrum& rhs)
   {
-    fNom -= rhs.fNom;
-    assert(fUnivs.size() == rhs.fUnivs.size());
-    for(unsigned int i = 0; i < fUnivs.size(); ++i) fUnivs[i] -= rhs.fUnivs[i];
-    return *this;
+    return PlusEqualsHelper(rhs, -1, __func__);
   }
 
   //----------------------------------------------------------------------
@@ -144,9 +229,9 @@ namespace ana
   //----------------------------------------------------------------------
   EnsembleSpectrum& EnsembleSpectrum::operator*=(const EnsembleRatio& rhs)
   {
-    fNom *= rhs.Nominal();
-    assert(rhs.NUniverses() == fUnivs.size());
-    for(unsigned int i = 0; i < fUnivs.size(); ++i) fUnivs[i] *= rhs.Universe(i);
+    CheckMultiverses(rhs.GetMultiverse(), __func__);
+    fHist.Multiply(rhs.fHist);
+
     return *this;
   }
 
@@ -161,9 +246,9 @@ namespace ana
   //----------------------------------------------------------------------
   EnsembleSpectrum& EnsembleSpectrum::operator/=(const EnsembleRatio& rhs)
   {
-    fNom /= rhs.Nominal();
-    assert(rhs.NUniverses() == fUnivs.size());
-    for(unsigned int i = 0; i < fUnivs.size(); ++i) fUnivs[i] /= rhs.Universe(i);
+    CheckMultiverses(rhs.GetMultiverse(), __func__);
+    fHist.Divide(rhs.fHist);
+
     return *this;
   }
 
@@ -185,9 +270,21 @@ namespace ana
 
     TObjString("EnsembleSpectrum").Write("type");
 
-    fNom.SaveTo(dir, "nom");
-    for(unsigned int i = 0; i < fUnivs.size(); ++i){
-      fUnivs[i].SaveTo(dir, ("univ"+std::to_string(i)).c_str());
+    fMultiverse->SaveTo(dir, "multiverse");
+
+    // TODO potentially version of Write() that doesn't take binning
+    fHist.Write(Binning::Simple(fHist.GetNbinsX(), 0, fHist.GetNbinsX()));
+
+    TH1D hPot("", "", 1, 0, 1);
+    hPot.Fill(.5, fPOT);
+    hPot.Write("pot");
+    TH1D hLivetime("", "", 1, 0, 1);
+    hLivetime.Fill(.5, fLivetime);
+    hLivetime.Write("livetime");
+
+    for(unsigned int i = 0; i < NDimensions(); ++i){
+      TObjString(GetLabels()[i].c_str()).Write(TString::Format("label%d", i).Data());
+      GetBinnings()[i].SaveTo(dir, TString::Format("bins%d", i).Data());
     }
 
     dir->Write();
@@ -197,30 +294,63 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<EnsembleSpectrum> EnsembleSpectrum::LoadFrom(TDirectory* dir, const std::string& name)
+  EnsembleSpectrum::EnsembleSpectrum(const Multiverse* multiverse,
+                                     const Hist&& hist,
+                                     double pot,
+                                     double livetime,
+                                     const LabelsAndBins&& axis)
+    : fMultiverse(multiverse), fHist(hist), fPOT(pot), fLivetime(livetime), fAxis(axis)
   {
-    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+  }
+
+  //----------------------------------------------------------------------
+  std::unique_ptr<EnsembleSpectrum> EnsembleSpectrum::LoadFrom(TDirectory* topdir, const std::string& name)
+  {
+    std::unique_ptr<TDirectory> dir(topdir->GetDirectory(name.c_str())); // switch to subdir
     assert(dir);
 
     DontAddDirectory guard;
 
-    TObjString* tag = (TObjString*)dir->Get("type");
+    std::unique_ptr<TObjString> tag((TObjString*)dir->Get("type"));
     assert(tag);
     assert(tag->GetString() == "EnsembleSpectrum");
-    delete tag;
 
-    std::unique_ptr<EnsembleSpectrum> ret(new EnsembleSpectrum(*Spectrum::LoadFrom(dir, "nom")));
+    std::unique_ptr<TH1> hPot((TH1*)dir->Get("pot"));
+    assert(hPot);
+    std::unique_ptr<TH1> hLivetime((TH1*)dir->Get("livetime"));
+    assert(hLivetime);
 
-    for(unsigned int i = 0; ; ++i){
-      const std::string uname = "univ"+std::to_string(i);
-      TDirectory* d = dir->GetDirectory(uname.c_str());
-      if(!d) break;
-      ret->fUnivs.push_back(*Spectrum::LoadFrom(dir, uname));
+    // TODO LabelsAndBins::LoadFrom() or FromDirectory()
+    std::vector<std::string> labels;
+    std::vector<Binning> bins;
+    for(int i = 0; ; ++i){
+      const std::string subname = TString::Format("bins%d", i).Data();
+      TDirectory* subdir = dir->GetDirectory(subname.c_str());
+      if(!subdir) break;
+      delete subdir;
+      bins.push_back(*Binning::LoadFrom(dir.get(), subname));
+      std::unique_ptr<TObjString> label((TObjString*)dir->Get(TString::Format("label%d", i)));
+      labels.push_back(label->GetString().Data());
     }
 
-    delete dir;
+    return std::unique_ptr<EnsembleSpectrum>(new EnsembleSpectrum(Multiverse::LoadFrom(dir.get(), "multiverse"),
+                                                                  Hist::FromDirectory(dir.get()),
+                                                                  hPot->GetBinContent(1),
+                                                                  hLivetime->GetBinContent(1),
+                                                                  LabelsAndBins(labels, bins)));
+  }
 
-    return ret;
+  //----------------------------------------------------------------------
+  void EnsembleSpectrum::CheckMultiverses(const Multiverse& rhs,
+                                          const std::string& func) const
+  {
+    if(&rhs == fMultiverse) return;
+
+    std::cout << "EnsembleSpectrum::" << func << ": attempting to combine two spectra made with different multiverses: " << std::endl;
+    std::cout << "  " << fMultiverse->ShortName() << std::endl;
+    std::cout << "vs" << std::endl;
+    std::cout << rhs.ShortName() << std::endl;
+    abort();
   }
 
   //----------------------------------------------------------------------
@@ -244,6 +374,7 @@ namespace ana
       double maxY = 0;
       // Don't consider underflow or overflow bins when determining maximum
       for(int i = 1; i < band->GetN()-1; ++i){
+        if(band->GetY()[i] > 1e99) continue; // effectively infinite
         maxY = std::max(maxY, band->GetY()[i] + band->GetErrorYhigh(i));
       }
 

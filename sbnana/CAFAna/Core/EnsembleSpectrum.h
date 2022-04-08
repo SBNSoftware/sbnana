@@ -14,6 +14,7 @@ class TGraphAsymmErrors;
 namespace ana
 {
   class EnsembleRatio;
+  class Multiverse;
 
   // TODO Multiverse class encapsulating a vector of shifts/weights and an ID
   // number?
@@ -21,6 +22,8 @@ namespace ana
   class EnsembleSpectrum : public beta::IValueEnsembleSink
   {
   public:
+    friend class EnsembleRatio;
+
     /// Construct an ensemble spectrum from a source of values and an axis
     /// definition
     EnsembleSpectrum(beta::IValueEnsembleSource& src, const LabelsAndBins& axis);
@@ -34,17 +37,16 @@ namespace ana
     {
     }
 
-    Spectrum Nominal() const {return fNom;}
-    unsigned int NUniverses() const {return fUnivs.size();}
-    Spectrum Universe(unsigned int i) const
-    {
-      assert(i < fUnivs.size());
-      return fUnivs[i];
-    }
+    Spectrum Nominal() const {return Universe(0);}
+    unsigned int NUniverses() const;
+    Spectrum Universe(unsigned int i) const;
 
-    double POT() const {return fNom.POT();}
+    // TODO consider naming confusion with Universe() above
+    const Multiverse& GetMultiverse() const {return *fMultiverse;}
 
-    double Livetime() const {return fNom.Livetime();}
+    double POT() const {return fPOT;}
+
+    double Livetime() const {return fLivetime;}
 
     /// Result can be painted prettily with \ref DrawErrorBand
     TGraphAsymmErrors* ErrorBand(double exposure,
@@ -77,15 +79,31 @@ namespace ana
     static std::unique_ptr<EnsembleSpectrum> LoadFrom(TDirectory* dir,
                                                       const std::string& name);
 
-    unsigned int NDimensions() const{return fNom.NDimensions();}
-    std::vector<std::string> GetLabels() const {return fNom.GetLabels();}
-    std::vector<Binning> GetBinnings() const {return fNom.GetBinnings();}
+    unsigned int NDimensions() const{return fAxis.NDimensions();}
+    std::vector<std::string> GetLabels() const {return fAxis.GetLabels();}
+    std::vector<Binning> GetBinnings() const {return fAxis.GetBinnings();}
 
   protected:
-    EnsembleSpectrum(const Spectrum& nom) : fNom(nom) {}
+    /// Helper for LoadFrom()
+    EnsembleSpectrum(const Multiverse* multiverse,
+                     const Hist&& hist,
+                     double pot,
+                     double livetime,
+                     const LabelsAndBins&& axis);
 
-    Spectrum fNom;
-    std::vector<Spectrum> fUnivs;
+    void CheckMultiverses(const Multiverse& rhs,
+                          const std::string& func) const;
+
+    /// Helper for operator+= and operator-=
+    EnsembleSpectrum& PlusEqualsHelper(const EnsembleSpectrum& rhs, int sign,
+                                       const std::string& func);
+
+    const Multiverse* fMultiverse;
+
+    Hist fHist;
+    double fPOT;
+    double fLivetime;
+    LabelsAndBins fAxis;
   };
 
   // Commutative
