@@ -72,6 +72,6 @@ namespace ana
 
   const std::vector<const ISyst*>& GetSBNGenieWeightSysts();
 
-  //  const std::vector<const ISyst*>& GetSBNBoosterWeightSysts();
-  //  const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
+  const std::vector<const ISyst*>& GetSBNBoosterFluxWeightSysts();
+  const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
 }

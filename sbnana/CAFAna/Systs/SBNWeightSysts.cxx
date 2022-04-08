@@ -241,19 +241,32 @@ namespace ana
     return ret;
   }
 
+  // -------------------------------------------------------------------------
+
+  std::vector<std::string> GetSBNBoosterFluxWeightNames()
+  {
+    // We can't ask the UniverseOracle about this, because it doesn't get
+    // properly configured until it's seen its first CAF file.
+    return {"expskin",
+            "horncurrent",
+            "nucleoninexsec",
+            "nucleonqexsec",
+            "nucleontotxsec",
+            "pioninexsec",
+            "pionqexsec",
+            "piontotxsec"};
+  }
+
   // --------------------------------------------------------------------------
-  /*
-  const std::vector<const ISyst*>& GetBoosterFluxWeightSysts()
+  
+  const std::vector<const ISyst*>& GetSBNBoosterFluxWeightSysts()
   {
     static std::vector<const ISyst*> ret;
-    if(ret.empty()){
-      const UniverseOracle& uo = UniverseOracle::Instance();
-      ret.reserve(uo.Systs().size());
-      for(const std::string& name: uo.Systs()){
-        if(name.find("genie") != std::string::npos) continue;
-        ret.push_back(new SBNWeightSyst(name));
-      }
-    }
+    if(!ret.empty()) return ret;
+
+    for(const std::string& name: GetSBNBoosterFluxWeightNames())
+      ret.push_back(new SBNWeightSyst(name));
+
     return ret;
   }
 
@@ -263,12 +276,12 @@ namespace ana
     static std::vector<const ISyst*> ret;
     if(ret.empty()){
       const std::vector<const ISyst*>& g = GetSBNGenieWeightSysts();
-      const std::vector<const ISyst*>& f = GetBoosterFluxWeightSysts();
+      const std::vector<const ISyst*>& f = GetSBNBoosterFluxWeightSysts();
       ret.reserve(g.size()+f.size());
       ret.insert(ret.end(), g.begin(), g.end());
       ret.insert(ret.end(), f.begin(), f.end());
     }
     return ret;
   }
-  */
+  
 }
