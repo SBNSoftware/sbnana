@@ -4,7 +4,7 @@
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
 #include "sbnana/CAFAna/Prediction/PredictionNoExtrap.h"
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/CAFAna/Core/Loaders.h"
 #include "TFile.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"

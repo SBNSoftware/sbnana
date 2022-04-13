@@ -17,7 +17,8 @@ namespace ana
     /// Take filenames, return locations suitable for TFile::Open()
     std::vector<std::string> LocateSAMFiles(const std::vector<std::string>& fnames);
 
-    bool RunningOnGrid() const;
+    std::string IFDHBaseURI() const;
+
     std::string EnsureDataset(const std::string& query) const;
     std::string EnsureSnapshot(const std::string& def) const;
   };

@@ -89,6 +89,9 @@ namespace ana
   /// $EXPERIMENT or a nice error message and abort
   std::string Experiment();
 
+  /// $SAM_EXPERIMENT or a nice error message and abort
+  std::string SAMExperiment();
+
   /** \brief Compute bin-to-bin covariance matrix from a collection of sets of bin contents.
 
       \param binSets   Collection of sets of bins from which covariances should be calculated
