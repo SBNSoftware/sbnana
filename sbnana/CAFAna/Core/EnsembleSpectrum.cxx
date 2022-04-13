@@ -16,7 +16,7 @@ namespace ana
   //----------------------------------------------------------------------
   EnsembleSpectrum::EnsembleSpectrum(beta::IValueEnsembleSource& src,
                                      const LabelsAndBins& axis)
-    : fMultiverse(&Multiverse::RandomGas({}, 99, 42)/*&src.GetMultiverse()*/),
+    : fMultiverse(&FitMultiverse::RandomGas({}, 99, 42)/*&src.GetMultiverse()*/),
       fHist(Hist::Zero((axis.GetBins1D().NBins()+2) * fMultiverse->NUniv())),
       fPOT(0), fLivetime(0),
       fAxis(axis)
@@ -291,7 +291,7 @@ ivetime
   }
 
   //----------------------------------------------------------------------
-  EnsembleSpectrum::EnsembleSpectrum(const Multiverse* multiverse,
+  EnsembleSpectrum::EnsembleSpectrum(const FitMultiverse* multiverse,
                                      const Hist&& hist,
                                      double pot,
                                      double livetime,
@@ -330,7 +330,7 @@ ivetime
       labels.push_back(label->GetString().Data());
     }
 
-    return std::unique_ptr<EnsembleSpectrum>(new EnsembleSpectrum(Multiverse::LoadFrom(dir.get(), "multiverse"),
+    return std::unique_ptr<EnsembleSpectrum>(new EnsembleSpectrum(FitMultiverse::LoadFrom(dir.get(), "multiverse"),
                                                                   Hist::FromDirectory(dir.get()),
                                                                   hPot->GetBinContent(1),
                                                                   hLivetime->GetBinContent(1),
@@ -338,7 +338,7 @@ ivetime
   }
 
   //----------------------------------------------------------------------
-  void EnsembleSpectrum::CheckMultiverses(const Multiverse& rhs,
+  void EnsembleSpectrum::CheckMultiverses(const FitMultiverse& rhs,
                                           const std::string& func) const
   {
     if(&rhs == fMultiverse) return;

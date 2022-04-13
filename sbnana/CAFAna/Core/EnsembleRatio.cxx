@@ -103,7 +103,7 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void EnsembleRatio::CheckMultiverses(const Multiverse& rhs,
+  void EnsembleRatio::CheckMultiverses(const FitMultiverse& rhs,
                                        const std::string& func) const
   {
     if(&rhs == fMultiverse) return;

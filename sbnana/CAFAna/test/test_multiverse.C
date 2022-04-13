@@ -29,8 +29,8 @@ void test_multiverse(bool remake = true)
   GetSBNGenieWeightSysts(); // magic them into existence
 
   TFile fin("test_multiverse.root");
-  const Multiverse& cross = *Multiverse::LoadFrom(&fin, "cross");
-  const Multiverse& gas = *Multiverse::LoadFrom(&fin, "gas");
+  const FitMultiverse& cross = *Multiverse::LoadFrom(&fin, "cross");
+  const FitMultiverse& gas = *Multiverse::LoadFrom(&fin, "gas");
 
   std::cout << cross.LatexName() << std::endl << cross.ShortName() << std::endl;
   std::cout << gas.LatexName() << std::endl << gas.ShortName() << std::endl;

@@ -38,6 +38,13 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  SystShifts::SystShifts(const std::unordered_map<const ISyst*, double>& shifts)
+    : fID(fgNextID++)
+  {
+    for(auto it: shifts) if(it.second != 0) fSysts.emplace(it.first, it.second);
+  }
+
+  //----------------------------------------------------------------------
   SystShifts SystShifts::RandomThrow(const std::vector<const ISyst*>& systs)
   {
     SystShifts ret;

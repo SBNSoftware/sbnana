@@ -19,6 +19,7 @@ namespace ana
     SystShifts();
     SystShifts(const ISyst* syst, double shift);
     SystShifts(const std::map<const ISyst*, double>& shifts);
+    SystShifts(const std::unordered_map<const ISyst*, double>& shifts);
 
     static SystShifts Nominal(){return SystShifts();}
     static SystShifts RandomThrow(const std::vector<const ISyst*>& systs);

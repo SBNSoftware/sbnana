@@ -13,7 +13,7 @@ namespace ana
 {
   // Multiverses live the lifetime of the process, but let's not leak them at
   // shutdown
-  std::vector<std::unique_ptr<Multiverse>> gMultiverses;
+  std::vector<std::unique_ptr<FitMultiverse>> gFitMultiverses;
 
   namespace{
     // This is "group separator" and appears to print as a space. It is
@@ -24,15 +24,15 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  bool CompareSystsByShortName(const ISyst* a, const ISyst* b)
+  bool CompareSystsByShortName(const IFitSyst* a, const IFitSyst* b)
   {
     return a->ShortName() < b->ShortName();
   }
 
   //----------------------------------------------------------------------
-  std::vector<const ISyst*> SortedSystList(const std::vector<const ISyst*> systs)
+  std::vector<const IFitSyst*> SortedSystList(const std::vector<const IFitSyst*> systs)
   {
-    std::vector<const ISyst*> ret = systs;
+    std::vector<const IFitSyst*> ret = systs;
     std::sort(ret.begin(), ret.end(), CompareSystsByShortName);
     return ret;
   }
@@ -55,7 +55,8 @@ namespace ana
   std::string GetLabelValue(const std::string& str, const std::string& label)
   {
     if(str.substr(0, label.size()+1) != label+"="){
-      std::cout << "Multiverse::LoadFrom(): expected '" << label << "=value' "
+      std::cout << "FitMultiverse::LoadFrom(): expected '"
+                << label << "=value' "
                 << "got '" << str << "'" << std::endl;
       abort();
     }
@@ -87,7 +88,7 @@ namespace ana
     }
 
     if(pos != valuestr.size()){ // need to consume all the string
-      std::cout << "Multiverse::LoadFrom(): failed to parse integer parameter '" << str << "'" << std::endl;
+      std::cout << "FitMultiverse::LoadFrom(): failed to parse integer parameter '" << str << "'" << std::endl;
       abort();
     }
 
@@ -104,15 +105,15 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::vector<const ISyst*> SystNamesToSysts(const std::vector<std::string>& names)
+  std::vector<const IFitSyst*> SystNamesToSysts(const std::vector<std::string>& names)
   {
-    std::vector<const ISyst*> ret;
+    std::vector<const IFitSyst*> ret;
     ret.reserve(names.size());
 
     for(const std::string& name: names){
       ret.push_back(Registry<ISyst>::ShortNameToPtr(name, true));
       if(!ret.back()){
-        std::cout << "Multiverse::LoadFrom(): couldn't find any syst with short name '" << name << "'" << std::endl;
+        std::cout << "FitMultiverse::LoadFrom(): couldn't find any syst with short name '" << name << "'" << std::endl;
         abort();
       }
     }
@@ -121,62 +122,75 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  Multiverse::Multiverse(const std::string& shortName,
-                         const std::string& latexName,
-                         const std::vector<SystShifts>& univs)
+  FitMultiverse::FitMultiverse(const std::string& shortName,
+                               const std::string& latexName,
+                               const std::vector<FitUniverse>& univs)
     : INamed(shortName, latexName), fUnivs(univs)
   {
-    Registry<Multiverse>::Register(this);
+    Registry<FitMultiverse>::Register(this);
   }
 
   //----------------------------------------------------------------------
-  const Multiverse& Multiverse::
-  Hypercross(const std::vector<const ISyst*>& systs_unsorted, int nsigma)
+  FitMultiverse::FitMultiverse(const FitMultiverse&& m)
+    : INamed(m), fUnivs(m.fUnivs)
+  {
+    // "leak" the entry in the global list so we don't double-delete it
+    for(auto& it: gFitMultiverses) if(it.get() == &m) it.release();
+
+    Registry<FitMultiverse>::UnRegister(&m);
+    Registry<FitMultiverse>::Register(this);
+  }
+
+  //----------------------------------------------------------------------
+  const FitMultiverse& FitMultiverse::
+  Hypercross(const std::vector<const IFitSyst*>& systs_unsorted, int nsigma)
   {
     // Ensure reproducibility
-    const std::vector<const ISyst*> systs = SortedSystList(systs_unsorted);
+    const std::vector<const IFitSyst*> systs = SortedSystList(systs_unsorted);
 
     std::string name = "cross"+kSep+"nsigma="+std::to_string(nsigma);
-    for(const ISyst* s: systs) name += kSep + s->ShortName();
+    for(const IFitSyst* s: systs) name += kSep + s->ShortName();
 
     // Make sure that requesting the same multiverse multiple times always
     // gives back the same object
-    const Multiverse* reg = Registry<Multiverse>::ShortNameToPtr(name, true);
+    const FitMultiverse* reg = Registry<FitMultiverse>::ShortNameToPtr(name, true);
     if(reg) return *reg;
 
     const std::string latexName = "Hypercross for #pm"+std::to_string(nsigma)+"#sigma over "+std::to_string(systs.size())+" systematics";
 
 
-    std::vector<SystShifts> univs;
+    std::vector<FitUniverse> univs;
     univs.reserve(2*nsigma*systs.size()+1);
-    univs.push_back(SystShifts::Nominal());
-    for(const ISyst* s: systs){
+    univs.emplace_back(); // nominal
+    for(const IFitSyst* s: systs){
       for(int i = -nsigma; i <= +nsigma; ++i){
         if(i == 0) continue;
-        univs.emplace_back(s, i);
+        FitUniverse univ;
+        univ.emplace(s, i);
+        univs.push_back(univ);
       }
     } // end for systs
 
-    gMultiverses.emplace_back(new Multiverse(name, latexName, univs));
-    return *gMultiverses.back();
+    gFitMultiverses.emplace_back(new FitMultiverse(name, latexName, univs));
+    return *gFitMultiverses.back();
   }
 
   //----------------------------------------------------------------------
-  const Multiverse& Multiverse::
-  RandomGas(const std::vector<const ISyst*>& systs_unsorted, int Nuniv,
+  const FitMultiverse& FitMultiverse::
+  RandomGas(const std::vector<const IFitSyst*>& systs_unsorted, int Nuniv,
             unsigned int seed)
   {
     // Ensure reproducibility
-    const std::vector<const ISyst*> systs = SortedSystList(systs_unsorted);
+    const std::vector<const IFitSyst*> systs = SortedSystList(systs_unsorted);
 
     if(seed == kTrulyRandom) seed = std::random_device{}();
 
     std::string name = "gas"+kSep+"nuniv="+std::to_string(Nuniv)+kSep+"seed="+std::to_string(seed);
-    for(const ISyst* s: systs) name += kSep+s->ShortName();
+    for(const IFitSyst* s: systs) name += kSep+s->ShortName();
 
     // Make sure that requesting the same multiverse multiple times always
     // gives back the same object
-    const Multiverse* reg = Registry<Multiverse>::ShortNameToPtr(name, true);
+    const FitMultiverse* reg = Registry<FitMultiverse>::ShortNameToPtr(name, true);
     if(reg) return *reg;
 
     const std::string latexName = "Random multiverse with "+std::to_string(Nuniv)+" universes over "+std::to_string(systs.size())+" systematics";
@@ -185,23 +199,23 @@ namespace ana
     std::mt19937_64 generator(seed); // 64-bit Mersenne twister
     std::normal_distribution<double> gaus(0, 1);
 
-    std::vector<SystShifts> univs;
+    std::vector<FitUniverse> univs;
     univs.reserve(Nuniv+1);
-    univs.push_back(SystShifts::Nominal());
+    univs.emplace_back(); // nominal
     for(int i = 0; i < Nuniv; ++i){
-      SystShifts univ;
-      for(const ISyst* s: systs){
-        univ.SetShift(s, gaus(generator));
+      FitUniverse univ;
+      for(const IFitSyst* s: systs){
+        univ.emplace(s, gaus(generator));
       }
       univs.push_back(univ);
     }
 
-    gMultiverses.emplace_back(new Multiverse(name, latexName, univs));
-    return *gMultiverses.back();
+    gFitMultiverses.emplace_back(new FitMultiverse(name, latexName, univs));
+    return *gFitMultiverses.back();
   }
 
   //----------------------------------------------------------------------
-  void Multiverse::SaveTo(TDirectory* dir, const std::string& name) const
+  void FitMultiverse::SaveTo(TDirectory* dir, const std::string& name) const
   {
     // We could make a whole directory and fill it with a detailed record of
     // this object. But this will be saved for every single EnsembleSpectrum,
@@ -217,8 +231,8 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  const Multiverse* Multiverse::LoadFrom(TDirectory* dir,
-                                         const std::string& name)
+  const FitMultiverse* FitMultiverse::LoadFrom(TDirectory* dir,
+                                               const std::string& name)
   {
     TObjString* obj = (TObjString*)dir->Get(name.c_str());
     assert(obj);
@@ -233,7 +247,7 @@ namespace ana
     tokens.pop_back();
 
     // If this multiverse is already known, just give it back directly
-    const Multiverse* ret = Registry<Multiverse>::ShortNameToPtr(shortname, true);
+    const FitMultiverse* ret = Registry<FitMultiverse>::ShortNameToPtr(shortname, true);
 
     if(!ret){
       // Otherwise we need to construct one
@@ -244,12 +258,12 @@ namespace ana
         const int nuniv = ConsumeLabelIntValue(tokens, "nuniv");
         const unsigned int seed = ConsumeLabelIntValue(tokens, "seed");
 
-        ret = &Multiverse::RandomGas(SystNamesToSysts(tokens), nuniv, seed);
+        ret = &FitMultiverse::RandomGas(SystNamesToSysts(tokens), nuniv, seed);
       }
       else if(type == "cross"){
         const int nsigma = ConsumeLabelIntValue(tokens, "nsigma");
 
-        ret = &Multiverse::Hypercross(SystNamesToSysts(tokens), nsigma);
+        ret = &FitMultiverse::Hypercross(SystNamesToSysts(tokens), nsigma);
       }
       else{
         std::cout << "Multiverse::LoadFrom(): unknown multiverse type '"
@@ -267,17 +281,19 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::string Multiverse::Checksum() const
+  std::string FitMultiverse::Checksum() const
   {
     TMD5 md5;
 
-    for(const SystShifts& univ: fUnivs){
-      // Ensure reproducibility because ActiveSysts() doesn't guarantee any
+    for(const FitUniverse& univ: fUnivs){
+      std::vector<const IFitSyst*> keys;
+      for(auto it: univ) keys.push_back(it.first);
+      // Ensure reproducibility because the map doesn't guarantee any
       // particular ordering
-      for(const ISyst* syst: SortedSystList(univ.ActiveSysts())){
+      for(const IFitSyst* syst: SortedSystList(keys)){
         md5.Update((unsigned char*)syst->ShortName().c_str(),
                    syst->ShortName().size());
-        const double val = univ.GetShift(syst);
+        const double val = univ.at(syst);
         md5.Update((unsigned char*)&val, sizeof(double));
       } // end fo syst
     } // end for univ

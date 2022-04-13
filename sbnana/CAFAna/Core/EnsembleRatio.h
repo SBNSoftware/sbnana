@@ -9,7 +9,7 @@
 namespace ana
 {
   class EnsembleSpectrum;
-  class Multiverse;
+  class FitMultiverse;
 
   class EnsembleRatio
   {
@@ -22,7 +22,7 @@ namespace ana
     unsigned int NUniverses() const;
     Ratio Universe(unsigned int i) const;
 
-    const Multiverse& GetMultiverse() const {return *fMultiverse;}
+    const FitMultiverse& GetMultiverse() const {return *fMultiverse;}
 
     TGraphAsymmErrors* ErrorBand() const;
 
@@ -33,10 +33,10 @@ namespace ana
     EnsembleRatio operator/(const EnsembleRatio& rhs) const;
 
   protected:
-    void CheckMultiverses(const Multiverse& rhs,
+    void CheckMultiverses(const FitMultiverse& rhs,
                           const std::string& func) const;
 
-    const Multiverse* fMultiverse;
+    const FitMultiverse* fMultiverse;
     Hist fHist;
     LabelsAndBins fAxis;
   };

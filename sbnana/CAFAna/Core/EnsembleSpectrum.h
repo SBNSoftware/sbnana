@@ -14,10 +14,7 @@ class TGraphAsymmErrors;
 namespace ana
 {
   class EnsembleRatio;
-  class Multiverse;
-
-  // TODO Multiverse class encapsulating a vector of shifts/weights and an ID
-  // number?
+  class FitMultiverse;
 
   class EnsembleSpectrum : public beta::IValueEnsembleSink
   {
@@ -42,7 +39,7 @@ namespace ana
     Spectrum Universe(unsigned int i) const;
 
     // TODO consider naming confusion with Universe() above
-    const Multiverse& GetMultiverse() const {return *fMultiverse;}
+    const FitMultiverse& GetMultiverse() const {return *fMultiverse;}
 
     double POT() const {return fPOT;}
 
@@ -85,20 +82,20 @@ namespace ana
 
   protected:
     /// Helper for LoadFrom()
-    EnsembleSpectrum(const Multiverse* multiverse,
+    EnsembleSpectrum(const FitMultiverse* multiverse,
                      const Hist&& hist,
                      double pot,
                      double livetime,
                      const LabelsAndBins&& axis);
 
-    void CheckMultiverses(const Multiverse& rhs,
+    void CheckMultiverses(const FitMultiverse& rhs,
                           const std::string& func) const;
 
     /// Helper for operator+= and operator-=
     EnsembleSpectrum& PlusEqualsHelper(const EnsembleSpectrum& rhs, int sign,
                                        const std::string& func);
 
-    const Multiverse* fMultiverse;
+    const FitMultiverse* fMultiverse;
 
     Hist fHist;
     double fPOT;
