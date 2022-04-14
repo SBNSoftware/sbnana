@@ -4,6 +4,8 @@
 #include <map>
 #include <set>
 
+#include <iostream>
+
 namespace ana
 {
   /// std::function can wrap a real function, function object, or lambda
