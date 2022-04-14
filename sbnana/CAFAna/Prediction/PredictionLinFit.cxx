@@ -41,6 +41,10 @@ namespace ana
   {
     fNom = predGen.Generate(loaders, SystShifts::Nominal()).release();
 
+    /*
+    // TODO rework PredictionLinFit to work with the new-style systematic
+    // universe weights.
+
     // We really want to apply a weight - but PredictionGenerator is set up to
     // take a SystShifts, so...
     class DummyUnivWeightSyst: public ISyst
@@ -67,6 +71,7 @@ namespace ana
       const SystShifts s2(new DummyUnivWeightSyst(systs, univIdx), 1);
       fUnivs.emplace_back(s1, predGen.Generate(loaders, s2).release());
     }
+    */
   }
 
   // --------------------------------------------------------------------------

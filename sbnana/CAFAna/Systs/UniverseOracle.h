@@ -24,11 +24,11 @@ namespace ana
 
     /// List of shifts for this syst in each universe
     const std::vector<float>& ShiftsForSyst(const std::string& name) const;
-    /// Get SystShifts objects representing each universe in a multiverse
-    /// consisting of the specificed systs.
-    std::vector<SystShifts> ShiftsForSysts(const std::vector<const ISyst*>& systs, int nUniv) const;
 
-    /// Which index in the weights array corresponds to this syst?
+    /// Which index in the weights array corresponds to this parameter set?
+    unsigned int ParameterSetIndex(const std::string& name) const;
+
+    /// Which index in the weights array corresponds to the shifting of just this syst (in any parameter set)?
     unsigned int SystIndex(const std::string& name) const;
 
     /// Within that entry, which index corresponds most closely to 'shift'?
@@ -39,6 +39,7 @@ namespace ana
   protected:
     UniverseOracle();
 
+    std::map<std::string, unsigned int> fPSetIdxs;
     std::map<std::string, unsigned int> fSystIdxs;
     std::map<std::string, std::vector<float>> fShiftVals;
   };
