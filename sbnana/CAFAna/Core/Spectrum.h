@@ -121,7 +121,7 @@ namespace ana
              const Binning& binsx, const MultiVar& varx,
              const Binning& binsy, const MultiVar& vary,
              const SpillCut& spillcut,
-	     const Cut& cut,
+             const Cut& cut,
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted);
 
@@ -142,32 +142,32 @@ namespace ana
              const Var& wei = kUnweighted);
 
     Spectrum(const std::string& xLabel,
-	     const std::string& yLabel,
-	     SpectrumLoaderBase& loader,
-	     const Binning& binsx, const Var& varx,
-	     const Binning& binsy, const Var& vary,
+             const std::string& yLabel,
+             SpectrumLoaderBase& loader,
+             const Binning& binsx, const Var& varx,
+             const Binning& binsy, const Var& vary,
              const SpillCut& spillcut,
-	     const Cut& cut,
-	     const SystShifts& shift = kNoShift,
-	     const Var& wei = kUnweighted);
-
-    Spectrum(const std::string& xLabel,
-	     const std::string& yLabel,
-	     SpectrumLoaderBase& loader,
-	     const Binning& binsx, const MultiVar& varx,
-	     const Binning& binsy, const MultiVar& vary,
-             const SpillCut& spillcut,
-	     const Cut& cut,
+             const Cut& cut,
              const SystShifts& shift = kNoShift,
-	     const Var& wei = kUnweighted);
+             const Var& wei = kUnweighted);
 
     Spectrum(const std::string& xLabel,
-	     const std::string& yLabel,
-	     SpectrumLoaderBase& loader,
-	     const Binning& binsx, const SpillMultiVar& varx,
-	     const Binning& binsy, const SpillMultiVar& vary,
+             const std::string& yLabel,
+             SpectrumLoaderBase& loader,
+             const Binning& binsx, const MultiVar& varx,
+             const Binning& binsy, const MultiVar& vary,
              const SpillCut& spillcut,
-	     const SpillVar& wei = kSpillUnweighted);
+             const Cut& cut,
+             const SystShifts& shift = kNoShift,
+             const Var& wei = kUnweighted);
+
+    Spectrum(const std::string& xLabel,
+             const std::string& yLabel,
+             SpectrumLoaderBase& loader,
+             const Binning& binsx, const SpillMultiVar& varx,
+             const Binning& binsy, const SpillMultiVar& vary,
+             const SpillCut& spillcut,
+             const SpillVar& wei = kSpillUnweighted);
 
     /// 3D Spectrum of three Vars
     Spectrum(const std::string& label, SpectrumLoaderBase& loader,
@@ -178,12 +178,12 @@ namespace ana
              const Cut& cut,
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted,
-	     ESparse sparse = kDense);
+             ESparse sparse = kDense);
 
     Spectrum(const std::string& xLabel,
-	     const std::string& yLabel,
-	     const std::string& zLabel,
-	     SpectrumLoaderBase& loader,
+             const std::string& yLabel,
+             const std::string& zLabel,
+             SpectrumLoaderBase& loader,
              const Binning& binsx, const Var& varx,
              const Binning& binsy, const Var& vary,
              const Binning& binsz, const Var& varz,
@@ -191,18 +191,18 @@ namespace ana
              const Cut& cut,
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted,
-	     ESparse sparse = kDense);
+             ESparse sparse = kDense);
 
     /// 3D Spectrum taking 3 HistAxis
     Spectrum(SpectrumLoaderBase& loader,
              const HistAxis& xAxis,
              const HistAxis& yAxis,
-	     const HistAxis& zAxis,
+             const HistAxis& zAxis,
              const SpillCut& spillcut,
              const Cut& cut,
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted,
-	     ESparse sparse = kDense);
+             ESparse sparse = kDense);
 
 
     virtual ~Spectrum();
@@ -239,13 +239,13 @@ namespace ana
 
     /// Spectrum must be 2D to obtain TH2
     TH2*  ToTH2     (double exposure, EExposureType expotype = kPOT,
-		     EBinType bintype = kBinContent) const;
+                     EBinType bintype = kBinContent) const;
     /// Spectrum must be 2D to obtain TH2. Normalized to X axis.
     TH2*  ToTH2NormX(double exposure, EExposureType expotype = kPOT) const;
 
     /// Spectrum must be 3D to obtain TH3
     TH3*  ToTH3     (double exposure, EExposureType expotype = kPOT,
-		     EBinType bintype = kBinContent) const;
+                     EBinType bintype = kBinContent) const;
 
     /// Function decides what is the appropriate projection based on fBins, and does that
     TH1*  ToTHX     (double exposure, bool force1D = false, EExposureType expotype = kPOT) const;
@@ -256,7 +256,7 @@ namespace ana
     /// \param err      The statistical error on this total (optional)
     /// \param expotype What the first parameter represents
     double Integral(double exposure, double* err = 0,
-		    EExposureType expotype = kPOT) const;
+                    EExposureType expotype = kPOT) const;
 
     /// \brief Return mean of 1D histogram
     double Mean() const;

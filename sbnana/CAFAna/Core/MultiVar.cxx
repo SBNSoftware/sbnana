@@ -18,7 +18,7 @@ namespace ana
   {
   public:
     MultiVar2DFunc(const _MultiVar<T>& a, const Binning binsa,
-		   const _MultiVar<T>& b, const Binning binsb)
+                   const _MultiVar<T>& b, const Binning binsb)
       : fA(a), fBinsA(binsa),
         fB(b), fBinsB(binsb)
     {
@@ -32,24 +32,24 @@ namespace ana
       const std::vector<double> vbVec = fB(sr);
 
       if(vaVec.size() != vbVec.size())
-	throw std::length_error("MultiVars need to be same size");
+        throw std::length_error("MultiVars need to be same size");
 
       for(unsigned n = 0; n < vaVec.size(); ++n)
-	{
-	  const double va = vaVec.at(n);
-	  const double vb = vbVec.at(n);
-	  // Since there are no overflow/underflow bins, check the range
-	  if(va < fBinsA.Min() || vb < fBinsB.Min()){ returnVec.push_back(-1); continue;}
-	  if(va > fBinsA.Max() || vb > fBinsB.Max()){ returnVec.push_back(fBinsA.NBins() * fBinsB.NBins()); continue;}
-	      
-	  // FindBin uses root convention, first bin is bin 1, bin 0 is underflow
-	  const int ia = fBinsA.FindBin(va) - 1;
-	  const int ib = fBinsB.FindBin(vb) - 1;
+        {
+          const double va = vaVec.at(n);
+          const double vb = vbVec.at(n);
+          // Since there are no overflow/underflow bins, check the range
+          if(va < fBinsA.Min() || vb < fBinsB.Min()){ returnVec.push_back(-1); continue;}
+          if(va > fBinsA.Max() || vb > fBinsB.Max()){ returnVec.push_back(fBinsA.NBins() * fBinsB.NBins()); continue;}
+              
+          // FindBin uses root convention, first bin is bin 1, bin 0 is underflow
+          const int ia = fBinsA.FindBin(va) - 1;
+          const int ib = fBinsB.FindBin(vb) - 1;
       
-	  const int i = ia*fBinsB.NBins()+ib;
-	      
-	  returnVec.push_back(i+.5);
-	}
+          const int i = ia*fBinsB.NBins()+ib;
+              
+          returnVec.push_back(i+.5);
+        }
       return returnVec;
     }
   protected:
@@ -62,7 +62,7 @@ namespace ana
   //----------------------------------------------------------------------
   template<class T> _MultiVar<T>
   MultiVar2D(const _MultiVar<T>& a, const Binning& binsa,
-	     const _MultiVar<T>& b, const Binning& binsb)
+             const _MultiVar<T>& b, const Binning& binsb)
   {
     return _MultiVar<T>(MultiVar2DFunc<T>(a, binsa, b, binsb));
   }

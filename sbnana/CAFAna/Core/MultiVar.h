@@ -50,6 +50,6 @@ namespace ana
 
   template<class T> _MultiVar<T>
   MultiVar2D(const _MultiVar<T>& a, const Binning& binsa,
-	     const _MultiVar<T>& b, const Binning& binsb);
+             const _MultiVar<T>& b, const Binning& binsb);
 
 } // namespace
