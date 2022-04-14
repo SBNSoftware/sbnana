@@ -32,8 +32,12 @@ namespace ana
       const std::vector<double> vbVec = fB(sr);
 
       if(vaVec.size() != vbVec.size())
-        throw std::length_error("MultiVars need to be same size");
-
+	{
+	  std::cout << "MultiVars need to be same size, these two are size " 
+		    << vaVec.size() << " " << vbVec.size() << "respectively." << std::endl;
+	  std::abort();
+	}
+      
       for(unsigned n = 0; n < vaVec.size(); ++n){
         const double va = vaVec.at(n);
         const double vb = vbVec.at(n);
