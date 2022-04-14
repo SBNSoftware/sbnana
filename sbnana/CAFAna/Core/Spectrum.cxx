@@ -157,6 +157,41 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+                     const Binning& binsx, const SpillVar& varx,
+                     const Binning& binsy, const SpillVar& vary,
+                     const SpillCut& spillcut,
+                     const SpillVar& wei)
+    : Spectrum(label, "", loader, binsx, varx, binsy, vary, spillcut, wei)
+  {
+    // TODO do we want this variant when there's one with a labelY just below?
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+                     const Binning& binsx, const MultiVar& varx,
+                     const Binning& binsy, const MultiVar& vary,
+                     const SpillCut& spillcut,
+                     const Cut& cut,
+                     const SystShifts& shift,
+                     const Var& wei)
+    : Spectrum(label, "", loader, binsx, varx, binsy, vary, spillcut, cut, shift, wei)
+  {
+    // TODO do we want this variant when there's one with a labelY just below?
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+                     const Binning& binsx, const SpillMultiVar& varx,
+                     const Binning& binsy, const SpillMultiVar& vary,
+                     const SpillCut& spillcut,
+                     const SpillVar& wei)
+    : Spectrum(label, "", loader, binsx, varx, binsy, vary, spillcut, wei)
+  {
+    // TODO do we want this variant when there's one with a labelY just below?
+  }
+
+  //----------------------------------------------------------------------
   Spectrum::Spectrum(SpectrumLoaderBase& loader,
                      const HistAxis& xAxis,
                      const HistAxis& yAxis,
@@ -176,8 +211,8 @@ namespace ana
 
   //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& xLabel,
-		     const std::string& yLabel,
-		     SpectrumLoaderBase& loader,
+                     const std::string& yLabel,
+                     SpectrumLoaderBase& loader,
                      const Binning& binsx, const Var& varx,
                      const Binning& binsy, const Var& vary,
                      const SpillCut& spillcut,
@@ -192,6 +227,53 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& xLabel,
+                     const std::string& yLabel,
+                     SpectrumLoaderBase& loader,
+                     const Binning& binsx, const SpillVar& varx,
+                     const Binning& binsy, const SpillVar& vary,
+                     const SpillCut& spillcut,
+                     const SpillVar& wei)
+    : Spectrum({xLabel, yLabel}, {binsx, binsy})
+  {
+    SpillVar multiDVar = Var2D(varx, binsx, vary, binsy);
+
+    loader.AddSpectrum(*this, multiDVar, spillcut, wei);
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& xLabel,
+                     const std::string& yLabel,
+                     SpectrumLoaderBase& loader,
+                     const Binning& binsx, const MultiVar& varx,
+                     const Binning& binsy, const MultiVar& vary,
+                     const SpillCut& spillcut,
+                     const Cut& cut,
+                     const SystShifts& shift,
+                     const Var& wei)
+    : Spectrum({xLabel, yLabel}, {binsx, binsy})
+  {
+    MultiVar multiDVar = MultiVar2D(varx, binsx, vary, binsy);
+
+    loader.AddSpectrum(*this, multiDVar, spillcut, cut, shift, wei);
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& xLabel,
+                     const std::string& yLabel,
+                     SpectrumLoaderBase& loader,
+                     const Binning& binsx, const SpillMultiVar& varx,
+                     const Binning& binsy, const SpillMultiVar& vary,
+                     const SpillCut& spillcut,
+                     const SpillVar& wei)
+    : Spectrum({xLabel, yLabel}, {binsx, binsy})
+  {
+    SpillMultiVar multiDVar = MultiVar2D(varx, binsx, vary, binsy);
+
+    loader.AddSpectrum(*this, multiDVar, spillcut, wei);
+  }
+
+  //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& label, SpectrumLoaderBase& loader,
                      const Binning& binsx, const Var& varx,
                      const Binning& binsy, const Var& vary,
@@ -200,7 +282,7 @@ namespace ana
                      const Cut& cut,
                      const SystShifts& shift,
                      const Var& wei,
-		     ESparse sparse)
+                     ESparse sparse)
     : Spectrum(label, "", "", loader, binsx, varx, binsy, vary, binsz, varz, spillcut, cut, shift, wei, sparse)
   {
     // TODO do we want this variant when there's one with a labelY and labelZ
@@ -209,9 +291,9 @@ namespace ana
 
   //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& xLabel,
-		     const std::string& yLabel,
-		     const std::string& zLabel,
-		     SpectrumLoaderBase& loader,
+                     const std::string& yLabel,
+                     const std::string& zLabel,
+                     SpectrumLoaderBase& loader,
                      const Binning& binsx, const Var& varx,
                      const Binning& binsy, const Var& vary,
                      const Binning& binsz, const Var& varz,
@@ -219,7 +301,7 @@ namespace ana
                      const Cut& cut,
                      const SystShifts& shift,
                      const Var& wei,
-		     ESparse sparse)
+                     ESparse sparse)
     : Spectrum({xLabel, yLabel, zLabel}, {binsx, binsy, binsz}, sparse)
   {
     Var multiDVar = Var3D(varx, binsx, vary, binsy, varz, binsz);
@@ -236,7 +318,7 @@ namespace ana
                      const Cut& cut,
                      const SystShifts& shift,
                      const Var& wei,
-		     ESparse sparse)
+                     ESparse sparse)
     : Spectrum(xAxis.GetLabels()[0], loader,
                xAxis.GetBinnings()[0], xAxis.GetVars()[0],
                yAxis.GetBinnings()[0], yAxis.GetVars()[0],
@@ -392,7 +474,7 @@ namespace ana
       const double xmin = bins1D.Min();
       const double xmax = bins1D.Max();
       fHistSparse = new THnSparseD(UniqueName().c_str(), UniqueName().c_str(),
-				   1, &nbins, &xmin, &xmax);
+                                   1, &nbins, &xmin, &xmax);
 
       // Ensure errors get accumulated properly
       fHistSparse->Sumw2();
@@ -437,9 +519,9 @@ namespace ana
                       << "Did you mean to pass kLivetime to ToTH1()?";
           }
           std::cout << std::endl;
-	  //          abort();
-	  //	  fPOT = 1e18;
-	  ret->Scale(pot/1e18); //hack while we add spill tree
+          //          abort();
+          //      fPOT = 1e18;
+          ret->Scale(pot/1e18); //hack while we add spill tree
         }
       }
     }
@@ -590,7 +672,7 @@ namespace ana
 
   //----------------------------------------------------------------------
   double Spectrum::Integral(double exposure, double* err,
-			    EExposureType expotype) const
+                            EExposureType expotype) const
   {
     const double ratio = (expotype == kPOT) ? exposure/fPOT : exposure/fLivetime;
 
@@ -639,12 +721,12 @@ namespace ana
 
     if(ret.fHist){
       for(int i = 0; i < ret.fHist->GetNbinsX()+2; ++i){
-	ret.fHist->SetBinContent(i, rnd.Poisson(ret.fHist->GetBinContent(i)));
+        ret.fHist->SetBinContent(i, rnd.Poisson(ret.fHist->GetBinContent(i)));
       }
     }
     if(ret.fHistSparse){
       for(int i = 0; i < ret.fHistSparse->GetNbins(); ++i)
-	ret.fHistSparse->SetBinContent(i, rnd.Poisson(ret.fHistSparse->GetBinContent(i)));
+        ret.fHistSparse->SetBinContent(i, rnd.Poisson(ret.fHistSparse->GetBinContent(i)));
     }
 
     // Drop old errors, which are based on the MC statistics, and create new
@@ -663,9 +745,9 @@ namespace ana
     Spectrum ret = *this;
     if(fPOT > 0){
       if(ret.fHist)
-	ret.fHist->Scale(pot/fPOT);
+        ret.fHist->Scale(pot/fPOT);
       if(ret.fHistSparse)
-	ret.fHistSparse->Scale(pot/fPOT);
+        ret.fHistSparse->Scale(pot/fPOT);
     }
     if(fLivetime > 0) ret.fLivetime *= pot/fPOT;
     ret.fPOT = pot;
