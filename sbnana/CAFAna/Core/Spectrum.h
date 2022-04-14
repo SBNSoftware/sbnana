@@ -116,6 +116,13 @@ namespace ana
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted);
 
+    /// 2D Spectrum of two SpillVars
+    Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+             const Binning& binsx, const SpillVar& varx,
+             const Binning& binsy, const SpillVar& vary,
+             const SpillCut& spillcut,
+             const SpillVar& wei = kSpillUnweighted);
+
     /// 2D Spectrum of two MultiVars
     Spectrum(const std::string& label, SpectrumLoaderBase& loader,
              const Binning& binsx, const MultiVar& varx,
@@ -150,6 +157,14 @@ namespace ana
              const Cut& cut,
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted);
+
+    Spectrum(const std::string& xLabel,
+             const std::string& yLabel,
+             SpectrumLoaderBase& loader,
+             const Binning& binsx, const SpillVar& varx,
+             const Binning& binsy, const SpillVar& vary,
+             const SpillCut& spillcut,
+             const SpillVar& wei = kSpillUnweighted);
 
     Spectrum(const std::string& xLabel,
              const std::string& yLabel,
