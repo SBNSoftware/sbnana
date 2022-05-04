@@ -157,7 +157,20 @@ namespace ana
         // TODO think about if this should be gated behind first_in_file. At
         // the moment I think these will be synonymous. And despite the comment
         // on hdr.pot, I think it may be file-based in practice too.
-        fNGenEvt += sr.hdr.ngenevt;
+        if(sr.hdr.ismc) fNReadouts += sr.hdr.ngenevt;
+      }
+
+      if(!sr.hdr.ismc){
+        const int nbnb  = sr.hdr.bnbinfo.size();
+        const int nnumi = sr.hdr.numiinfo.size();
+        if(nbnb > 0 && nnumi > 0){
+          std::cout << "SpectrumLoader: nonzero number of both BNB (" << nbnb
+                    << ") and NuMI (" << nnumi << ") triggers. I'm confused"
+                    << std::endl;
+          abort();
+        }
+
+        fNReadouts += nbnb + nnumi;
       }
 
       // This record was only kept as a receptacle for exposure information. It
@@ -178,10 +191,10 @@ namespace ana
       abort();
     }
 
-    std::cout << fPOT << " POT over " << fNGenEvt << " readouts" << std::endl;
+    std::cout << fPOT << " POT over " << fNReadouts << " readouts" << std::endl;
 
     FillPOT(fPOT);
-    FillLivetime(fNGenEvt);
+    FillLivetime(fNReadouts);
   }
 
 } // namespace

@@ -69,6 +69,6 @@ namespace ana
 
     double fPOT;
     double fPOTFromHist; ///< Accumulated by calls to \ref GetNextFile
-    int fNGenEvt;
+    int fNReadouts;
   };
 }

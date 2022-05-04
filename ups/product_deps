@@ -34,9 +34,9 @@ fwdir   product_dir scripts
 # Add the dependent product and version
 
 product          version
-sbnanaobj        v09_17_13
+sbnanaobj        v09_18_03
 #SAM tools?
-# HACK BECAUSE THE REGULAR CAFANACORE IS BEHIND ifdhc            v2_6_2
+# HACK BECAUSE THE REGULAR CAFANACORE IS BEHIND ifdhc            v2_6_3
 # For CAFAna
 osclib           v00.17
 cafanacore       v02.00_value_source_alpha6

@@ -26,7 +26,7 @@ namespace ana
 {
   //----------------------------------------------------------------------
   SpectrumLoaderBase::SpectrumLoaderBase()
-    : fGone(false), fPOT(0), fPOTFromHist(0), fNGenEvt(0)
+    : fGone(false), fPOT(0), fPOTFromHist(0), fNReadouts(0)
   {
   }
 
