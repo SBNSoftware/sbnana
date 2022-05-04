@@ -2,7 +2,6 @@
 
 #include "sbnana/CAFAna/Core/ISyst.h"
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Core/Weight.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"

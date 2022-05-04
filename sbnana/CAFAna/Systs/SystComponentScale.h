@@ -3,7 +3,6 @@
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/ISyst.h"
 
-#include <cassert>
 #include <memory>
 
 class TDirectory;
