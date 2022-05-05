@@ -10,17 +10,19 @@ namespace ana
   class SingleSampleExperiment: public IExperiment
   {
   public:
-    /// \param pred   Source of oscillated MC beam predictions
-    /// \param data   Data spectrum to compare to
-    /// \param cosmic In-time cosmic ray background component
+    /// \param pred            Source of oscillated MC beam predictions
+    /// \param data            Data spectrum to compare to
+    /// \param cosmicInTime    In-time cosmic ray background component
+    /// \param cosmicOutOfTime Out-of-time cosmic ray background component
     SingleSampleExperiment(const IPrediction* pred,
                            const Spectrum& data,
-                           const Spectrum& cosmic);
+                           const Spectrum& cosmicInTime,
+                           const Spectrum& cosmicOutOfTime);
 
     /// In MC studies you might not want to bother with cosmics
     SingleSampleExperiment(const IPrediction* pred,
                            const Spectrum& data)
-      : fMC(pred), fData(data), fCosmic(0, {}, {}, 0, 0), fMask(0)
+      : fMC(pred), fData(data), fCosmicInTime(0, {}, {}, 0, 0), fCosmicOutOfTime(0, {}, {}, 0, 0), fMask(0)
     {
     }
 
@@ -38,7 +40,10 @@ namespace ana
 
     // need to explicitly declare move constructor since copy constructor is deleted
     SingleSampleExperiment(SingleSampleExperiment&& s)
-      : fMC(s.fMC), fData(std::move(s.fData)), fCosmic(std::move(s.fCosmic))
+      : fMC(s.fMC),
+        fData(std::move(s.fData)),
+        fCosmicInTime(std::move(s.fCosmicInTime)),
+        fCosmicOutOfTime(std::move(s.fCosmicOutOfTime))
     {
       s.fMC = nullptr;
     };
@@ -49,7 +54,7 @@ namespace ana
   protected:
     const IPrediction* fMC;
     Spectrum fData;
-    Spectrum fCosmic;
+    Spectrum fCosmicInTime, fCosmicOutOfTime;
     TH1* fMask;
   };
 }
