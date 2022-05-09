@@ -18,16 +18,14 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
-  double UniverseWeight::operator()(const caf::SRSliceProxy* sr) const
+  double UniverseWeight::operator()(const caf::SRTrueInteractionProxy* sr) const
   {
-    if(sr->truth.index < 0) return 1;
-
     if(fPSetIdx == -1){
       const UniverseOracle& uo = UniverseOracle::Instance();
       fPSetIdx = uo.ParameterSetIndex(fPSetName);
     }
 
-    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->wgt;
     if(wgts.empty()) return 1;
 
     const int Nwgts = wgts[fPSetIdx].univ.size();
@@ -41,6 +39,14 @@ namespace ana
     const unsigned int unividx = fUnivIdx % Nwgts;
 
     return wgts[fPSetIdx].univ[unividx];
+  }
+
+  // --------------------------------------------------------------------------
+  double UniverseWeight::operator()(const caf::SRSliceProxy* sr) const
+  {
+    if(sr->truth.index < 0) return 1;
+
+    return (*this)(&sr->truth);
   }
 
   // --------------------------------------------------------------------------
@@ -184,7 +190,7 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
-  
+
   const std::vector<const ISyst*>& GetSBNBoosterFluxWeightSysts()
   {
     static std::vector<const ISyst*> ret;
@@ -209,5 +215,5 @@ namespace ana
     }
     return ret;
   }
-  
+
 }
