@@ -14,8 +14,9 @@ namespace ana
     void DrawEnsemble(TH2* fc, Color_t color = kGray);
     void DrawBand(TH2* fc);
 
-    void SaveTo(TDirectory * dir) const;
-    static std::unique_ptr<MedianSurface> LoadFrom(TDirectory * dir);
+    void SaveTo(TDirectory* dir, const std::string& name) const;
+    static std::unique_ptr<MedianSurface> LoadFrom(TDirectory* dir,
+                                                   const std::string& name);
   protected:
     std::vector<Surface> fThrows;
 

@@ -78,24 +78,32 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void SingleSampleExperiment::SaveTo(TDirectory* dir) const
+  void SingleSampleExperiment::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = dir;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("SingleSampleExperiment").Write("type");
 
-    fMC->SaveTo(dir->mkdir("mc"));
+    fMC->SaveTo(dir, "mc");
     fData.SaveTo(dir, "data");
     fCosmicInTime.SaveTo(dir, "cosmicInTime");
     fCosmicOutOfTime.SaveTo(dir, "cosmicOutOfTime");
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<SingleSampleExperiment> SingleSampleExperiment::LoadFrom(TDirectory* dir)
+  std::unique_ptr<SingleSampleExperiment> SingleSampleExperiment::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* ptag = (TObjString*)dir->Get("type");
     assert(ptag);
     assert(ptag->GetString() == "SingleSampleExperiment");
@@ -103,7 +111,7 @@ namespace ana
     assert(dir->GetDirectory("mc"));
 
 
-    const IPrediction* mc = ana::LoadFrom<IPrediction>(dir->GetDirectory("mc")).release();
+    const IPrediction* mc = ana::LoadFrom<IPrediction>(dir, "mc").release();
     const std::unique_ptr<Spectrum> data = Spectrum::LoadFrom(dir, "data");
 
     // Legacy format. This is the in-time cosmics

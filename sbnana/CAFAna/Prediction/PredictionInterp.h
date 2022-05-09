@@ -62,8 +62,8 @@ namespace ana
                                           Current::Current_t curr,
                                           Sign::Sign_t sign) const override;
 
-    virtual void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<PredictionInterp> LoadFrom(TDirectory* dir);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<PredictionInterp> LoadFrom(TDirectory* dir, const std::string& name);
 
     /// After calling this DebugPlots won't work fully and SaveTo won't work at
     /// all.

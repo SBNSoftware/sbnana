@@ -18,8 +18,8 @@ namespace ana
     virtual double ChiSq(osc::IOscCalcAdjustable* osc,
                          const SystShifts& shift = SystShifts::Nominal()) const override;
 
-    void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<ReactorExperiment> LoadFrom(TDirectory* dir);
+    void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<ReactorExperiment> LoadFrom(TDirectory* dir, const std::string& name);
   protected:
     double fBestFit, fSigma;
   };

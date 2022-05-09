@@ -439,15 +439,17 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void PredictionInterp::SaveTo(TDirectory* dir) const
+  void PredictionInterp::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("PredictionInterp").Write("type");
 
 
-    fPredNom->SaveTo(dir->mkdir("pred_nom"));
+    fPredNom->SaveTo(dir, "pred_nom");
 
 
     for(auto it: fPreds){
@@ -458,13 +460,13 @@ namespace ana
           std::cout << "Can't save a PredictionInterp after MinimizeMemory()" << std::endl;
           abort();
         }
-        sp.preds[i]->SaveTo(dir->mkdir(TString::Format("pred_%s_%+d",
-                                                       sp.systName.c_str(),
-                                                       int(sp.shifts[i])).Data()));
+        sp.preds[i]->SaveTo(dir, TString::Format("pred_%s_%+d",
+                                                 sp.systName.c_str(),
+                                                 int(sp.shifts[i])).Data());
       } // end for i
     } // end for it
 
-    ana::SaveTo(*fOscOrigin, dir->mkdir("osc_origin"));
+    ana::SaveTo(*fOscOrigin, dir, "osc_origin");
 
     if(!fPreds.empty()){
       TH1F hSystNames("syst_names", ";Syst names", fPreds.size(), 0, fPreds.size());
@@ -478,12 +480,18 @@ namespace ana
     TObjString split_sign = fSplitBySign ? "yes" : "no";
     split_sign.Write("split_sign");
 
+    dir->Write();
+    delete dir;
+
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<PredictionInterp> PredictionInterp::LoadFrom(TDirectory* dir)
+  std::unique_ptr<PredictionInterp> PredictionInterp::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* tag = (TObjString*)dir->Get("type");
     assert(tag);
     assert(tag->GetString() == "PredictionInterp");
@@ -503,7 +511,7 @@ namespace ana
   void PredictionInterp::LoadFromBody(TDirectory* dir, PredictionInterp* ret,
                                       std::vector<const ISyst*> veto)
   {
-    ret->fPredNom = ana::LoadFrom<IPrediction>(dir->GetDirectory("pred_nom"));
+    ret->fPredNom = ana::LoadFrom<IPrediction>(dir, "pred_nom");
 
     TH1* hSystNames = (TH1*)dir->Get("syst_names");
     if(hSystNames){
@@ -516,10 +524,12 @@ namespace ana
         if(std::find(veto.begin(), veto.end(), syst) != veto.end()) continue;
 
         for(int shift = -3; shift <= +3; ++shift){
-          TDirectory* preddir = dir->GetDirectory(TString::Format("pred_%s_%+d", sp.systName.c_str(), shift).Data());
+          const std::string predname = TString::Format("pred_%s_%+d", sp.systName.c_str(), shift).Data();
+          TDirectory* preddir = dir->GetDirectory(predname.c_str());
           if(!preddir) continue; // Can happen for genie systs
+          delete preddir;
 
-          IPrediction* pred = ana::LoadFrom<IPrediction>(preddir).release();
+          IPrediction* pred = ana::LoadFrom<IPrediction>(dir, predname).release();
 
           sp.shifts.push_back(shift);
           sp.preds.push_back(pred);
@@ -529,7 +539,7 @@ namespace ana
       } // end for systIdx
     } // end if hSystNames
 
-    ret->fOscOrigin = ana::LoadFrom<osc::IOscCalc>(dir->GetDirectory("osc_origin")).release();
+    ret->fOscOrigin = ana::LoadFrom<osc::IOscCalc>(dir, "osc_origin").release();
   }
 
   //----------------------------------------------------------------------

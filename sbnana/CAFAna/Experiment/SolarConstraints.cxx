@@ -50,11 +50,13 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void SolarConstraints::SaveTo(TDirectory* dir) const
+  void SolarConstraints::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = dir;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("SolarConstraints").Write("type");
 
     TH1D params("", "", 4, 0, 4);
@@ -64,12 +66,18 @@ namespace ana
     params.SetBinContent(4, fErrorAngle);
     params.Write("params");
 
+    dir->Write();
+    delete dir;
+
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<SolarConstraints> SolarConstraints::LoadFrom(TDirectory* dir)
+  std::unique_ptr<SolarConstraints> SolarConstraints::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* tag = (TObjString*)dir->Get("type");
     assert(tag);
     assert(tag->GetString() == "SolarConstraints");

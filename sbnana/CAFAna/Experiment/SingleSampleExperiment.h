@@ -32,8 +32,8 @@ namespace ana
     virtual double ChiSq(osc::IOscCalcAdjustable* osc,
                          const SystShifts& syst = SystShifts::Nominal()) const override;
 
-    virtual void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<SingleSampleExperiment> LoadFrom(TDirectory* dir);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<SingleSampleExperiment> LoadFrom(TDirectory* dir, const std::string& name);
 
     // Didn't make provisions for copying fMC
     SingleSampleExperiment(const SingleSampleExperiment&) = delete;

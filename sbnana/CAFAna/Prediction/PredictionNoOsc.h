@@ -11,8 +11,8 @@ namespace ana
   public:
     PredictionNoOsc(ISliceSource& src, const HistAxis& axis);
 
-    static std::unique_ptr<PredictionNoOsc> LoadFrom(TDirectory* dir);
-    virtual void SaveTo(TDirectory* dir) const override;
+    static std::unique_ptr<PredictionNoOsc> LoadFrom(TDirectory* dir, const std::string& name);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
 
     virtual Spectrum Predict(osc::IOscCalc* /*calc*/) const override
     {

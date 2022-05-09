@@ -120,22 +120,32 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void MedianSurface::SaveTo(TDirectory* dir) const
+  void MedianSurface::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
+
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("MedianSurface").Write("type");
 
     for(unsigned int i = 0; i < fThrows.size(); ++i){
-      fThrows[i].SaveTo(dir->mkdir(TString::Format("surf%d", i)));
+      fThrows[i].SaveTo(dir, TString::Format("surf%d", i).Data());
     }
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<MedianSurface> MedianSurface::LoadFrom(TDirectory* dir)
+  std::unique_ptr<MedianSurface> MedianSurface::LoadFrom(TDirectory* dir,
+                                                         const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     DontAddDirectory guard;
 
     TObjString* tag = (TObjString*)dir->Get("type");
@@ -144,9 +154,11 @@ namespace ana
 
     std::vector<Surface> surfs;
     for(unsigned int i = 0; ; ++i){
-      TDirectory* surfdir = dir->GetDirectory(TString::Format("surf%d", i));
-      if(!surfdir) break; // we got all of them
-      surfs.push_back(*ana::LoadFrom<Surface>(surfdir));
+      const std::string subname = TString::Format("surf%d", i).Data();
+      TDirectory* subdir = dir->GetDirectory(subname.c_str());
+      if(!subdir) break; // we got all of them
+      delete subdir;
+      surfs.push_back(*ana::LoadFrom<Surface>(dir, subname));
     }
 
     return std::make_unique<MedianSurface>(surfs);

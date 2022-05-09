@@ -25,8 +25,8 @@ namespace ana
 
     virtual ~PredictionIncDirt();
 
-    static std::unique_ptr<PredictionIncDirt> LoadFrom(TDirectory* dir);
-    virtual void SaveTo(TDirectory* dir) const override;
+    static std::unique_ptr<PredictionIncDirt> LoadFrom(TDirectory* dir, const std::string& name);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
 
     Spectrum PredictDet(osc::IOscCalc* calc) const
     {

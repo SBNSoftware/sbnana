@@ -57,10 +57,11 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void TrivialExtrap::SaveTo(TDirectory* dir) const
+  void TrivialExtrap::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
 
     TObjString("TrivialExtrap").Write("type");
@@ -80,12 +81,18 @@ namespace ana
     fTauFromMu.SaveTo(dir, "nutau_from_numu");
     fTauFromMuAnti.SaveTo(dir, "nutau_from_numu_anti");
 
+    dir->Write();
+    delete dir;
+
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<TrivialExtrap> TrivialExtrap::LoadFrom(TDirectory* dir)
+  std::unique_ptr<TrivialExtrap> TrivialExtrap::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     std::unique_ptr<TrivialExtrap> ret(new TrivialExtrap);
 
     ret->fNueApp        = *OscillatableSpectrum::LoadFrom(dir, "nue_app");

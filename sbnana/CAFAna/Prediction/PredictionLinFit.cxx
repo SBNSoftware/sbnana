@@ -325,19 +325,21 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void PredictionLinFit::SaveTo(TDirectory* dir) const
+  void PredictionLinFit::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("PredictionLinFit").Write("type");
 
-    fNom->SaveTo(dir->mkdir("nom"));
+    fNom->SaveTo(dir, "nom");
 
     for(unsigned int univIdx = 0; univIdx < fUnivs.size(); ++univIdx){
       TDirectory* ud = dir->mkdir(TString::Format("univ_%d", univIdx).Data());
-      fUnivs[univIdx].first.SaveTo(ud->mkdir("shift"));
-      fUnivs[univIdx].second->SaveTo(ud->mkdir("pred"));
+      fUnivs[univIdx].first.SaveTo(ud, "shift");
+      fUnivs[univIdx].second->SaveTo(ud, "pred");
     } // end for it
 
     if(!fSysts.empty()){
@@ -348,6 +350,9 @@ namespace ana
       }
       hSystNames.Write("syst_names");
     }
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }
@@ -508,13 +513,16 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<PredictionLinFit> PredictionLinFit::LoadFrom(TDirectory* dir)
+  std::unique_ptr<PredictionLinFit> PredictionLinFit::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* tag = (TObjString*)dir->Get("type");
     assert(tag);
     assert(tag->GetString() == "PredictionLinFit");
 
-    std::unique_ptr<IPrediction> nom = ana::LoadFrom<IPrediction>(dir->GetDirectory("nom"));
+    std::unique_ptr<IPrediction> nom = ana::LoadFrom<IPrediction>(dir, "nom");
 
     std::vector<const ISyst*> systs;
     TH1* hSystNames = (TH1*)dir->Get("syst_names");
@@ -530,8 +538,8 @@ namespace ana
       TDirectory* ud = dir->GetDirectory(TString::Format("univ_%d", univIdx).Data());
       if(!ud) break; // out of universes
 
-      univs.emplace_back(*ana::LoadFrom<SystShifts>(ud->GetDirectory("shift")),
-                         ana::LoadFrom<IPrediction>(ud->GetDirectory("pred")).release());
+      univs.emplace_back(*ana::LoadFrom<SystShifts>(ud, "shift"),
+                         ana::LoadFrom<IPrediction>(ud, "pred").release());
     }
 
     // TODO think about memory management

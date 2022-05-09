@@ -3,8 +3,6 @@
 #include "sbnana/CAFAna/Core/SystShifts.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 
-#include <unordered_map>
-
 class TDirectory;
 
 namespace osc
@@ -25,6 +23,6 @@ namespace ana
     virtual double ChiSq(osc::IOscCalcAdjustable* osc,
                          const SystShifts& syst = SystShifts::Nominal()) const = 0;
 
-    virtual void SaveTo(TDirectory* dir) const;
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const;
   };
 }

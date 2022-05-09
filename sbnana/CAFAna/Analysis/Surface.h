@@ -100,8 +100,8 @@ namespace ana
     /// For expert use, custom painting of contours
     std::vector<TGraph*> GetGraphs(TH2* fc, double minchi = -1);
 
-    void SaveTo(TDirectory* dir) const;
-    static std::unique_ptr<Surface> LoadFrom(TDirectory* dir);
+    void SaveTo(TDirectory* dir, const std::string& name) const;
+    static std::unique_ptr<Surface> LoadFrom(TDirectory* dir, const std::string& name);
     static std::unique_ptr<Surface> LoadFromMulti(const std::vector<TFile*>& files, const std::string& label);
     static std::unique_ptr<Surface> LoadFromMulti(const std::string& wildcard, const std::string& label);
 

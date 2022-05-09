@@ -35,8 +35,8 @@ namespace ana
                              const std::vector<std::pair<const ISyst*,
                                                          const ISyst*>>& corrs);
 
-    virtual void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<MultiExperiment> LoadFrom(TDirectory* dir);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<MultiExperiment> LoadFrom(TDirectory* dir, const std::string& name);
 
   protected:
     std::vector<const IExperiment*> fExpts;

@@ -30,8 +30,11 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<SystComponentScale> SystComponentScale::LoadFrom(TDirectory* dir)
+  std::unique_ptr<SystComponentScale> SystComponentScale::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* ptag = (TObjString*)dir->Get("type");
     assert(ptag);
 

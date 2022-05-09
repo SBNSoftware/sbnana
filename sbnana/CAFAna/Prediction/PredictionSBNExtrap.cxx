@@ -90,28 +90,35 @@ namespace ana
   // }
 
   //----------------------------------------------------------------------
-  void PredictionSBNExtrap::SaveTo(TDirectory* dir) const
+  void PredictionSBNExtrap::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
 
     TObjString("PredictionSBNExtrap").Write("type");
 
-    fPredND.SaveTo(dir->mkdir("predND"));
-    fPredFD.SaveTo(dir->mkdir("predFD"));
+    fPredND.SaveTo(dir, "predND");
+    fPredFD.SaveTo(dir, "predFD");
     fDataND.SaveTo(dir, "dataND");
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<PredictionSBNExtrap> PredictionSBNExtrap::LoadFrom(TDirectory* dir)
+  std::unique_ptr<PredictionSBNExtrap> PredictionSBNExtrap::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     // TODO are these leaks?
     return std::unique_ptr<PredictionSBNExtrap>(new PredictionSBNExtrap(
-      *ana::LoadFrom<PredictionNoExtrap>(dir->GetDirectory("predND")).release(),
-      *ana::LoadFrom<PredictionNoExtrap>(dir->GetDirectory("predFD")).release(),
+      *ana::LoadFrom<PredictionNoExtrap>(dir, "predND").release(),
+      *ana::LoadFrom<PredictionNoExtrap>(dir, "predFD").release(),
       *ana::LoadFrom<Spectrum>(dir, "dataND").release()));
   }
 

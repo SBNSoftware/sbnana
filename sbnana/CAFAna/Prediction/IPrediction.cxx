@@ -22,26 +22,24 @@ namespace ana
 {
   //----------------------------------------------------------------------
   // Definition to satisfy declaration in Core/LoadFromFile.h
-  template<> std::unique_ptr<IPrediction> LoadFrom<IPrediction>(TDirectory* dir)
+  template<> std::unique_ptr<IPrediction> LoadFrom<IPrediction>(TDirectory* dir, const std::string& name)
   {
-    TObjString* ptag = (TObjString*)dir->Get("type");
+    TObjString* ptag = (TObjString*)dir->GetDirectory(name.c_str())->Get("type");
     assert(ptag);
 
     const TString tag = ptag->GetString();
 
-    if(tag == "PredictionNoExtrap") return PredictionNoExtrap::LoadFrom(dir);
+    if(tag == "PredictionNoExtrap") return PredictionNoExtrap::LoadFrom(dir, name);
 
-    // Backwards compatibility
-    if(tag == "PredictionInterp" ||
-       tag == "PredictionInterp2") return PredictionInterp::LoadFrom(dir);
+    if(tag == "PredictionInterp") return PredictionInterp::LoadFrom(dir, name);
 
-    //    if(tag == "PredictionLinFit") return PredictionLinFit::LoadFrom(dir);
+    //    if(tag == "PredictionLinFit") return PredictionLinFit::LoadFrom(dir, name);
 
-    if(tag == "PredictionNoOsc") return PredictionNoOsc::LoadFrom(dir);
+    if(tag == "PredictionNoOsc") return PredictionNoOsc::LoadFrom(dir, name);
 
-    if(tag == "PredictionIncDirt") return PredictionIncDirt::LoadFrom(dir);
+    if(tag == "PredictionIncDirt") return PredictionIncDirt::LoadFrom(dir, name);
 
-    if(tag == "PredictionSBNExtrap") return PredictionSBNExtrap::LoadFrom(dir);
+    if(tag == "PredictionSBNExtrap") return PredictionSBNExtrap::LoadFrom(dir, name);
 
     std::cerr << "Unknown Prediction type '" << tag << "'" << std::endl;
     abort();
@@ -79,7 +77,7 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void IPrediction::SaveTo(TDirectory* dir) const
+  void IPrediction::SaveTo(TDirectory* dir, const std::string& name) const
   {
     assert(0 && "Not implemented");
   }

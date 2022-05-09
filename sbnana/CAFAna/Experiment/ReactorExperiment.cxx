@@ -20,11 +20,13 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void ReactorExperiment::SaveTo(TDirectory* dir) const
+  void ReactorExperiment::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = dir;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("ReactorExperiment").Write("type");
 
     TH1D params("", "", 2, 0, 2);
@@ -32,12 +34,18 @@ namespace ana
     params.SetBinContent(2, fSigma);
     params.Write("params");
 
+    dir->Write();
+    delete dir;
+
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<ReactorExperiment> ReactorExperiment::LoadFrom(TDirectory* dir)
+  std::unique_ptr<ReactorExperiment> ReactorExperiment::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* tag = (TObjString*)dir->Get("type");
     assert(tag);
     assert(tag->GetString() == "ReactorExperiment");
@@ -48,8 +56,7 @@ namespace ana
     const double bestFit = params->GetBinContent(1);
     const double sigma   = params->GetBinContent(2);
 
-    return std::unique_ptr<ReactorExperiment>(new ReactorExperiment(bestFit,
-                                                                    sigma));
+    return std::make_unique<ReactorExperiment>(bestFit, sigma);
   }
 
   //----------------------------------------------------------------------

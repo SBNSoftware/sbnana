@@ -64,8 +64,8 @@ namespace ana
                         Current::Current_t curr = Current::kBoth,
                         Sign::Sign_t sign = Sign::kBoth) const;
 
-    void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<PredictionLinFit> LoadFrom(TDirectory* dir);
+    void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<PredictionLinFit> LoadFrom(TDirectory* dir, const std::string& name);
 
   protected:
     void InitFits() const;

@@ -19,8 +19,11 @@ namespace ana
 {
   //----------------------------------------------------------------------
   template<> std::unique_ptr<osc::IOscCalc>
-  LoadFrom<osc::IOscCalc>(TDirectory* dir)
+  LoadFrom<osc::IOscCalc>(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* ptag = (TObjString*)dir->Get("type");
     assert(ptag);
     const TString tag = ptag->GetString();
@@ -88,10 +91,11 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  template<> void SaveTo(const osc::IOscCalc& x, TDirectory* dir)
+  template<> void SaveTo(const osc::IOscCalc& x, TDirectory* dir, const std::string& name)
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
 
     if(dynamic_cast<const osc::NoOscillations*>(&x)){
@@ -169,6 +173,9 @@ namespace ana
     params[7] = y->GetdCP();
 
     params.Write("params");
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }

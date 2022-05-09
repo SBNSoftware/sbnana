@@ -61,10 +61,11 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void PredictionNoOsc::SaveTo(TDirectory* dir) const
+  void PredictionNoOsc::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
 
     TObjString("PredictionNoOsc").Write("type");
@@ -76,12 +77,18 @@ namespace ana
     fSpectrumNue.SaveTo(dir, "spect_nue");
     fSpectrumNuebar.SaveTo(dir, "spect_nuebar");
 
+    dir->Write();
+    delete dir;
+
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<PredictionNoOsc> PredictionNoOsc::LoadFrom(TDirectory* dir)
+  std::unique_ptr<PredictionNoOsc> PredictionNoOsc::LoadFrom(TDirectory* dir, const std::string& name)
   {    
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     PredictionNoOsc* ret = new PredictionNoOsc(
       *ana::LoadFrom<Spectrum>(dir, "spect"),
       *ana::LoadFrom<Spectrum>(dir, "spect_nc"),
