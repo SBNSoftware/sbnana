@@ -67,12 +67,12 @@ void plot_multi()
   std::vector<PredictionInterp*> preds_nd(Nuniv), preds_fd(Nuniv);
 
   for(int i = 0; i < Nuniv; ++i){
-    preds_nd[i] = LoadFrom<PredictionInterp>(fin.GetDirectory(TString::Format("pred_nd_numu_%d", i).Data())).release();
-    preds_fd[i] = LoadFrom<PredictionInterp>(fin.GetDirectory(TString::Format("pred_fd_numu_%d", i).Data())).release();
+    preds_nd[i] = LoadFrom<PredictionInterp>(&fin, TString::Format("pred_nd_numu_%d", i).Data()).release();
+    preds_fd[i] = LoadFrom<PredictionInterp>(&fin, TString::Format("pred_fd_numu_%d", i).Data()).release();
   }
 
-  PredictionInterp* nom_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd_numu_nom")).release();
-  PredictionInterp* nom_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd_numu_nom")).release();
+  PredictionInterp* nom_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd_numu_nom").release();
+  PredictionInterp* nom_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd_numu_nom").release();
 
   //  osc::NoOscillations calc;
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();

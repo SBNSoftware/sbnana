@@ -49,17 +49,17 @@ void exclusion(const std::string anatype = numuStr)
   TFile fin(name_in);  
   TFile fprop("sterile_3p1_limits.root");
 
-  //Surface& surf_syst_nd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nd_prop_systs")).release(); 
-  //Surface& surf_syst_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/fd_prop_systs")).release(); 
-  //Surface& surf_syst_ub = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/ub_prop_systs")).release(); 
-  Surface& surf_syst_nd_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nd_fd_prop_systs")).release();
-  //Surface& surf_syst_all = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/allexpt_prop_systs")).release(); 
+  //Surface& surf_syst_nd = *ana::LoadFrom<Surface>(&fin, "exclusion/nd_prop_systs").release(); 
+  //Surface& surf_syst_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/fd_prop_systs").release(); 
+  //Surface& surf_syst_ub = *ana::LoadFrom<Surface>(&fin, "exclusion/ub_prop_systs").release(); 
+  Surface& surf_syst_nd_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/nd_fd_prop_systs").release();
+  //Surface& surf_syst_all = *ana::LoadFrom<Surface>(&fin, "exclusion/allexpt_prop_systs").release(); 
 
-  //Surface& surf_nom_nd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom_nd")).release(); 
-  //Surface& surf_nom_ub = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom_ub")).release(); 
-  //Surface& surf_nom_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom_fd")).release(); 
-  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom_nd_fd")).release(); 
-  //Surface& surf_nom = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom")).release(); 
+  //Surface& surf_nom_nd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_nd").release(); 
+  //Surface& surf_nom_ub = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_ub").release(); 
+  //Surface& surf_nom_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_fd").release(); 
+  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_nd_fd").release(); 
+  //Surface& surf_nom = *ana::LoadFrom<Surface>(&fin, "exclusion/nom").release(); 
 
   TGraph * proposal_90pctCL  = (TGraph *) fprop.Get( "lim_dis_3p1_sbnproposal_90pctCL"  );
   TGraph * proposal_3sigCL   = (TGraph *) fprop.Get( "lim_dis_3p1_sbnproposal_3sigCL"   );

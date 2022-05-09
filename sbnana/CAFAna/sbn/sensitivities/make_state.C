@@ -228,11 +228,11 @@ void make_state(const std::string anatype = numuStr)
 
   TFile fout(("cafe_state_smear_"+anatype+".root").c_str(), "RECREATE");
   for(unsigned int i = 0; i < systWs.size(); ++i){
-    preds_nd[i]->SaveTo(fout.mkdir(TString::Format("pred_nd_%s_%d", anatype.c_str(), i).Data()));
-    preds_fd[i]->SaveTo(fout.mkdir(TString::Format("pred_fd_%s_%d", anatype.c_str(), i).Data()));
+    preds_nd[i]->SaveTo(&fout, TString::Format("pred_nd_%s_%d", anatype.c_str(), i).Data());
+    preds_fd[i]->SaveTo(&fout, TString::Format("pred_fd_%s_%d", anatype.c_str(), i).Data());
   }
 
-  pred_nom_nd.SaveTo(fout.mkdir(TString::Format("pred_nd_%s_nom", anatype.c_str()).Data()));
-  pred_nom_fd.SaveTo(fout.mkdir(TString::Format("pred_fd_%s_nom", anatype.c_str()).Data()));
+  pred_nom_nd.SaveTo(&fout, TString::Format("pred_nd_%s_nom", anatype.c_str()).Data());
+  pred_nom_fd.SaveTo(&fout, TString::Format("pred_fd_%s_nom", anatype.c_str()).Data());
 
 }

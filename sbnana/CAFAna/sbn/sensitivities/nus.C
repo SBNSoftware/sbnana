@@ -52,8 +52,8 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
 
   std::cout << "Loading state from " << stateFname << std::endl; 
   TFile fin(stateFname);
-  PredictionInterp& pred_nd_numu = *ana::LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd_numu")).release();
-  PredictionInterp& pred_fd_numu = *ana::LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd_numu")).release();
+  PredictionInterp& pred_nd_numu = *ana::LoadFrom<PredictionInterp>(&fin, "pred_nd_numu").release();
+  PredictionInterp& pred_fd_numu = *ana::LoadFrom<PredictionInterp>(&fin, "pred_fd_numu").release();
 
   // Calculator
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
@@ -79,7 +79,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
                {},
                allSysts);
 
-  surf.SaveTo(fOutput->mkdir("surf"));
+  surf.SaveTo(fOutput, "surf");
 
   TCanvas* c1 = new TCanvas("c1");
   c1->SetLeftMargin(0.12);
@@ -107,7 +107,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
                 {},
                 allSysts);
 		  
-  surf2.SaveTo(fOutput->mkdir("surf2"));
+  surf2.SaveTo(fOutput, "surf2");
 
   c1->Clear(); // just in case
 
@@ -147,7 +147,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     mockSurfs.push_back(ms);
   }
 
-  surfMulti.SaveTo(fOutput->mkdir("surfMulti"));
+  surfMulti.SaveTo(fOutput, "surfMulti");
 
   c1->Clear(); // just in case
 
@@ -165,7 +165,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     ms.DrawEnsemble(crit2);
     ms.DrawContour(crit2, kSolid, kRed);
 
-    ms.SaveTo(fOutput->mkdir("median_surf"));
+    ms.SaveTo(fOutput, "median_surf");
   }
 
   surfMulti.DrawContour(crit2sigMulti, nmock > 0 ? 7 : kSolid, kRed);

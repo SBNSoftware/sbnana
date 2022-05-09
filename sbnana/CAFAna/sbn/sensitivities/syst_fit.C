@@ -62,9 +62,9 @@ void syst_fit(const std::string anatype = numuStr)
   
   TFile fin(name_in);
   
-  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
+  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
+  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
   
   //std::vector<const ISyst*> bigsysts;
   

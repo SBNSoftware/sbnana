@@ -82,5 +82,5 @@ void contours_sbnd()
   surf.GetGraphs(crit95pc)[0]->Write("nd_stat_95pct");
   surf.GetGraphs(crit99pc)[0]->Write("nd_stat_99pct");
 
-  expt.SaveTo(fout.mkdir("nd_expt"));
+  expt.SaveTo(fout, "nd_expt");
 }

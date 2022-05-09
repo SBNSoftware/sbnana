@@ -72,9 +72,9 @@ void syst_spec(const std::string anatype = numuStr)
  TFile fin(name_in);
  TFile fout(name_out,"RECREATE");
 
- PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
- PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
- PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+ PredictionInterp* p_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
+ PredictionInterp* p_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
+ PredictionInterp* p_ub = LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
  
  TLegend* leg_updn = new TLegend(.6, .6, .85, .85);
  leg_updn->SetFillStyle(0);

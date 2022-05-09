@@ -67,9 +67,9 @@ void make_surfaces(const std::string anatype = numuStr)
   TFile fin(name_in);
   TFile fout(name_out,"RECREATE");
 
-  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
+  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
+  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
 
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
   OscCalcSterileApproxAdjustable* seed = DefaultSterileApproxCalc();
@@ -130,11 +130,11 @@ void make_surfaces(const std::string anatype = numuStr)
   fout.mkdir("exclusion");
   fout.cd("exclusion");    
 
-  //surf_nom.SaveTo(gDirectory->mkdir("nom"));
-  //surf_nom_nd.SaveTo(gDirectory->mkdir("nom_nd"));
-  //surf_nom_fd.SaveTo(gDirectory->mkdir("nom_fd"));
-  //surf_nom_ub.SaveTo(gDirectory->mkdir("nom_ub"));
-  surf_nd_fd.SaveTo(gDirectory->mkdir("nom_nd_fd"));
+  //surf_nom.SaveTo(gDirectory, "nom");
+  //surf_nom_nd.SaveTo(gDirectory, "nom_nd");
+  //surf_nom_fd.SaveTo(gDirectory, "nom_fd");
+  //surf_nom_ub.SaveTo(gDirectory, "nom_ub");
+  surf_nd_fd.SaveTo(gDirectory, "nom_nd_fd");
 
   std::vector<std::vector<const ISyst*>> slists;
   //slists.emplace_back(1, systs[0]);
@@ -152,11 +152,11 @@ void make_surfaces(const std::string anatype = numuStr)
 
     std::string suffix = "prop_systs";
 
-    //surf_syst_nd.SaveTo(gDirectory->mkdir(("nd_"+suffix).c_str()));
-    //surf_syst_fd.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
-    //surf_syst_ub.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
-    //surf_syst.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
-    surf_syst_nd_fd.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
+    //surf_syst_nd.SaveTo(gDirectory, "nd_"+suffix);
+    //surf_syst_fd.SaveTo(gDirectory, "fd_"+suffix);
+    //surf_syst_ub.SaveTo(gDirectory, "ub_"+suffix);
+    //surf_syst.SaveTo(gDirectory, "allexpt_"+suffix);
+    surf_syst_nd_fd.SaveTo(gDirectory, "nd_fd_"+suffix);
 
   } // end for s
 
@@ -201,11 +201,11 @@ void make_surfaces(const std::string anatype = numuStr)
   //fout.mkdir("allowed");
   //fout.cd("allowed");
 
-  //surf_nom2.SaveTo(gDirectory->mkdir("nom"));
-  //surf_nom_nd2.SaveTo(gDirectory->mkdir("nom_nd"));
-  //surf_nom_fd2.SaveTo(gDirectory->mkdir("nom_fd"));
-  //surf_nom_ub2.SaveTo(gDirectory->mkdir("nom_ub"));
-  //surf_nd_fd2.SaveTo(gDirectory->mkdir("nom_nd_fd"));
+  //surf_nom2.SaveTo(gDirectory, "nom");
+  //surf_nom_nd2.SaveTo(gDirectory, "nom_nd");
+  //surf_nom_fd2.SaveTo(gDirectory, "nom_fd");
+  //surf_nom_ub2.SaveTo(gDirectory, "nom_ub");
+  //surf_nd_fd2.SaveTo(gDirectory, "nom_nd_fd");
 
   for(const std::vector<const ISyst*> slist: slists){
     //Surface surf_syst2(&multiExpt2, calc2, kAxForTh, kAxDmSq, {}, slist);
@@ -219,11 +219,11 @@ void make_surfaces(const std::string anatype = numuStr)
 
     std::string suffix = "prop_systs";
 
-    //surf_syst_nd2.SaveTo(gDirectory->mkdir(("nd_"+suffix).c_str()));
-    //surf_syst_fd2.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
-    //surf_syst_ub2.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
-    //surf_syst2.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
-    //surf_syst_nd_fd2.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
+    //surf_syst_nd2.SaveTo(gDirectory, "nd_"+suffix);
+    //surf_syst_fd2.SaveTo(gDirectory, "fd_"+suffix);
+    //surf_syst_ub2.SaveTo(gDirectory, "ub_"+suffix);
+    //surf_syst2.SaveTo(gDirectory, "allexpt_"+suffix);
+    //surf_syst_nd_fd2.SaveTo(gDirectory, "nd_fd_"+suffix);
 
   } // end for s
 }

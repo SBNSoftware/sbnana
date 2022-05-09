@@ -154,11 +154,11 @@ void diag_flux_systs(bool force_rebuild = false)
 
       TDirectory* ddet = fout.mkdir(det.c_str());
       TDirectory* dnumu = ddet->mkdir("numu");
-      numu_nom.SaveTo(dnumu->mkdir("nom"));
-      for(int i = 0; i < NUnivs; ++i) numus[i]->SaveTo(dnumu->mkdir(TString::Format("univ_%d", i).Data()));
+      numu_nom.SaveTo(dnumu, "nom");
+      for(int i = 0; i < NUnivs; ++i) numus[i]->SaveTo(dnumu, TString::Format("univ_%d", i).Data());
       TDirectory* dnue = ddet->mkdir("nue");
-      nue_nom.SaveTo(dnue->mkdir("nom"));
-      for(int i = 0; i < NUnivs; ++i) nues[i]->SaveTo(dnue->mkdir(TString::Format("univ_%d", i).Data()));
+      nue_nom.SaveTo(dnue, "nom");
+      for(int i = 0; i < NUnivs; ++i) nues[i]->SaveTo(dnue, TString::Format("univ_%d", i).Data());
     } // end for det
   } // end if rebuild
 
@@ -167,13 +167,13 @@ void diag_flux_systs(bool force_rebuild = false)
 
   DontAddDirectory guard;
 
-  Spectrum snom_numu_nd(*LoadFrom<Spectrum>(fin.GetDirectory("nd/numu/nom")));
-  Spectrum snom_numu_fd(*LoadFrom<Spectrum>(fin.GetDirectory("fd/numu/nom")));
-  Spectrum snom_numu_ub(*LoadFrom<Spectrum>(fin.GetDirectory("ub/numu/nom")));
+  Spectrum snom_numu_nd(*LoadFrom<Spectrum>(&fin, "nd/numu/nom"));
+  Spectrum snom_numu_fd(*LoadFrom<Spectrum>(&fin, "fd/numu/nom"));
+  Spectrum snom_numu_ub(*LoadFrom<Spectrum>(&fin, "ub/numu/nom"));
 
-  Spectrum snom_nue_nd(*LoadFrom<Spectrum>(fin.GetDirectory("nd/nue/nom")));
-  Spectrum snom_nue_fd(*LoadFrom<Spectrum>(fin.GetDirectory("fd/nue/nom")));
-  Spectrum snom_nue_ub(*LoadFrom<Spectrum>(fin.GetDirectory("ub/nue/nom")));
+  Spectrum snom_nue_nd(*LoadFrom<Spectrum>(&fin, "nd/nue/nom"));
+  Spectrum snom_nue_fd(*LoadFrom<Spectrum>(&fin, "fd/nue/nom"));
+  Spectrum snom_nue_ub(*LoadFrom<Spectrum>(&fin, "ub/nue/nom"));
 
   TMatrixD mcov(NSpectra*NEnergyBins, NSpectra*NEnergyBins);
 
@@ -182,16 +182,16 @@ void diag_flux_systs(bool force_rebuild = false)
                        NSpectra*NEnergyBins, 0, NSpectra*NEnergyBins);
 
   for(int univIdx = 0; univIdx < NUnivs; ++univIdx){
-    TH1* hmnd = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("nd/numu/univ_%d", univIdx).Data())), snom_numu_nd).ToTH1();
-    TH1* hmub = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("ub/numu/univ_%d", univIdx).Data())), snom_numu_ub).ToTH1();
-    TH1* hmfd = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("fd/numu/univ_%d", univIdx).Data())), snom_numu_fd).ToTH1();
+    TH1* hmnd = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("nd/numu/univ_%d", univIdx).Data()), snom_numu_nd).ToTH1();
+    TH1* hmub = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("ub/numu/univ_%d", univIdx).Data()), snom_numu_ub).ToTH1();
+    TH1* hmfd = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("fd/numu/univ_%d", univIdx).Data()), snom_numu_fd).ToTH1();
 
     // We don't use these for anything. They're basically insignificant, and
     // make the matrix decomposition fail.
     /*
-    TH1* hend = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("nd/nue/univ_%d", univIdx).Data())), snom_nue_nd).ToTH1();
-    TH1* heub = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("ub/nue/univ_%d", univIdx).Data())), snom_nue_ub).ToTH1();
-    TH1* hefd = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("fd/nue/univ_%d", univIdx).Data())), snom_nue_fd).ToTH1();
+    TH1* hend = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("nd/nue/univ_%d", univIdx).Data()), snom_nue_nd).ToTH1();
+    TH1* heub = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("ub/nue/univ_%d", univIdx).Data()), snom_nue_ub).ToTH1();
+    TH1* hefd = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("fd/nue/univ_%d", univIdx).Data()), snom_nue_fd).ToTH1();
     */
 
     TH1* htot = new TH1D("", "", NSpectra*NEnergyBins, 0, NSpectra*NEnergyBins);

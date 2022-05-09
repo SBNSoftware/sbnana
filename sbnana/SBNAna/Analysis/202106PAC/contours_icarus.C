@@ -91,5 +91,5 @@ void contours_icarus()
   surf.GetGraphs(crit95pc)[0]->Write("fd_stat_95pct");
   surf.GetGraphs(crit99pc)[0]->Write("fd_stat_99pct");
 
-  expt.SaveTo(fout.mkdir("fd_expt"));
+  expt.SaveTo(fout, "fd_expt");
 }

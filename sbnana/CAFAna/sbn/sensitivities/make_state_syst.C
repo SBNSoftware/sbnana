@@ -111,9 +111,9 @@ void make_state_syst(const std::string anatype = numuStr)
 
   TFile fout(("cafe_state_syst_"+anatype+".root").c_str(), "RECREATE");
 
-  pred_nd.SaveTo(fout.mkdir("pred_nd"));
-  pred_fd.SaveTo(fout.mkdir("pred_fd"));
-  pred_ub.SaveTo(fout.mkdir("pred_ub"));
+  pred_nd.SaveTo(&fout, "pred_nd");
+  pred_fd.SaveTo(&fout, "pred_fd");
+  pred_ub.SaveTo(&fout, "pred_ub");
 }
 
 

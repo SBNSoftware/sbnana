@@ -30,17 +30,17 @@ void allowed()
 {
   TFile fin("surfaces.root");  
 
-  Surface& surf_syst_nd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nd_prop_systs")).release(); 
-  Surface& surf_syst_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/fd_prop_systs")).release(); 
-  Surface& surf_syst_ub = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/ub_prop_systs")).release(); 
-  Surface& surf_syst_nd_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nd_fd_prop_systs")).release();
-  Surface& surf_syst_all = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/allexpt_prop_systs")).release(); 
+  Surface& surf_syst_nd = *ana::LoadFrom<Surface>(&fin, "allowed/nd_prop_systs").release(); 
+  Surface& surf_syst_fd = *ana::LoadFrom<Surface>(&fin, "allowed/fd_prop_systs").release(); 
+  Surface& surf_syst_ub = *ana::LoadFrom<Surface>(&fin, "allowed/ub_prop_systs").release(); 
+  Surface& surf_syst_nd_fd = *ana::LoadFrom<Surface>(&fin, "allowed/nd_fd_prop_systs").release();
+  Surface& surf_syst_all = *ana::LoadFrom<Surface>(&fin, "allowed/allexpt_prop_systs").release(); 
   
-  Surface& surf_nom_nd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom_nd")).release(); 
-  Surface& surf_nom_ub = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom_ub")).release(); 
-  Surface& surf_nom_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom_fd")).release(); 
-  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom_nd_fd")).release(); 
-  Surface& surf_nom = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom")).release(); 
+  Surface& surf_nom_nd = *ana::LoadFrom<Surface>(&fin, "allowed/nom_nd").release(); 
+  Surface& surf_nom_ub = *ana::LoadFrom<Surface>(&fin, "allowed/nom_ub").release(); 
+  Surface& surf_nom_fd = *ana::LoadFrom<Surface>(&fin, "allowed/nom_fd").release(); 
+  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(&fin, "allowed/nom_nd_fd").release(); 
+  Surface& surf_nom = *ana::LoadFrom<Surface>(&fin, "allowed/nom").release(); 
 
   TH2* crit5sig = Gaussian5Sigma2D(surf_nom);
   TH2* crit3sig = Gaussian3Sigma2D(surf_nom);

@@ -56,9 +56,9 @@ void spec(const std::string anatype = numuStr)
   const std::vector<const ISyst*>& systs = GetSBNWeightSysts();
 
   TFile fin(stateFname);
-  PredictionInterp& pred_nd = *ana::LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-  PredictionInterp& pred_fd = *ana::LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-  PredictionInterp& pred_ub = *ana::LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+  PredictionInterp& pred_nd = *ana::LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
+  PredictionInterp& pred_fd = *ana::LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
+  PredictionInterp& pred_ub = *ana::LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
   std::cout << "Done reading in files" << std::endl;
   TFile* fOutput = new TFile(("output_spec_"+anatype+".root").c_str(),"RECREATE");
 

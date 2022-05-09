@@ -50,8 +50,8 @@ void nus_extrap(const char* stateFname = basicFname)
 
   std::cout << "Loading state from " << stateFname << std::endl; 
   TFile fin(stateFname);
-  IPrediction* pred = ana::LoadFrom<IPrediction>(fin.GetDirectory("pred_syst")).release();
-  IPrediction* predND = ana::LoadFrom<IPrediction>(fin.GetDirectory("predND_syst")).release();
+  IPrediction* pred = ana::LoadFrom<IPrediction>(&fin, "pred_syst").release();
+  IPrediction* predND = ana::LoadFrom<IPrediction>(&fin, "predND_syst").release();
 
   // Calculator
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
