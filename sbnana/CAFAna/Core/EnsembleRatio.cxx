@@ -5,13 +5,17 @@
 #include "sbnana/CAFAna/Core/Multiverse.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
+#include "cafanacore/UtilsExt.h"
+
+#include "TEfficiency.h"
 #include "TGraphAsymmErrors.h"
 
 namespace ana
 {
   //----------------------------------------------------------------------
   EnsembleRatio::EnsembleRatio(const EnsembleSpectrum& num,
-                               const EnsembleSpectrum& denom)
+                               const EnsembleSpectrum& denom,
+                               bool purOrEffErrs)
     : fMultiverse(&num.GetMultiverse()),
       fHist(num.fHist),
       fAxis(num.GetLabels(), num.GetBinnings())
@@ -19,7 +23,7 @@ namespace ana
     CheckMultiverses(denom.GetMultiverse(), __func__);
 
     fHist.Divide(denom.fHist);
-    // TODO TODO this show handle livetime too
+    // TODO TODO this should handle livetime too
     fHist.Scale(denom.POT()/num.POT());
 
     // This is clumsy, but the old histogram operation considered 0/0 = 0,
@@ -33,10 +37,41 @@ namespace ana
         else{
           // Actual infinities break ROOT plotting
           fHist.SetBinContent(i, 1e100);
-          // As in fact do mererly very large numbers
+          // As in fact do merely very large numbers
           // fHist.SetBinContent(i, std::numeric_limits<double>::max());
         }
       }
+    }
+
+    if(purOrEffErrs){
+      if(!AlmostEqual(num.POT(), denom.POT())){
+        std::cout << "EnsembleRatio: Warning: creating purity or efficiency ratio between two spectra with different POTs"
+                  << "\n  " << num.POT() << " vs " << denom.POT()
+                  << "\n  That doesn't make much sense" << std::endl;
+      }
+
+      Eigen::ArrayXd errsqarr(fHist.GetNbinsX()+2);
+
+      const double kOneSigma = .6827;
+      for(int i = 0; i < fHist.GetNbinsX()+2; ++i){
+        const double n = num.fHist.GetBinContent(i);
+        const double d = denom.fHist.GetBinContent(i);
+
+        // Clopper-Peason is the TEfficiency default and "recommended by the
+        // PDG". If the user wants something else (for rendering purposes) they
+        // should use TEfficiency directly.
+        const double up = TEfficiency::ClopperPearson(n+d, n, kOneSigma, true);
+        const double dn = TEfficiency::ClopperPearson(n+d, n, kOneSigma, false);
+
+        // Crudely symmetrizes asymmetric errors. The underlying Hist class
+        // can't cope with that, only really makes sense for plotting. In which
+        // case the user should do it themselves.
+        errsqarr[i] = util::sqr((up-dn)/2);
+      } // end for i
+
+      Eigen::ArrayXd valarr = fHist.GetEigen();
+      // Replace fHist with same values but new errors
+      fHist = Hist::AdoptWithErrors(std::move(valarr), std::move(errsqarr));
     }
   }
 

@@ -16,7 +16,9 @@ namespace ana
   public:
     friend class EnsembleSpectrum;
 
-    EnsembleRatio(const EnsembleSpectrum& num, const EnsembleSpectrum& denom);
+    EnsembleRatio(const EnsembleSpectrum& num,
+                  const EnsembleSpectrum& denom,
+                  bool purOrEffErrs = false);
 
     Ratio Nominal() const {return Universe(0);}
     unsigned int NUniverses() const;
