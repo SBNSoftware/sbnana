@@ -39,7 +39,7 @@ sbnanaobj        v09_18_03
 # HACK BECAUSE THE REGULAR CAFANACORE IS BEHIND ifdhc            v2_6_3
 # For CAFAna
 osclib           v00.17
-cafanacore       v02.00_value_source_alpha7
+cafanacore       v02.00_value_source_alpha8
 # flux syst histograms etc
 sbndata		 v01_03
 
