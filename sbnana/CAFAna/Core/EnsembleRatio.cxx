@@ -94,8 +94,16 @@ namespace ana
               */
     }
     else{
-      return Ratio(Eigen::ArrayXd(fHist.GetEigen().segment(nbins*univIdx, nbins)),
-                   fAxis.GetLabels(), fAxis.GetBinnings());
+      Eigen::ArrayXd arr(fHist.GetEigen().segment(nbins*univIdx, nbins));
+
+      if(Hist::StatErrorsEnabled()){
+        Eigen::ArrayXd errarr(fHist.GetEigenSqErrors().segment(nbins*univIdx, nbins));
+        return Ratio(std::move(arr), std::move(errarr),
+                     fAxis.GetLabels(), fAxis.GetBinnings());
+      }
+      else{
+        return Ratio(std::move(arr), fAxis.GetLabels(), fAxis.GetBinnings());
+      }
     }
   }
 
