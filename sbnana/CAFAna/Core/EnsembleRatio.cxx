@@ -87,11 +87,8 @@ namespace ana
     const int nbins = fAxis.GetBins1D().NBins()+2;
 
     if(fHist.HasStan()){
-      // TODO
-      abort();/*
-      return Ratio(Eigen::ArrayXstan(fHist.GetEigenStan().segment(nbins*univIdx, nbins)),
+      return Ratio(std::move(Eigen::ArrayXstan(fHist.GetEigenStan().segment(nbins*univIdx, nbins))),
                    fAxis.GetLabels(), fAxis.GetBinnings());
-              */
     }
     else{
       Eigen::ArrayXd arr(fHist.GetEigen().segment(nbins*univIdx, nbins));
