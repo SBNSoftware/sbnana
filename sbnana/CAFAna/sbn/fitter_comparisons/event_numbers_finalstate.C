@@ -24,7 +24,7 @@
 
 using namespace ana;
 
-// Put an "SBND simulation" tag in the corner                                                       
+// Put an "SBND simulation" tag in the corner
 void Experiment(std::string expt)
 {
   TLatex* prelim = new TLatex(.9, .95, (expt+" Simulation").c_str());
@@ -115,7 +115,7 @@ void event_numbers_finalstate(const std::string expt = "SBND")
   const Cut kTwoPiCh = (kNumPiZeros == 0 && kNumPiCharged == 2);
   const Cut kOneEach = (kNumPiZeros == 1 && kNumPiCharged == 1);
   const Cut kTwoPi0  = (kNumPiZeros == 2 && kNumPiCharged == 0);
-  const Cut kElsePi  = (!kZeroPi && !kOnePiCh && !kOnePi0 
+  const Cut kElsePi  = (!kZeroPi && !kOnePiCh && !kOnePi0
                         && !kTwoPiCh && !kOneEach && !kTwoPi0);
 
   const unsigned int kNumModes = 8;
@@ -167,7 +167,7 @@ void event_numbers_finalstate(const std::string expt = "SBND")
     for(unsigned int k = 0; k < kNumCurrents; k++){
       for(unsigned int j = k; j < kNumSigns; j++){ // loop over signs only for CC
         for(unsigned int i = k; i < kNumFlavours-k; i++){ // loop over flavours only for CC
-          h[m][k][j][i] = pred[m]->PredictComponent(noosc, k == 0 ? flav[i].flav : Flavors::kAll, 
+          h[m][k][j][i] = pred[m]->PredictComponent(noosc, k == 0 ? flav[i].flav : Flavors::kAll,
                                     curr[k].curr, (k == 0) ? sign[j].sign : Sign::kBoth).ToTH1(pot);
           float nEvts = h[m][k][j][i]->Integral();
           std::cout << ", " << nEvts ;
@@ -182,7 +182,7 @@ void event_numbers_finalstate(const std::string expt = "SBND")
   TCanvas* c1 = new TCanvas("c1","c1");
 
   for(unsigned int m = 0; m < kNumModes; m++){
-    for(unsigned int k = 0; k < kNumCurrents; k++){ 
+    for(unsigned int k = 0; k < kNumCurrents; k++){
       for(unsigned int j = k; j < kNumSigns; j++){ // loop over signs only for CC
         for(unsigned int i = k; i < kNumFlavours-k; i++){ // loop over flavours only for CC
 
@@ -192,8 +192,8 @@ void event_numbers_finalstate(const std::string expt = "SBND")
 
           h[m][k][j][i]->SetLineColor(cuts[m].colour);
           h[m][k][j][i]->SetMarkerColor(cuts[m].colour);
-          h[m][k][j][i]->Write((expt+"_"+cuts[m].label+"_"+currLabel+"_"+signLabel+flavLabel).c_str());   
-          h[m][k][j][i]->SetName((cuts[m].label+"_"+currLabel+"_"+signLabel+flavLabel).c_str());      
+          h[m][k][j][i]->Write((expt+"_"+cuts[m].label+"_"+currLabel+"_"+signLabel+flavLabel).c_str());
+          h[m][k][j][i]->SetName((cuts[m].label+"_"+currLabel+"_"+signLabel+flavLabel).c_str());
           h[m][k][j][i]->Draw("hist");
           Experiment(expt);
           c1->SaveAs(("output/"+expt+"_"+cuts[m].label+"_"+currLabel+"_"+signLabel+flavLabel+".pdf").c_str());

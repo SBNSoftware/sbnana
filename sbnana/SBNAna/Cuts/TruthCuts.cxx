@@ -7,7 +7,7 @@
 namespace ana{
 
   //---------------------------------------------------------------
-  // Slice cuts 
+  // Slice cuts
   const Cut kTrueActiveVolumeND(
     [](const caf::SRSliceProxy* slc){
       return kHasNu(slc) && PtInVolAbsX(slc->truth.position, avnd);
@@ -91,7 +91,7 @@ namespace ana{
   });
 
   //---------------------------------------------------------------
-  // Spill cuts 
+  // Spill cuts
 
   const SpillCut kIsCosmicSpill([](const caf::SRSpillProxy* sr) {
     return (sr->mc.nnu == 0);

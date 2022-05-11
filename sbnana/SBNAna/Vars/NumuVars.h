@@ -1,5 +1,5 @@
 #pragma once
-// Specific variables for the Numu event selection. 
+// Specific variables for the Numu event selection.
 
 #include "sbnana/CAFAna/Core/Var.h"
 

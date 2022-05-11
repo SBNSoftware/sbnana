@@ -96,7 +96,7 @@ namespace ana
   void FileReducer::Go()
   {
     //    FloatingExceptionOnNaN fpnan;
-    
+
     // Don't want overflow to happen. Set to 1 petabyte: effectively infinite.
     TTree::SetMaxTreeSize(1e15);
 
@@ -109,7 +109,7 @@ namespace ana
     const int Nfiles = NFiles();
 
     Progress* prog = 0;
-    
+
     TFile fout(fOutfile.c_str(), "RECREATE");
     TTree* trOut = new TTree("recTree", "recTree");
     {

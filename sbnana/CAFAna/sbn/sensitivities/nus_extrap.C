@@ -48,7 +48,7 @@ void nus_extrap(const char* stateFname = basicFname)
   // But only use the first 10 of them
   for(const ISyst* s: GetBoosterFluxHadronSysts(10)) systs.push_back(s);
 
-  std::cout << "Loading state from " << stateFname << std::endl; 
+  std::cout << "Loading state from " << stateFname << std::endl;
   TFile fin(stateFname);
   IPrediction* pred = ana::LoadFrom<IPrediction>(&fin, "pred_syst").release();
   IPrediction* predND = ana::LoadFrom<IPrediction>(&fin, "predND_syst").release();

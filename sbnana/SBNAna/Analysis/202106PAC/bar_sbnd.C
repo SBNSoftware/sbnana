@@ -46,7 +46,7 @@ void bar_sbnd()
   std::vector<Spectrum*> sNumuCC;
   std::vector<Spectrum*> sCosmic;
   std::vector<Spectrum*> sOther;
-  
+
   Cut accumCut = kNoCut;
   for(auto& it: cuts){
     accumCut = accumCut && it.second;

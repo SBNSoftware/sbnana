@@ -85,7 +85,7 @@ namespace ana
 
   //----------------------------------------------------------------------
   std::unique_ptr<PredictionNoOsc> PredictionNoOsc::LoadFrom(TDirectory* dir, const std::string& name)
-  {    
+  {
     dir = dir->GetDirectory(name.c_str()); // switch to subdir
     assert(dir);
 

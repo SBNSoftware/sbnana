@@ -28,5 +28,5 @@ namespace ana
 
   // http://pdg.lbl.gov/2017/tables/rpp2017-sum-leptons.pdf
   // ssth12 0.307 +/- 0.013 -> ss2th12 0.851 +/- 0.020
-  const SolarConstraints kSolarConstraintsPDG2017(7.53e-5, 0.18e-5, 0.851, 0.020); 
+  const SolarConstraints kSolarConstraintsPDG2017(7.53e-5, 0.18e-5, 0.851, 0.020);
 }

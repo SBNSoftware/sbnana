@@ -33,7 +33,7 @@ const Var kPrimTrkCRTdist([](const caf::SRSliceProxy *slc)
 			{
 			  int muIdx = kPrimMuonIdx(slc);
 			  if( muIdx < 0 ) return -5.;
-			  
+
 			  return (double)slc->reco.trk[muIdx].crthit.distance;
 			});
 
@@ -49,7 +49,7 @@ struct PlotDef
 };
 
 // In this example, we are making the following Spectra
-std::vector<PlotDef> plots = 
+std::vector<PlotDef> plots =
   {{"count",   "",          Binning::Simple(3,0,3),       kCounting},
    {"count_scale",   "",    Binning::Simple(3,0,3),       kCounting_scale},
    {"mucosth", "cos#theta", Binning::Simple(50,-1,1),     kPrimTrkCosth},
@@ -87,7 +87,7 @@ const Cut kIsNuMuCC([](const caf::SRSliceProxy* slc) {
     });
 const Cut kIsNuOther = ( kIsNuSlice && !kIsNuMuCC );
 
-const Cut kNoCut_numucc = kNoCut && kIsNuMuCC; 
+const Cut kNoCut_numucc = kNoCut && kIsNuMuCC;
 const Cut kNoCut_cosmic = kNoCut && kIsCosmic;
 const Cut kNoCut_othernu = kNoCut && kIsNuOther;
 const Cut kPreSelection_numucc = kSlcNuScoreCut && kInFV && kIsNuMuCC;
@@ -103,8 +103,8 @@ const Cut kALLCuts_numucc = kSlcNuScoreCut && kInFV && kSlcFlashMatchTimeCut && 
 const Cut kALLCuts_cosmic = kSlcNuScoreCut && kInFV && kSlcFlashMatchTimeCut && kSlcFlashMatchScoreCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut && kIsCosmic;
 const Cut kALLCuts_othernu = kSlcNuScoreCut && kInFV && kSlcFlashMatchTimeCut && kSlcFlashMatchScoreCut && kHasPrimaryMuonTrk && kCRTTrackAngleCut && kCRTHitDistanceCut && kIsNuOther;
 
-// We are making the Spectra defined above 
-std::vector<SelDef> sels = 
+// We are making the Spectra defined above
+std::vector<SelDef> sels =
   {{"nocut_numucc", "All Slices",  kNoCut_numucc, kRed},
    {"nocut_cosmic", "All Slices",  kNoCut_cosmic, kRed+1},
    {"nocut_othernu", "All Slices",  kNoCut_othernu, kRed+2},
@@ -124,7 +124,7 @@ std::vector<SelDef> sels =
 
 // If you wanted to  add a new cut, define an
 // expression for kYourCut (see examples in SBNAna/Cuts)
-// and then add the following lines to the sels vector: 
+// and then add the following lines to the sels vector:
 /* {"all_yourcut", "All Slices",  kYourCut,            kBlack}, */
 /* {"sig_yourcut", "True NumuCC", (kSig && kYourCut),  kRed+1}, */
 /* {"bkg_yourcut", "Not NumuCC",  (!kSig && kYourCut), kAzure+2}, */

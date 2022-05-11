@@ -436,7 +436,7 @@ namespace ana
           std::cout << "Found files with duplicate run/subrun metadata: " << r2tmp << std::endl;
 
           abort();
-        } 
+        }
 
         if(r1.empty()){
           base[key] = r2;

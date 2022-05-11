@@ -50,7 +50,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     return;
   }
 
-  std::cout << "Loading state from " << stateFname << std::endl; 
+  std::cout << "Loading state from " << stateFname << std::endl;
   TFile fin(stateFname);
   PredictionInterp& pred_nd_numu = *ana::LoadFrom<PredictionInterp>(&fin, "pred_nd_numu").release();
   PredictionInterp& pred_fd_numu = *ana::LoadFrom<PredictionInterp>(&fin, "pred_fd_numu").release();
@@ -106,7 +106,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
                 kAxDmSq,
                 {},
                 allSysts);
-		  
+
   surf2.SaveTo(fOutput, "surf2");
 
   c1->Clear(); // just in case
@@ -130,7 +130,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     const FitAxis kCoarseAxDmSq(&kFitDmSqSterile, 20, 2e-2, 100, true);
 
     osc::IOscCalcAdjustable* c = DefaultSterileApproxCalc();
-    c->SetL(kBaselineSBND); 
+    c->SetL(kBaselineSBND);
     SingleSampleExperiment e1(&pred_nd_numu, pred_nd_numu.Predict(c).MockData(sbndPOT));
 
     c->SetL(kBaselineIcarus); // Icarus
@@ -154,7 +154,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
   TH2* crit2sigMulti = Gaussian3Sigma1D1Sided(surfMulti);
 
   surfMulti.DrawContour(crit2sigMulti, kSolid, kRed);
-    
+
   c1->SaveAs(useSysts ? "nus_BOTH.pdf" : "nus_BOTH_statsOnly.pdf");
 
   c1->Clear();

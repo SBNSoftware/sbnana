@@ -10,7 +10,7 @@ class ToyEnergyScaleSyst: public ISyst
              caf::SRSliceProxy* sr,
              double& weight) const override
   {
-    const double scale = 1 + .05*sigma; // 5% E scale syst.                    
+    const double scale = 1 + .05*sigma; // 5% E scale syst.
 
     sr->reco.reco_energy *= scale;
   }

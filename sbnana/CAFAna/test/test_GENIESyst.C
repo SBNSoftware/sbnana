@@ -79,7 +79,7 @@ void test_GENIESyst(){
   //==== (Truth) Cut
 
   std::vector<Cut> vec_Cuts = {
-    kIsNuSlice, 
+    kIsNuSlice,
     cutIsQE,
     cutIsRes,
     cutIsDIS,

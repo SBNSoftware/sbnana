@@ -128,10 +128,10 @@ namespace ana
       std::cout << "Unknown calculator in SaveTo " << typeid(x).name() << std::endl;
       abort();
     }
-    
+
     const osc::OscCalcSterile* tmpSterile = dynamic_cast<const osc::OscCalcSterile*>(&x);
     if(tmpSterile) {
-      TObjString("OscCalculatorSterile").Write("type");      
+      TObjString("OscCalculatorSterile").Write("type");
       std::vector<double> state = tmpSterile->GetState();
       TVectorD params(state.size());
       for (unsigned int i = 0; i < state.size(); ++i) params[i] = state[i];
@@ -143,7 +143,7 @@ namespace ana
     //for the implementation of OscCalcPMNS_NSI
     const osc::OscCalcPMNS_NSI* tmpNSI = dynamic_cast<const osc::OscCalcPMNS_NSI*>(&x);
     if(tmpNSI) {
-      TObjString("OscCalcPMNS_NSI").Write("type");      
+      TObjString("OscCalcPMNS_NSI").Write("type");
       std::vector<double> state = tmpNSI->GetState();
       TVectorD params(state.size());
       for (unsigned int i = 0; i < state.size(); ++i) params[i] = state[i];
@@ -160,7 +160,7 @@ namespace ana
       std::cout << "Unimplemented calculator in SaveTo " << typeid(x).name() << std::endl;
       abort();
     }
-    
+
     TVectorD params(8);
 
     params[0] = y->GetL();

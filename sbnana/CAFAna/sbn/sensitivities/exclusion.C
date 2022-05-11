@@ -46,20 +46,20 @@ void exclusion(const std::string anatype = numuStr)
     return;
   }
 
-  TFile fin(name_in);  
+  TFile fin(name_in);
   TFile fprop("sterile_3p1_limits.root");
 
-  //Surface& surf_syst_nd = *ana::LoadFrom<Surface>(&fin, "exclusion/nd_prop_systs").release(); 
-  //Surface& surf_syst_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/fd_prop_systs").release(); 
-  //Surface& surf_syst_ub = *ana::LoadFrom<Surface>(&fin, "exclusion/ub_prop_systs").release(); 
+  //Surface& surf_syst_nd = *ana::LoadFrom<Surface>(&fin, "exclusion/nd_prop_systs").release();
+  //Surface& surf_syst_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/fd_prop_systs").release();
+  //Surface& surf_syst_ub = *ana::LoadFrom<Surface>(&fin, "exclusion/ub_prop_systs").release();
   Surface& surf_syst_nd_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/nd_fd_prop_systs").release();
-  //Surface& surf_syst_all = *ana::LoadFrom<Surface>(&fin, "exclusion/allexpt_prop_systs").release(); 
+  //Surface& surf_syst_all = *ana::LoadFrom<Surface>(&fin, "exclusion/allexpt_prop_systs").release();
 
-  //Surface& surf_nom_nd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_nd").release(); 
-  //Surface& surf_nom_ub = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_ub").release(); 
-  //Surface& surf_nom_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_fd").release(); 
-  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_nd_fd").release(); 
-  //Surface& surf_nom = *ana::LoadFrom<Surface>(&fin, "exclusion/nom").release(); 
+  //Surface& surf_nom_nd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_nd").release();
+  //Surface& surf_nom_ub = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_ub").release();
+  //Surface& surf_nom_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_fd").release();
+  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(&fin, "exclusion/nom_nd_fd").release();
+  //Surface& surf_nom = *ana::LoadFrom<Surface>(&fin, "exclusion/nom").release();
 
   TGraph * proposal_90pctCL  = (TGraph *) fprop.Get( "lim_dis_3p1_sbnproposal_90pctCL"  );
   TGraph * proposal_3sigCL   = (TGraph *) fprop.Get( "lim_dis_3p1_sbnproposal_3sigCL"   );
@@ -74,7 +74,7 @@ void exclusion(const std::string anatype = numuStr)
   TH2* crit99 = Gaussian99Percent1D1Sided(surf_nom_nd_fd);
 
   //surf_nom.SetTitle("90% Exclusion");
- 
+
   //surf_nom.DrawContour(crit90, 7, kBlack);
   surf_nom_nd_fd.DrawContour(crit90, 7, kMagenta);
   //surf_nom_nd.DrawContour(crit90,7,kRed);
@@ -86,7 +86,7 @@ void exclusion(const std::string anatype = numuStr)
   //surf_syst_ub.DrawContour(crit90, kSolid, kGreen+3);
   //surf_syst_fd.DrawContour(crit90, kSolid, kBlue);
   surf_syst_nd_fd.DrawContour(crit90, kSolid, kMagenta);
-    
+
   //proposal_90pctCL->SetLineColor(kGreen);
   //proposal_90pctCL->Draw("l");
   //minosp_90pctCL->SetLineColor(kCyan);
@@ -118,13 +118,13 @@ void exclusion(const std::string anatype = numuStr)
   gPad->Print(name_out);
 
 //  TFile fout("exclusion_graphs.root", "RECREATE");
-//  
+//
 //  std::vector<TGraph*> graph_nd_fd_90 = surf_nom_nd_fd.GetGraphs(crit90);
 //  std::vector<TGraph*> graph_nd_fd_95 = surf_nom_nd_fd.GetGraphs(crit95);
 //  std::vector<TGraph*> graph_nd_fd_99 = surf_nom_nd_fd.GetGraphs(crit99);
 //  std::vector<TGraph*> graph_nd_fd_3s = surf_nom_nd_fd.GetGraphs(crit3sig);
 //  std::vector<TGraph*> graph_nd_fd_5s = surf_nom_nd_fd.GetGraphs(crit5sig);
-//  
+//
 //  std::vector<Surface> surfaces {surf_nom, surf_nom_nd, surf_nom_ub, surf_nom_fd, surf_nom_nd_fd, surf_syst_all, surf_syst_nd, surf_syst_ub, surf_syst_fd, surf_syst_nd_fd};
 //
 //  std::vector<TH2*> con_lev {crit90, crit95, crit99, crit3sig, crit5sig};
@@ -132,9 +132,9 @@ void exclusion(const std::string anatype = numuStr)
 //  std::vector<std::string> s_name {"all_stat", "nd_stat", "ub_stat", "fd_stat", "nd_fd_stat", "all_syst", "nd_syst", "ub_syst", "fd_syst", "nd_fd_syst"};
 //
 //  std::vector<std::string> c_name {"_90pct", "_95pct", "_99pct", "_3sig", "_5sig"};
-//  
+//
 //  std::cout<<"Before Loop"<<std::endl;
-// 
+//
 //  ofstream txtfile;
 //  txtfile.open("CAFAna_exclusion.txt");
 //
@@ -161,7 +161,7 @@ void exclusion(const std::string anatype = numuStr)
 //      txtfile<<"\n";
 //    }
 //    txtfile<<"\n\n";
-//  } 
+//  }
 //
 //  txtfile.close();
 

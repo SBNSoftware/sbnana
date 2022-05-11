@@ -32,7 +32,7 @@ namespace ana
                                            int nsigma = 3);
 
     static const unsigned int kTrulyRandom = 123456789;
-    
+
     /// \brief Named constructor. Throw all parameters as gaussians
     ///
     /// \param systs The list of systematic parameters to vary

@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Cut.h"
@@ -40,10 +40,10 @@ const Binning kTimeBinning      = Binning::Simple(70,0.,3500);
 
 
 // // In this example, we are making the following Spectra
-std::vector<PlotDef> plots = 
+std::vector<PlotDef> plots =
   {{"count", "", Binning::Simple(3,0,3), kCounting},
-   {"bestenergy", "Best plane energy (GeV)", kLowEnergyBinningGeV,	kRecoShower_BestEnergy},  
-   {"conversion", "Conversion gap (cm)",     kGapBinning,       kRecoShower_ConversionGap},  
+   {"bestenergy", "Best plane energy (GeV)", kLowEnergyBinningGeV,	kRecoShower_BestEnergy},
+   {"conversion", "Conversion gap (cm)",     kGapBinning,       kRecoShower_ConversionGap},
    {"density",    "Shower density (MeV/cm)", kDensityBinning,   kRecoShower_Density},
    {"energy",     "Energy (MeV)",            kNueEnergyBinning, kRecoShower_Energy},
    {"length",     "Length (cm)",             kLengthBinning,    kRecoShower_Length},

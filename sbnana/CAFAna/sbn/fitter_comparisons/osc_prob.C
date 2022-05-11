@@ -23,7 +23,7 @@ void osc_prob()
   const std::string fnameBeam = dir + "output_SBNOsc_NumuSelection_Modern_SBND.flat.root";
 
   SpectrumLoader loader(fnameBeam, ana::kBeam);
-  
+
   OscillatableSpectrum s("True E (GeV)", Binning::Simple(100, .5, 1.5), loader, kTrueE, kOneNu && kIsNumuCC);
   OscillatableSpectrum s_reco("Reco E (GeV)", Binning::Simple(100, .5, 1.5), loader, kRecoE, kOneNu && kIsNumuCC);
 

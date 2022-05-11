@@ -19,7 +19,7 @@ namespace ana
 
   /// \f$ \Delta m^2_{32} \f$
   const FitDmSq32Sterile kFitDmSq32Sterile;
-  
+
   //----------------------------------------------------------------------
 
   /// \f$ \Delta m^2_{41} \f$
@@ -46,10 +46,10 @@ namespace ana
     virtual double GetValue(const osc::IOscCalcAdjustable* osc) const;
     virtual void SetValue(osc::IOscCalcAdjustable* osc, double val) const;
   };
-  
+
   /// \f$ \Delta m^2_{43} \f$
   const FitDmSq43Sterile kFitDmSq43Sterile;
-  
+
   //----------------------------------------------------------------------
 
   /// \f$ \delta_{13}/\pi \f$

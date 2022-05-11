@@ -40,7 +40,7 @@ void make_surfaces(const std::string anatype = numuStr)
 
   auto systs_flux = GetBoosterFluxWeightSysts();
   auto systs_genie = GetSBNGenieWeightSysts();
-  
+
   std::vector<const ISyst*> systs_to_process;
 
   std::vector<std::string> syst_names{"expskin_FluxUnisim","horncurrent_FluxUnisim","kminus_PrimaryHadronNormalization","kplus_PrimaryHadronFeynmanScaling","kzero_PrimaryHadronSanfordWang","nucleoninexsec_FluxUnisim","nucleonqexsec_FluxUnisim","nucleontotxsec_FluxUnisim","piminus_PrimaryHadronSWCentralSplineVariation","pioninexsec_FluxUnisim","pionqexsec_FluxUnisim","piontotxsec_FluxUnisim","piplus_PrimaryHadronSWCentralSplineVariation","genie_ccresAxial_Genie","genie_ncresAxial_Genie","genie_qema_Genie","genie_NC_Genie","genie_NonResRvbarp1pi_Genie","genie_NonResRvbarp2pi_Genie","genie_NonResRvp1pi_Genie","genie_NonResRvp2pi_Genie","genie_NonResRvbarp1piAlt_Genie","genie_NonResRvbarp2piAlt_Genie","genie_NonResRvp1piAlt_Genie","genie_NonResRvp2piAlt_Genie"};
@@ -75,7 +75,7 @@ void make_surfaces(const std::string anatype = numuStr)
   OscCalcSterileApproxAdjustable* seed = DefaultSterileApproxCalc();
 
   //JL - try different values here, how much does it matter what values we choose, does this
-  //have any impact on disappearance? 
+  //have any impact on disappearance?
   if (anatype == nueStr) {
     seed->calc.SetSinSq2ThetaMuE(1e-2);
     seed->calc.SetDmsq(1);
@@ -86,7 +86,7 @@ void make_surfaces(const std::string anatype = numuStr)
     seed->SetL(kBaselineMicroBoone);
     p_ub->SetOscSeed(seed);
   }
-    
+
 
 
   //Define fit axes
@@ -128,7 +128,7 @@ void make_surfaces(const std::string anatype = numuStr)
   //Surface surf_nom_ub(&expt_ub, calc, kAxForTh, kAxDmSq);
 
   fout.mkdir("exclusion");
-  fout.cd("exclusion");    
+  fout.cd("exclusion");
 
   //surf_nom.SaveTo(gDirectory, "nom");
   //surf_nom_nd.SaveTo(gDirectory, "nom_nd");
@@ -196,7 +196,7 @@ void make_surfaces(const std::string anatype = numuStr)
   //Surface surf_nom_fd2(&expt_fd2, calc2, kAxForTh, kAxDmSq);
   calc2->SetL(kBaselineMicroBoone);
   //Surface surf_nom_ub2(&expt_ub2, calc2, kAxForTh, kAxDmSq);
-    
+
   //fout.cd("..");
   //fout.mkdir("allowed");
   //fout.cd("allowed");

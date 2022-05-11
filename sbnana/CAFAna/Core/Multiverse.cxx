@@ -226,7 +226,7 @@ namespace ana
 
     dir->cd();
     TObjString((ShortName()+kSep+"md5="+Checksum()).c_str()).Write(name.c_str());
-    
+
     tmp->cd();
   }
 

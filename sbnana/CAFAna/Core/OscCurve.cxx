@@ -51,7 +51,7 @@ namespace ana
       }
       for(unsigned int i = 1; i <= N; ++i) ret[i] = calc->P(from, to, 1); // energy irrelevant for NoOsc calc
     }
- 
+
     return ret;
   }
 

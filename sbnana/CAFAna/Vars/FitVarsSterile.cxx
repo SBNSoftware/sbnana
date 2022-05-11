@@ -9,8 +9,8 @@
 
 namespace ana
 {
-  
-  //--------------------------------------------------------------------------- 
+
+  //---------------------------------------------------------------------------
   double FitDmSq32Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     const osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
@@ -18,8 +18,8 @@ namespace ana
     double dm231 = sterile->GetDm(3);
     return dm231 - dm221;
   }
-  
-  //---------------------------------------------------------------------------                   
+
+  //---------------------------------------------------------------------------
   void FitDmSq32Sterile::SetValue(osc::IOscCalcAdjustable* osc, double val) const
   {
     osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
@@ -28,19 +28,19 @@ namespace ana
     sterile->SetDm(3, dm231);
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitDmSq41Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return osc::DowncastToSterile(osc)->GetDm(4);
   }
-  
-  //---------------------------------------------------------------------------                   
+
+  //---------------------------------------------------------------------------
   void FitDmSq41Sterile::SetValue(osc::IOscCalcAdjustable* osc, double val) const
   {
     osc::DowncastToSterile(osc)->SetDm(4, val);
   }
 
-  //--------------------------------------------------------------------------- 
+  //---------------------------------------------------------------------------
   double FitDmSq43Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     const osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
@@ -48,8 +48,8 @@ namespace ana
     double dm231 = sterile->GetDm(3);
     return dm241 - dm231;
   }
-  
-  //---------------------------------------------------------------------------                   
+
+  //---------------------------------------------------------------------------
   void FitDmSq43Sterile::SetValue(osc::IOscCalcAdjustable* osc, double val) const
   {
     osc::IOscCalcSterile* sterile = osc::DowncastToSterile(osc);
@@ -57,7 +57,7 @@ namespace ana
     double dm241 = val + dm231;
     sterile->SetDm(4, dm241);
   }
-  
+
   //----------------------------------------------------------------------
   double FitDelta13InPiUnitsSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
@@ -106,7 +106,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetDelta(2, 4, M_PI*val);
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta13Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return osc::DowncastToSterile(osc)->GetAngle(1,3);
@@ -130,7 +130,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(1, 3, asin(sqrt(Clamp(val))));
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta23Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return osc::DowncastToSterile(osc)->GetAngle(2,3);
@@ -154,7 +154,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(2, 3, asin(sqrt(Clamp(val))));
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta14Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return osc::DowncastToSterile(osc)->GetAngle(1,4);
@@ -190,7 +190,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(1,4, asin(sqrt(Clamp(val)))/2);
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta24Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return osc::DowncastToSterile(osc)->GetAngle(2,4);
@@ -226,7 +226,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(2,4, asin(sqrt(Clamp(val)))/2);
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta34Sterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return osc::DowncastToSterile(osc)->GetAngle(3,4);
@@ -262,7 +262,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(3,4, asin(sqrt(Clamp(val)))/2);
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta13InDegreesSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return TMath::RadToDeg()*osc::DowncastToSterile(osc)->GetAngle(1,3);
@@ -274,7 +274,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(1, 3, TMath::DegToRad()*Clamp(val));
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta23InDegreesSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return TMath::RadToDeg()*osc::DowncastToSterile(osc)->GetAngle(2,3);
@@ -286,7 +286,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(2, 3, TMath::DegToRad()*Clamp(val));
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta14InDegreesSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return TMath::RadToDeg()*osc::DowncastToSterile(osc)->GetAngle(1,4);
@@ -298,7 +298,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(1, 4, TMath::DegToRad()*Clamp(val));
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta24InDegreesSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return TMath::RadToDeg()*osc::DowncastToSterile(osc)->GetAngle(2,4);
@@ -310,7 +310,7 @@ namespace ana
     osc::DowncastToSterile(osc)->SetAngle(2, 4, TMath::DegToRad()*Clamp(val));
   }
 
-  //---------------------------------------------------------------------------                   
+  //---------------------------------------------------------------------------
   double FitTheta34InDegreesSterile::GetValue(const osc::IOscCalcAdjustable* osc) const
   {
     return TMath::RadToDeg()*osc::DowncastToSterile(osc)->GetAngle(3,4);

@@ -22,7 +22,7 @@ void plot_eventsel(std::string inFile)
 
   // I want to make a plot for each var
   for(unsigned int iVar = 0; iVar < kNVar; ++iVar){
-    
+
     TCanvas *c = new TCanvas(plots[iVar].suffix.c_str(),plots[iVar].suffix.c_str());
 
     std::vector<TH1*> hists;
@@ -44,7 +44,7 @@ void plot_eventsel(std::string inFile)
     hists[0]->GetYaxis()->CenterTitle();
 
     hists[0]->Draw("hist");
-    for(unsigned int jSel = 0; jSel < kNSel; ++jSel) 
+    for(unsigned int jSel = 0; jSel < kNSel; ++jSel)
       hists[jSel]->Draw("hist same");
     hists[0]->Draw("hist same");
     l->Draw();

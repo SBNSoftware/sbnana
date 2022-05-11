@@ -17,7 +17,7 @@ namespace ana
     // These value are from the 2014 PDG
     // http://pdg.lbl.gov/2014/tables/rpp2014-sum-leptons.pdf
     std::cerr << "WARNING: Using 2014 Solar constraints."
-	      << "Are you sure you don't want kSolarConstraintsPDG2017 ?" 
+	      << "Are you sure you don't want kSolarConstraintsPDG2017 ?"
 	      << std::endl;
 
     fCentralDmsq = 7.53e-5;

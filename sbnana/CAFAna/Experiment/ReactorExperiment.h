@@ -33,6 +33,6 @@ namespace ana
   /// Updated value for SecondAna based on the latest PDG
   const ReactorExperiment* WorldReactorConstraint2016();
 
-  /// Reactor constraint from PDG 2017 update 
+  /// Reactor constraint from PDG 2017 update
   const ReactorExperiment* WorldReactorConstraint2017();
 }

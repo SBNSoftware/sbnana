@@ -23,7 +23,7 @@ namespace ana
     Spectrum predND = fPredND->PredictSyst(osc, syst);
     osc->SetL(kBaselineIcarus);
     Spectrum predFD = fPredFD->PredictSyst(osc, syst);
-    
+
     predFD *= Ratio(fSpectND, predND);
 
     const double ret = LogLikelihood(predFD.GetEigen(predFD.POT()),

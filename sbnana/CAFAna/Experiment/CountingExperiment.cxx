@@ -57,7 +57,7 @@ namespace ana
     assert(ptag->GetString() == "CountingExperiment");
 
     assert(dir->GetDirectory("mc"));
-    
+
 
     const IPrediction* mc = ana::LoadFrom<IPrediction>(dir, "mc").release();
     const std::unique_ptr<Spectrum> data = Spectrum::LoadFrom(dir, "data");

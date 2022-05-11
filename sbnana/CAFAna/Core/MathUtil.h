@@ -28,9 +28,9 @@ namespace util{
   /// More efficient exponentiation function than pow(x,n) for small n
   template<class T> inline T ipow(T x, unsigned int n)
   {
-    T ret = 1; 
+    T ret = 1;
     if (n == 0) return ret;
-    for(unsigned int i = 1; i <= n; ++i) ret *= x; 
+    for(unsigned int i = 1; i <= n; ++i) ret *= x;
     return ret;
   }
 

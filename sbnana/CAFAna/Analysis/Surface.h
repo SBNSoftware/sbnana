@@ -79,7 +79,7 @@ namespace ana
     /// Draw the best fit point
     void DrawBestFit(Color_t color, Int_t marker=kFullCircle) const;
     double MinChi() const {return fMinChi;}
-    double GetMinX() const {return fMinX;} 
+    double GetMinX() const {return fMinX;}
     double GetMinY() const {return fMinY;}
 
     /// \param fc Surface to compare against for this significance level

@@ -60,7 +60,7 @@ void contours_sbnd()
 
   const FitAxis kAxTh(&kFitSinSq2ThetaMuMu, 30, 1e-3, 1, true);
   const FitAxis kAxDmSq(&kFitDmSqSterile, 30, 1e-2, 1e2, true);
-  
+
   SingleSampleExperiment expt(&pred, fake);
 
   Surface surf(&expt, calc, kAxTh, kAxDmSq);

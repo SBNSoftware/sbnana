@@ -35,7 +35,7 @@ namespace ana
       double tot = 0;
       for(unsigned int i = 0; i < Nreco; ++i){
         const double mij = m->GetBinContent(i+1, j+1);
-        M(i, j) = mij; 
+        M(i, j) = mij;
         tot += mij;
       }
       // Normalize each column of true energy. One true event smears to one

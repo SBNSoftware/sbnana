@@ -24,7 +24,7 @@ const FidVol fvndAbs{  +1.5, +175.,  // x
                       -175., +175.,  // y
                        +30., +450.}; // z
 
-// Sometimes (e.g. plotting) we want the full volume 
+// Sometimes (e.g. plotting) we want the full volume
 const FidVol fvnd{ -175., +175.,  // x
                    -175., +175.,  // y
                     +30., +450.}; // z

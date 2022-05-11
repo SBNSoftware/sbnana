@@ -174,7 +174,7 @@ void CenterTitles(TH1* histo)
 {
   histo->GetXaxis()->CenterTitle();
   histo->GetYaxis()->CenterTitle();
-  histo->GetZaxis()->CenterTitle();  
+  histo->GetZaxis()->CenterTitle();
 }
 
 #endif

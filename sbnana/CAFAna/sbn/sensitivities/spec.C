@@ -50,7 +50,7 @@ void spec(const std::string anatype = numuStr)
     std:: cout << "Run make_state_syst.C first!" << std::endl;
     return;
   }
-  std::cout << "Loading state from " << stateFname << std::endl; 
+  std::cout << "Loading state from " << stateFname << std::endl;
 
   //Initialize systematics just so we can use common state file
   const std::vector<const ISyst*>& systs = GetSBNWeightSysts();
@@ -87,7 +87,7 @@ void spec(const std::string anatype = numuStr)
     TH1* hnumu_nd_signal_osc1 = pred_nd.PredictComponent(osc_nd_opt1, Flavors::kAllNuMu, Current::kCC, Sign::kBoth).ToTH1(pot);
     TH1* hnumu_nd_ncbg_unosc = pred_nd.PredictComponent(noosc_nd, Flavors::kAll, Current::kNC, Sign::kBoth).ToTH1(pot);
     TH1* hnumu_nd_ncbg_osc1 = pred_nd.PredictComponent(osc_nd_opt1, Flavors::kAll, Current::kNC, Sign::kBoth).ToTH1(pot);
-  
+
     TH1* hnumu_nd_osc_ratio = (TH1*)hnumu_nd_signal_osc1->Clone();
     hnumu_nd_osc_ratio->Add(hnumu_nd_ncbg_osc1);
     TH1* hnumu_nd_tot_unosc = (TH1*)hnumu_nd_signal_unosc->Clone();
@@ -104,7 +104,7 @@ void spec(const std::string anatype = numuStr)
     TH1* hnumu_fd_signal_osc1 = pred_fd.PredictComponent(osc_fd_opt1, Flavors::kAllNuMu, Current::kCC, Sign::kBoth).ToTH1(pot);
     TH1* hnumu_fd_ncbg_unosc = pred_fd.PredictComponent(noosc_fd, Flavors::kAll, Current::kNC, Sign::kBoth).ToTH1(pot);
     TH1* hnumu_fd_ncbg_osc1 = pred_fd.PredictComponent(osc_fd_opt1, Flavors::kAll, Current::kNC, Sign::kBoth).ToTH1(pot);
-  
+
     TH1* hnumu_fd_osc_ratio = (TH1*)hnumu_fd_signal_osc1->Clone();
     hnumu_fd_osc_ratio->Add(hnumu_fd_ncbg_osc1);
     TH1* hnumu_fd_tot_unosc = (TH1*)hnumu_fd_signal_unosc->Clone();
@@ -145,14 +145,14 @@ void spec(const std::string anatype = numuStr)
     hnumu_nd_signal_osc1->Write("hnumu_nd_signal_osc");
     hnumu_nd_ncbg_unosc->Write("hnumu_nd_ncbg_unosc");
     hnumu_nd_ncbg_osc1->Write("hnumu_nd_ncbg_osc");
-    hnumu_nd_osc_ratio->Write("hnumu_nd_osc_ratio");  
+    hnumu_nd_osc_ratio->Write("hnumu_nd_osc_ratio");
 
     hnumu_fd_signal_unosc->Write("hnumu_fd_signal_unosc");
     hnumu_fd_signal_osc1->Write("hnumu_fd_signal_osc");
     hnumu_fd_ncbg_unosc->Write("hnumu_fd_ncbg_unosc");
     hnumu_fd_ncbg_osc1->Write("hnumu_fd_ncbg_osc");
     hnumu_fd_osc_ratio->Write("hnumu_fd_osc_ratio");
-  
+
     hnumu_ub_signal_unosc->Write("hnumu_ub_signal_unosc");
     hnumu_ub_signal_osc1->Write("hnumu_ub_signal_osc");
     hnumu_ub_ncbg_unosc->Write("hnumu_ub_ncbg_unosc");
@@ -180,7 +180,7 @@ void spec(const std::string anatype = numuStr)
     TH1* hnue_nd_ncbg_unosc = pred_nd.PredictComponent(noosc_nd, Flavors::kAll, Current::kNC, Sign::kBoth).ToTH1(pot);
     TH1* hnue_nd_numubg_unosc = pred_nd.PredictComponent(noosc_nd, Flavors::kAllNuMu, Current::kCC, Sign::kBoth).ToTH1(pot);
     TH1* hnue_nd_nuebg_unosc = pred_nd.PredictComponent(noosc_nd, Flavors::kNuEToNuE, Current::kCC, Sign::kBoth).ToTH1(pot);
-    
+
     TH1* hnue_nd_osc1_ratio = (TH1*)hnue_nd_signal_osc1->Clone();
     TH1* hnue_nd_osc2_ratio = (TH1*)hnue_nd_signal_osc2->Clone();
     TH1* hnue_nd_tot_unosc = (TH1*)hnue_nd_signal_unosc->Clone();
@@ -200,7 +200,7 @@ void spec(const std::string anatype = numuStr)
     osc_fd_nue1->SetL(kBaselineIcarus);
     osc_fd_nue1->calc.SetSinSq2ThetaMuE(0.003);
     osc_fd_nue1->calc.SetDmsq(1.2);
-  
+
     OscCalcSterileApproxAdjustable* osc_fd_nue2 = DefaultSterileApproxCalc();
     osc_fd_nue2->SetL(kBaselineIcarus);
     osc_fd_nue2->calc.SetSinSq2ThetaMuE(0.001);
@@ -212,7 +212,7 @@ void spec(const std::string anatype = numuStr)
     TH1* hnue_fd_ncbg_unosc = pred_fd.PredictComponent(noosc_fd, Flavors::kAll, Current::kNC, Sign::kBoth).ToTH1(pot);
     TH1* hnue_fd_numubg_unosc = pred_fd.PredictComponent(noosc_fd, Flavors::kAllNuMu, Current::kCC, Sign::kBoth).ToTH1(pot);
     TH1* hnue_fd_nuebg_unosc = pred_fd.PredictComponent(noosc_fd, Flavors::kNuEToNuE, Current::kCC, Sign::kBoth).ToTH1(pot);
-  
+
     TH1* hnue_fd_osc1_ratio = (TH1*)hnue_fd_signal_osc1->Clone();
     TH1* hnue_fd_osc2_ratio = (TH1*)hnue_fd_signal_osc2->Clone();
     TH1* hnue_fd_tot_unosc = (TH1*)hnue_fd_signal_unosc->Clone();
@@ -233,7 +233,7 @@ void spec(const std::string anatype = numuStr)
     osc_ub_nue1->SetL(kBaselineMicroBoone);
     osc_ub_nue1->calc.SetSinSq2ThetaMuE(0.003);
     osc_ub_nue1->calc.SetDmsq(1.2);
-  
+
     OscCalcSterileApproxAdjustable* osc_ub_nue2 = DefaultSterileApproxCalc();
     osc_ub_nue2->SetL(kBaselineMicroBoone);
     osc_ub_nue2->calc.SetSinSq2ThetaMuE(0.001);
@@ -311,7 +311,7 @@ void spec(const std::string anatype = numuStr)
     hnue_fd_nuebg_unosc->Write("hnue_fd_nuebg_unosc");
     hnue_fd_osc1_ratio->Write("hnue_fd_osc1_ratio");
     hnue_fd_osc2_ratio->Write("hnue_fd_osc2_ratio");
-    
+
     hnue_ub_signal_unosc->Write("hnue_ub_signal_unosc");
     hnue_ub_signal_osc1->Write("hnue_ub_signal_osc1");
     hnue_ub_signal_osc2->Write("hnue_ub_signal_osc2");
@@ -327,7 +327,7 @@ void spec(const std::string anatype = numuStr)
     hnue_fd_nd_ratio1->Write("hnue_fd_nd_ratio1");
     hnue_fd_nd_ratio2->Write("hnue_fd_nd_ratio2");
   }
-  
+
   fOutput->Close();
 }
-  
+

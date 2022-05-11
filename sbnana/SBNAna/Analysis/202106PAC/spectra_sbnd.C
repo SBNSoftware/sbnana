@@ -32,7 +32,7 @@ void spectra_sbnd()
 
   const Cut kIsCosmic = SIMPLEVAR(truth.index) < 0;
 
-  // This looks much better than the official fit binning 
+  // This looks much better than the official fit binning
   const Binning binsEnergy = Binning::Simple(30, 0, 3);
 
   const HistAxis axEnergy(/*Reconstructed*/"True energy (GeV)", binsEnergy, kRecoE);

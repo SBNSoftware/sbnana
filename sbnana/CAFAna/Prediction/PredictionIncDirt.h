@@ -53,7 +53,7 @@ namespace ana
     {
       return fDirt.PredictComponent(calc, flav, curr, sign);
     }
-    
+
     virtual Spectrum Predict(osc::IOscCalc* calc) const override
     {
       return PredictDet(calc) + PredictDirt(calc);

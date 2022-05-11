@@ -46,12 +46,12 @@ void syst_spec(const std::string anatype = numuStr)
   }
 
   //for (auto s : systs_to_process) std::cout << s->ShortName() << std::endl;
-  
+
   std::vector<std::vector<const ISyst*>> all_systs_vec;
   all_systs_vec.push_back(systs_to_process);
   all_systs_vec.push_back(systs_flux);
   all_systs_vec.push_back(systs_genie);
-  
+
  std::string n[] = {"all", "flux", "genie"};
 
  const char* name_in;
@@ -75,7 +75,7 @@ void syst_spec(const std::string anatype = numuStr)
  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
- 
+
  TLegend* leg_updn = new TLegend(.6, .6, .85, .85);
  leg_updn->SetFillStyle(0);
  TH1* dummy = new TH1F("", "", 1, 0, 1);
@@ -179,8 +179,8 @@ void syst_spec(const std::string anatype = numuStr)
       std::sort(bincont.begin(),bincont.end());
       shifted->SetBinContent(k, bincont[840]);
       lower->SetBinContent(k, bincont[160]);
-    }    
-    
+    }
+
     shifted->Write(("spect_nd_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
     lower->Write(("spect_nd_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
 
@@ -198,8 +198,8 @@ void syst_spec(const std::string anatype = numuStr)
       std::sort(bincont.begin(),bincont.end());
       shifted2->SetBinContent(k, bincont[840]);
       lower2->SetBinContent(k, bincont[160]);
-    }    
-    
+    }
+
     shifted2->Write(("spect_fd_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
     lower2->Write(("spect_fd_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
 
@@ -217,8 +217,8 @@ void syst_spec(const std::string anatype = numuStr)
       std::sort(bincont.begin(),bincont.end());
       shifted3->SetBinContent(k, bincont[840]);
       lower3->SetBinContent(k, bincont[160]);
-    }    
-    
+    }
+
     shifted3->Write(("spect_ub_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
     lower3->Write(("spect_ub_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
   }

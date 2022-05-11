@@ -49,7 +49,7 @@ namespace ana
       s.fMC = nullptr;
     };
 
-    void SetMaskHist(double xmin=0, double xmax=-1, 
+    void SetMaskHist(double xmin=0, double xmax=-1,
 		     double ymin=0, double ymax=-1);
 
   protected:

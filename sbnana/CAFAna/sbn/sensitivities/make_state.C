@@ -170,7 +170,7 @@ void make_state(const std::string anatype = numuStr)
 
   const Var kWeighthack([](const caf::SRSliceProxy* sr)
                         {
-			  std::cout << sr->truth[0].neutrino.iscc << " " << sr->truth[0].neutrino.pdg << " " << sr->reco.weight << std::endl; 
+			  std::cout << sr->truth[0].neutrino.iscc << " " << sr->truth[0].neutrino.pdg << " " << sr->reco.weight << std::endl;
 			  if (sr->truth[0].neutrino.iscc && sr->truth[0].neutrino.pdg == 12) return 0.8;
 			  if (sr->truth[0].neutrino.iscc && sr->truth[0].neutrino.pdg == 14) return 0.0058;
 			  if (sr->truth[0].neutrino.isnc) return 0.058;

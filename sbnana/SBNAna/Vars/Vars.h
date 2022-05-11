@@ -12,12 +12,12 @@ namespace ana
   // Return the event number
   extern const SpillVar kEvt;
 
-  extern const SpillMultiVar kCRTHitX;	
-  extern const SpillMultiVar kCRTHitY;  
-  extern const SpillMultiVar kCRTHitZ;  
-  extern const SpillMultiVar kCRTHitPE;  
-  extern const SpillMultiVar kCRTHitTime;  
-  extern const SpillMultiVar kCRTHitTimeFD;  
+  extern const SpillMultiVar kCRTHitX;
+  extern const SpillMultiVar kCRTHitY;
+  extern const SpillMultiVar kCRTHitZ;
+  extern const SpillMultiVar kCRTHitPE;
+  extern const SpillMultiVar kCRTHitTime;
+  extern const SpillMultiVar kCRTHitTimeFD;
 
   // // Return the slice number
   // extern const SliceVar kSlc;

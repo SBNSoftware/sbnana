@@ -1,4 +1,4 @@
-// Make a plot with cuts 
+// Make a plot with cuts
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
@@ -35,7 +35,7 @@ void ana01()
 		       });
 
   // ---- CUTS -----
-  // A Cut returns a boolean per slice 
+  // A Cut returns a boolean per slice
   const Cut kLong      ([](const caf::SRSliceProxy* slc)
 			{
 			  bool pass = false;
@@ -49,11 +49,11 @@ void ana01()
   const Binning binsN   = Binning::Simple(10, 0, 10);
   const Binning binsLen = Binning::Simple(50, 0, 500);
 
-  //               axis( <Title>,Binning,Var) 
+  //               axis( <Title>,Binning,Var)
   const HistAxis axNTrk("Number of Tracks", binsN, kNTrk);
   const HistAxis axLen ("1st Track Length", binsLen, kTrkLen);
 
-  //         spectrum(Spectrumloader,HistAxis,Cut) 
+  //         spectrum(Spectrumloader,HistAxis,Cut)
   Spectrum sNTracks  (loader, axNTrk, kNoCut);
   Spectrum sTrkLenAll(loader, axLen, kNoCut);
   Spectrum sTrkLen50 (loader, axLen, kLong);
