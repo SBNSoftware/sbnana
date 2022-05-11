@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/EnsembleRatio.h"
 
-#include "sbnana/CAFAna/Core/Multiverse.h"
+#include "sbnana/CAFAna/Core/FitMultiverse.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "TDirectory.h"

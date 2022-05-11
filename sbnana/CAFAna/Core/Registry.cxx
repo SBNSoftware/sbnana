@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/IFitVar.h"
 #include "sbnana/CAFAna/Core/ISyst.h"
-#include "sbnana/CAFAna/Core/Multiverse.h"
+#include "sbnana/CAFAna/Core/FitMultiverse.h"
 
 namespace ana
 {
