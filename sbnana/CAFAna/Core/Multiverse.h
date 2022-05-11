@@ -112,7 +112,7 @@ namespace ana
     const _Universe<SystT>& GetUniverse(int i) const
     {
       // TODO I think this cast is safe because the layout is identical?
-      return *((const _Universe<SystT>)&fUnivs[i]);
+      return *((const _Universe<SystT>*)&fUnivs[i]);
     }
 
   protected:

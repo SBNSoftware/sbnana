@@ -8,6 +8,10 @@
 
 namespace ana
 {
+  class ISyst;
+  template<class SystT> class _Multiverse;
+  using Multiverse = _Multiverse<ISyst>;
+
   class SystShifts;
 
   //----------------------------------------------------------------------
@@ -72,16 +76,15 @@ namespace ana
     // Weight-based ensembles are still supported
     using _IRecordSourceDefaultImpl::Ensemble;
 
-    // But also support an ensemble basd on SystShifts
-    ISliceEnsembleSource& Ensemble(const std::vector<SystShifts>& shifts,
-                                   int multiverseId);
+    // But also support an ensemble based on SystShifts
+    ISliceEnsembleSource& Ensemble(const Multiverse& multiverse);
 
     ITrackSource& Tracks() {return fTracks;}
     IShowerSource& Showers() {return fShowers;}
     IStubSource& Stubs() {return fStubs;}
 
   protected:
-    IDDict<ISliceEnsembleSource> fEnsembleSources;
+    IDDict<const FitMultiverse*, ISliceEnsembleSource> fEnsembleSources;
 
     VectorAdaptor<caf::SRSlice, caf::SRTrack> fTracks{*this, GetTracks};
     VectorAdaptor<caf::SRSlice, caf::SRShower> fShowers{*this, GetShowers};
@@ -121,7 +124,10 @@ namespace ana
 
     virtual void HandleEnsemble(const caf::Proxy<FromT>* rec,
                                 const std::vector<double>& weight) override;
+
+    virtual const ana::FitMultiverse* GetMultiverse() const {return fMultiverse;}
   protected:
+    const FitMultiverse* fMultiverse;
     Func_t fVecGetter;
   };
 

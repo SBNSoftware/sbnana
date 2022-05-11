@@ -1,5 +1,7 @@
 #include "sbnana/CAFAna/Core/IRecordSource.h"
 
+#include "sbnana/CAFAna/Core/Multiverse.h"
+
 #include "sbnana/CAFAna/Core/SystShifts.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
@@ -13,24 +15,27 @@ namespace ana
   {
   public:
     ShiftedSliceEnsembleSource(ISliceSource& src,
-                               const std::vector<SystShifts>& shifts,
-                               int multiverseId);
+                               const Multiverse& multiverse);
 
     virtual void HandleRecord(const caf::SRSliceProxy* slc, double weight) override;
 
+    virtual const ana::FitMultiverse* GetMultiverse() const{return fMultiverse;}
+
   protected:
+    const Multiverse* fMultiverse;
     std::vector<SystShifts> fShifts;
-    int fMultiverseId;
   };
 
   //----------------------------------------------------------------------
   ShiftedSliceEnsembleSource::
-  ShiftedSliceEnsembleSource(ISliceSource& src,
-                             const std::vector<SystShifts>& shifts,
-                             int multiverseId)
-    : fShifts(shifts), fMultiverseId(multiverseId)
+  ShiftedSliceEnsembleSource(ISliceSource& src, const Multiverse& multiverse)
+    : fMultiverse(&multiverse)
   {
     src.Register(this);
+
+    // Turn the universes into concrete SystShifts objects up-front
+    fShifts.reserve(multiverse.NUniv());
+    for(unsigned int i = 0; i < multiverse.NUniv(); ++i) fShifts.emplace_back(multiverse.GetUniverse(i));
   }
 
   //----------------------------------------------------------------------
@@ -99,9 +104,9 @@ namespace ana
 
   //----------------------------------------------------------------------
   ISliceEnsembleSource& ISliceSource::
-  Ensemble(const std::vector<SystShifts>& shifts, int multiverseId)
+  Ensemble(const Multiverse& multiverse)
   {
-    return fEnsembleSources.template Get<ShiftedSliceEnsembleSource>(multiverseId, *this, shifts, multiverseId);
+    return fEnsembleSources.template Get<ShiftedSliceEnsembleSource>(&multiverse, *this, multiverse);
   }
 
   //----------------------------------------------------------------------
@@ -128,7 +133,7 @@ namespace ana
   template<class FromT, class ToT> EnsembleVectorAdaptor<FromT, ToT>::
   EnsembleVectorAdaptor(beta::_IRecordEnsembleSource<caf::Proxy<FromT>>& src,
                         Func_t vecGetter)
-    : fVecGetter(vecGetter)
+    : fMultiverse(src.GetMultiverse()), fVecGetter(vecGetter)
   {
     src.Register(this);
   }

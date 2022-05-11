@@ -16,7 +16,7 @@ namespace ana
   //----------------------------------------------------------------------
   EnsembleSpectrum::EnsembleSpectrum(beta::IValueEnsembleSource& src,
                                      const LabelsAndBins& axis)
-    : fMultiverse(&FitMultiverse::RandomGas({}, 99, 42)/*&src.GetMultiverse()*/),
+    : fMultiverse(src.GetMultiverse()),
       fHist(Hist::Zero((axis.GetBins1D().NBins()+2) * fMultiverse->NUniv())),
       fPOT(0), fLivetime(0),
       fAxis(axis)
