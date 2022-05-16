@@ -320,10 +320,8 @@ namespace ana
     sr->crt_tracks.clear();
     sr->ncrt_tracks = 0;
 
-    sr->reco.trk.clear();
-    sr->reco.ntrk = 0;
-    sr->reco.shw.clear();
-    sr->reco.nshw = 0;
+    sr->reco.pfp.clear();
+    sr->reco.npfp = 0;
     sr->reco.stub.clear();
     sr->reco.nstub = 0;
 
