@@ -48,6 +48,3 @@ void CRUMBS_demo()
   histBestCRUMBSSliceNTracks->SetLineColor(kMagenta+2);
   histBestCRUMBSSliceNTracks->Draw("hist");
 }
-  
-
-  

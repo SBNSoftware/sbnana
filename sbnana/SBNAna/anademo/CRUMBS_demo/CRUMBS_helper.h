@@ -7,9 +7,9 @@ const SpillCut kHasNonUnambiguousSlice([](const caf::SRSpillProxy *sr)
      {
        bool hasNonUnam = false;
        for(auto const &slc : sr->slc)
-	 {
-	   hasNonUnam |= !slc.is_clear_cosmic;
-	 }
+         {
+           hasNonUnam |= !slc.is_clear_cosmic;
+         }
 
        return hasNonUnam;
      });
@@ -21,13 +21,13 @@ const SpillVar kBestCRUMBSScore([](const caf::SRSpillProxy *sr) -> double
        double bestValue = -std::numeric_limits<double>::max();
        
        for(auto const &slc : sr->slc)
-	 {
-	   if(!slc.is_clear_cosmic)
-	     {
-	       if(slc.crumbs_result.score > bestValue)
-		 bestValue = slc.crumbs_result.score;
-	     }
-	 }
+         {
+           if(!slc.is_clear_cosmic)
+             {
+               if(slc.crumbs_result.score > bestValue)
+                 bestValue = slc.crumbs_result.score;
+             }
+         }
        
        return bestValue;
      });
@@ -39,17 +39,17 @@ const SpillVar kBestCRUMBSSliceID([](const caf::SRSpillProxy *sr) -> double
        double bestValue = -std::numeric_limits<double>::max();
 
        for(auto const &slc : sr->slc)
-	 {
-	   if(!slc.is_clear_cosmic)
-	     {
-	       if(slc.crumbs_result.score > bestValue)
-		 {
-		   bestValue = slc.crumbs_result.score;
-		   bestId    = id;
-		 }
-	     }
-	   ++id;
-	 }
+         {
+           if(!slc.is_clear_cosmic)
+             {
+               if(slc.crumbs_result.score > bestValue)
+                 {
+                   bestValue = slc.crumbs_result.score;
+                   bestId    = id;
+                 }
+             }
+           ++id;
+         }
 
        return bestId;
      });
