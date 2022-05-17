@@ -5,13 +5,12 @@ const Cut kNonUnambiguousSlice([](const caf::SRSliceProxy *slc)
 
 const SpillCut kHasNonUnambiguousSlice([](const caf::SRSpillProxy *sr)
      {
-       bool hasNonUnam = false;
        for(auto const &slc : sr->slc)
          {
-           hasNonUnam |= !slc.is_clear_cosmic;
+           if(!slc.is_clear_cosmic) return true;
          }
 
-       return hasNonUnam;
+       return false;
      });
 
 const Var kCRUMBSScore = SIMPLEVAR(crumbs_result.score);
