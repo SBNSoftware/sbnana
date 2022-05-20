@@ -535,8 +535,8 @@ namespace ana
 
     for(unsigned int i = 0; i < p.we_wordc; ++i){
       // Check the file exists before adding it
-      struct stat sb;
-      if(stat(p.we_wordv[i], &sb) == 0)
+      //struct stat sb;
+      //if(stat(p.we_wordv[i], &sb) == 0)
         fileList.push_back(p.we_wordv[i]);
     }
 
