@@ -274,6 +274,8 @@ namespace ana
     std::vector<std::string> GetLabels() const {return fLabels;}
     std::vector<Binning> GetBinnings() const {return fBins;}
 
+    void SetLabel(int idx, std::string newlabel);
+
   protected:
     Spectrum(const std::vector<std::string>& labels,
              const std::vector<Binning>& bins,

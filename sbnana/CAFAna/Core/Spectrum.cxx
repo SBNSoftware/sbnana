@@ -164,7 +164,7 @@ namespace ana
                      const Cut& cut,
                      const SystShifts& shift,
                      const Var& wei)
-    : Spectrum(xAxis.GetLabels()[0], loader,
+    : Spectrum(xAxis.GetLabels()[0]+"_vs_"+yAxis.GetLabels()[0], loader,
                xAxis.GetBinnings()[0], xAxis.GetVars()[0],
                yAxis.GetBinnings()[0], yAxis.GetVars()[0],
                spillcut, cut, shift, wei)
@@ -855,6 +855,13 @@ namespace ana
     }
 
     tmp->cd();
+  }
+
+  void Spectrum::SetLabel(int idx, std::string newlabel)
+  {
+    if(idx<int(fLabels.size())){
+      fLabels.at(idx) = newlabel;
+    }
   }
 
   //----------------------------------------------------------------------
