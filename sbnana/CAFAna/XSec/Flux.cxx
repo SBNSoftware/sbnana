@@ -57,8 +57,9 @@ namespace ana
   FluxTimesNuclei::FluxTimesNuclei(INuTruthSource& src,
                                    const Binning& bins,
                                    const NuTruthCut& fidvol,
-                                   int pdg)
-    : Spectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(kInvXSec),
+                                   int pdg,
+                                   const NuTruthWeight& wgt)
+    : Spectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(wgt *kInvXSec),
                NuTruthHistAxis("True neutrino energy (GeV)",
                                bins,
                                SIMPLENUTRUTHVAR(E))),
@@ -73,6 +74,42 @@ namespace ana
                                EBinType bintype)
   {
     TH1D* ret = Spectrum::ToTH1(pot, col, style, kPOT, bintype);
+
+    std::string ytitle = "Flux #times nuclei (";
+    switch(fPdg){
+    case +12: ytitle += "#nu_e"; break;
+    case -12: ytitle += "#bar{#nu}_e"; break;
+    case +14: ytitle += "#nu_{#mu}"; break;
+    case -14: ytitle += "#bar{#nu}_{#mu}"; break;
+    }
+
+    ytitle += "/ m^{2}";
+    if(bintype == kBinDensity) ytitle += " / GeV";
+    ytitle += ")";
+    ret->GetYaxis()->SetTitle(ytitle.c_str());
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
+  EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(INuTruthEnsembleSource& src,
+                                                   const Binning& bins,
+                                                   const NuTruthCut& fidvol,
+                                                   int pdg)
+    : EnsembleSpectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(wgt * kInvXSec),
+                       NuTruthHistAxis("True neutrino energy (GeV)",
+                                       bins,
+                                       SIMPLENUTRUTHVAR(E))),
+      fPdg(pdg)
+  {
+  }
+
+  //----------------------------------------------------------------------
+  TH1D* EnsembleFluxTimesNuclei::ToTH1(double pot,
+                                       Color_t col,
+                                       Style_t style,
+                                       EBinType bintype)
+  {
+    TH1D* ret = EnsembleSpectrum::Nominal().ToTH1(pot, col, style, kPOT, bintype);
 
     std::string ytitle = "Flux #times nuclei (";
     switch(fPdg){

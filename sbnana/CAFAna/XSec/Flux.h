@@ -1,4 +1,5 @@
 #include "cafanacore/Spectrum.h"
+#include "sbnana/CAFAna/Core/EnsembleSpectrum.h"
 
 #include "sbnana/CAFAna/Core/IRecordSource.h"
 
@@ -17,7 +18,22 @@ namespace ana
   public:
     /// pdg PDG code for neutrino, -14,-12,+12,14
     FluxTimesNuclei(INuTruthSource& src, const Binning& bins,
-                    const NuTruthCut& fidvol, int pdg);
+                    const NuTruthCut& fidvol, int pdg, const NuTruthWeight& wgt = kNuTruthUnweighted);
+
+    TH1D* ToTH1(double pot,
+                Color_t col = kBlack,
+                Style_t style = kSolid,
+                EBinType bintype = kBinContent);
+  protected:
+    int fPdg;
+  };
+
+  class EnsembleFluxTimesNuclei: public EnsembleSpectrum
+  {
+  public:
+    /// pdg PDG code for neutrino, -14,-12,+12,14
+    EnsembleFluxTimesNuclei(INuTruthEnsembleSource& src, const Binning& bins,
+                    const NuTruthCut& fidvol, int pdg, const NuTruthWeight& wgt = kNuTruthUnweighted);
 
     TH1D* ToTH1(double pot,
                 Color_t col = kBlack,
