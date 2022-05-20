@@ -57,8 +57,9 @@ namespace ana
   FluxTimesNuclei::FluxTimesNuclei(INuTruthSource& src,
                                    const Binning& bins,
                                    const NuTruthCut& fidvol,
-                                   int pdg)
-    : Spectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(kInvXSec),
+                                   int pdg,
+                                   const NuTruthWeight& wgt)
+    : Spectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(wgt * kInvXSec),
                NuTruthHistAxis("True neutrino energy (GeV)",
                                bins,
                                SIMPLENUTRUTHVAR(E))),
@@ -94,7 +95,7 @@ namespace ana
                                    const Binning& bins,
                                    const NuTruthCut& fidvol,
                                    int pdg)
-    : EnsembleSpectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(kInvXSec),
+    : EnsembleSpectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(wgt * kInvXSec),
                NuTruthHistAxis("True neutrino energy (GeV)",
                                bins,
                                SIMPLENUTRUTHVAR(E))),
