@@ -59,7 +59,7 @@ namespace ana
                                    const NuTruthCut& fidvol,
                                    int pdg,
                                    const NuTruthWeight& wgt)
-    : Spectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(wgt * kInvXSec),
+    : Spectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(wgt *kInvXSec),
                NuTruthHistAxis("True neutrino energy (GeV)",
                                bins,
                                SIMPLENUTRUTHVAR(E))),
@@ -92,22 +92,22 @@ namespace ana
 
   //----------------------------------------------------------------------
   EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(INuTruthEnsembleSource& src,
-                                   const Binning& bins,
-                                   const NuTruthCut& fidvol,
-                                   int pdg)
+                                                   const Binning& bins,
+                                                   const NuTruthCut& fidvol,
+                                                   int pdg)
     : EnsembleSpectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(wgt * kInvXSec),
-               NuTruthHistAxis("True neutrino energy (GeV)",
-                               bins,
-                               SIMPLENUTRUTHVAR(E))),
+                       NuTruthHistAxis("True neutrino energy (GeV)",
+                                       bins,
+                                       SIMPLENUTRUTHVAR(E))),
       fPdg(pdg)
   {
   }
 
   //----------------------------------------------------------------------
   TH1D* EnsembleFluxTimesNuclei::ToTH1(double pot,
-                               Color_t col,
-                               Style_t style,
-                               EBinType bintype)
+                                       Color_t col,
+                                       Style_t style,
+                                       EBinType bintype)
   {
     TH1D* ret = EnsembleSpectrum::Nominal().ToTH1(pot, col, style, kPOT, bintype);
 
