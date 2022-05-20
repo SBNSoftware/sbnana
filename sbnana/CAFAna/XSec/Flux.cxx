@@ -94,7 +94,8 @@ namespace ana
   EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(INuTruthEnsembleSource& src,
                                                    const Binning& bins,
                                                    const NuTruthCut& fidvol,
-                                                   int pdg)
+                                                   int pdg,
+                                                   const NuTruthWeight& wgt)
     : EnsembleSpectrum(src[IsNCQEOnArgonCut(pdg) && fidvol].Weighted(wgt * kInvXSec),
                        NuTruthHistAxis("True neutrino energy (GeV)",
                                        bins,
