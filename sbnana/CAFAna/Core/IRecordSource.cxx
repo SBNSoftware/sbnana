@@ -19,7 +19,7 @@ namespace ana
 
     virtual void HandleRecord(const caf::SRSliceProxy* slc, double weight) override;
 
-    virtual const ana::FitMultiverse* GetMultiverse() const{return fMultiverse;}
+    virtual const ana::FitMultiverse* GetMultiverse() const override {return fMultiverse;}
 
   protected:
     const Multiverse* fMultiverse;
@@ -133,7 +133,7 @@ namespace ana
   template<class FromT, class ToT> EnsembleVectorAdaptor<FromT, ToT>::
   EnsembleVectorAdaptor(beta::_IRecordEnsembleSource<caf::Proxy<FromT>>& src,
                         Func_t vecGetter)
-    : fMultiverse(src.GetMultiverse()), fVecGetter(vecGetter)
+    : fSource(&src), fVecGetter(vecGetter)
   {
     src.Register(this);
   }

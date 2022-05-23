@@ -114,9 +114,10 @@ namespace ana
                                      beta::_IRecordEnsembleSource<caf::Proxy<ToT>>>
   {
   public:
-    typedef std::function<const caf::Proxy<std::vector<ToT>>&(const caf::Proxy<FromT>*)> Func_t;
+    using Source_t = beta::_IRecordEnsembleSource<caf::Proxy<FromT>>;
+    using Func_t = std::function<const caf::Proxy<std::vector<ToT>>&(const caf::Proxy<FromT>*)>;
 
-    EnsembleVectorAdaptor(beta::_IRecordEnsembleSource<caf::Proxy<FromT>>& src, Func_t vecGetter);
+    EnsembleVectorAdaptor(Source_t& src, Func_t vecGetter);
 
     virtual void HandleSingleRecord(const caf::Proxy<FromT>* rec,
                                     double weight,
@@ -125,9 +126,10 @@ namespace ana
     virtual void HandleEnsemble(const caf::Proxy<FromT>* rec,
                                 const std::vector<double>& weight) override;
 
-    virtual const ana::FitMultiverse* GetMultiverse() const {return fMultiverse;}
+    virtual const ana::FitMultiverse* GetMultiverse() const {return fSource->GetMultiverse();}
+
   protected:
-    const FitMultiverse* fMultiverse;
+    const Source_t* fSource;
     Func_t fVecGetter;
   };
 
