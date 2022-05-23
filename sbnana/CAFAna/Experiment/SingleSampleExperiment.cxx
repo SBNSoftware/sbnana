@@ -15,9 +15,16 @@ namespace ana
   //----------------------------------------------------------------------
   SingleSampleExperiment::SingleSampleExperiment(const IPrediction* pred,
                                                  const Spectrum& data,
-                                                 const Spectrum& cosmic)
-    : fMC(pred), fData(data), fCosmic(cosmic), fMask(0)
+                                                 const Spectrum& cosmicInTime,
+                                                 const Spectrum& cosmicOutOfTime)
+    : fMC(pred), fData(data), fCosmicInTime(cosmicInTime), fCosmicOutOfTime(cosmicOutOfTime), fMask(0)
   {
+    if(cosmicInTime.POT() > 0){
+      std::cout << "SingleSampleExperiment: in-time cosmics have nonzero POT. "
+                << "Did you confuse the two cosmics arguments?"
+                << std::endl;
+      abort();
+    }
   }
 
   //----------------------------------------------------------------------
@@ -30,17 +37,22 @@ namespace ana
   double SingleSampleExperiment::ChiSq(osc::IOscCalcAdjustable* calc,
                                        const SystShifts& syst) const
   {
-    const Spectrum p = fMC->PredictSyst(calc, syst);
+    Spectrum p = fMC->PredictSyst(calc, syst);
+
+    if(fCosmicOutOfTime.POT() > 0){ // if out-of-time cosmics supplied
+      p += fCosmicOutOfTime;
+    }
+
     TH1D* hpred = p.ToTH1(fData.POT());
 
     // "Livetime" here means number of readout windows.
-    if(fCosmic.Livetime() > 0){ // if cosmics supplied
+    if(fCosmicInTime.Livetime() > 0){ // if in-cosmics supplied
       // This many are already included in the beam MC
       const double beamLivetime = p.Livetime() * fData.POT()/p.POT();
       // So we need to take this many from the cosmics-only to match the data
       const double intimeLivetime = fData.Livetime() - beamLivetime;
 
-      TH1D* hcosmic = fCosmic.ToTH1(intimeLivetime, kLivetime);
+      TH1D* hcosmic = fCosmicInTime.ToTH1(intimeLivetime, kLivetime);
       hpred->Add(hcosmic);
       HistCache::Delete(hcosmic);
     }
@@ -77,7 +89,8 @@ namespace ana
 
     fMC->SaveTo(dir->mkdir("mc"));
     fData.SaveTo(dir->mkdir("data"));
-    fCosmic.SaveTo(dir->mkdir("cosmic"));
+    fCosmicInTime.SaveTo(dir->mkdir("cosmicInTime"));
+    fCosmicOutOfTime.SaveTo(dir->mkdir("cosmicOutOfTime"));
 
     tmp->cd();
   }
@@ -95,10 +108,17 @@ namespace ana
 
     const IPrediction* mc = ana::LoadFrom<IPrediction>(dir->GetDirectory("mc")).release();
     const std::unique_ptr<Spectrum> data = Spectrum::LoadFrom(dir->GetDirectory("data"));
-    const std::unique_ptr<Spectrum> cosmic = Spectrum::LoadFrom(dir->GetDirectory("cosmic"));
 
-    auto ret = std::make_unique<SingleSampleExperiment>(mc, *data, *cosmic);
-    return ret;
+    // Legacy format. This is the in-time cosmics
+    if(dir->GetDirectory("cosmic")){
+      const std::unique_ptr<Spectrum> cosmicInTime = Spectrum::LoadFrom(dir->GetDirectory("cosmic"));
+      return std::make_unique<SingleSampleExperiment>(mc, *data, *cosmicInTime, Spectrum(0, {}, {}, 0, 0));
+    }
+
+    const std::unique_ptr<Spectrum> cosmicInTime = Spectrum::LoadFrom(dir->GetDirectory("cosmicInTime"));
+    const std::unique_ptr<Spectrum> cosmicOutOfTime = Spectrum::LoadFrom(dir->GetDirectory("cosmicOutOfTime"));
+
+    return std::make_unique<SingleSampleExperiment>(mc, *data, *cosmicInTime, *cosmicOutOfTime);
   }
 
   //----------------------------------------------------------------------
