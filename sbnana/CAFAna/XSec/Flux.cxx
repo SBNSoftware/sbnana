@@ -126,4 +126,22 @@ namespace ana
     ret->GetYaxis()->SetTitle(ytitle.c_str());
     return ret;
   }
+
+  //----------------------------------------------------------------------
+  EnsembleSpectrum EnsembleFluxTimesNuclei::MakeTotalFlux(const HistAxis& ax) const
+  {
+    const unsigned int nuniv = this->NUniverses();
+    const unsigned int nbins = ax.GetBins1D().NBins()+2;
+
+    Hist h = Hist::Zero(nbins * nuniv);
+
+    for(unsigned int univIdx = 0; univIdx < nuniv; ++univIdx)
+    {
+      const double univIntegral(this->Universe(univIdx).Integral(fPOT));
+      for(unsigned int bin = 0; bin < nbins; bin++)
+        h.Fill(nbins * univIdx + bin, univIntegral);
+    }
+
+      return EnsembleSpectrum(fMultiverse, std::move(h), fPOT, fLivetime, LabelsAndBins(ax));
+    }
 }

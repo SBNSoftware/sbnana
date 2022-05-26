@@ -33,13 +33,20 @@ namespace ana
   public:
     /// pdg PDG code for neutrino, -14,-12,+12,14
     EnsembleFluxTimesNuclei(INuTruthEnsembleSource& src, const Binning& bins,
-                    const NuTruthCut& fidvol, int pdg, const NuTruthWeight& wgt = kNuTruthUnweighted);
+                            const NuTruthCut& fidvol, int pdg, const NuTruthWeight& wgt = kNuTruthUnweighted);
 
     TH1D* ToTH1(double pot,
                 Color_t col = kBlack,
                 Style_t style = kSolid,
                 EBinType bintype = kBinContent);
+
+    /// Convert an EnsembleSpectrum (i.e. a \ref EnsembleFluxTimesNuclei) into an ensemble where every
+    /// bin within a given universe is the integral of the EnsembleSpectrum
+    EnsembleSpectrum MakeTotalFlux(const HistAxis& ax) const;
+
   protected:
     int fPdg;
   };
+
+
 }

@@ -14,12 +14,14 @@ class TGraphAsymmErrors;
 namespace ana
 {
   class EnsembleRatio;
+  class EnsembleFluxTimesNuclei;
   class FitMultiverse;
 
   class EnsembleSpectrum : public beta::IValueEnsembleSink
   {
   public:
     friend class EnsembleRatio;
+    friend class EnsembleFluxTimesNuclei;
 
     /// Construct an ensemble spectrum from a source of values and an axis
     /// definition
