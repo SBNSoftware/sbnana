@@ -93,6 +93,67 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void FluxTimesNuclei::SaveTo(TDirectory* dir, const std::string& name) const
+  {
+    TDirectory* tmp = gDirectory;
+
+    dir = dir->mkdir(name.c_str()); // switch to subdir
+    dir->cd();
+
+    TObjString("FluxTimesNuclei").Write("type");
+
+    std::vector<int> pdgVec{fPdg};
+    dir->WriteObject(&pdgVec, "pdg");
+
+    Spectrum::SaveTo(dir, "ensemblespectrum");
+
+    dir->Write();
+    delete dir;
+
+    tmp->cd();
+  }
+
+  //----------------------------------------------------------------------
+  std::unique_ptr<FluxTimesNuclei> FluxTimesNuclei::LoadFrom(TDirectory* topdir, const std::string& name)
+  {
+    std::unique_ptr<TDirectory> dir(topdir->GetDirectory(name.c_str())); // switch to subdir
+    assert(dir);
+
+    DontAddDirectory guard;
+
+    std::unique_ptr<TObjString> tag((TObjString*)dir->Get("type"));
+    assert(tag);
+    assert(tag->GetString() == "FluxTimesNuclei");
+
+    // std::unique_ptr<int> pdg(new int(1));
+    std::unique_ptr<std::vector<int>> pdg((std::vector<int>*)dir->Get("pdg"));
+    assert(pdg && pdg->size()==1);
+
+    Spectrum* spec = Spectrum::LoadFrom(dir.get(), "ensemblespectrum").release();
+    return std::unique_ptr<FluxTimesNuclei>(new FluxTimesNuclei( spec, pdg->front()));
+  }
+
+  //----------------------------------------------------------------------
+  FluxTimesNuclei::FluxTimesNuclei(const Spectrum* spec, const int pdg)
+    : Spectrum(*spec), fPdg(pdg)
+  {
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum FluxTimesNuclei::MakeTotalFlux(const HistAxis& ax) const
+  {
+    const unsigned int nbins = ax.GetBins1D().NBins()+2;
+
+    Hist h = Hist::Zero(nbins);
+
+    const double thisIntegral(this->Integral(fPOT));
+    for(unsigned int bin = 0; bin < nbins; bin++)
+      h.Fill(bin, thisIntegral);
+
+    return Spectrum(h.GetEigen(), LabelsAndBins(ax), fPOT, fLivetime);
+  }
+
+  //----------------------------------------------------------------------
   EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(INuTruthEnsembleSource& src,
                                                    const Binning& bins,
                                                    const NuTruthCut& fidvol,
@@ -129,6 +190,7 @@ namespace ana
     return ret;
   }
 
+  //----------------------------------------------------------------------
   void EnsembleFluxTimesNuclei::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
@@ -169,6 +231,7 @@ namespace ana
     return std::unique_ptr<EnsembleFluxTimesNuclei>(new EnsembleFluxTimesNuclei( spec, pdg->front()));
   }
 
+  //----------------------------------------------------------------------
   EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(const EnsembleSpectrum* spec, const int pdg)
     : EnsembleSpectrum(*spec), fPdg(pdg)
   {
@@ -189,6 +252,6 @@ namespace ana
         h.Fill(nbins * univIdx + bin, univIntegral);
     }
 
-      return EnsembleSpectrum(fMultiverse, std::move(h), fPOT, fLivetime, LabelsAndBins(ax));
-    }
+    return EnsembleSpectrum(fMultiverse, std::move(h), fPOT, fLivetime, LabelsAndBins(ax));
+  }
 }

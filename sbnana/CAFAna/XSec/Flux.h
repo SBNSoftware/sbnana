@@ -24,7 +24,19 @@ namespace ana
                 Color_t col = kBlack,
                 Style_t style = kSolid,
                 EBinType bintype = kBinContent);
+
+    void SaveTo(TDirectory* dir, const std::string& name) const;
+
+    static std::unique_ptr<FluxTimesNuclei> LoadFrom(TDirectory* dir, const std::string& name);
+
+    /// Convert an Spectrum (i.e. a \ref FluxTimesNuclei) into spectrum where every
+    /// bin the integral of the Spectrum
+    Spectrum MakeTotalFlux(const HistAxis& ax) const;
+
   protected:
+    /// Helper for LoadFrom()
+    FluxTimesNuclei(const Spectrum* spec, const int pdg);
+
     int fPdg;
   };
 
