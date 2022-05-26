@@ -40,11 +40,18 @@ namespace ana
                 Style_t style = kSolid,
                 EBinType bintype = kBinContent);
 
+    void SaveTo(TDirectory* dir, const std::string& name) const;
+
+    static std::unique_ptr<EnsembleFluxTimesNuclei> LoadFrom(TDirectory* dir, const std::string& name);
+
     /// Convert an EnsembleSpectrum (i.e. a \ref EnsembleFluxTimesNuclei) into an ensemble where every
     /// bin within a given universe is the integral of the EnsembleSpectrum
     EnsembleSpectrum MakeTotalFlux(const HistAxis& ax) const;
 
   protected:
+    /// Helper for LoadFrom()
+    EnsembleFluxTimesNuclei(const EnsembleSpectrum* spec, const int pdg);
+
     int fPdg;
   };
 

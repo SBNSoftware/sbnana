@@ -6,6 +6,8 @@
 
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
+#include "TDirectory.h"
+#include "TObjString.h"
 #include "TH1.h"
 
 namespace ana
@@ -125,6 +127,51 @@ namespace ana
     ytitle += ")";
     ret->GetYaxis()->SetTitle(ytitle.c_str());
     return ret;
+  }
+
+  void EnsembleFluxTimesNuclei::SaveTo(TDirectory* dir, const std::string& name) const
+  {
+    TDirectory* tmp = gDirectory;
+
+    dir = dir->mkdir(name.c_str()); // switch to subdir
+    dir->cd();
+
+    TObjString("EnsembleFluxTimesNuclei").Write("type");
+
+    std::vector<int> pdgVec{fPdg};
+    dir->WriteObject(&pdgVec, "pdg");
+
+    EnsembleSpectrum::SaveTo(dir, "ensemblespectrum");
+
+    dir->Write();
+    delete dir;
+
+    tmp->cd();
+  }
+
+  //----------------------------------------------------------------------
+  std::unique_ptr<EnsembleFluxTimesNuclei> EnsembleFluxTimesNuclei::LoadFrom(TDirectory* topdir, const std::string& name)
+  {
+    std::unique_ptr<TDirectory> dir(topdir->GetDirectory(name.c_str())); // switch to subdir
+    assert(dir);
+
+    DontAddDirectory guard;
+
+    std::unique_ptr<TObjString> tag((TObjString*)dir->Get("type"));
+    assert(tag);
+    assert(tag->GetString() == "EnsembleFluxTimesNuclei");
+
+    // std::unique_ptr<int> pdg(new int(1));
+    std::unique_ptr<std::vector<int>> pdg((std::vector<int>*)dir->Get("pdg"));
+    assert(pdg && pdg->size()==1);
+
+    EnsembleSpectrum* spec = EnsembleSpectrum::LoadFrom(dir.get(), "ensemblespectrum").release();
+    return std::unique_ptr<EnsembleFluxTimesNuclei>(new EnsembleFluxTimesNuclei( spec, pdg->front()));
+  }
+
+  EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(const EnsembleSpectrum* spec, const int pdg)
+    : EnsembleSpectrum(*spec), fPdg(pdg)
+  {
   }
 
   //----------------------------------------------------------------------
