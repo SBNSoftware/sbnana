@@ -35,7 +35,7 @@ namespace ana
 
   protected:
     /// Helper for LoadFrom()
-    FluxTimesNuclei(const Spectrum* spec, const int pdg);
+    FluxTimesNuclei(const std::unique_ptr<Spectrum> spec, const int pdg);
 
     int fPdg;
   };
@@ -62,7 +62,7 @@ namespace ana
 
   protected:
     /// Helper for LoadFrom()
-    EnsembleFluxTimesNuclei(const EnsembleSpectrum* spec, const int pdg);
+    EnsembleFluxTimesNuclei(const std::unique_ptr<EnsembleSpectrum> spec, const int pdg);
 
     int fPdg;
   };

@@ -9,6 +9,7 @@
 #include "TDirectory.h"
 #include "TObjString.h"
 #include "TH1.h"
+#include "TVectorD.h"
 
 namespace ana
 {
@@ -102,10 +103,11 @@ namespace ana
 
     TObjString("FluxTimesNuclei").Write("type");
 
-    std::vector<int> pdgVec{fPdg};
-    dir->WriteObject(&pdgVec, "pdg");
+    TVectorD pdg(1);
+    pdg[0] = fPdg;
+    pdg.Write("pdg");
 
-    Spectrum::SaveTo(dir, "ensemblespectrum");
+    Spectrum::SaveTo(dir, "spectrum");
 
     dir->Write();
     delete dir;
@@ -126,15 +128,14 @@ namespace ana
     assert(tag->GetString() == "FluxTimesNuclei");
 
     // std::unique_ptr<int> pdg(new int(1));
-    std::unique_ptr<std::vector<int>> pdg((std::vector<int>*)dir->Get("pdg"));
-    assert(pdg && pdg->size()==1);
+    std::unique_ptr<TVectorD> pdg((TVectorD*)dir->Get("pdg"));
+    assert(pdg && pdg->GetNrows()==1);
 
-    Spectrum* spec = Spectrum::LoadFrom(dir.get(), "ensemblespectrum").release();
-    return std::unique_ptr<FluxTimesNuclei>(new FluxTimesNuclei( spec, pdg->front()));
+    return std::unique_ptr<FluxTimesNuclei>(new FluxTimesNuclei(Spectrum::LoadFrom(dir.get(), "spectrum"), (*pdg)[0]));
   }
 
   //----------------------------------------------------------------------
-  FluxTimesNuclei::FluxTimesNuclei(const Spectrum* spec, const int pdg)
+  FluxTimesNuclei::FluxTimesNuclei(const std::unique_ptr<Spectrum> spec, const int pdg)
     : Spectrum(*spec), fPdg(pdg)
   {
   }
@@ -144,13 +145,16 @@ namespace ana
   {
     const unsigned int nbins = ax.GetBins1D().NBins()+2;
 
-    Hist h = Hist::Zero(nbins);
+    // Hist h = Hist::Zero(nbins);
 
     const double thisIntegral(this->Integral(fPOT));
-    for(unsigned int bin = 0; bin < nbins; bin++)
-      h.Fill(bin, thisIntegral);
+    // for(unsigned int bin = 0; bin < nbins; bin++)
+    //   h.Fill(bin, thisIntegral);
 
-    return Spectrum(h.GetEigen(), LabelsAndBins(ax), fPOT, fLivetime);
+    Eigen::ArrayXd data(nbins);
+    data.setConstant(thisIntegral);
+
+    return Spectrum(data, LabelsAndBins(ax), fPOT, fLivetime);
   }
 
   //----------------------------------------------------------------------
@@ -200,8 +204,9 @@ namespace ana
 
     TObjString("EnsembleFluxTimesNuclei").Write("type");
 
-    std::vector<int> pdgVec{fPdg};
-    dir->WriteObject(&pdgVec, "pdg");
+    TVectorD pdg(1);
+    pdg[0] = fPdg;
+    pdg.Write("pdg");
 
     EnsembleSpectrum::SaveTo(dir, "ensemblespectrum");
 
@@ -224,15 +229,14 @@ namespace ana
     assert(tag->GetString() == "EnsembleFluxTimesNuclei");
 
     // std::unique_ptr<int> pdg(new int(1));
-    std::unique_ptr<std::vector<int>> pdg((std::vector<int>*)dir->Get("pdg"));
-    assert(pdg && pdg->size()==1);
+    std::unique_ptr<TVectorD> pdg((TVectorD*)dir->Get("pdg"));
+    assert(pdg && pdg->GetNrows()==1);
 
-    EnsembleSpectrum* spec = EnsembleSpectrum::LoadFrom(dir.get(), "ensemblespectrum").release();
-    return std::unique_ptr<EnsembleFluxTimesNuclei>(new EnsembleFluxTimesNuclei( spec, pdg->front()));
+    return std::unique_ptr<EnsembleFluxTimesNuclei>(new EnsembleFluxTimesNuclei(EnsembleSpectrum::LoadFrom(dir.get(), "ensemblespectrum"), (*pdg)[0]));
   }
 
   //----------------------------------------------------------------------
-  EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(const EnsembleSpectrum* spec, const int pdg)
+  EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(const std::unique_ptr<EnsembleSpectrum> spec, const int pdg)
     : EnsembleSpectrum(*spec), fPdg(pdg)
   {
   }
