@@ -29,8 +29,8 @@ namespace ana
 
     static std::unique_ptr<FluxTimesNuclei> LoadFrom(TDirectory* dir, const std::string& name);
 
-    /// Convert an Spectrum (i.e. a \ref FluxTimesNuclei) into spectrum where every
-    /// bin the integral of the Spectrum
+    /// Convert an \ref FluxTimesNuclei into a \ref Spectrum where every
+    /// bin is the integral of the \ref FluxTimesNuclei
     Spectrum MakeTotalFlux(const HistAxis& ax) const;
 
   protected:
@@ -56,8 +56,8 @@ namespace ana
 
     static std::unique_ptr<EnsembleFluxTimesNuclei> LoadFrom(TDirectory* dir, const std::string& name);
 
-    /// Convert an EnsembleSpectrum (i.e. a \ref EnsembleFluxTimesNuclei) into an ensemble where every
-    /// bin within a given universe is the integral of the EnsembleSpectrum
+    /// Convert an \ref EnsembleFluxTimesNuclei into a \ref EnsembleSpectrum where every
+    /// bin within a given universe is the integral of the \ref EnsembleFluxTimesNuclei
     EnsembleSpectrum MakeTotalFlux(const HistAxis& ax) const;
 
   protected:
