@@ -86,7 +86,7 @@ namespace ana
                      const Hist&& hist,
                      double pot,
                      double livetime,
-                     const LabelsAndBins&& axis);
+                     const LabelsAndBins& axis);
 
     void CheckMultiverses(const FitMultiverse& rhs,
                           const std::string& func) const;
