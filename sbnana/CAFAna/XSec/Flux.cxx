@@ -145,14 +145,7 @@ namespace ana
   {
     const unsigned int nbins = ax.GetBins1D().NBins()+2;
 
-    // Hist h = Hist::Zero(nbins);
-
-    const double thisIntegral(this->Integral(fPOT));
-    // for(unsigned int bin = 0; bin < nbins; bin++)
-    //   h.Fill(bin, thisIntegral);
-
-    Eigen::ArrayXd data(nbins);
-    data.setConstant(thisIntegral);
+    const Eigen::ArrayXd data = Eigen::ArrayXd::Constant(nbins, Integral(fPOT));
 
     return Spectrum(data, LabelsAndBins(ax), fPOT, fLivetime);
   }
@@ -244,15 +237,14 @@ namespace ana
   //----------------------------------------------------------------------
   EnsembleSpectrum EnsembleFluxTimesNuclei::MakeTotalFlux(const HistAxis& ax) const
   {
-    const unsigned int nuniv = this->NUniverses();
+    const unsigned int nuniv = NUniverses();
     const unsigned int nbins = ax.GetBins1D().NBins()+2;
 
     Hist h = Hist::Zero(nbins * nuniv);
 
-    for(unsigned int univIdx = 0; univIdx < nuniv; ++univIdx)
-    {
-      const double univIntegral(this->Universe(univIdx).Integral(fPOT));
-      for(unsigned int bin = 0; bin < nbins; bin++)
+    for(unsigned int univIdx = 0; univIdx < nuniv; ++univIdx){
+      const double univIntegral(Universe(univIdx).Integral(fPOT));
+      for(unsigned int bin = 0; bin < nbins; ++bin)
         h.Fill(nbins * univIdx + bin, univIntegral);
     }
 
