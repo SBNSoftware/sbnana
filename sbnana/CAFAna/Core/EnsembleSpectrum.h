@@ -14,14 +14,12 @@ class TGraphAsymmErrors;
 namespace ana
 {
   class EnsembleRatio;
-  class EnsembleFluxTimesNuclei;
   class FitMultiverse;
 
   class EnsembleSpectrum : public beta::IValueEnsembleSink
   {
   public:
     friend class EnsembleRatio;
-    friend class EnsembleFluxTimesNuclei;
 
     /// Construct an ensemble spectrum from a source of values and an axis
     /// definition
@@ -88,7 +86,7 @@ namespace ana
                      const Hist&& hist,
                      double pot,
                      double livetime,
-                     const LabelsAndBins&& axis);
+                     const LabelsAndBins& axis);
 
     void CheckMultiverses(const FitMultiverse& rhs,
                           const std::string& func) const;

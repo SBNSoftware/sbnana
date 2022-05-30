@@ -31,11 +31,16 @@ namespace ana
 
     /// Convert an \ref FluxTimesNuclei into a \ref Spectrum where every bin is the integral of the
     /// \ref FluxTimesNuclei, useful for dividing out flux in cross section measurement
-    Spectrum MakeTotalFlux(const LabelsAndBins& ax) const;
+    FluxTimesNuclei MakeTotalFlux(const LabelsAndBins& axis) const;
 
   protected:
     /// Helper for LoadFrom()
     FluxTimesNuclei(const std::unique_ptr<Spectrum> spec, const int pdg);
+    FluxTimesNuclei(const Eigen::ArrayXd&& hist,
+                    const LabelsAndBins& axis,
+                    double pot,
+                    double livetime,
+                    int pdg);
 
     int fPdg;
   };
@@ -59,11 +64,18 @@ namespace ana
     /// Convert an \ref EnsembleFluxTimesNuclei into a \ref EnsembleSpectrum where every bin within
     /// a given universe is the integral of the \ref EnsembleFluxTimesNuclei, useful for dividing
     /// out flux in cross section measurement
-    EnsembleSpectrum MakeTotalFlux(const LabelsAndBins& ax) const;
+    EnsembleFluxTimesNuclei MakeTotalFlux(const LabelsAndBins& axis) const;
 
   protected:
     /// Helper for LoadFrom()
     EnsembleFluxTimesNuclei(const std::unique_ptr<EnsembleSpectrum> spec, const int pdg);
+    EnsembleFluxTimesNuclei(const FitMultiverse* multiverse,
+                            const Hist&& hist,
+                            double pot,
+                            double livetime,
+                            const LabelsAndBins& axis,
+                            int pdg);
+
 
     int fPdg;
   };

@@ -140,13 +140,23 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  Spectrum FluxTimesNuclei::MakeTotalFlux(const LabelsAndBins& ax) const
+  FluxTimesNuclei::FluxTimesNuclei(const Eigen::ArrayXd&& hist,
+                                   const LabelsAndBins& axis,
+                                   double pot,
+                                   double livetime,
+                                   int pdg)
+    : Spectrum(hist, axis, pot, livetime), fPdg(pdg)
   {
-    const unsigned int nbins = ax.GetBins1D().NBins()+2;
+  }
 
-    const Eigen::ArrayXd data = Eigen::ArrayXd::Constant(nbins, Integral(fPOT));
+  //----------------------------------------------------------------------
+  FluxTimesNuclei FluxTimesNuclei::MakeTotalFlux(const LabelsAndBins& axis) const
+  {
+    const unsigned int nbins = axis.GetBins1D().NBins()+2;
 
-    return Spectrum(data, ax, fPOT, fLivetime);
+    const Eigen::ArrayXd hist = Eigen::ArrayXd::Constant(nbins, Integral(fPOT));
+
+    return FluxTimesNuclei(std::move(hist), axis, fPOT, fLivetime, fPdg);
   }
 
   //----------------------------------------------------------------------
@@ -233,19 +243,30 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  EnsembleSpectrum EnsembleFluxTimesNuclei::MakeTotalFlux(const LabelsAndBins& ax) const
+  EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(const FitMultiverse* multiverse,
+                                                   const Hist&& hist,
+                                                   double pot,
+                                                   double livetime,
+                                                   const LabelsAndBins& axis,
+                                                   int pdg)
+    : EnsembleSpectrum(multiverse, std::move(hist), pot, livetime, axis), fPdg(pdg)
+  {
+  }
+
+  //----------------------------------------------------------------------
+  EnsembleFluxTimesNuclei EnsembleFluxTimesNuclei::MakeTotalFlux(const LabelsAndBins& axis) const
   {
     const unsigned int nuniv = NUniverses();
-    const unsigned int nbins = ax.GetBins1D().NBins()+2;
+    const unsigned int nbins = axis.GetBins1D().NBins()+2;
 
-    Hist h = Hist::Zero(nbins * nuniv);
+    Hist hist = Hist::Zero(nbins * nuniv);
 
     for(unsigned int univIdx = 0; univIdx < nuniv; ++univIdx){
       const double univIntegral(Universe(univIdx).Integral(fPOT));
       for(unsigned int bin = 0; bin < nbins; ++bin)
-        h.Fill(nbins * univIdx + bin, univIntegral);
+        hist.Fill(nbins * univIdx + bin, univIntegral);
     }
 
-    return EnsembleSpectrum(fMultiverse, std::move(h), fPOT, fLivetime, LabelsAndBins(ax));
+    return EnsembleFluxTimesNuclei(fMultiverse, std::move(hist), fPOT, fLivetime, axis, fPdg);
   }
 }

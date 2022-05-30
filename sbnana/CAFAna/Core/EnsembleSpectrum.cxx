@@ -296,7 +296,7 @@ ivetime
                                      const Hist&& hist,
                                      double pot,
                                      double livetime,
-                                     const LabelsAndBins&& axis)
+                                     const LabelsAndBins& axis)
     : fMultiverse(multiverse), fHist(hist), fPOT(pot), fLivetime(livetime), fAxis(axis)
   {
   }
