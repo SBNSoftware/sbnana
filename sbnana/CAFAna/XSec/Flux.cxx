@@ -116,9 +116,9 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<FluxTimesNuclei> FluxTimesNuclei::LoadFrom(TDirectory* topdir, const std::string& name)
+  std::unique_ptr<FluxTimesNuclei> FluxTimesNuclei::LoadFrom(TDirectory* dir, const std::string& name)
   {
-    std::unique_ptr<TDirectory> dir(topdir->GetDirectory(name.c_str())); // switch to subdir
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
     assert(dir);
 
     DontAddDirectory guard;
@@ -127,11 +127,10 @@ namespace ana
     assert(tag);
     assert(tag->GetString() == "FluxTimesNuclei");
 
-    // std::unique_ptr<int> pdg(new int(1));
     std::unique_ptr<TVectorD> pdg((TVectorD*)dir->Get("pdg"));
     assert(pdg && pdg->GetNrows()==1);
 
-    return std::unique_ptr<FluxTimesNuclei>(new FluxTimesNuclei(Spectrum::LoadFrom(dir.get(), "spectrum"), (*pdg)[0]));
+    return std::unique_ptr<FluxTimesNuclei>(new FluxTimesNuclei(Spectrum::LoadFrom(dir, "spectrum"), (*pdg)[0]));
   }
 
   //----------------------------------------------------------------------
@@ -141,13 +140,13 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  Spectrum FluxTimesNuclei::MakeTotalFlux(const HistAxis& ax) const
+  Spectrum FluxTimesNuclei::MakeTotalFlux(const LabelsAndBins& ax) const
   {
     const unsigned int nbins = ax.GetBins1D().NBins()+2;
 
     const Eigen::ArrayXd data = Eigen::ArrayXd::Constant(nbins, Integral(fPOT));
 
-    return Spectrum(data, LabelsAndBins(ax), fPOT, fLivetime);
+    return Spectrum(data, ax, fPOT, fLivetime);
   }
 
   //----------------------------------------------------------------------
@@ -210,9 +209,9 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<EnsembleFluxTimesNuclei> EnsembleFluxTimesNuclei::LoadFrom(TDirectory* topdir, const std::string& name)
+  std::unique_ptr<EnsembleFluxTimesNuclei> EnsembleFluxTimesNuclei::LoadFrom(TDirectory* dir, const std::string& name)
   {
-    std::unique_ptr<TDirectory> dir(topdir->GetDirectory(name.c_str())); // switch to subdir
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
     assert(dir);
 
     DontAddDirectory guard;
@@ -221,11 +220,10 @@ namespace ana
     assert(tag);
     assert(tag->GetString() == "EnsembleFluxTimesNuclei");
 
-    // std::unique_ptr<int> pdg(new int(1));
     std::unique_ptr<TVectorD> pdg((TVectorD*)dir->Get("pdg"));
     assert(pdg && pdg->GetNrows()==1);
 
-    return std::unique_ptr<EnsembleFluxTimesNuclei>(new EnsembleFluxTimesNuclei(EnsembleSpectrum::LoadFrom(dir.get(), "ensemblespectrum"), (*pdg)[0]));
+    return std::unique_ptr<EnsembleFluxTimesNuclei>(new EnsembleFluxTimesNuclei(EnsembleSpectrum::LoadFrom(dir, "ensemblespectrum"), (*pdg)[0]));
   }
 
   //----------------------------------------------------------------------
@@ -235,7 +233,7 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  EnsembleSpectrum EnsembleFluxTimesNuclei::MakeTotalFlux(const HistAxis& ax) const
+  EnsembleSpectrum EnsembleFluxTimesNuclei::MakeTotalFlux(const LabelsAndBins& ax) const
   {
     const unsigned int nuniv = NUniverses();
     const unsigned int nbins = ax.GetBins1D().NBins()+2;
