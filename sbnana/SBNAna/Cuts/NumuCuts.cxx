@@ -11,7 +11,7 @@ namespace ana{
 			     if (!hastrk) return hastrk;
 
 			     unsigned int muIdx = (unsigned int)kPrimMuonIdx(slc);
- 			     double len = slc->reco.pfp[muIdx].shw.len;
+ 			     double len = slc->reco.pfp[muIdx].trk.len;
 			     return (len > 0 );
 			   });
 
@@ -35,7 +35,7 @@ namespace ana{
 			  if (!hastrk) return hastrk;
 			  
 			  unsigned int muIdx = (unsigned int)kPrimMuonIdx(slc);
-			  double len = slc->reco.pfp[muIdx].shw.len;
+			  double len = slc->reco.pfp[muIdx].trk.len;
 			  return (len > 50 );
 			});
   
@@ -46,18 +46,18 @@ namespace ana{
   // 			  // CosmicContain from sbnanalysis OscRecoPostprocess
   // 			  //  ytop: 40	 ybottom: 15  zfront: 15   zback: 15
   // 			  unsigned int muIdx = (unsigned int)kPrimMuonIdx(slc);
-  // 			  return ( slc->reco.pfp[muIdx].shw.start.x > ( kNDTopX -15 ) &&
-  // 				   slc->reco.pfp[muIdx].shw.start.x < 15 &&
-  // 				   slc->reco.pfp[muIdx].shw.start.y > ( kNDTopY -40 ) &&
-  // 				   slc->reco.pfp[muIdx].shw.start.y < 15 &&
-  // 				   slc->reco.pfp[muIdx].shw.start.z > ( kNDBack -15 ) &&
-  // 				   slc->reco.pfp[muIdx].shw.start.z < 15 &&
-  // 				   slc->reco.pfp[muIdx].shw.end.x > ( kNDTopX -15 ) &&
-  // 				   slc->reco.pfp[muIdx].shw.end.x < 15 &&
-  // 				   slc->reco.pfp[muIdx].shw.end.y > ( kNDTopY -40 ) &&
-  // 				   slc->reco.pfp[muIdx].shw.end.y < 15 &&
-  // 				   slc->reco.pfp[muIdx].shw.end.z > ( kNDBack -15 ) &&
-  // 				   slc->reco.pfp[muIdx].shw.end.z < 15 && )
+  // 			  return ( slc->reco.pfp[muIdx].trk.start.x > ( kNDTopX -15 ) &&
+  // 				   slc->reco.pfp[muIdx].trk.start.x < 15 &&
+  // 				   slc->reco.pfp[muIdx].trk.start.y > ( kNDTopY -40 ) &&
+  // 				   slc->reco.pfp[muIdx].trk.start.y < 15 &&
+  // 				   slc->reco.pfp[muIdx].trk.start.z > ( kNDBack -15 ) &&
+  // 				   slc->reco.pfp[muIdx].trk.start.z < 15 &&
+  // 				   slc->reco.pfp[muIdx].trk.end.x > ( kNDTopX -15 ) &&
+  // 				   slc->reco.pfp[muIdx].trk.end.x < 15 &&
+  // 				   slc->reco.pfp[muIdx].trk.end.y > ( kNDTopY -40 ) &&
+  // 				   slc->reco.pfp[muIdx].trk.end.y < 15 &&
+  // 				   slc->reco.pfp[muIdx].trk.end.z > ( kNDBack -15 ) &&
+  // 				   slc->reco.pfp[muIdx].trk.end.z < 15 && )
   // 			});
   
   // const Cut kNumuContFD([](const caf::SRSliceProxy* slc)
