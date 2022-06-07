@@ -81,6 +81,8 @@ namespace ana
     std::vector<Binning> GetBinnings() const {return fAxis.GetBinnings();}
 
   protected:
+    friend class EnsembleReweightableSpectrum;
+
     /// Helper for LoadFrom()
     EnsembleSpectrum(const FitMultiverse* multiverse,
                      const Hist&& hist,

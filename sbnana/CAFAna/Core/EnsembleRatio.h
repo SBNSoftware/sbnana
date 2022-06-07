@@ -35,6 +35,9 @@ namespace ana
     EnsembleRatio operator/(const EnsembleRatio& rhs) const;
 
   protected:
+    friend class EnsembleReweightableSpectrum;
+    Eigen::ArrayXd GetEigen() const {return fHist.GetEigen();}
+
     void CheckMultiverses(const FitMultiverse& rhs,
                           const std::string& func) const;
 
