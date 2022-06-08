@@ -96,11 +96,9 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<TMatrixD> CalcCovMx(const std::vector<TArrayD*> & binSets, int firstBin, int lastBin)
+  // Reduce code duplication between CalcCovMx and CalcBiasMx
+  std::vector<double> GetBinMeans(const std::vector<TArrayD*> & binSets, int firstBin, int lastBin)
   {
-    if (binSets.size() < 2)
-      return std::unique_ptr<TMatrixD>(nullptr);
-
     if (lastBin < 0)
       lastBin = binSets[0]->GetSize() - 1;  // indexed from 0
 
@@ -109,12 +107,23 @@ namespace ana
     std::vector<double> binMeans(nBins);
     for( const auto & binSet : binSets )
     {
-      for ( decltype(lastBin) binIdx = firstBin; binIdx <= lastBin; binIdx++ )
-        binMeans[binIdx] += (*binSet)[binIdx];
+      for( decltype(nBins) i = 0; i < nBins; i++ )
+        binMeans[i] += (*binSet)[i+firstBin];
     }
-    for (decltype(lastBin) binIdx = firstBin; binIdx <= lastBin; binIdx++)
-      binMeans[binIdx] /= binSets.size();
+    for( decltype(nBins) i = 0; i < nBins; i++ )
+      binMeans[i] /= binSets.size();
 
+    return binMeans;
+  }
+
+  //----------------------------------------------------------------------
+  std::unique_ptr<TMatrixD> CalcCovMx(const std::vector<TArrayD*> & binSets, int firstBin, int lastBin)
+  {
+    if (binSets.size() < 2)
+      return std::unique_ptr<TMatrixD>(nullptr);
+
+    const std::vector<double> binMeans = GetBinMeans(binSets, firstBin, lastBin);
+    unsigned int nBins = binMeans.size();
 
     auto covmx = std::make_unique<TMatrixD>(nBins, nBins);
 
@@ -123,10 +132,10 @@ namespace ana
       // first calculate the weighted sum of squares of the deviations
       for( decltype(nBins) i = 0; i < nBins; i++ )
       {
-        double xi = (*(binSets[hist_idx]))[i];
+        double xi = (*(binSets[hist_idx]))[i+firstBin];
         for( decltype(nBins) k = i; k < nBins; k++ )
         {
-          double xk = (*(binSets[hist_idx]))[k];
+          double xk = (*(binSets[hist_idx]))[k+firstBin];
           (*covmx)[i][k] += (xi - binMeans[i]) * (xk - binMeans[k]);
           if (i != k)
             (*covmx)[k][i] = (*covmx)[i][k];  // covariance matrices are always symmetric
@@ -138,6 +147,32 @@ namespace ana
     (*covmx) *= 1./(binSets.size()-1);
 
     return covmx;
+  }
+
+  //----------------------------------------------------------------------
+  std::unique_ptr<TMatrixD> CalcBiasMx(const std::vector<TArrayD*> & binSets, const TArrayD* nom, int firstBin, int lastBin)
+  {
+    if (binSets.size() < 2)
+      return std::unique_ptr<TMatrixD>(nullptr);
+
+    const std::vector<double> binMeans = GetBinMeans(binSets, firstBin, lastBin);
+    unsigned int nBins = binMeans.size();
+
+    auto biasmx = std::make_unique<TMatrixD>(nBins, nBins);
+
+    for( decltype(nBins) i = 0; i < nBins; i++ )
+    {
+      double xi = (*nom)[i+firstBin];
+      for( decltype(nBins) k = i; k < nBins; k++ )
+      {
+        double xk = (*nom)[k+firstBin];
+        (*biasmx)[i][k] += (xi - binMeans[i]) * (xk - binMeans[k]);
+        if (i != k)
+          (*biasmx)[k][i] = (*biasmx)[i][k];  // covariance matrices are always symmetric
+      }
+    }
+
+    return biasmx;
   }
 
   //----------------------------------------------------------------------

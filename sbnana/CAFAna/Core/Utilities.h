@@ -78,6 +78,21 @@ namespace ana
   **/
   std::unique_ptr<TMatrixD> CalcCovMx(const std::vector<TArrayD*> & binSets, int firstBin=0, int lastBin=-1);
 
+  /** \brief Compute bias from a collection of sets of bin contents.
+
+      \param binSets   Collection of sets of bins from which the average should be calculated
+      \param nom       Nominal bins from which bias should
+      \param firstBin  The first bin that should be considered (inclusive)
+      \param lastBin   The last bin that should be considered (inclusive).  -1 means "last in set"
+
+      \returns  unique_ptr to TMatrixD containing computed bias matrix unless binSets.size() < 2,
+                in which case the unique_ptr's target is nullptr.
+
+      Note TH1D is a child class of TArrayD -- so you can pass a vector
+      of TH1D* to this method.
+  **/
+  std::unique_ptr<TMatrixD> CalcBiasMx(const std::vector<TArrayD*> & binSets, const TArrayD* nom, int firstBin=0, int lastBin=-1);
+
   class LLPerBinFracSystErr
   {
   public:
