@@ -119,6 +119,46 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  std::unique_ptr<TMatrixD> EnsembleSpectrum::CalcCovMx(const double pot, const int firstBin, const int lastBin)
+  {
+    // TODO there is probably a better way to check this?
+    assert (fMultiverse->ShortName().substr(0,3) == "gas");
+
+    std::vector<TArrayD*> hists;
+
+    // Note we are ignoring the nominal (Universe 0) and that should be checked with CalcBiasMx
+    for (unsigned int i=1; i<fMultiverse->NUniv(); ++i)
+      hists.push_back(Universe(i).ToTH1(pot));
+
+    std::unique_ptr<TMatrixD> covmx = ana::CalcCovMx(hists, firstBin, lastBin);
+
+    for (unsigned int i=0; i<hists.size(); ++i)
+      delete hists[i];
+
+    return covmx;
+  }
+
+  //----------------------------------------------------------------------
+  std::unique_ptr<TMatrixD> EnsembleSpectrum::CalcBiasMx(const double pot, const int firstBin, const int lastBin)
+  {
+    // TODO there is probably a better way to check this?
+    assert (fMultiverse->ShortName().substr(0,3) == "gas");
+
+    TArrayD* nom = Nominal().ToTH1(pot);
+    std::vector<TArrayD*> hists;
+    for (unsigned int i=1; i<fMultiverse->NUniv(); ++i)
+      hists.push_back(Universe(i).ToTH1(pot));
+
+    std::unique_ptr<TMatrixD> biasmx = ana::CalcBiasMx(hists, nom, firstBin, lastBin);
+
+    delete nom;
+    for (unsigned int i=0; i<hists.size(); ++i)
+      delete hists[i];
+
+    return biasmx;
+  }
+
+  //----------------------------------------------------------------------
   void EnsembleSpectrum::Scale(double c)
   {
     fHist.Scale(c);

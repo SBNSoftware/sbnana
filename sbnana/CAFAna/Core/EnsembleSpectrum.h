@@ -7,6 +7,8 @@
 #include "sbnana/CAFAna/Core/IRecordSource.h"
 #include "sbnana/CAFAna/Core/Weight.h"
 
+#include "TMatrixD.h"
+
 #include <cassert>
 
 class TGraphAsymmErrors;
@@ -49,6 +51,32 @@ namespace ana
     TGraphAsymmErrors* ErrorBand(double exposure,
                                  EExposureType expotype = kPOT,
                                  EBinType bintype = kBinContent) const;
+
+    /** \brief Compute bin-to-bin covariance matrix from a collection of sets of bin contents.
+
+      \param firstBin  The first bin that should be considered (inclusive)
+      \param lastBin   The last bin that should be considered (inclusive).  -1 means "last in set"
+
+      \returns  unique_ptr to TMatrixD containing computed covariance matrix unless binSets.size() < 2,
+      in which case the unique_ptr's target is nullptr.
+
+      Note TH1D is a child class of TArrayD -- so you can pass a vector
+      of TH1D* to this method.
+     **/
+    std::unique_ptr<TMatrixD> CalcCovMx(const double pot, const int firstBin=0, const int lastBin=-1);
+
+    /** \brief Compute bias from a collection of sets of bin contents.
+
+      \param firstBin  The first bin that should be considered (inclusive)
+      \param lastBin   The last bin that should be considered (inclusive).  -1 means "last in set"
+
+      \returns  unique_ptr to TMatrixD containing computed bias matrix unless binSets.size() < 2,
+      in which case the unique_ptr's target is nullptr.
+
+      Note TH1D is a child class of TArrayD -- so you can pass a vector
+      of TH1D* to this method.
+     **/
+    std::unique_ptr<TMatrixD> CalcBiasMx(const double pot, const int firstBin=0, const int lastBin=-1);
 
     virtual void FillSingle(double x, double w, int universeId) override;
 

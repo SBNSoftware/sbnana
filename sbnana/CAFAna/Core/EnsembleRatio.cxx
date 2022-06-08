@@ -8,6 +8,7 @@
 #include "cafanacore/UtilsExt.h"
 
 #include "TEfficiency.h"
+#include "TH1D.h"
 #include "TGraphAsymmErrors.h"
 
 namespace ana
@@ -140,6 +141,46 @@ namespace ana
     } // end for binIdx
 
     return g;
+  }
+
+  //----------------------------------------------------------------------
+  std::unique_ptr<TMatrixD> EnsembleRatio::CalcCovMx(const int firstBin, const int lastBin)
+  {
+    // TODO there is probably a better way to check this?
+    assert (fMultiverse->ShortName().substr(0,3) == "gas");
+
+    std::vector<TArrayD*> hists;
+
+    // Note we are ignoring the nominal (Universe 0) and that should be checked with CalcBiasMx
+    for (unsigned int i=1; i<fMultiverse->NUniv(); ++i)
+      hists.push_back(Universe(i).ToTH1());
+
+    std::unique_ptr<TMatrixD> covmx = ana::CalcCovMx(hists, firstBin, lastBin);
+
+    for (unsigned int i=0; i<hists.size(); ++i)
+      delete hists[i];
+
+    return covmx;
+  }
+
+  //----------------------------------------------------------------------
+  std::unique_ptr<TMatrixD> EnsembleRatio::CalcBiasMx(const int firstBin, const int lastBin)
+  {
+    // TODO there is probably a better way to check this?
+    assert (fMultiverse->ShortName().substr(0,3) == "gas");
+
+    TArrayD* nom = Nominal().ToTH1();
+    std::vector<TArrayD*> hists;
+    for (unsigned int i=1; i<fMultiverse->NUniv(); ++i)
+      hists.push_back(Universe(i).ToTH1());
+
+    std::unique_ptr<TMatrixD> biasmx = ana::CalcBiasMx(hists, nom, firstBin, lastBin);
+
+    delete nom;
+    for (unsigned int i=0; i<hists.size(); ++i)
+      delete hists[i];
+
+    return biasmx;
   }
 
   //----------------------------------------------------------------------
