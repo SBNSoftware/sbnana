@@ -4,11 +4,22 @@
 #include "sbnana/CAFAna/Core/Loaders.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
+
 #include "TDirectory.h"
 #include "TObjString.h"
 
 namespace ana
 {
+  // TODO it's not ideal this has to be duplicated for a third time
+  namespace{
+    const Var kTrueE([](const caf::SRSliceProxy* slc) -> double {return slc->truth.E;});
+
+    const Var kBaseline([](const caf::SRSliceProxy* slc) -> double {return slc->truth.baseline * 1e-3;}); // m -> km
+
+    const Var kTrueLOverE = kBaseline / kTrueE;
+  }
+
   //----------------------------------------------------------------------
   TrivialExtrap::TrivialExtrap(ISliceSource& nonswapSrc,
                                ISliceSource& nueSrc,

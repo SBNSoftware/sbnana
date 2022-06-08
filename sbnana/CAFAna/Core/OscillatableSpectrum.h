@@ -29,8 +29,6 @@ namespace ana
 {
   class Binning;
 
-  extern const Var kTrueLOverE;
-
   struct OscCache
   {
     std::unique_ptr<TMD5> hash;

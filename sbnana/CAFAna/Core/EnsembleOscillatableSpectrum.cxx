@@ -1,6 +1,7 @@
-#include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
+#include "sbnana/CAFAna/Core/EnsembleOscillatableSpectrum.h"
 
 #include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/FitMultiverse.h"
 #include "sbnana/CAFAna/Core/OscCurve.h"
 #include "cafanacore/Ratio.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
@@ -21,8 +22,8 @@
 
 namespace ana
 {
+  // Duplicate here because we can't include Vars.h
   namespace{
-    // Duplicate here because we can't include Vars.h
     const Var kTrueE([](const caf::SRSliceProxy* slc) -> double {return slc->truth.E;});
 
     const Var kBaseline([](const caf::SRSliceProxy* slc) -> double {return slc->truth.baseline * 1e-3;}); // m -> km
@@ -33,60 +34,63 @@ namespace ana
                      {
                        return sr->truth.index >= 0;
                      });
-  }
+  } // end anonymous namespace
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum::OscillatableSpectrum(ISliceSource& src,
-                                             const HistAxis& axis)
-    : ReweightableSpectrum(src[kHasNu], axis, HistAxis("True L / E (km / GeV)", kTrueLOverEBins, kTrueLOverE))
+  EnsembleOscillatableSpectrum::
+  EnsembleOscillatableSpectrum(ISliceEnsembleSource& src,
+                               const HistAxis& axis)
+    : EnsembleReweightableSpectrum(src[kHasNu], axis, HistAxis("True L / E (km / GeV)", kTrueLOverEBins, kTrueLOverE))
   {
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum::OscillatableSpectrum(const Eigen::MatrixXd&& mat,
-                                             const HistAxis& recoAxis,
-                                             double pot, double livetime)
-    : ReweightableSpectrum(std::move(mat), recoAxis,
-                           HistAxis("True L / E (km / GeV)", kTrueLOverEBins, kTrueLOverE),
-                           pot, livetime)
+  EnsembleOscillatableSpectrum::
+  EnsembleOscillatableSpectrum(const FitMultiverse* multiverse,
+                               const Eigen::MatrixXd&& mat,
+                               const HistAxis& recoAxis,
+                               double pot, double livetime)
+    : EnsembleReweightableSpectrum(multiverse,
+                                   std::move(mat),
+                                   recoAxis,
+                                   HistAxis("True L / E (km / GeV)",
+                                            kTrueLOverEBins,
+                                            kTrueLOverE),
+                                   pot, livetime)
   {
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum::~OscillatableSpectrum()
+  EnsembleOscillatableSpectrum::~EnsembleOscillatableSpectrum()
   {
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum::OscillatableSpectrum(const OscillatableSpectrum& rhs)
-    : ReweightableSpectrum(rhs)
+  EnsembleOscillatableSpectrum::EnsembleOscillatableSpectrum(const EnsembleOscillatableSpectrum& rhs)
+    : EnsembleReweightableSpectrum(rhs)
   {
     if(rhs.fCache->hash){
       fCache->spect = rhs.fCache->spect;
       fCache->hash = std::make_unique<TMD5>(*rhs.fCache->hash);
     }
-
-    assert( rhs.fReferences.empty() ); // Copying with pending loads is unexpected
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum::OscillatableSpectrum(OscillatableSpectrum&& rhs)
-    : ReweightableSpectrum(rhs)
+  EnsembleOscillatableSpectrum::EnsembleOscillatableSpectrum(EnsembleOscillatableSpectrum&& rhs)
+    : EnsembleReweightableSpectrum(rhs)
   {
     if(rhs.fCache->hash){
       fCache->spect = std::move(rhs.fCache->spect);
       fCache->hash = std::move(rhs.fCache->hash);
     }
-
-    assert( rhs.fReferences.empty() ); // Copying with pending loads is unexpected
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum& OscillatableSpectrum::operator=(const OscillatableSpectrum& rhs)
+  EnsembleOscillatableSpectrum& EnsembleOscillatableSpectrum::operator=(const EnsembleOscillatableSpectrum& rhs)
   {
     if(this == &rhs) return *this;
 
-    ReweightableSpectrum::operator=(rhs);
+    EnsembleReweightableSpectrum::operator=(rhs);
 
     if(rhs.fCache->hash){
       fCache->spect = rhs.fCache->spect;
@@ -96,18 +100,15 @@ namespace ana
       fCache->hash.reset();
     }
 
-    assert( rhs.fReferences.empty() ); // Copying with pending loads is unexpected
-    assert( fReferences.empty() ); // Copying with pending loads is unexpected
-
     return *this;
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum& OscillatableSpectrum::operator=(OscillatableSpectrum&& rhs)
+  EnsembleOscillatableSpectrum& EnsembleOscillatableSpectrum::operator=(EnsembleOscillatableSpectrum&& rhs)
   {
     if(this == &rhs) return *this;
 
-    ReweightableSpectrum::operator=(rhs);
+    EnsembleReweightableSpectrum::operator=(rhs);
 
     if(rhs.fCache->hash){
       fCache->spect = std::move(rhs.fCache->spect);
@@ -117,28 +118,25 @@ namespace ana
       fCache->hash.reset();
     }
 
-    assert( rhs.fReferences.empty() ); // Copying with pending loads is unexpected
-    assert( fReferences.empty() ); // Copying with pending loads is unexpected
-
     return *this;
   }
 
   //----------------------------------------------------------------------
-  template<class T> Spectrum OscillatableSpectrum::
+  template<class T> EnsembleSpectrum EnsembleOscillatableSpectrum::
   _Oscillated(osc::_IOscCalc<T>* calc, int from, int to) const
   {
     // POT = 0 implies empty spectrum and oscillated result will also always be
     // empty
-    if(fCache->hash && fPOT == 0) return fCache->spect;
+    if(fCache->hash && fPOT == 0) return *fCache->spect;
 
     TMD5* hash = calc->GetParamsHash();
     if(hash && fCache->hash && *hash == *fCache->hash){
       delete hash;
-      return fCache->spect;
+      return *fCache->spect;
     }
 
     const OscCurve curve(calc, from, to);
-    const Spectrum ret = WeightedBy(curve);
+    const EnsembleSpectrum ret = WeightedBy(curve);
     if(hash){
       fCache->spect = ret;
       fCache->hash.reset(hash);
@@ -148,23 +146,16 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  Spectrum OscillatableSpectrum::Oscillated(osc::IOscCalc* calc,
-                                            int from, int to) const
+  EnsembleSpectrum EnsembleOscillatableSpectrum::Oscillated(osc::IOscCalc* calc,
+                                                            int from, int to) const
   {
     return _Oscillated(calc, from, to);
   }
 
   //----------------------------------------------------------------------
-  Spectrum OscillatableSpectrum::Oscillated(osc::IOscCalcStan* calc,
-                                            int from, int to) const
+  EnsembleOscillatableSpectrum& EnsembleOscillatableSpectrum::operator+=(const EnsembleOscillatableSpectrum& rhs)
   {
-    return _Oscillated(calc, from, to);
-  }
-
-  //----------------------------------------------------------------------
-  OscillatableSpectrum& OscillatableSpectrum::operator+=(const OscillatableSpectrum& rhs)
-  {
-    ReweightableSpectrum::operator+=(rhs);
+    EnsembleReweightableSpectrum::operator+=(rhs);
 
     // invalidate
     fCache->hash.reset(nullptr);
@@ -173,17 +164,17 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum OscillatableSpectrum::operator+(const OscillatableSpectrum& rhs) const
+  EnsembleOscillatableSpectrum EnsembleOscillatableSpectrum::operator+(const EnsembleOscillatableSpectrum& rhs) const
   {
-    OscillatableSpectrum ret = *this;
+    EnsembleOscillatableSpectrum ret = *this;
     ret += rhs;
     return ret;
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum& OscillatableSpectrum::operator-=(const OscillatableSpectrum& rhs)
+  EnsembleOscillatableSpectrum& EnsembleOscillatableSpectrum::operator-=(const EnsembleOscillatableSpectrum& rhs)
   {
-    ReweightableSpectrum::operator-=(rhs);
+    EnsembleReweightableSpectrum::operator-=(rhs);
 
     // invalidate
     fCache->hash.reset(nullptr);
@@ -192,21 +183,21 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  OscillatableSpectrum OscillatableSpectrum::operator-(const OscillatableSpectrum& rhs) const
+  EnsembleOscillatableSpectrum EnsembleOscillatableSpectrum::operator-(const EnsembleOscillatableSpectrum& rhs) const
   {
-    OscillatableSpectrum ret = *this;
+    EnsembleOscillatableSpectrum ret = *this;
     ret -= rhs;
     return ret;
   }
 
   //----------------------------------------------------------------------
-  void OscillatableSpectrum::SaveTo(TDirectory* dir, const std::string& name) const
+  void EnsembleOscillatableSpectrum::SaveTo(TDirectory* dir, const std::string& name) const
   {
-    _SaveTo(dir, name, "OscillatableSpectrum");
+    _SaveTo(dir, name, "EnsembleOscillatableSpectrum");
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<OscillatableSpectrum> OscillatableSpectrum::LoadFrom(TDirectory* dir, const std::string& name)
+  std::unique_ptr<EnsembleOscillatableSpectrum> EnsembleOscillatableSpectrum::LoadFrom(TDirectory* dir, const std::string& name)
   {
     dir = dir->GetDirectory(name.c_str()); // switch to subdir
     assert(dir);
@@ -215,7 +206,7 @@ namespace ana
 
     TObjString* tag = (TObjString*)dir->Get("type");
     assert(tag);
-    assert(tag->GetString() == "OscillatableSpectrum");
+    assert(tag->GetString() == "EnsembleOscillatableSpectrum");
     delete tag;
 
     TH2D* spect = (TH2D*)dir->Get("hist");
@@ -243,15 +234,20 @@ namespace ana
 
     const HistAxis recoAxis(labels, bins);
 
+    const FitMultiverse* multiverse = FitMultiverse::LoadFrom(dir, "multiverse");
+
     // ROOT histogram storage is row-major, but Eigen is column-major by
     // default
     typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen:: Dynamic, Eigen::RowMajor> MatRowMajor;
 
-    auto ret = std::make_unique<OscillatableSpectrum>(Eigen::Map<MatRowMajor>(spect->GetArray(), kTrueLOverEBins.NBins()+2, recoAxis.GetBins1D().NBins()+2),
-                                                      recoAxis,
-                                                      hPot->Integral(0, -1),
-                                                      hLivetime->Integral(0, -1));
-
+    std::unique_ptr<EnsembleOscillatableSpectrum> ret(new EnsembleOscillatableSpectrum(
+      multiverse,    
+      Eigen::Map<MatRowMajor>(spect->GetArray(),
+                              kTrueLOverEBins.NBins()+2,
+                              (recoAxis.GetBins1D().NBins() + 2) * multiverse->NUniv()),
+      recoAxis,
+      hPot->Integral(0, -1),
+      hLivetime->Integral(0, -1)));
 
     delete spect;
 
