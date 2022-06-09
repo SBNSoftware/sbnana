@@ -155,6 +155,32 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  Eigen::MatrixXd EigenMatrixXdFromTMatrixD(const TMatrixD* mat)
+  {
+    Eigen::MatrixXd ret(mat->GetNrows(), mat->GetNcols());
+    // TMatrixD doesn't appear to have a GetArray()
+    for(int i = 0; i < mat->GetNrows(); ++i){
+      for(int j = 0; j < mat->GetNcols(); ++j){
+        ret.coeffRef(i, j) = (*mat)(i, j);
+      }
+    }
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
+  TMatrixD TMatrixDFromEigenMatrixXd(const Eigen::MatrixXd& mat)
+  {
+    TMatrixD ret(mat.rows(), mat.cols());
+    // TMatrixD doesn't appear to have a GetArray()
+    for(int i = 0; i < mat.rows(); ++i){
+      for(int j = 0; j < mat.cols(); ++j){
+        ret(i, j) = mat.coeffRef(i, j);
+      }
+    }
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
   double LogLikelihood(double e, double o)
   {
     // http://www.wolframalpha.com/input/?i=d%2Fds+m*(1%2Bs)+-d+%2B+d*ln(d%2F(m*(1%2Bs)))%2Bs%5E2%2FS%5E2%3D0
@@ -226,6 +252,18 @@ namespace ana
     }
 
     return chi;
+  }
+
+  //----------------------------------------------------------------------
+  double Chi2CovMx(const Eigen::ArrayXd& e, const Eigen::ArrayXd& o, const Eigen::MatrixXd& covmxinv)
+  {
+    assert(e.size() == covmxinv.rows()+2);
+
+    Eigen::ArrayXd diff = e-o;
+    // Drop underflow and overflow bins
+    const Eigen::ArrayXd diffSub(Eigen::Map<Eigen::ArrayXd>(diff.data()+1, diff.size()-2));
+    // dot collapses things down to a single number
+    return diffSub.matrix().dot(covmxinv*diffSub.matrix());
   }
 
   //----------------------------------------------------------------------
