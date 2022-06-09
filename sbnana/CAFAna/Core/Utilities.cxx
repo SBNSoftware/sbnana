@@ -681,13 +681,13 @@ namespace ana
       bool isMask = false;
 
       if (xmin < xmax){
-  if (xbins->Edges()[ix  ] < xmin) isMask = true;
-  if (xbins->Edges()[ix+1] > xmax) isMask = true;
+        if (xbins->Edges()[ix  ] < xmin) isMask = true;
+        if (xbins->Edges()[ix+1] > xmax) isMask = true;
       }
 
       if (ymin < ymax){
-  if (ybins->Edges()[iy  ] < ymin) isMask = true;
-  if (ybins->Edges()[iy+1] > ymax) isMask = true;
+        if (ybins->Edges()[iy  ] < ymin) isMask = true;
+        if (ybins->Edges()[iy+1] > ymax) isMask = true;
       }
 
       ret[i+1] = isMask ? 0 : 1;

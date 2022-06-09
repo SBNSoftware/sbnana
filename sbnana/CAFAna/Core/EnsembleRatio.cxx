@@ -8,7 +8,6 @@
 #include "cafanacore/UtilsExt.h"
 
 #include "TEfficiency.h"
-#include "TH1D.h"
 #include "TGraphAsymmErrors.h"
 
 namespace ana
