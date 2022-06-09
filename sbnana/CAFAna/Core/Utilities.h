@@ -66,32 +66,24 @@ namespace ana
 
   /** \brief Compute bin-to-bin covariance matrix from a collection of sets of bin contents.
 
-      \param binSets   Collection of sets of bins from which covariances should be calculated
-      \param firstBin  The first bin that should be considered (inclusive)
-      \param lastBin   The last bin that should be considered (inclusive).  -1 means "last in set"
+      \param binSets Collection of sets of bins from which covariances should be calculated
+                     Note that the nominal set (the first in the vector) is not used and should be
+                     checked for a bias
 
-      \returns  unique_ptr to TMatrixD containing computed covariance matrix unless binSets.size() < 2,
-                in which case the unique_ptr's target is nullptr.
-
-      Note TH1D is a child class of TArrayD -- so you can pass a vector
-      of TH1D* to this method.
+      \returns  Eigen::MatrixXD containing computed covariance matrix unless binSets.size() < 2,
+                in which case an 0*0 matric is returned
   **/
-  std::unique_ptr<TMatrixD> CalcCovMx(const std::vector<TArrayD*> & binSets, int firstBin=0, int lastBin=-1);
+  Eigen::MatrixXd CalcCovMx(const std::vector<Eigen::ArrayXd>& binSets);
 
   /** \brief Compute bias from a collection of sets of bin contents.
 
-      \param binSets   Collection of sets of bins from which the average should be calculated
-      \param nom       Nominal bins from which bias should
-      \param firstBin  The first bin that should be considered (inclusive)
-      \param lastBin   The last bin that should be considered (inclusive).  -1 means "last in set"
+      \param binSets Collection of sets of bins from which bias should be calculated between the 
+                     nominal set (the first in the vector) and the average of all other sets
 
-      \returns  unique_ptr to TMatrixD containing computed bias matrix unless binSets.size() < 2,
-                in which case the unique_ptr's target is nullptr.
-
-      Note TH1D is a child class of TArrayD -- so you can pass a vector
-      of TH1D* to this method.
+      \returns  Eigen::MatrixXD containing computed bias matrix unless binSets.size() < 2,
+                in which case an 0*0 matric is returned
   **/
-  std::unique_ptr<TMatrixD> CalcBiasMx(const std::vector<TArrayD*> & binSets, const TArrayD* nom, int firstBin=0, int lastBin=-1);
+  Eigen::MatrixXd CalcBiasMx(const std::vector<Eigen::ArrayXd>& binSets);
 
   class LLPerBinFracSystErr
   {

@@ -97,82 +97,61 @@ namespace ana
 
   //----------------------------------------------------------------------
   // Reduce code duplication between CalcCovMx and CalcBiasMx
-  std::vector<double> GetBinMeans(const std::vector<TArrayD*> & binSets, int firstBin, int lastBin)
+  Eigen::ArrayXd GetBinMeans(const std::vector<Eigen::ArrayXd>& binSets)
   {
-    if (lastBin < 0)
-      lastBin = binSets[0]->GetSize() - 1;  // indexed from 0
+    const unsigned int nBins(binSets.front().size());
+    const unsigned int nUniv(binSets.size());
 
-    int nBins = lastBin - firstBin + 1;  // firstBin and lastBin are inclusive
+    Eigen::ArrayXd binMeans = Eigen::ArrayXd::Zero(nBins);
+    for(unsigned int univIdx = 1; univIdx < nUniv; ++univIdx)
+      binMeans += binSets[univIdx];
 
-    std::vector<double> binMeans(nBins);
-    for( const auto & binSet : binSets )
-    {
-      for( decltype(nBins) i = 0; i < nBins; i++ )
-        binMeans[i] += (*binSet)[i+firstBin];
-    }
-    for( decltype(nBins) i = 0; i < nBins; i++ )
-      binMeans[i] /= binSets.size();
+    binMeans *= 1./(nUniv-1);
 
     return binMeans;
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<TMatrixD> CalcCovMx(const std::vector<TArrayD*> & binSets, int firstBin, int lastBin)
+  Eigen::MatrixXd CalcCovMx(const std::vector<Eigen::ArrayXd>& binSets)
   {
     if (binSets.size() < 2)
-      return std::unique_ptr<TMatrixD>(nullptr);
+      return Eigen::MatrixXd(0,0);
 
-    const std::vector<double> binMeans = GetBinMeans(binSets, firstBin, lastBin);
-    unsigned int nBins = binMeans.size();
+    const unsigned int nUniv(binSets.size());
+    const unsigned int nBins(binSets.front().size());
 
-    auto covmx = std::make_unique<TMatrixD>(nBins, nBins);
+    const Eigen::ArrayXd binMeans = GetBinMeans(binSets);
 
-    for( unsigned int hist_idx = 0; hist_idx < binSets.size(); ++hist_idx )
+    Eigen::MatrixXd covmx = Eigen::MatrixXd::Zero(nBins, nBins);
+
+    for(unsigned int univIdx = 1; univIdx < nUniv; ++univIdx)
     {
-      // first calculate the weighted sum of squares of the deviations
-      for( decltype(nBins) i = 0; i < nBins; i++ )
-      {
-        double xi = (*(binSets[hist_idx]))[i+firstBin];
-        for( decltype(nBins) k = i; k < nBins; k++ )
-        {
-          double xk = (*(binSets[hist_idx]))[k+firstBin];
-          (*covmx)[i][k] += (xi - binMeans[i]) * (xk - binMeans[k]);
-          if (i != k)
-            (*covmx)[k][i] = (*covmx)[i][k];  // covariance matrices are always symmetric
-        }
-      }
-    } // for (hist_idx)
+      // Get a column vector of the difference from the mean in each bin
+      Eigen::MatrixXd errs = (binSets[univIdx] - binMeans).matrix();
+
+      // Calculate the variance from column * row
+      covmx += errs * errs.transpose();
+    } // for (univIdx)
 
     // now divide by N-1 to get sample covariance
-    (*covmx) *= 1./(binSets.size()-1);
+    covmx *= 1./(nUniv-2);
 
     return covmx;
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<TMatrixD> CalcBiasMx(const std::vector<TArrayD*> & binSets, const TArrayD* nom, int firstBin, int lastBin)
+  Eigen::MatrixXd CalcBiasMx(const std::vector<Eigen::ArrayXd>& binSets)
   {
     if (binSets.size() < 2)
-      return std::unique_ptr<TMatrixD>(nullptr);
+      return Eigen::MatrixXd(0,0);
 
-    const std::vector<double> binMeans = GetBinMeans(binSets, firstBin, lastBin);
-    unsigned int nBins = binMeans.size();
+    const Eigen::ArrayXd binMeans = GetBinMeans(binSets);
 
-    auto biasmx = std::make_unique<TMatrixD>(nBins, nBins);
+    // Get a column vector of the difference from the mean in each bin
+    Eigen::MatrixXd errs = (binSets[0] - binMeans).matrix();
 
-    for( decltype(nBins) i = 0; i < nBins; i++ )
-    {
-      double xi = (*nom)[i+firstBin];
-      for( decltype(nBins) k = i; k < nBins; k++ )
-      {
-        double xk = (*nom)[k+firstBin];
-        (*biasmx)[i][k] += (xi - binMeans[i]) * (xk - binMeans[k]);
-        if (i != k)
-          (*biasmx)[k][i] = (*biasmx)[i][k];  // covariance matrices are always symmetric
-      }
-    }
-
-    return biasmx;
+    // Calculate the variance from column * row
+    return errs * errs.transpose();
   }
 
   //----------------------------------------------------------------------
@@ -664,13 +643,13 @@ namespace ana
       bool isMask = false;
 
       if (xmin < xmax){
-	if (xbins->Edges()[ix  ] < xmin) isMask = true;
-	if (xbins->Edges()[ix+1] > xmax) isMask = true;
+  if (xbins->Edges()[ix  ] < xmin) isMask = true;
+  if (xbins->Edges()[ix+1] > xmax) isMask = true;
       }
 
       if (ymin < ymax){
-	if (ybins->Edges()[iy  ] < ymin) isMask = true;
-	if (ybins->Edges()[iy+1] > ymax) isMask = true;
+  if (ybins->Edges()[iy  ] < ymin) isMask = true;
+  if (ybins->Edges()[iy+1] > ymax) isMask = true;
       }
 
       ret[i+1] = isMask ? 0 : 1;

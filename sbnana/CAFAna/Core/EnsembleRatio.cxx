@@ -144,45 +144,38 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<TMatrixD> EnsembleRatio::CalcCovMx(const int firstBin, const int lastBin)
+  Eigen::MatrixXd EnsembleRatio::CovarianceMatrix()
   {
     // TODO there is probably a better way to check this?
     assert (fMultiverse->ShortName().substr(0,3) == "gas");
 
-    std::vector<TArrayD*> hists;
+    const Eigen::ArrayXd arr = fHist.GetEigen();
 
-    // Note we are ignoring the nominal (Universe 0) and that should be checked with CalcBiasMx
-    for (unsigned int i=1; i<fMultiverse->NUniv(); ++i)
-      hists.push_back(Universe(i).ToTH1());
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    std::vector<Eigen::ArrayXd> histVec;
 
-    std::unique_ptr<TMatrixD> covmx = ana::CalcCovMx(hists, firstBin, lastBin);
+    for(unsigned int univIdx = 0; univIdx < NUniverses(); ++univIdx)
+      histVec.push_back(arr.segment(nbins*univIdx, nbins));
 
-    for (unsigned int i=0; i<hists.size(); ++i)
-      delete hists[i];
-
-    return covmx;
+    return ana::CalcCovMx(histVec);
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<TMatrixD> EnsembleRatio::CalcBiasMx(const int firstBin, const int lastBin)
+  Eigen::MatrixXd EnsembleRatio::BiasMatrix()
   {
     // TODO there is probably a better way to check this?
     assert (fMultiverse->ShortName().substr(0,3) == "gas");
 
-    TArrayD* nom = Nominal().ToTH1();
-    std::vector<TArrayD*> hists;
-    for (unsigned int i=1; i<fMultiverse->NUniv(); ++i)
-      hists.push_back(Universe(i).ToTH1());
+    const Eigen::ArrayXd arr = fHist.GetEigen();
 
-    std::unique_ptr<TMatrixD> biasmx = ana::CalcBiasMx(hists, nom, firstBin, lastBin);
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    std::vector<Eigen::ArrayXd> histVec;
 
-    delete nom;
-    for (unsigned int i=0; i<hists.size(); ++i)
-      delete hists[i];
+    for(unsigned int univIdx = 0; univIdx < NUniverses(); ++univIdx)
+      histVec.push_back(arr.segment(nbins*univIdx, nbins));
 
-    return biasmx;
+    return ana::CalcBiasMx(histVec);
   }
-
   //----------------------------------------------------------------------
   void EnsembleRatio::CheckMultiverses(const FitMultiverse& rhs,
                                        const std::string& func) const

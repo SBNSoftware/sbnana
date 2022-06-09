@@ -119,43 +119,37 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<TMatrixD> EnsembleSpectrum::CalcCovMx(const double pot, const int firstBin, const int lastBin)
+  Eigen::MatrixXd EnsembleSpectrum::CovarianceMatrix(const double exposure, EExposureType expotype)
   {
     // TODO there is probably a better way to check this?
     assert (fMultiverse->ShortName().substr(0,3) == "gas");
 
-    std::vector<TArrayD*> hists;
+    const Eigen::ArrayXd arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
 
-    // Note we are ignoring the nominal (Universe 0) and that should be checked with CalcBiasMx
-    for (unsigned int i=1; i<fMultiverse->NUniv(); ++i)
-      hists.push_back(Universe(i).ToTH1(pot));
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    std::vector<Eigen::ArrayXd> histVec;
 
-    std::unique_ptr<TMatrixD> covmx = ana::CalcCovMx(hists, firstBin, lastBin);
+    for(unsigned int univIdx = 0; univIdx < NUniverses(); ++univIdx)
+      histVec.push_back(arr.segment(nbins*univIdx, nbins));
 
-    for (unsigned int i=0; i<hists.size(); ++i)
-      delete hists[i];
-
-    return covmx;
+    return ana::CalcCovMx(histVec);
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<TMatrixD> EnsembleSpectrum::CalcBiasMx(const double pot, const int firstBin, const int lastBin)
+  Eigen::MatrixXd EnsembleSpectrum::BiasMatrix(const double exposure, EExposureType expotype)
   {
     // TODO there is probably a better way to check this?
     assert (fMultiverse->ShortName().substr(0,3) == "gas");
 
-    TArrayD* nom = Nominal().ToTH1(pot);
-    std::vector<TArrayD*> hists;
-    for (unsigned int i=1; i<fMultiverse->NUniv(); ++i)
-      hists.push_back(Universe(i).ToTH1(pot));
+    const Eigen::ArrayXd arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
 
-    std::unique_ptr<TMatrixD> biasmx = ana::CalcBiasMx(hists, nom, firstBin, lastBin);
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    std::vector<Eigen::ArrayXd> histVec;
 
-    delete nom;
-    for (unsigned int i=0; i<hists.size(); ++i)
-      delete hists[i];
+    for(unsigned int univIdx = 0; univIdx < NUniverses(); ++univIdx)
+      histVec.push_back(arr.segment(nbins*univIdx, nbins));
 
-    return biasmx;
+    return ana::CalcBiasMx(histVec);
   }
 
   //----------------------------------------------------------------------

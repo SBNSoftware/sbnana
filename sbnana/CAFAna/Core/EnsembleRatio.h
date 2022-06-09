@@ -3,7 +3,6 @@
 #include "cafanacore/Ratio.h"
 
 #include "TGraphAsymmErrors.h"
-#include "TMatrixD.h"
 
 #include <cassert>
 
@@ -29,31 +28,11 @@ namespace ana
 
     TGraphAsymmErrors* ErrorBand() const;
 
-    /** \brief Compute bin-to-bin covariance matrix from a collection of sets of bin contents.
+    /// Wrapper for \ref CalcCovMx
+    Eigen::MatrixXd CovarianceMatrix();
 
-      \param firstBin  The first bin that should be considered (inclusive)
-      \param lastBin   The last bin that should be considered (inclusive).  -1 means "last in set"
-
-      \returns  unique_ptr to TMatrixD containing computed covariance matrix unless binSets.size() < 2,
-      in which case the unique_ptr's target is nullptr.
-
-      Note TH1D is a child class of TArrayD -- so you can pass a vector
-      of TH1D* to this method.
-     **/
-    std::unique_ptr<TMatrixD> CalcCovMx(const int firstBin=0, const int lastBin=-1);
-
-    /** \brief Compute bias from a collection of sets of bin contents.
-
-      \param firstBin  The first bin that should be considered (inclusive)
-      \param lastBin   The last bin that should be considered (inclusive).  -1 means "last in set"
-
-      \returns  unique_ptr to TMatrixD containing computed bias matrix unless binSets.size() < 2,
-      in which case the unique_ptr's target is nullptr.
-
-      Note TH1D is a child class of TArrayD -- so you can pass a vector
-      of TH1D* to this method.
-     **/
-    std::unique_ptr<TMatrixD> CalcBiasMx(const int firstBin=0, const int lastBin=-1);
+    /// Wrapper for \ref CalcBiasMx
+    Eigen::MatrixXd BiasMatrix();
 
     EnsembleRatio& operator*=(const EnsembleRatio& rhs);
     EnsembleRatio operator*(const EnsembleRatio& rhs) const;
