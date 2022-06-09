@@ -124,12 +124,13 @@ namespace ana
     // TODO there is probably a better way to check this?
     assert (fMultiverse->ShortName().substr(0,3) == "gas");
 
-    const Eigen::ArrayXd arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
+    const Eigen::ArrayXd& arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
 
     const int nbins = fAxis.GetBins1D().NBins()+2;
     std::vector<Eigen::ArrayXd> histVec;
+    histVec.reserve(NUniverses());
 
-    for(unsigned int univIdx = 0; univIdx < NUniverses(); ++univIdx)
+    for(unsigned int univIdx = 1; univIdx < NUniverses(); ++univIdx)
       histVec.push_back(arr.segment(nbins*univIdx, nbins));
 
     return ana::CalcCovMx(histVec);
@@ -141,15 +142,16 @@ namespace ana
     // TODO there is probably a better way to check this?
     assert (fMultiverse->ShortName().substr(0,3) == "gas");
 
-    const Eigen::ArrayXd arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
+    const Eigen::ArrayXd& arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
 
     const int nbins = fAxis.GetBins1D().NBins()+2;
     std::vector<Eigen::ArrayXd> histVec;
+    histVec.reserve(NUniverses());
 
-    for(unsigned int univIdx = 0; univIdx < NUniverses(); ++univIdx)
+    for(unsigned int univIdx = 1; univIdx < NUniverses(); ++univIdx)
       histVec.push_back(arr.segment(nbins*univIdx, nbins));
 
-    return ana::CalcBiasMx(histVec);
+    return ana::CalcBiasMx(arr.segment(0, nbins), histVec);
   }
 
   //----------------------------------------------------------------------

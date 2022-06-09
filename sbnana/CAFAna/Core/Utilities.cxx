@@ -103,10 +103,10 @@ namespace ana
     const unsigned int nUniv(binSets.size());
 
     Eigen::ArrayXd binMeans = Eigen::ArrayXd::Zero(nBins);
-    for(unsigned int univIdx = 1; univIdx < nUniv; ++univIdx)
+    for(unsigned int univIdx = 0; univIdx < nUniv; ++univIdx)
       binMeans += binSets[univIdx];
 
-    binMeans *= 1./(nUniv-1);
+    binMeans *= 1./(nUniv);
 
     return binMeans;
   }
@@ -124,7 +124,7 @@ namespace ana
 
     Eigen::MatrixXd covmx = Eigen::MatrixXd::Zero(nBins, nBins);
 
-    for(unsigned int univIdx = 1; univIdx < nUniv; ++univIdx)
+    for(unsigned int univIdx = 0; univIdx < nUniv; ++univIdx)
     {
       // Get a column vector of the difference from the mean in each bin
       Eigen::MatrixXd errs = (binSets[univIdx] - binMeans).matrix();
@@ -134,13 +134,13 @@ namespace ana
     } // for (univIdx)
 
     // now divide by N-1 to get sample covariance
-    covmx *= 1./(nUniv-2);
+    covmx *= 1./(nUniv-1);
 
     return covmx;
   }
 
   //----------------------------------------------------------------------
-  Eigen::MatrixXd CalcBiasMx(const std::vector<Eigen::ArrayXd>& binSets)
+  Eigen::MatrixXd CalcBiasMx(const Eigen::ArrayXd& nom, const std::vector<Eigen::ArrayXd>& binSets)
   {
     if (binSets.size() < 2)
       return Eigen::MatrixXd(0,0);
@@ -148,7 +148,7 @@ namespace ana
     const Eigen::ArrayXd binMeans = GetBinMeans(binSets);
 
     // Get a column vector of the difference from the mean in each bin
-    Eigen::MatrixXd errs = (binSets[0] - binMeans).matrix();
+    Eigen::MatrixXd errs = (nom - binMeans).matrix();
 
     // Calculate the variance from column * row
     return errs * errs.transpose();

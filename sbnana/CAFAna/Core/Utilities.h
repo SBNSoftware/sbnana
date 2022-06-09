@@ -83,7 +83,7 @@ namespace ana
       \returns  Eigen::MatrixXD containing computed bias matrix unless binSets.size() < 2,
                 in which case an 0*0 matric is returned
   **/
-  Eigen::MatrixXd CalcBiasMx(const std::vector<Eigen::ArrayXd>& binSets);
+  Eigen::MatrixXd CalcBiasMx(const Eigen::ArrayXd& nom, const std::vector<Eigen::ArrayXd>& binSets);
 
   class LLPerBinFracSystErr
   {
