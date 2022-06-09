@@ -11,6 +11,8 @@ namespace ana
 {
   template<class SystT> using _Universe = std::unordered_map<const SystT*, double>;
 
+  enum EMultiverseType{kHypercross, kRandomGas};
+
   using FitUniverse = _Universe<IFitSyst>;
 
   /// \brief Collection of "universes" (SystShifts)
@@ -55,10 +57,14 @@ namespace ana
     /// Usually these return unique_ptr, but Multiverses are globally managed
     static const FitMultiverse* LoadFrom(TDirectory* dir, const std::string& name);
 
+    /// Enum that specifies the type of multiverse
+    const EMultiverseType GetMultiverseType() const {return fMultiverseType;};
+
   protected:
     FitMultiverse(const std::string& shortName,
                   const std::string& latexName,
-                  const std::vector<FitUniverse>& univs);
+                  const std::vector<FitUniverse>& univs,
+                  const EMultiverseType multiverseType);
 
     FitMultiverse(const FitMultiverse&) = delete;
 
@@ -68,6 +74,8 @@ namespace ana
     std::string Checksum() const;
 
     std::vector<FitUniverse> fUnivs;
+
+    EMultiverseType fMultiverseType;
   };
 
 }

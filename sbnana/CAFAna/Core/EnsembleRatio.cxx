@@ -145,8 +145,7 @@ namespace ana
   //----------------------------------------------------------------------
   Eigen::MatrixXd EnsembleRatio::CovarianceMatrix()
   {
-    // TODO there is probably a better way to check this?
-    assert (fMultiverse->ShortName().substr(0,3) == "gas");
+    assert (fMultiverse->GetMultiverseType() == kRandomGas);
 
     const Eigen::ArrayXd& arr = fHist.GetEigen();
 
@@ -163,8 +162,7 @@ namespace ana
   //----------------------------------------------------------------------
   Eigen::MatrixXd EnsembleRatio::BiasMatrix()
   {
-    // TODO there is probably a better way to check this?
-    assert (fMultiverse->ShortName().substr(0,3) == "gas");
+    assert (fMultiverse->GetMultiverseType() == kRandomGas);
 
     const Eigen::ArrayXd& arr = fHist.GetEigen();
 
