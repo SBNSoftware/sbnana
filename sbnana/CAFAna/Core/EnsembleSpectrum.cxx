@@ -121,7 +121,7 @@ namespace ana
   //----------------------------------------------------------------------
   Eigen::MatrixXd EnsembleSpectrum::CovarianceMatrix(const double exposure, EExposureType expotype)
   {
-    assert (fMultiverse->GetMultiverseType() == kRandomGas);
+    assert (fMultiverse->MultiverseType() == kRandomGas);
 
     const Eigen::ArrayXd& arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
 
@@ -138,7 +138,7 @@ namespace ana
   //----------------------------------------------------------------------
   Eigen::MatrixXd EnsembleSpectrum::BiasMatrix(const double exposure, EExposureType expotype)
   {
-    assert (fMultiverse->GetMultiverseType() == kRandomGas);
+    assert (fMultiverse->MultiverseType() == kRandomGas);
 
     const Eigen::ArrayXd& arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
 
