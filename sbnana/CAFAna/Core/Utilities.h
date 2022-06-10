@@ -67,8 +67,8 @@ namespace ana
   /** \brief Compute bin-to-bin covariance matrix from a collection of sets of bin contents.
 
       \param binSets Collection of sets of bins from which covariances should be calculated
-                     Note that the nominal set (the first in the vector) is not used and should be
-                     checked for a bias
+                     Note that the covariance is calclated from all binSets that are passed and
+                     thus the nominal should not be included (But should be checked for biases)
 
       \returns  Eigen::MatrixXD containing computed covariance matrix unless binSets.size() < 2,
                 in which case an 0*0 matric is returned
@@ -77,8 +77,8 @@ namespace ana
 
   /** \brief Compute bias from a collection of sets of bin contents.
 
-      \param binSets Collection of sets of bins from which bias should be calculated between the 
-                     nominal set (the first in the vector) and the average of all other sets
+      \param nom     Bins corresponding to the nominal universe from which the bias is calculated
+      \param binSets Collection of sets of bins from which bias from the nominal is calculated
 
       \returns  Eigen::MatrixXD containing computed bias matrix unless binSets.size() < 2,
                 in which case an 0*0 matric is returned
