@@ -56,8 +56,9 @@ namespace ana
     EnsembleFluxTimesNuclei(INuTruthEnsembleSource& src, const Binning& bins,
                             const NuTruthCut& fidvol, int pdg, const NuTruthWeight& wgt = kNuTruthUnweighted);
 
-    /// \brief Creates an ensemble flux times nuclei for "data" from an input \ref Spectrum
-    //         which is replicated nUniverse  times from the multiverse which it adopts.
+    /// \brief Creates an ensemble flux times nuceli from a nominal input \ref FluxTimesNuclei
+    //         which is replicated nUniverse times from the multiverse which it adopts.
+    //         Note that this is a temporary workaround for now
     static EnsembleFluxTimesNuclei ReplicatedNominal(const FluxTimesNuclei& spec, const FitMultiverse* multiverse);
 
     TH1D* ToTH1(double pot,
