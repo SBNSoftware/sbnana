@@ -28,6 +28,12 @@ namespace ana
 
     TGraphAsymmErrors* ErrorBand() const;
 
+    /// Wrapper for \ref CalcCovMx
+    Eigen::MatrixXd CovarianceMatrix();
+
+    /// Wrapper for \ref CalcBiasMx
+    Eigen::MatrixXd BiasMatrix();
+
     EnsembleRatio& operator*=(const EnsembleRatio& rhs);
     EnsembleRatio operator*(const EnsembleRatio& rhs) const;
 

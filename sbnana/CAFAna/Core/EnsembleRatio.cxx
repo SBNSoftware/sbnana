@@ -143,6 +143,39 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  Eigen::MatrixXd EnsembleRatio::CovarianceMatrix()
+  {
+    assert (fMultiverse->MultiverseType() == kRandomGas);
+
+    const Eigen::ArrayXd& arr = fHist.GetEigen();
+
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    std::vector<Eigen::ArrayXd> histVec;
+    histVec.reserve(NUniverses());
+
+    for(unsigned int univIdx = 1; univIdx < NUniverses(); ++univIdx)
+      histVec.push_back(arr.segment(nbins*univIdx, nbins));
+
+    return ana::CalcCovMx(histVec);
+  }
+
+  //----------------------------------------------------------------------
+  Eigen::MatrixXd EnsembleRatio::BiasMatrix()
+  {
+    assert (fMultiverse->MultiverseType() == kRandomGas);
+
+    const Eigen::ArrayXd& arr = fHist.GetEigen();
+
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    std::vector<Eigen::ArrayXd> histVec;
+    histVec.reserve(NUniverses());
+
+    for(unsigned int univIdx = 1; univIdx < NUniverses(); ++univIdx)
+      histVec.push_back(arr.segment(nbins*univIdx, nbins));
+
+    return ana::CalcBiasMx(arr.segment(0, nbins), histVec);
+  }
+  //----------------------------------------------------------------------
   void EnsembleRatio::CheckMultiverses(const FitMultiverse& rhs,
                                        const std::string& func) const
   {

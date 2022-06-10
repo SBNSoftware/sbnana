@@ -124,15 +124,16 @@ namespace ana
   //----------------------------------------------------------------------
   FitMultiverse::FitMultiverse(const std::string& shortName,
                                const std::string& latexName,
-                               const std::vector<FitUniverse>& univs)
-    : INamed(shortName, latexName), fUnivs(univs)
+                               const std::vector<FitUniverse>& univs,
+                               const EMultiverseType multiverseType)
+    : INamed(shortName, latexName), fUnivs(univs), fMultiverseType(multiverseType)
   {
     Registry<FitMultiverse>::Register(this);
   }
 
   //----------------------------------------------------------------------
   FitMultiverse::FitMultiverse(const FitMultiverse&& m)
-    : INamed(m), fUnivs(m.fUnivs)
+    : INamed(m), fUnivs(m.fUnivs), fMultiverseType(m.fMultiverseType)
   {
     // "leak" the entry in the global list so we don't double-delete it
     for(auto& it: gFitMultiverses) if(it.get() == &m) it.release();
@@ -171,7 +172,7 @@ namespace ana
       }
     } // end for systs
 
-    gFitMultiverses.emplace_back(new FitMultiverse(name, latexName, univs));
+    gFitMultiverses.emplace_back(new FitMultiverse(name, latexName, univs, kHypercross));
     return *gFitMultiverses.back();
   }
 
@@ -210,7 +211,7 @@ namespace ana
       univs.push_back(univ);
     }
 
-    gFitMultiverses.emplace_back(new FitMultiverse(name, latexName, univs));
+    gFitMultiverses.emplace_back(new FitMultiverse(name, latexName, univs, kRandomGas));
     return *gFitMultiverses.back();
   }
 

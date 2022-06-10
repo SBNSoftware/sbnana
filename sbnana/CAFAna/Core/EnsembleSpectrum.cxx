@@ -119,6 +119,40 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  Eigen::MatrixXd EnsembleSpectrum::CovarianceMatrix(const double exposure, EExposureType expotype)
+  {
+    assert (fMultiverse->MultiverseType() == kRandomGas);
+
+    const Eigen::ArrayXd& arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
+
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    std::vector<Eigen::ArrayXd> histVec;
+    histVec.reserve(NUniverses());
+
+    for(unsigned int univIdx = 1; univIdx < NUniverses(); ++univIdx)
+      histVec.push_back(arr.segment(nbins*univIdx, nbins));
+
+    return ana::CalcCovMx(histVec);
+  }
+
+  //----------------------------------------------------------------------
+  Eigen::MatrixXd EnsembleSpectrum::BiasMatrix(const double exposure, EExposureType expotype)
+  {
+    assert (fMultiverse->MultiverseType() == kRandomGas);
+
+    const Eigen::ArrayXd& arr = fHist.GetEigen() * exposure / (expotype == kPOT ? fPOT : fLivetime);
+
+    const int nbins = fAxis.GetBins1D().NBins()+2;
+    std::vector<Eigen::ArrayXd> histVec;
+    histVec.reserve(NUniverses());
+
+    for(unsigned int univIdx = 1; univIdx < NUniverses(); ++univIdx)
+      histVec.push_back(arr.segment(nbins*univIdx, nbins));
+
+    return ana::CalcBiasMx(arr.segment(0, nbins), histVec);
+  }
+
+  //----------------------------------------------------------------------
   void EnsembleSpectrum::Scale(double c)
   {
     fHist.Scale(c);

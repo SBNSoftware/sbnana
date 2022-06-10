@@ -66,17 +66,24 @@ namespace ana
 
   /** \brief Compute bin-to-bin covariance matrix from a collection of sets of bin contents.
 
-      \param binSets   Collection of sets of bins from which covariances should be calculated
-      \param firstBin  The first bin that should be considered (inclusive)
-      \param lastBin   The last bin that should be considered (inclusive).  -1 means "last in set"
+      \param binSets Collection of sets of bins from which covariances should be calculated
+                     Note that the covariance is calclated from all binSets that are passed and
+                     thus the nominal should not be included (But should be checked for biases)
 
-      \returns  unique_ptr to TMatrixD containing computed covariance matrix unless binSets.size() < 2,
-                in which case the unique_ptr's target is nullptr.
-
-      Note TH1D is a child class of TArrayD -- so you can pass a vector
-      of TH1D* to this method.
+      \returns  Eigen::MatrixXD containing computed covariance matrix unless binSets.size() < 2,
+                in which case an 0*0 matric is returned
   **/
-  std::unique_ptr<TMatrixD> CalcCovMx(const std::vector<TArrayD*> & binSets, int firstBin=0, int lastBin=-1);
+  Eigen::MatrixXd CalcCovMx(const std::vector<Eigen::ArrayXd>& binSets);
+
+  /** \brief Compute bias from a collection of sets of bin contents.
+
+      \param nom     Bins corresponding to the nominal universe from which the bias is calculated
+      \param binSets Collection of sets of bins from which bias from the nominal is calculated
+
+      \returns  Eigen::MatrixXD containing computed bias matrix unless binSets.size() < 2,
+                in which case an 0*0 matric is returned
+  **/
+  Eigen::MatrixXd CalcBiasMx(const Eigen::ArrayXd& nom, const std::vector<Eigen::ArrayXd>& binSets);
 
   class LLPerBinFracSystErr
   {

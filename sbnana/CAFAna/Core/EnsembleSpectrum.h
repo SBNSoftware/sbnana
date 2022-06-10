@@ -50,6 +50,12 @@ namespace ana
                                  EExposureType expotype = kPOT,
                                  EBinType bintype = kBinContent) const;
 
+    /// Wrapper for \ref CalcCovMx
+    Eigen::MatrixXd CovarianceMatrix(const double exposure, EExposureType expotype=kPOT);
+
+    /// Wrapper for \ref CalcBiasMx
+    Eigen::MatrixXd BiasMatrix(const double exposure, EExposureType expotype=kPOT);
+
     virtual void FillSingle(double x, double w, int universeId) override;
 
     virtual void FillEnsemble(double x, const std::vector<double>& ws) override;
