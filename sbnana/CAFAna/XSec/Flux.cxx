@@ -176,7 +176,7 @@ namespace ana
 
   //----------------------------------------------------------------------
   EnsembleFluxTimesNuclei EnsembleFluxTimesNuclei::ReplicatedNominal(const FluxTimesNuclei& spec,
-                                                                  const FitMultiverse* multiverse)
+                                                                     const FitMultiverse* multiverse)
   {
     return EnsembleFluxTimesNuclei(EnsembleSpectrum::ReplicatedData(spec, multiverse), spec.PDG());
   }
