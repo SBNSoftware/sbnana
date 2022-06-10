@@ -130,12 +130,13 @@ namespace ana
     std::unique_ptr<TVectorD> pdg((TVectorD*)dir->Get("pdg"));
     assert(pdg && pdg->GetNrows()==1);
 
-    return std::unique_ptr<FluxTimesNuclei>(new FluxTimesNuclei(Spectrum::LoadFrom(dir, "spectrum"), (*pdg)[0]));
+    return std::unique_ptr<FluxTimesNuclei>(
+        new FluxTimesNuclei(std::move(*Spectrum::LoadFrom(dir, "spectrum")), (*pdg)[0]));
   }
 
   //----------------------------------------------------------------------
-  FluxTimesNuclei::FluxTimesNuclei(const std::unique_ptr<Spectrum> spec, const int pdg)
-    : Spectrum(*spec), fPdg(pdg)
+  FluxTimesNuclei::FluxTimesNuclei(const Spectrum&& spec, const int pdg)
+    : Spectrum(spec), fPdg(pdg)
   {
   }
 
@@ -174,10 +175,10 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  EnsembleFluxTimesNuclei EnsembleFluxTimesNuclei::ReplicatedData(const FluxTimesNuclei& spec,
+  EnsembleFluxTimesNuclei EnsembleFluxTimesNuclei::ReplicatedNominal(const FluxTimesNuclei& spec,
                                                                   const FitMultiverse* multiverse)
   {
-    return EnsembleFluxTimesNuclei(std::make_unique<EnsembleSpectrum>(EnsembleSpectrum::ReplicatedData(spec, multiverse)), spec.PDG());
+    return EnsembleFluxTimesNuclei(EnsembleSpectrum::ReplicatedData(spec, multiverse), spec.PDG());
   }
 
 
@@ -241,12 +242,13 @@ namespace ana
     std::unique_ptr<TVectorD> pdg((TVectorD*)dir->Get("pdg"));
     assert(pdg && pdg->GetNrows()==1);
 
-    return std::unique_ptr<EnsembleFluxTimesNuclei>(new EnsembleFluxTimesNuclei(EnsembleSpectrum::LoadFrom(dir, "ensemblespectrum"), (*pdg)[0]));
+    return std::unique_ptr<EnsembleFluxTimesNuclei>(
+        new EnsembleFluxTimesNuclei(std::move(*EnsembleSpectrum::LoadFrom(dir, "ensemblespectrum")), (*pdg)[0]));
   }
 
   //----------------------------------------------------------------------
-  EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(const std::unique_ptr<EnsembleSpectrum> spec, const int pdg)
-    : EnsembleSpectrum(*spec), fPdg(pdg)
+  EnsembleFluxTimesNuclei::EnsembleFluxTimesNuclei(const EnsembleSpectrum&& spec, const int pdg)
+    : EnsembleSpectrum(spec), fPdg(pdg)
   {
   }
 

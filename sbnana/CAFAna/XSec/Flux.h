@@ -37,7 +37,7 @@ namespace ana
 
   protected:
     /// Helper for LoadFrom()
-    FluxTimesNuclei(const std::unique_ptr<Spectrum> spec, const int pdg);
+    FluxTimesNuclei(const Spectrum&& spec, const int pdg);
     FluxTimesNuclei(const Eigen::ArrayXd&& hist,
                     const LabelsAndBins& axis,
                     double pot,
@@ -58,7 +58,7 @@ namespace ana
 
     /// \brief Creates an ensemble flux times nuclei for "data" from an input \ref Spectrum
     //         which is replicated nUniverse  times from the multiverse which it adopts.
-    static EnsembleFluxTimesNuclei ReplicatedData(const FluxTimesNuclei& spec, const FitMultiverse* multiverse);
+    static EnsembleFluxTimesNuclei ReplicatedNominal(const FluxTimesNuclei& spec, const FitMultiverse* multiverse);
 
     TH1D* ToTH1(double pot,
                 Color_t col = kBlack,
@@ -69,7 +69,7 @@ namespace ana
 
     static std::unique_ptr<EnsembleFluxTimesNuclei> LoadFrom(TDirectory* dir, const std::string& name);
     FluxTimesNuclei Nominal() const {return Universe(0);}
-    FluxTimesNuclei Universe(unsigned int i) const{return FluxTimesNuclei(std::make_unique<Spectrum>(EnsembleSpectrum::Universe(i)), fPdg);};
+    FluxTimesNuclei Universe(unsigned int i) const{return FluxTimesNuclei(EnsembleSpectrum::Universe(i), fPdg);};
 
     /// Convert an \ref EnsembleFluxTimesNuclei into a \ref EnsembleSpectrum where every bin within
     /// a given universe is the integral of the \ref EnsembleFluxTimesNuclei, useful for dividing
@@ -80,7 +80,7 @@ namespace ana
 
   protected:
     /// Helper for LoadFrom()
-    EnsembleFluxTimesNuclei(const std::unique_ptr<EnsembleSpectrum> spec, const int pdg);
+    EnsembleFluxTimesNuclei(const EnsembleSpectrum&& spec, const int pdg);
     EnsembleFluxTimesNuclei(const FitMultiverse* multiverse,
                             const Hist&& hist,
                             double pot,
@@ -88,9 +88,6 @@ namespace ana
                             const LabelsAndBins& axis,
                             int pdg);
 
-
     int fPdg;
   };
-
-
 }
