@@ -439,7 +439,7 @@ namespace ana
           std::cout << std::endl;
 	  //          abort();
 	  //	  fPOT = 1e18;
-	  ret->Scale(pot/1e18); //hack while we add spill tree
+	  ret->Scale(); //hack while we add spill tree
         }
       }
     }
