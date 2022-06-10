@@ -51,13 +51,13 @@ namespace ana
 
   //----------------------------------------------------------------------
   EnsembleReweightableSpectrum::EnsembleReweightableSpectrum(const EnsembleReweightableSpectrum& rhs)
-    : fAxisX(rhs.fAxisX), fAxisY(rhs.fAxisY)
+    : fMultiverse(rhs.fMultiverse),
+      fMat(rhs.fMat),
+      fPOT(rhs.fPOT),
+      fLivetime(rhs.fLivetime),
+      fAxisX(rhs.fAxisX),
+      fAxisY(rhs.fAxisY)
   {
-    DontAddDirectory guard;
-
-    fMat = rhs.fMat;
-    fPOT = rhs.fPOT;
-    fLivetime = rhs.fLivetime;
   }
 
   //----------------------------------------------------------------------
@@ -65,14 +65,12 @@ namespace ana
   {
     if(this == &rhs) return *this;
 
-    DontAddDirectory guard;
-
-    fAxisX = rhs.fAxisX;
-    fAxisY = rhs.fAxisY;
-
+    fMultiverse = rhs.fMultiverse;
     fMat = rhs.fMat;
     fPOT = rhs.fPOT;
     fLivetime = rhs.fLivetime;
+    fAxisX = rhs.fAxisX;
+    fAxisY = rhs.fAxisY;
 
     return *this;
   }
