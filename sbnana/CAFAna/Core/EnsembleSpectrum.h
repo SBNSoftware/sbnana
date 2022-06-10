@@ -34,6 +34,10 @@ namespace ana
     {
     }
 
+    /// \brief Creates an ensemble spectrum for "data" from an input \ref Spectrum
+    //         which is replicated nUniverse  times from the multiverse which it adopts.
+    static EnsembleSpectrum ReplicatedData(const Spectrum& spec, const FitMultiverse* multiverse);
+
     Spectrum Nominal() const {return Universe(0);}
     unsigned int NUniverses() const;
     Spectrum Universe(unsigned int i) const;

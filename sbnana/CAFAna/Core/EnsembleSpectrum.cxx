@@ -25,6 +25,17 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  EnsembleSpectrum EnsembleSpectrum::ReplicatedData(const Spectrum& spec, const FitMultiverse* multiverse)
+  {
+    std::cout << "Test input size: " << spec.GetEigen().size() << std::endl;
+    Eigen::ArrayXd data = spec.GetEigen().replicate(multiverse->NUniv(), 1);
+    std::cout << "Test output size: " << data.size() << std::endl;
+
+    return EnsembleSpectrum(multiverse, Hist::Adopt(std::move(data)), spec.POT(), spec.Livetime(),
+                            LabelsAndBins(spec.GetLabels(), spec.GetBinnings()));
+  }
+
+  //----------------------------------------------------------------------
   void EnsembleSpectrum::FillSingle(double x, double w, int universeId)
   {
     // Filling a single constituent universe
