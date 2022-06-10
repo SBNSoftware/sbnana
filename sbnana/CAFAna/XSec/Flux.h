@@ -33,6 +33,8 @@ namespace ana
     /// \ref FluxTimesNuclei, useful for dividing out flux in cross section measurement
     FluxTimesNuclei MakeTotalFlux(const LabelsAndBins& axis) const;
 
+    int PDG() const {return fPdg;};
+
   protected:
     /// Helper for LoadFrom()
     FluxTimesNuclei(const std::unique_ptr<Spectrum> spec, const int pdg);
@@ -43,6 +45,8 @@ namespace ana
                     int pdg);
 
     int fPdg;
+
+    friend class EnsembleFluxTimesNuclei;
   };
 
   class EnsembleFluxTimesNuclei: public EnsembleSpectrum
@@ -52,6 +56,10 @@ namespace ana
     EnsembleFluxTimesNuclei(INuTruthEnsembleSource& src, const Binning& bins,
                             const NuTruthCut& fidvol, int pdg, const NuTruthWeight& wgt = kNuTruthUnweighted);
 
+    /// \brief Creates an ensemble flux times nuclei for "data" from an input \ref Spectrum
+    //         which is replicated nUniverse  times from the multiverse which it adopts.
+    static EnsembleFluxTimesNuclei ReplicatedData(const FluxTimesNuclei& spec, const FitMultiverse* multiverse);
+
     TH1D* ToTH1(double pot,
                 Color_t col = kBlack,
                 Style_t style = kSolid,
@@ -60,11 +68,15 @@ namespace ana
     void SaveTo(TDirectory* dir, const std::string& name) const;
 
     static std::unique_ptr<EnsembleFluxTimesNuclei> LoadFrom(TDirectory* dir, const std::string& name);
+    FluxTimesNuclei Nominal() const {return Universe(0);}
+    FluxTimesNuclei Universe(unsigned int i) const{return FluxTimesNuclei(std::make_unique<Spectrum>(EnsembleSpectrum::Universe(i)), fPdg);};
 
     /// Convert an \ref EnsembleFluxTimesNuclei into a \ref EnsembleSpectrum where every bin within
     /// a given universe is the integral of the \ref EnsembleFluxTimesNuclei, useful for dividing
     /// out flux in cross section measurement
     EnsembleFluxTimesNuclei MakeTotalFlux(const LabelsAndBins& axis) const;
+
+    int PDG() const {return fPdg;};
 
   protected:
     /// Helper for LoadFrom()

@@ -174,6 +174,14 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  EnsembleFluxTimesNuclei EnsembleFluxTimesNuclei::ReplicatedData(const FluxTimesNuclei& spec,
+                                                                  const FitMultiverse* multiverse)
+  {
+    return EnsembleFluxTimesNuclei(std::make_unique<EnsembleSpectrum>(EnsembleSpectrum::ReplicatedData(spec, multiverse)), spec.PDG());
+  }
+
+
+  //----------------------------------------------------------------------
   TH1D* EnsembleFluxTimesNuclei::ToTH1(double pot,
                                        Color_t col,
                                        Style_t style,
