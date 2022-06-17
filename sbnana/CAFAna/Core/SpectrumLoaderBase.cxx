@@ -265,6 +265,24 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const ParticleVar& var,
+                                       const SpillCut& spillcut,
+                                       const ParticleCut& particlecut,
+                                       const SystShifts& shift,
+                                       const ParticleVar& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fParticleHistDefs[spillcut][shift][particlecut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::RemoveSpectrum(Spectrum* spect)
   {
     fHistDefs.Erase(spect);
@@ -346,4 +364,7 @@ namespace ana
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<Var, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::VarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
 
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SpillVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::SpillVarOrMultiVar, SpectrumLoaderBase::SpectList>>>;
+
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<ParticleCut, SpectrumLoaderBase::IDMap<ParticleVar, SpectrumLoaderBase::IDMap<ParticleVar, SpectrumLoaderBase::SpectList>>>>>;
+
 } // namespace

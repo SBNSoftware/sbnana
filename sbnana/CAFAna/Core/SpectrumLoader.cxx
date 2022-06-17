@@ -242,7 +242,6 @@ namespace ana
       }
     }
 
-
     for(auto& spillcutdef: fHistDefs){
       const SpillCut& spillcut = spillcutdef.first;
 
@@ -340,6 +339,64 @@ namespace ana
         } // end for shiftdef
       } // end for slc
     } // end for spillcutdef
+
+    for(auto& spillcutdef: fParticleHistDefs){
+      const SpillCut& spillcut = spillcutdef.first;
+
+      const bool spillpass = spillcut(sr); // nomSpillCutCache.Get(spillcut, sr);
+      // Cut failed, skip all the histograms that depended on it
+      if(!spillpass) continue;
+
+      for(caf::SRParticleProxy& prt: sr->true_particles){
+
+        // Some shifts only adjust the weight, so they're effectively nominal,
+        // but aren't grouped with the other nominal histograms. Keep track of
+        // the results for nominals in these caches to speed those systs up.
+        CutVarCache<bool, ParticleCut, caf::SRParticleProxy> nomCutCache;
+        CutVarCache<double, ParticleVar, caf::SRParticleProxy> nomWeiCache;
+        CutVarCache<double, ParticleVar, caf::SRParticleProxy> nomVarCache;
+
+        for(auto& shiftdef: spillcutdef.second){
+          for(auto& cutdef: shiftdef.second){
+            const ParticleCut& cut = cutdef.first;
+
+            const bool pass = nomCutCache.Get(cut, &prt);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            for(auto& weidef: cutdef.second){
+              const ParticleVar& weivar = weidef.first;
+
+              double wei = nomWeiCache.Get(weivar, &prt);
+
+              if(wei == 0) continue;
+
+              for(auto& vardef: weidef.second){
+                const ParticleVar& var = vardef.first.GetVar();
+
+                const double val = nomVarCache.Get(var, &prt);
+
+                if(std::isnan(val) || std::isinf(val)){
+                  std::cerr << "Warning: Bad value: " << val
+                            << " returned from a Var. The input variable(s) could "
+                            << "be NaN in the CAF, or perhaps your "
+                            << "Var code computed 0/0?";
+                  std::cout << " Not filling into this histogram for this particle." << std::endl;
+                  continue;
+                }
+
+                for(Spectrum* s: vardef.second.spects) s->Fill(val, wei);
+
+              } // end for vardef
+            } // end for weidef
+          } // end for cutdef
+
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+	  //          caf::SRProxySystController::Rollback();
+        } // end for shiftdef
+      } // end for prt
+    } // end for spillcutdef
   }
 
   //----------------------------------------------------------------------
@@ -378,6 +435,21 @@ namespace ana
           for(Spectrum* s: spillvardef.second.spects){
             s->fPOT += fPOT;
             s->fLivetime += fNReadouts;
+          }
+        }
+      }
+    }
+
+    for(auto& shiftdef: fParticleHistDefs){
+      for(auto& spillcutdef: shiftdef.second){
+        for(auto& cutdef: spillcutdef.second){
+          for(auto& weidef: cutdef.second){
+            for(auto& vardef: weidef.second){
+              for(Spectrum* s: vardef.second.spects){
+                s->fPOT += fPOT;
+                s->fLivetime += fNReadouts;
+              }
+            }
           }
         }
       }

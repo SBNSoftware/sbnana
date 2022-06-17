@@ -66,6 +66,19 @@ namespace ana
   //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& label, const Binning& bins,
                      SpectrumLoaderBase& loader,
+                     const ParticleVar& var,
+                     const SpillCut& spillcut,
+                     const ParticleCut& particlecut,
+                     const SystShifts& shift,
+                     const ParticleVar& wei)
+    : Spectrum(label, bins)
+  {
+    loader.AddSpectrum(*this, var, spillcut, particlecut, shift, wei);
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, const Binning& bins,
+                     SpectrumLoaderBase& loader,
                      const MultiVar& var,
                      const SpillCut& spillcut,
                      const Cut& cut,
@@ -169,6 +182,19 @@ namespace ana
 
   //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+                     const Binning& binsx, const ParticleVar& varx,
+                     const Binning& binsy, const ParticleVar& vary,
+                     const SpillCut& spillcut,
+                     const ParticleCut& particlecut,
+                     const SystShifts& shift,
+                     const ParticleVar& wei)
+    : Spectrum(label, "", loader, binsx, varx, binsy, vary, spillcut, particlecut, shift, wei)
+  {
+    // TODO do we want this variant when there's one with a labelY just below?
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, SpectrumLoaderBase& loader,
                      const Binning& binsx, const MultiVar& varx,
                      const Binning& binsy, const MultiVar& vary,
                      const SpillCut& spillcut,
@@ -224,6 +250,23 @@ namespace ana
     Var multiDVar = Var2D(varx, binsx, vary, binsy);
 
     loader.AddSpectrum(*this, multiDVar, spillcut, cut, shift, wei);
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& xLabel,
+                     const std::string& yLabel,
+                     SpectrumLoaderBase& loader,
+                     const Binning& binsx, const ParticleVar& varx,
+                     const Binning& binsy, const ParticleVar& vary,
+                     const SpillCut& spillcut,
+		     const ParticleCut& particlecut,
+                     const SystShifts& shift,
+                     const ParticleVar& wei)
+    : Spectrum({xLabel, yLabel}, {binsx, binsy})
+  {
+    ParticleVar multiDVar = Var2D(varx, binsx, vary, binsy);
+
+    loader.AddSpectrum(*this, multiDVar, spillcut, particlecut, shift, wei);
   }
 
   //----------------------------------------------------------------------

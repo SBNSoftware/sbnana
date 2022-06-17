@@ -60,6 +60,14 @@ namespace ana
              const SpillCut& cut,
              const SpillVar& wei = kSpillUnweighted);
 
+    Spectrum(const std::string& label, const Binning& bins,
+             SpectrumLoaderBase& loader,
+             const ParticleVar& var,
+             const SpillCut& spillcut,
+             const ParticleCut& particlecut,
+             const SystShifts& shift = kNoShift,
+             const ParticleVar& wei = kParticleUnweighted);
+
     /// The only \ref MultiVar variant available
     Spectrum(const std::string& label, const Binning& bins,
              SpectrumLoaderBase& loader,
@@ -123,6 +131,15 @@ namespace ana
              const SpillCut& spillcut,
              const SpillVar& wei = kSpillUnweighted);
 
+    /// 2D Spectrum of two ParticleVars
+    Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+             const Binning& binsx, const ParticleVar& varx,
+             const Binning& binsy, const ParticleVar& vary,
+             const SpillCut& spillcut,
+             const ParticleCut& particlecut,
+             const SystShifts& shift = kNoShift,
+             const ParticleVar& wei = kParticleUnweighted);
+
     /// 2D Spectrum of two MultiVars
     Spectrum(const std::string& label, SpectrumLoaderBase& loader,
              const Binning& binsx, const MultiVar& varx,
@@ -165,6 +182,16 @@ namespace ana
              const Binning& binsy, const SpillVar& vary,
              const SpillCut& spillcut,
              const SpillVar& wei = kSpillUnweighted);
+
+    Spectrum(const std::string& xLabel,
+             const std::string& yLabel,
+             SpectrumLoaderBase& loader,
+             const Binning& binsx, const ParticleVar& varx,
+             const Binning& binsy, const ParticleVar& vary,
+             const SpillCut& spillcut,
+	     const ParticleCut& particlecut,
+             const SystShifts& shift = kNoShift,
+             const ParticleVar& wei = kParticleUnweighted);
 
     Spectrum(const std::string& xLabel,
              const std::string& yLabel,

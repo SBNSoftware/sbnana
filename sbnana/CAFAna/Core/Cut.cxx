@@ -71,6 +71,7 @@ namespace ana
   // Make sure all versions get generated
   template Cut operator&&<caf::SRSliceProxy>(const Cut& a, const Cut& b);
   template SpillCut operator&&<caf::SRSpillProxy>(const SpillCut& a, const SpillCut& b);
+  template ParticleCut operator&&<caf::SRParticleProxy>(const ParticleCut& a, const ParticleCut& b);
 
   //----------------------------------------------------------------------
   template<class T> _Cut<T> operator||(const _Cut<T>& a, const _Cut<T>& b)
@@ -95,6 +96,7 @@ namespace ana
   // Make sure all versions get generated
   template Cut operator||<caf::SRSliceProxy>(const Cut& a, const Cut& b);
   template SpillCut operator||<caf::SRSpillProxy>(const SpillCut& a, const SpillCut& b);
+  template ParticleCut operator||<caf::SRParticleProxy>(const ParticleCut& a, const ParticleCut& b);
 
   //----------------------------------------------------------------------
   template<class T> _Cut<T> operator!(const _Cut<T>& a)
@@ -114,6 +116,7 @@ namespace ana
   // Make sure all versions get generated
   template Cut operator!<caf::SRSliceProxy>(const Cut& a);
   template SpillCut operator!<caf::SRSpillProxy>(const SpillCut& a);
+  template ParticleCut operator!<caf::SRParticleProxy>(const ParticleCut& a);
 
 
   //----------------------------------------------------------------------
@@ -194,7 +197,8 @@ namespace ana
   // Make sure all three versions get generated
   template class _Cut<caf::SRSpillProxy>;
   template class _Cut<caf::SRSliceProxy>;
-
+  template class _Cut<caf::SRParticleProxy>;
+ 
   template<class T> int _Cut<T>::fgNextID = 0;
 
   // explicitly instantiate the templates for the types we know we have

@@ -97,6 +97,7 @@ namespace ana
   /// \brief Equivalent of \ref Cut acting on \ref caf::SRSpill. For use in
   /// spill-by-spill data quality cuts
   typedef _Cut<caf::SRSpillProxy> SpillCut;
+  typedef _Cut<caf::SRParticleProxy> ParticleCut;
 
   /// \brief Cut designed to be used over the nuTree, ie all neutrinos, not
   /// just those that got slices.
@@ -127,4 +128,7 @@ namespace ana
 
   /// The simplest possible cut: pass everything, used as a default
   const SpillCut kNoSpillCut([](const caf::SRSpillProxy*){return true;});
+
+  /// The simplest possible cut: pass everything, used as a default
+  const ParticleCut kNoParticleCut([](const caf::SRParticleProxy*){return true;});
 } // namespace

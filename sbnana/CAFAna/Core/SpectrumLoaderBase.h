@@ -72,6 +72,14 @@ namespace ana
                              const SpillCut& cut,
                              const SpillVar& wei = kSpillUnweighted);
 
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const ParticleVar& var,
+                             const SpillCut& spillcut,
+			     const ParticleCut& particlecut,
+                             const SystShifts& shift,
+                             const ParticleVar& wei = kParticleUnweighted);
+
     /// For use by the constructors of \ref ReweightableSpectrum subclasses
     virtual void AddReweightableSpectrum(ReweightableSpectrum& spect,
                                          const Var& var,
@@ -208,6 +216,7 @@ namespace ana
 
     typedef _VarOrMultiVar<caf::SRSliceProxy> VarOrMultiVar;
     typedef _VarOrMultiVar<caf::SRSpillProxy> SpillVarOrMultiVar;
+    typedef _VarOrMultiVar<caf::SRParticleProxy> ParticleVarOrMultiVar;
 
     /// \brief All the spectra that need to be filled
     ///
@@ -215,6 +224,8 @@ namespace ana
     IDMap<SpillCut, IDMap<SystShifts, IDMap<Cut, IDMap<Var, IDMap<VarOrMultiVar, SpectList>>>>> fHistDefs;
     /// [spillcut][spillwei][spillvar]
     IDMap<SpillCut, IDMap<SpillVar, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
+    /// [spillcut][shift][particlecut][wei][var]
+    IDMap<SpillCut, IDMap<SystShifts, IDMap<ParticleCut, IDMap<ParticleVar, IDMap<ParticleVarOrMultiVar, SpectList>>>>> fParticleHistDefs;
   };
 
   /// \brief Dummy loader that doesn't load any files
@@ -239,6 +250,13 @@ namespace ana
                      const Cut& cut,
                      const SystShifts& shift,
                      const Var& wei = kUnweighted) override {}
+
+    void AddSpectrum(Spectrum& spect,
+                     const ParticleVar& var,
+                     const SpillCut& spillcut,
+		     const ParticleCut& particlecut,
+                     const SystShifts& shift,
+                     const ParticleVar& wei = kParticleUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
                      const SpillVar& var,

@@ -75,6 +75,9 @@ namespace ana
   /// \brief Equivalent of \ref Var acting on \ref caf::SRSpill
   typedef _Var<caf::SRSpillProxy> SpillVar;
 
+  /// \brief Equivalent of \ref Var acting on \ref caf::SRTrueParticle
+  typedef _Var<caf::SRParticleProxy> ParticleVar;
+
   /// \brief For Vars where literally all you need is a single CAF variable
   ///
   /// eg Var myVar = SIMPLEVAR(my.var.str);
@@ -83,10 +86,14 @@ namespace ana
 
 #define SIMPLESPILLVAR(CAFNAME) SpillVar([](const caf::SRSpillProxy* sr) -> double {return sr->CAFNAME;})
 
+#define SIMPLEPARTICLEVAR(CAFNAME) ParticleVar([](const caf::SRParticleProxy* sr) -> double {return sr->CAFNAME;})
+
   /// The simplest possible Var, always 1. Used as a default weight.
   const Var kUnweighted([](const caf::SRSliceProxy*){return 1;});
 
   const SpillVar kSpillUnweighted([](const caf::SRSpillProxy*){return 1;});
+
+  const ParticleVar kParticleUnweighted([](const caf::SRParticleProxy*){return 1;});
 
   /// \brief Variable formed from two input variables
   ///

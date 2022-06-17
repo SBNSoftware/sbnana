@@ -124,9 +124,11 @@ namespace ana
   // explicitly instantiate the template for the types we know we have
   template Var Var2D(const Var&, const Binning&, const Var&, const Binning&);
   template SpillVar Var2D(const SpillVar&, const Binning&, const SpillVar&, const Binning&);
+  template ParticleVar Var2D(const ParticleVar&, const Binning&, const ParticleVar&, const Binning&);
 
   template Var Var2D(const Var&, int, double, double, const Var&, int, double, double);
   template SpillVar Var2D(const SpillVar&, int, double, double, const SpillVar&, int, double, double);
+  template ParticleVar Var2D(const ParticleVar&, int, double, double, const ParticleVar&, int, double, double);
 
   //----------------------------------------------------------------------
   template<class T> _Var<T>
@@ -263,6 +265,7 @@ namespace ana
   // explicitly instantiate the templates for the types we know we have
   template class _Var<caf::SRSpillProxy>;
   template class _Var<caf::SRSliceProxy>;
+  template class _Var<caf::SRParticleProxy>;
 
   template<class T> int _Var<T>::fgNextID = 0;
 
@@ -274,4 +277,8 @@ namespace ana
   template SpillVar operator/(const SpillVar&, const SpillVar&);
   template SpillVar operator+(const SpillVar&, const SpillVar&);
   template SpillVar operator-(const SpillVar&, const SpillVar&);
+  template ParticleVar operator*(const ParticleVar&, const ParticleVar&);
+  template ParticleVar operator/(const ParticleVar&, const ParticleVar&);
+  template ParticleVar operator+(const ParticleVar&, const ParticleVar&);
+  template ParticleVar operator-(const ParticleVar&, const ParticleVar&);
 }
