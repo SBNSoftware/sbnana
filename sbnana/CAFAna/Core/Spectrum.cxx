@@ -237,7 +237,7 @@ namespace ana
                      const SystShifts& shift,
                      const Var& wei,
 		     ESparse sparse)
-    : Spectrum(xAxis.GetLabels()[0], loader,
+    : Spectrum(xAxis.GetLabels()[0]+"_vs_"+yAxis.GetLabels()[0]+"_vs_"+zAxis.GetLabels()[0], loader,
                xAxis.GetBinnings()[0], xAxis.GetVars()[0],
                yAxis.GetBinnings()[0], yAxis.GetVars()[0],
                zAxis.GetBinnings()[0], zAxis.GetVars()[0],
