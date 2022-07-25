@@ -107,15 +107,10 @@ namespace ana
 
     const int Nfiles = NFiles();
 
-    Progress* prog = 0;
+    Progress prog(TString::Format("Filling from %d files matching '%s'", Nfiles, fWildcard.c_str()).Data());
     
     TFile fout(fOutfile.c_str(), "RECREATE");
-    TTree* trOut = new TTree("recTree", "recTree");
-    {
-      //      FloatingExceptionOnNaN fpnan(false);
-      caf::StandardRecord dummy;
-      trOut->Branch("rec", &dummy);
-    }
+    TTree* trOut = 0; // created in first call to HandleFile()
 
     TH1* hPOTOut = new TH1F("TotalPOT", "", 1, 0, 1);
     TH1* hEventsOut = new TH1F("TotalEvents", "", 1, 0, 1);
@@ -124,8 +119,6 @@ namespace ana
 
     std::map<std::string, std::string> meta;
     std::set<std::string> meta_mask;
-
-    caf::StandardRecord* oldsr = 0;
 
     long nRecSeen = 0;
     long nRecPassed = 0;
@@ -136,12 +129,11 @@ namespace ana
 
       assert(!f->IsZombie());
 
-      TH1* hPOT = (TH1*)f->Get("TotalPOT");
+      fnames.push_back(f->GetName());
 
+      TH1* hPOT = (TH1*)f->Get("TotalPOT");
       assert(hPOT);
       hPOTOut->Add(hPOT);
-
-      fnames.push_back(f->GetName());
 
       TDirectory* meta_dir = (TDirectory*)f->Get("metadata");
       assert(meta_dir);
@@ -151,91 +143,13 @@ namespace ana
       assert(hEvents);
       hEventsOut->Add(hEvents);
 
-      TTree* recTree = (TTree*)f->Get("recTree");
-      assert(recTree);
+      HandleFile(f, trOut,
+                 Nfiles == 1 ? &prog : 0,
+                 nRecSeen, nRecPassed);
 
-      // Use this one for assessing cuts etc
-      caf::Proxy<caf::StandardRecord> srProxy(0, recTree, "rec", 0, 0);
+      if(fileIdx == 0) CopyGlobalTree(f, &fout);
 
-      // And if they pass load into this one for writing out
-      caf::StandardRecord* sr = 0;
-      recTree->SetBranchAddress("rec", &sr);
-
-      const int Nentries = recTree->GetEntries();
-      for(int n = 0; n < Nentries; ++n){
-        ++nRecSeen;
-        recTree->LoadTree(n);
-
-        // Apply EventList cut if it's been enabled
-        if(!fEventList.empty() &&
-           !fEventList.count(std::make_tuple(srProxy.hdr.run,
-                                             srProxy.hdr.subrun,
-                                             srProxy.hdr.evt))) continue;
-
-        /// Do we need to include the event? Either based on the selection...
-        const bool passesSpillCut = !fSpillCut || (*fSpillCut)(&srProxy);
-        // Or if it carries POT or spill counting information
-        if(passesSpillCut || srProxy.hdr.pot > 0 || srProxy.hdr.ngenevt > 0){
-          recTree->GetEntry(n);
-
-          if(sr != oldsr){
-            trOut->SetBranchAddress("rec", &sr);
-            oldsr = sr;
-          }
-
-          if(!passesSpillCut){
-            // We're only keeping this one for the exposure info
-            Huskify(sr);
-            trOut->Fill();
-            continue;
-          }
-          // Otherwise, need to proceed to keep/reject individual slices
-
-          std::vector<int> tocut;
-          for(unsigned int i = 0; i < srProxy.slc.size(); ++i){
-            if(fSliceCut && !(*fSliceCut)(&srProxy.slc[i])) tocut.push_back(i);
-          }
-
-          // Remove slices in reverse order so that the indices remain valid
-          for(auto it = tocut.rbegin(); it != tocut.rend(); ++it){
-            sr->slc.erase(sr->slc.begin() + *it);
-          }
-
-          // Apply any additional reduction steps
-          for(const auto& f: fReductionFuncs) f(sr);
-          // This is kind of problematic since the proxy and actual record
-          // could be out of sync. Let's just disable this option for now.
-          //          for(const auto & f: fReductionFuncsWithProxy) f(sr, &srProxy);
-
-          ++nRecPassed;
-          trOut->Fill();
-        }
-
-        if(Nfiles >= 0 && !prog) prog = new Progress(TString::Format("Filling from %d files matching '%s'", Nfiles, fWildcard.c_str()).Data());
-
-        if(n%100 == 0 && Nfiles == 1 && prog)
-          prog->SetProgress(double(n)/Nentries);
-      } // end for n
-
-      if(fileIdx == 0){
-        TTree* globalIn = (TTree*)f->Get("globalTree");
-        if(globalIn){
-          // Copy globalTree verbatim from input to output
-          caf::SRGlobal global;
-          caf::SRGlobal* pglobal = &global;
-          globalIn->SetBranchAddress("global", &pglobal);
-          fout.cd();
-          TTree globalOut("globalTree", "globalTree");
-          globalOut.Branch("global", "caf::SRGlobal", &global);
-          assert(globalIn->GetEntries() == 1);
-          // TODO check that the globalTree is the same in every file
-          globalIn->GetEntry(0);
-          globalOut.Fill();
-          globalOut.Write();
-        }
-      }
-
-      if(prog) prog->SetProgress((fileIdx+1.)/Nfiles);
+      prog.SetProgress((fileIdx+1.)/Nfiles);
     } // end while GetNextFile
 
     fout.cd();
@@ -248,13 +162,108 @@ namespace ana
 
     fout.Close();
 
-    if(prog){
-      prog->Done();
-      delete prog;
-    }
+    prog.Done();
 
     std::cout << "Passed " << nRecPassed << " / " << nRecSeen << " records";
     std::cout << std::endl;
+  }
+
+  //----------------------------------------------------------------------
+  void FileReducer::HandleFile(TFile* f, TTree*& trOut, Progress* prog,
+                               long& nRecSeen, long& nRecPassed)
+  {
+    TTree* recTree = (TTree*)f->Get("recTree");
+    assert(recTree);
+
+    if(!trOut){
+      trOut = new TTree("recTree", "recTree");
+      //      FloatingExceptionOnNaN fpnan(false);
+      caf::StandardRecord dummy;
+      trOut->Branch("rec", &dummy);
+    }
+
+    // Use this one for assessing cuts etc
+    caf::Proxy<caf::StandardRecord> srProxy(0, recTree, "rec", 0, 0);
+
+    // And if they pass load into this one for writing out
+    caf::StandardRecord* sr = 0;
+    recTree->SetBranchAddress("rec", &sr);
+
+    caf::StandardRecord* oldsr = 0;
+
+    const int Nentries = recTree->GetEntries();
+    for(int n = 0; n < Nentries; ++n){
+      ++nRecSeen;
+      recTree->LoadTree(n);
+
+      // Apply EventList cut if it's been enabled
+      if(!fEventList.empty() &&
+         !fEventList.count(std::make_tuple(srProxy.hdr.run,
+                                           srProxy.hdr.subrun,
+                                           srProxy.hdr.evt))) continue;
+
+      /// Do we need to include the event? Either based on the selection...
+      const bool passesSpillCut = !fSpillCut || (*fSpillCut)(&srProxy);
+      // Or if it carries POT or spill counting information
+      if(passesSpillCut || srProxy.hdr.pot > 0 || srProxy.hdr.ngenevt > 0){
+        recTree->GetEntry(n);
+
+        if(sr != oldsr){
+          trOut->SetBranchAddress("rec", &sr);
+          oldsr = sr;
+        }
+
+        if(!passesSpillCut){
+          // We're only keeping this one for the exposure info
+          Huskify(sr);
+          trOut->Fill();
+          continue;
+        }
+        // Otherwise, need to proceed to keep/reject individual slices
+
+        std::vector<int> tocut;
+        for(unsigned int i = 0; i < srProxy.slc.size(); ++i){
+          if(fSliceCut && !(*fSliceCut)(&srProxy.slc[i])) tocut.push_back(i);
+        }
+
+        // Remove slices in reverse order so that the indices remain valid
+        for(auto it = tocut.rbegin(); it != tocut.rend(); ++it){
+          sr->slc.erase(sr->slc.begin() + *it);
+        }
+
+        // Apply any additional reduction steps
+        for(const auto& f: fReductionFuncs) f(sr);
+        // This is kind of problematic since the proxy and actual record
+        // could be out of sync. Let's just disable this option for now.
+        //          for(const auto & f: fReductionFuncsWithProxy) f(sr, &srProxy);
+
+        ++nRecPassed;
+        trOut->Fill();
+      }
+
+      // prog won't be passed if the caller doesn't want per-event updates
+      if(n%100 == 0 && prog) prog->SetProgress(double(n)/Nentries);
+    } // end for n
+  }
+
+  //----------------------------------------------------------------------
+  void FileReducer::CopyGlobalTree(TFile* fin, TFile* fout)
+  {
+    TTree* globalIn = (TTree*)fin->Get("globalTree");
+    if(!globalIn) return;
+
+    // Copy globalTree verbatim from input to output
+    caf::SRGlobal global;
+    caf::SRGlobal* pglobal = &global;
+    globalIn->SetBranchAddress("global", &pglobal);
+    fout->cd();
+    TTree globalOut("globalTree", "globalTree");
+    globalOut.Branch("global", "caf::SRGlobal", &global);
+    assert(globalIn->GetEntries() == 1);
+    // TODO check that the globalTree is the same in every file
+    globalIn->GetEntry(0);
+    globalOut.Fill();
+    globalOut.Write();
   }
 
   //----------------------------------------------------------------------
