@@ -175,6 +175,33 @@ namespace ana
     TTree* recTree = (TTree*)f->Get("recTree");
     assert(recTree);
 
+    const caf::CAFType type = caf::GetCAFType(0, recTree);
+
+    if(trOut){
+      const caf::CAFType outtype = caf::GetCAFType(0, trOut);
+      if(type != outtype){
+        std::cerr << "FileReducer: Error: dataset contains mixed CAF types (flat vs nested)" << std::endl;
+        abort();
+      }
+    }
+
+    if(type == caf::kNested) HandleNestedTree(recTree, trOut, prog,
+                                              nRecSeen, nRecPassed);
+    else if(type == caf::kFlatSingleTree) HandleFlatTree(recTree, trOut, prog,
+                                                         nRecSeen, nRecPassed);
+
+    else{
+      std::cerr << "FileReducer: Error: Unrecognized file type: "
+                << f->GetName() << std::endl;
+      abort();
+    }
+  }
+
+  //----------------------------------------------------------------------
+  void FileReducer::HandleNestedTree(TTree* recTree, TTree*& trOut,
+                                     Progress* prog,
+                                     long& nRecSeen, long& nRecPassed)
+  {
     if(!trOut){
       trOut = new TTree("recTree", "recTree");
       //      FloatingExceptionOnNaN fpnan(false);
@@ -244,6 +271,36 @@ namespace ana
       // prog won't be passed if the caller doesn't want per-event updates
       if(n%100 == 0 && prog) prog->SetProgress(double(n)/Nentries);
     } // end for n
+  }
+
+  //----------------------------------------------------------------------
+  void FileReducer::HandleFlatTree(TTree* recTree, TTree*& trOut,
+                                   Progress* prog,
+                                   long& nRecSeen, long& nRecPassed)
+  {
+    if(!fEventList.empty()){
+      std::cerr << "FileReducer: Event list not supported for FlatCAFs (yet)" << std::endl;
+      abort();
+    }
+
+    if(fSpillCut){
+      std::cerr << "FileReducer: Spill cuts not supported for FlatCAFs" << std::endl;
+      abort();
+    }
+
+    if(fSliceCut){
+      std::cerr << "FileReducer: Slice cuts not supported for FlatCAFs" << std::endl;
+      abort();
+    }
+
+    if(!fReductionFuncs.empty()){
+      std::cerr << "FileReducer: Reduction functions not supported for FlatCAFs" << std::endl;
+      abort();
+    }
+
+
+    std::cerr << "FileReducer::HandleFlatTree() not implemented" << std::endl;
+    abort();
   }
 
   //----------------------------------------------------------------------

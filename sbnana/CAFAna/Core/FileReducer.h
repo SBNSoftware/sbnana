@@ -54,6 +54,12 @@ namespace ana
     void HandleFile(TFile* f, TTree*& trOut, Progress* prog,
                     long& nRecSeen, long& nRecPassed);
 
+    void HandleNestedTree(TTree* recTree, TTree*& trOut, Progress* prog,
+                          long& nRecSeen, long& nRecPassed);
+
+    void HandleFlatTree(TTree* recTree, TTree*& trOut, Progress* prog,
+                        long& nRecSeen, long& nRecPassed);
+
     void CopyGlobalTree(TFile* fin, TFile* fout);
 
     void UpdateMetadata(std::map<std::string, std::string>& meta,
