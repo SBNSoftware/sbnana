@@ -186,9 +186,11 @@ namespace ana
       }
     }
 
-    if(type == caf::kNested) HandleNestedTree(fout, recTree, trOut, prog,
+    if(type == caf::kNested) HandleNestedTree(fout, recTree, trOut,
+                                              prog,
                                               nRecSeen, nRecPassed);
-    else if(type == caf::kFlatSingleTree) HandleFlatTree(recTree, trOut, prog,
+    else if(type == caf::kFlatSingleTree) HandleFlatTree(fout, recTree, trOut,
+                                                         prog,
                                                          nRecSeen, nRecPassed);
 
     else{
@@ -277,7 +279,7 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void FileReducer::HandleFlatTree(TTree* recTree, TTree*& trOut,
+  void FileReducer::HandleFlatTree(TFile* fout, TTree* recTree, TTree*& trOut,
                                    Progress* prog,
                                    long& nRecSeen, long& nRecPassed)
   {
@@ -301,9 +303,19 @@ namespace ana
       abort();
     }
 
+    // Do the actual copy
+    if(!trOut){
+      fout->cd();
+      trOut = recTree->CloneTree();
+    }
+    else{
+      fout->cd();
+      recTree->CopyAddresses(trOut);
+      trOut->CopyEntries(recTree);
+    }
 
-    std::cerr << "FileReducer::HandleFlatTree() not implemented" << std::endl;
-    abort();
+    nRecSeen += recTree->GetEntries();
+    nRecPassed += recTree->GetEntries();
   }
 
   //----------------------------------------------------------------------

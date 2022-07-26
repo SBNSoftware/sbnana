@@ -58,7 +58,8 @@ namespace ana
                           Progress* prog,
                           long& nRecSeen, long& nRecPassed);
 
-    void HandleFlatTree(TTree* recTree, TTree*& trOut, Progress* prog,
+    void HandleFlatTree(TFile* fout, TTree* recTree, TTree*& trOut,
+                        Progress* prog,
                         long& nRecSeen, long& nRecPassed);
 
     void CopyGlobalTree(TFile* fin, TFile* fout);
