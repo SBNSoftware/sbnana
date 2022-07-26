@@ -95,7 +95,7 @@ namespace ana
   void FileReducer::Go()
   {
     //    FloatingExceptionOnNaN fpnan;
-    
+
     // Don't want overflow to happen. Set to 1 petabyte: effectively infinite.
     TTree::SetMaxTreeSize(1e15);
 
@@ -108,7 +108,7 @@ namespace ana
     const int Nfiles = NFiles();
 
     Progress prog(TString::Format("Filling from %d files matching '%s'", Nfiles, fWildcard.c_str()).Data());
-    
+
     TFile fout(fOutfile.c_str(), "RECREATE");
     TTree* trOut = 0; // created in first call to HandleFile()
 
@@ -124,30 +124,30 @@ namespace ana
     long nRecPassed = 0;
 
     int fileIdx = -1;
-    while(TFile* f = GetNextFile()){
+    while(TFile* fin = GetNextFile()){
       ++fileIdx;
 
-      assert(!f->IsZombie());
+      assert(!fin->IsZombie());
 
-      fnames.push_back(f->GetName());
+      fnames.push_back(fin->GetName());
 
-      TH1* hPOT = (TH1*)f->Get("TotalPOT");
+      TH1* hPOT = (TH1*)fin->Get("TotalPOT");
       assert(hPOT);
       hPOTOut->Add(hPOT);
 
-      TDirectory* meta_dir = (TDirectory*)f->Get("metadata");
+      TDirectory* meta_dir = (TDirectory*)fin->Get("metadata");
       assert(meta_dir);
       CombineMetadata(meta, GetCAFMetadata(meta_dir), meta_mask);
 
-      TH1* hEvents = (TH1*)f->Get("TotalEvents");
+      TH1* hEvents = (TH1*)fin->Get("TotalEvents");
       assert(hEvents);
       hEventsOut->Add(hEvents);
 
-      HandleFile(f, trOut,
+      HandleFile(fin, &fout, trOut,
                  Nfiles == 1 ? &prog : 0,
                  nRecSeen, nRecPassed);
 
-      if(fileIdx == 0) CopyGlobalTree(f, &fout);
+      if(fileIdx == 0) CopyGlobalTree(fin, &fout);
 
       prog.SetProgress((fileIdx+1.)/Nfiles);
     } // end while GetNextFile
@@ -169,10 +169,11 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void FileReducer::HandleFile(TFile* f, TTree*& trOut, Progress* prog,
+  void FileReducer::HandleFile(TFile* fin, TFile* fout, TTree*& trOut,
+                               Progress* prog,
                                long& nRecSeen, long& nRecPassed)
   {
-    TTree* recTree = (TTree*)f->Get("recTree");
+    TTree* recTree = (TTree*)fin->Get("recTree");
     assert(recTree);
 
     const caf::CAFType type = caf::GetCAFType(0, recTree);
@@ -185,24 +186,26 @@ namespace ana
       }
     }
 
-    if(type == caf::kNested) HandleNestedTree(recTree, trOut, prog,
+    if(type == caf::kNested) HandleNestedTree(fout, recTree, trOut, prog,
                                               nRecSeen, nRecPassed);
     else if(type == caf::kFlatSingleTree) HandleFlatTree(recTree, trOut, prog,
                                                          nRecSeen, nRecPassed);
 
     else{
       std::cerr << "FileReducer: Error: Unrecognized file type: "
-                << f->GetName() << std::endl;
+                << fin->GetName() << std::endl;
       abort();
     }
   }
 
   //----------------------------------------------------------------------
-  void FileReducer::HandleNestedTree(TTree* recTree, TTree*& trOut,
+  void FileReducer::HandleNestedTree(TFile* fout,
+                                     TTree* recTree, TTree*& trOut,
                                      Progress* prog,
                                      long& nRecSeen, long& nRecPassed)
   {
     if(!trOut){
+      fout->cd();
       trOut = new TTree("recTree", "recTree");
       //      FloatingExceptionOnNaN fpnan(false);
       caf::StandardRecord dummy;

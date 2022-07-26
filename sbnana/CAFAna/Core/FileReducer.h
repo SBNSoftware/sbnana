@@ -51,10 +51,11 @@ namespace ana
     virtual void Go() override;
 
   protected:
-    void HandleFile(TFile* f, TTree*& trOut, Progress* prog,
+    void HandleFile(TFile* fin, TFile* fout, TTree*& trOut, Progress* prog,
                     long& nRecSeen, long& nRecPassed);
 
-    void HandleNestedTree(TTree* recTree, TTree*& trOut, Progress* prog,
+    void HandleNestedTree(TFile* fout, TTree* recTree, TTree*& trOut,
+                          Progress* prog,
                           long& nRecSeen, long& nRecPassed);
 
     void HandleFlatTree(TTree* recTree, TTree*& trOut, Progress* prog,
