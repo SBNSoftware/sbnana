@@ -10,8 +10,7 @@ namespace ana
 {
   //----------------------------------------------------------------------
   class ShiftedSliceEnsembleSource:
-    public beta::PassthroughExposure<ISliceSink,
-                                     ISliceEnsembleSource>
+    public PassthroughExposure<ISliceSink, ISliceEnsembleSource>
   {
   public:
     ShiftedSliceEnsembleSource(ISliceSource& src,
@@ -113,7 +112,7 @@ namespace ana
   //----------------------------------------------------------------------
 
   template<class FromT, class ToT> VectorAdaptor<FromT, ToT>::
-  VectorAdaptor(beta::_IRecordSource<caf::Proxy<FromT>>& src,
+  VectorAdaptor(_IRecordSource<caf::Proxy<FromT>>& src,
                 Func_t vecGetter)
     : fVecGetter(vecGetter)
   {
@@ -125,13 +124,13 @@ namespace ana
   HandleRecord(const caf::Proxy<FromT>* rec, double weight)
   {
     for(const caf::Proxy<ToT>& to: fVecGetter(rec))
-      for(auto& sink: beta::_IRecordSource<caf::Proxy<ToT>>::fSinks)
+      for(auto& sink: _IRecordSource<caf::Proxy<ToT>>::fSinks)
         sink->HandleRecord(&to, weight);
   }
 
   //----------------------------------------------------------------------
   template<class FromT, class ToT> EnsembleVectorAdaptor<FromT, ToT>::
-  EnsembleVectorAdaptor(beta::_IRecordEnsembleSource<caf::Proxy<FromT>>& src,
+  EnsembleVectorAdaptor(_IRecordEnsembleSource<caf::Proxy<FromT>>& src,
                         Func_t vecGetter)
     : fSource(&src), fVecGetter(vecGetter)
   {
@@ -145,7 +144,7 @@ namespace ana
                      int universeId)
   {
     for(const caf::Proxy<ToT>& to: fVecGetter(rec))
-      for(auto& sink: beta::_IRecordEnsembleSource<caf::Proxy<ToT>>::fSinks)
+      for(auto& sink: _IRecordEnsembleSource<caf::Proxy<ToT>>::fSinks)
         sink->HandleSingleRecord(&to, weight, universeId);
   }
 
@@ -155,7 +154,7 @@ namespace ana
                  const std::vector<double>& weights)
   {
     for(const caf::Proxy<ToT>& to: fVecGetter(rec))
-      for(auto& sink: beta::_IRecordEnsembleSource<caf::Proxy<ToT>>::fSinks)
+      for(auto& sink: _IRecordEnsembleSource<caf::Proxy<ToT>>::fSinks)
         sink->HandleEnsemble(&to, weights);
   }
 

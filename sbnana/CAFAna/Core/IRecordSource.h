@@ -17,37 +17,37 @@ namespace ana
   //----------------------------------------------------------------------
   // Introduce some aliases so we can express ourselves more succinctly
 
-  using ISpillSource = beta::_IRecordSource<caf::SRSpillProxy>;
-  using ISliceSource = beta::_IRecordSource<caf::SRSliceProxy>;
-  using INuTruthSource = beta::_IRecordSource<caf::SRTrueInteractionProxy>;
+  using ISpillSource = _IRecordSource<caf::SRSpillProxy>;
+  using ISliceSource = _IRecordSource<caf::SRSliceProxy>;
+  using INuTruthSource = _IRecordSource<caf::SRTrueInteractionProxy>;
 
-  using ISpillEnsembleSource = beta::_IRecordEnsembleSource<caf::SRSpillProxy>;
-  using ISliceEnsembleSource = beta::_IRecordEnsembleSource<caf::SRSliceProxy>;
-  using INuTruthEnsembleSource = beta::_IRecordEnsembleSource<caf::SRTrueInteractionProxy>;
-
-  //----------------------------------------------------------------------
-
-  using ITrackSource = beta::_IRecordSource<caf::SRTrackProxy>;
-  using IShowerSource = beta::_IRecordSource<caf::SRShowerProxy>;
-  using IStubSource = beta::_IRecordSource<caf::SRStubProxy>;
+  using ISpillEnsembleSource = _IRecordEnsembleSource<caf::SRSpillProxy>;
+  using ISliceEnsembleSource = _IRecordEnsembleSource<caf::SRSliceProxy>;
+  using INuTruthEnsembleSource = _IRecordEnsembleSource<caf::SRTrueInteractionProxy>;
 
   //----------------------------------------------------------------------
 
-  using ITrackEnsembleSource = beta::_IRecordEnsembleSource<caf::SRTrackProxy>;
-  using IShowerEnsembleSource = beta::_IRecordEnsembleSource<caf::SRShowerProxy>;
-  using IStubEnsembleSource = beta::_IRecordEnsembleSource<caf::SRStubProxy>;
+  using ITrackSource = _IRecordSource<caf::SRTrackProxy>;
+  using IShowerSource = _IRecordSource<caf::SRShowerProxy>;
+  using IStubSource = _IRecordSource<caf::SRStubProxy>;
+
+  //----------------------------------------------------------------------
+
+  using ITrackEnsembleSource = _IRecordEnsembleSource<caf::SRTrackProxy>;
+  using IShowerEnsembleSource = _IRecordEnsembleSource<caf::SRShowerProxy>;
+  using IStubEnsembleSource = _IRecordEnsembleSource<caf::SRStubProxy>;
 
   //----------------------------------------------------------------------
 
   /// Helper class for implementing looping over slices, tracks, etc
   template<class FromT, class ToT> class VectorAdaptor:
-    public beta::PassthroughExposure<beta::_IRecordSink<caf::Proxy<FromT>>,
-                                     beta::_IRecordSource<caf::Proxy<ToT>>>
+    public PassthroughExposure<_IRecordSink<caf::Proxy<FromT>>,
+                               _IRecordSource<caf::Proxy<ToT>>>
   {
   public:
     typedef std::function<const caf::Proxy<std::vector<ToT>>&(const caf::Proxy<FromT>*)> Func_t;
 
-    VectorAdaptor(beta::_IRecordSource<caf::Proxy<FromT>>& src, Func_t vecGetter);
+    VectorAdaptor(_IRecordSource<caf::Proxy<FromT>>& src, Func_t vecGetter);
     virtual void HandleRecord(const caf::Proxy<FromT>* rec, double weight) override;
   protected:
     Func_t fVecGetter;
@@ -69,8 +69,8 @@ namespace ana
 
   //----------------------------------------------------------------------
 
-  template<> class beta::_IRecordSource<caf::SRSliceProxy>
-    : public beta::_IRecordSourceDefaultImpl<caf::SRSliceProxy>
+  template<> class _IRecordSource<caf::SRSliceProxy>
+    : public _IRecordSourceDefaultImpl<caf::SRSliceProxy>
   {
   public:
     // Weight-based ensembles are still supported
@@ -94,8 +94,8 @@ namespace ana
   //----------------------------------------------------------------------
 
   // Spill sources also provide a slice source (which loops over the slices)
-  template<> class beta::_IRecordSource<caf::SRSpillProxy>
-    : public beta::_IRecordSourceDefaultImpl<caf::SRSpillProxy>
+  template<> class _IRecordSource<caf::SRSpillProxy>
+    : public _IRecordSourceDefaultImpl<caf::SRSpillProxy>
   {
   public:
     ISliceSource& Slices() {return fSlices;}
@@ -110,11 +110,11 @@ namespace ana
 
   /// Helper class for implementing looping over slices, tracks, etc
   template<class FromT, class ToT> class EnsembleVectorAdaptor:
-    public beta::PassthroughExposure<beta::_IRecordEnsembleSink<caf::Proxy<FromT>>,
-                                     beta::_IRecordEnsembleSource<caf::Proxy<ToT>>>
+    public PassthroughExposure<_IRecordEnsembleSink<caf::Proxy<FromT>>,
+                               _IRecordEnsembleSource<caf::Proxy<ToT>>>
   {
   public:
-    using Source_t = beta::_IRecordEnsembleSource<caf::Proxy<FromT>>;
+    using Source_t = _IRecordEnsembleSource<caf::Proxy<FromT>>;
     using Func_t = std::function<const caf::Proxy<std::vector<ToT>>&(const caf::Proxy<FromT>*)>;
 
     EnsembleVectorAdaptor(Source_t& src, Func_t vecGetter);
@@ -138,8 +138,8 @@ namespace ana
   // Provide ability to get track / shower / stub sources from the reco branch
   // ensemble source.
 
-  template<> class beta::_IRecordEnsembleSource<caf::SRSliceProxy>
-    : public beta::_IRecordEnsembleSourceDefaultImpl<caf::SRSliceProxy>
+  template<> class _IRecordEnsembleSource<caf::SRSliceProxy>
+    : public _IRecordEnsembleSourceDefaultImpl<caf::SRSliceProxy>
   {
   public:
     ITrackEnsembleSource& Tracks() {return fTracks;}
@@ -154,8 +154,8 @@ namespace ana
 
   //----------------------------------------------------------------------
   // Spill sources also provide a slice source (which loops over the slices)
-  template<> class beta::_IRecordEnsembleSource<caf::SRSpillProxy>
-    : public beta::_IRecordEnsembleSourceDefaultImpl<caf::SRSpillProxy>
+  template<> class _IRecordEnsembleSource<caf::SRSpillProxy>
+    : public _IRecordEnsembleSourceDefaultImpl<caf::SRSpillProxy>
   {
   public:
     ISliceEnsembleSource& Slices() {return fSlices;}

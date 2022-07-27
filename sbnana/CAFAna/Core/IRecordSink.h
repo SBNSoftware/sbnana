@@ -6,9 +6,9 @@
 
 namespace ana
 {
-  using ISpillSink = beta::_IRecordSink<caf::SRSpillProxy>;
-  using ISliceSink = beta::_IRecordSink<caf::SRSliceProxy>;
+  using ISpillSink = _IRecordSink<caf::SRSpillProxy>;
+  using ISliceSink = _IRecordSink<caf::SRSliceProxy>;
 
-  using ISpillEnsembleSink = beta::_IRecordEnsembleSink<caf::SRSpillProxy>;
-  using ISliceEnsembleSink = beta::_IRecordEnsembleSink<caf::SRSliceProxy>;
+  using ISpillEnsembleSink = _IRecordEnsembleSink<caf::SRSpillProxy>;
+  using ISliceEnsembleSink = _IRecordEnsembleSink<caf::SRSliceProxy>;
 }

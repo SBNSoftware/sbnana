@@ -21,7 +21,7 @@ namespace ana
   /// need. They will register with this loader. Finally, calling \ref Go will
   /// cause all the spectra to be filled at once. After this the loader may not
   /// be used again.
-  class SpectrumLoader: public SpectrumLoaderBase, public beta::Passthrough<caf::SRSpillProxy>
+  class SpectrumLoader: public SpectrumLoaderBase, public Passthrough<caf::SRSpillProxy>
   {
   public:
     SpectrumLoader(const std::string& wildcard, int max = 0);
@@ -65,6 +65,6 @@ namespace ana
   static NullLoader kNullLoader;
 
 
-  static beta::NullSource<caf::SRSpillProxy> kNullSpillSource;
-  static beta::NullSource<caf::SRSliceProxy> kNullSliceSource;
+  static NullSource<caf::SRSpillProxy> kNullSpillSource;
+  static NullSource<caf::SRSliceProxy> kNullSliceSource;
 }

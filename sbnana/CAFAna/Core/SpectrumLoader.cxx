@@ -98,7 +98,7 @@ namespace ana
   {
     os << "digraph{" << std::endl;
     os << "comment = \"Render me with a command like: dot -Tpdf graph.dot > graph.pdf\"" << std::endl << std::endl;
-    beta::Passthrough<caf::SRSpillProxy>::PrintGraph(os);
+    Passthrough<caf::SRSpillProxy>::PrintGraph(os);
     os << "}";
   }
 

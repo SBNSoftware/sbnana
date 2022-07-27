@@ -19,7 +19,7 @@ namespace ana
 {
   //----------------------------------------------------------------------
   EnsembleReweightableSpectrum::
-  EnsembleReweightableSpectrum(beta::IValuePairEnsembleSource& src,
+  EnsembleReweightableSpectrum(IValuePairEnsembleSource& src,
                                const LabelsAndBins& recoAxis,
                                const LabelsAndBins& trueAxis)
     : EnsembleReweightableSpectrum(src.GetMultiverse(), recoAxis, trueAxis)

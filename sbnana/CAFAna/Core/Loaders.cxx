@@ -65,7 +65,7 @@ namespace ana
       return kNullLoader;
     }
     else{
-      static beta::NullSource<typename SrcT::Record_t> null;
+      static NullSource<typename SrcT::Record_t> null;
       return null;
     }
   }

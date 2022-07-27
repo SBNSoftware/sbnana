@@ -15,15 +15,15 @@ namespace ana
   template<class RecT> class _Var;
 
   /// %Spectrum with the value of a second variable, allowing for reweighting
-  class EnsembleReweightableSpectrum: public beta::IValuePairEnsembleSink
+  class EnsembleReweightableSpectrum: public IValuePairEnsembleSink
   {
   public:
-    EnsembleReweightableSpectrum(beta::IValuePairEnsembleSource& src,
+    EnsembleReweightableSpectrum(IValuePairEnsembleSource& src,
                                  const LabelsAndBins& recoAxis,
                                  const LabelsAndBins& trueAxis);
 
     template<class RecT>
-    EnsembleReweightableSpectrum(beta::_IRecordEnsembleSource<RecT>& src,
+    EnsembleReweightableSpectrum(_IRecordEnsembleSource<RecT>& src,
                                  const _HistAxis<_Var<RecT>>& recoAxis,
                                  const _HistAxis<_Var<RecT>>& trueAxis)
       : EnsembleReweightableSpectrum(src.GetVars(recoAxis.GetVar1D(), trueAxis.GetVar1D()), recoAxis, trueAxis)

@@ -16,19 +16,19 @@ namespace ana
   class EnsembleRatio;
   class FitMultiverse;
 
-  class EnsembleSpectrum : public beta::IValueEnsembleSink
+  class EnsembleSpectrum : public IValueEnsembleSink
   {
   public:
     friend class EnsembleRatio;
 
     /// Construct an ensemble spectrum from a source of values and an axis
     /// definition
-    EnsembleSpectrum(beta::IValueEnsembleSource& src, const LabelsAndBins& axis);
+    EnsembleSpectrum(IValueEnsembleSource& src, const LabelsAndBins& axis);
 
     /// \brief Shorthand construction with a source of records and a HistAxis
     /// defining the Var to extract from those records.
     template<class RecT>
-    EnsembleSpectrum(beta::_IRecordEnsembleSource<RecT>& src,
+    EnsembleSpectrum(_IRecordEnsembleSource<RecT>& src,
                      const _HistAxis<_Var<RecT>>& axis)
       : EnsembleSpectrum(src[axis.GetVar1D()], axis)
     {
