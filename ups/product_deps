@@ -36,10 +36,10 @@ fwdir   product_dir scripts
 product          version
 sbnanaobj        v09_18_06
 #SAM tools?
-# HACK BECAUSE THE REGULAR CAFANACORE IS BEHIND ifdhc            v2_6_4
+ifdhc            v2_6_4
 # For CAFAna
 osclib           v00.17
-cafanacore       v02.00_value_source_alpha12
+cafanacore       v02.00
 # flux syst histograms etc
 sbndata		 v01_03
 
