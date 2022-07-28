@@ -45,16 +45,15 @@ void check_proxy(std::string fname, std::string fname2 = "", int N = -1)
   recTree->SetBranchAddress("rec", &sr);
 
   // And the other via proxy
-  long i;
-  caf::Proxy<caf::StandardRecord> srProxy(dir, tr, "rec", i, 0);
+  caf::Proxy<caf::StandardRecord> srProxy(tr, "rec");
 
   if(N < 0 || N > recTree->GetEntries()) N = recTree->GetEntries();
-  for(i = 0; i < N; ++i){
+  for(long i = 0; i < N; ++i){
     std::cout << i << " / " << N << std::endl;
 
     recTree->GetEntry(i);
 
-    if(type != caf::kFlatMultiTree) tr->LoadTree(i);
+    tr->LoadTree(i);
 
     srProxy.CheckEquals(*sr);
   }
