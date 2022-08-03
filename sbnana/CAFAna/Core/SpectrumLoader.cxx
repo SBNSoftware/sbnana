@@ -117,25 +117,8 @@ namespace ana
   {
     assert(!f->IsZombie());
 
-    // Test for multi (trees are inside a directory) or single (tree is at top
-    // level) tree cases.
-    TDirectory* dir = 0;
-    TTree* tr = 0;
-
-    TObject* obj = f->Get("recTree");
-    assert(obj); // Must exist in one form or the other
-
-    // It might seem like you could use GetObject() to do the type-checking
-    // directly, but that method seems to have a memory leak in the case that
-    // the types don't match.
-    if(obj->ClassName() == std::string("TTree")){
-      tr = (TTree*)obj;
-    }
-    else{
-      dir = (TDirectory*)obj;
-      tr = (TTree*)dir->Get("rec");
-      assert(tr);
-    }
+    TTree* tr = (TTree*)f->Get("recTree");
+    assert(tr);
 
     // We try to access this field for every record. It was only added to the
     // files in late 2021, and we don't want to render all earlier files
@@ -143,18 +126,15 @@ namespace ana
     // files have such a field (estimate mid-2022?)
     const bool has_husk = tr->GetLeaf("rec.hdr.husk");
 
-    const caf::CAFType type = caf::GetCAFType(dir, tr);
-
-    long n;
-    caf::SRSpillProxy sr(dir, tr, "rec", n, 0);
+    caf::SRSpillProxy sr(tr, "rec");
 
     //    FloatingExceptionOnNaN fpnan;
 
     long Nentries = tr->GetEntries();
     if (max_entries != 0 && max_entries < Nentries) Nentries = max_entries;
 
-    for(n = 0; n < Nentries; ++n){
-      if(type != caf::kFlatMultiTree) tr->LoadTree(n); // for all single-tree modes
+    for(long n = 0; n < Nentries; ++n){
+      tr->LoadTree(n);
 
       // If there is no husk field there is no concept of husk events
       if(!has_husk) sr.hdr.husk = false;
