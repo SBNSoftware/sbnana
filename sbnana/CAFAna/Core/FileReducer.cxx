@@ -155,7 +155,7 @@ namespace ana
       assert(recTree);
 
       // Use this one for assessing cuts etc
-      caf::Proxy<caf::StandardRecord> srProxy(0, recTree, "rec", 0, 0);
+      caf::Proxy<caf::StandardRecord> srProxy(recTree, "rec");
 
       // And if they pass load into this one for writing out
       caf::StandardRecord* sr = 0;
