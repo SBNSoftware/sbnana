@@ -45,7 +45,7 @@ const Var kIcarus202208MuonIdx([](const caf::SRSliceProxy* slc) -> int {
       return PTrackInd;
 });
 
-static bool proton_cut(const caf::SRTrackProxy& trk)
+static bool Icarus202208_proton_cut(const caf::SRTrackProxy& trk)
 {
   return trk.chi2pid[trk.bestplane].chi2_proton < 100;
 }
@@ -57,7 +57,7 @@ const Var kIcarus202208NumPions([](const caf::SRSliceProxy* slc)
   int muID = -1;
   if (idx >= 0) muID = slc->reco.trk.at(idx).pfp.id;
   for(auto& trk: slc->reco.trk) {
-    if(trk.pfp.id != muID && !proton_cut(trk) && trk.pfp.parent_is_primary)
+    if(trk.pfp.id != muID && !Icarus202208_proton_cut(trk) && trk.pfp.parent_is_primary)
       ++count;
   }
   return count;

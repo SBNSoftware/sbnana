@@ -2,12 +2,11 @@
 #include "sbnana/SBNAna/Cuts/NumuCutsIcarus202208.h"
 #include "sbnana/SBNAna/Vars/NumuVarsIcarus202208.h"
 
-#include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana {
 
-static bool contained(const caf::SRTrackProxy& trk)
+static bool Icarus202208contained(const caf::SRTrackProxy& trk)
 {
   return ((trk.end.x < -71.1 - 5 && trk.end.x > -369.33 + 5)
              || (trk.end.x > 71.1 + 5 && trk.end.x < 369.33 - 5))
@@ -38,12 +37,12 @@ const Cut kIcarus202208ContainedHadrons([](const caf::SRSliceProxy* slc){
   if (idx >= 0) muID = slc->reco.trk.at(idx).pfp.id;
   for(auto& trk: slc->reco.trk) {
     if(trk.pfp.id != muID && trk.pfp.parent_is_primary)
-      if(!contained(trk)) return false;
+      if(!Icarus202208contained(trk)) return false;
   }
   return true;
 });
 const Cut kIcarus202208ContainedMuon([](const caf::SRSliceProxy* slc){
-  return kIcarus202208FoundMuon(slc) && contained(slc->reco.trk.at(kIcarus202208MuonIdx(slc)));
+  return kIcarus202208FoundMuon(slc) && Icarus202208contained(slc->reco.trk.at(kIcarus202208MuonIdx(slc)));
 });
 const Cut kIcarus202208ContainedMuonAndHadrons = kIcarus202208ContainedMuon && kIcarus202208ContainedHadrons;
 const Cut kIcarus202208QELike = kIcarus202208NumuSelection && kIcarus202208NoPion && kIcarus202208ContainedHadrons;
