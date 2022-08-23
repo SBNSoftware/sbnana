@@ -30,14 +30,14 @@ namespace ana
                                  bool atslc, contained, maybe_muon_exiting, maybe_muon_contained;
 				 float chi2_proton, chi2_muon;
 
-   				 for(unsigned int trkidx = 0; trkidx < slc->reco.trk.size(); ++trkidx){
-     				   const caf::SRTrackProxy& trk = slc->reco.trk[trkidx];
-                                   if(trk.bestplane == -1) continue;
+   				 for(unsigned int trkidx = 0; trkidx < slc->reco.pfp.size(); ++trkidx){
+     				   const caf::SRTrackProxy& trk = slc->reco.pfp[trkidx].trk;
+                                   if(trk.bestplane == -1 || slc->reco.pfp[trkidx].trackScore < 0.5) continue;
 				   
 				   //atslc
   				   dist = sqrt((pow(trk.start.x - slc->vertex.x,2)) + (pow(trk.start.y - slc->vertex.y,2)) + (pow(trk.start.z  - slc->vertex.z,2)));
   				   atslc = dist < 10;
-     				   if(!atslc || !trk.pfp.parent_is_primary) continue;
+     				   if(!atslc || !slc->reco.pfp[trkidx].parent_is_primary) continue;
 
   				   //contained
   				   //contained = ( vol.xmin < trk.end.x && trk.end.x < vol.xmax && vol.ymin < trk.end.y && trk.end.y < vol.ymax && vol.zmin < trk.end.z && trk.end.z < vol.zmax);
@@ -76,7 +76,7 @@ namespace ana
       				 bool contained(false);
       
 			         if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
-			       	   auto const& ptrk = slc->reco.trk.at(kPrimaryMuonTrkIdx(slc));
+			       	   auto const& ptrk = slc->reco.pfp.at(kPrimaryMuonTrkIdx(slc)).trk;
 				   contained = ( (-199.15 + 10) < ptrk.end.x && ptrk.end.x < (199.15 - 10) && (-200. + 10) < ptrk.end.y && ptrk.end.y < (200. - 10) && (0.0 + 10) < ptrk.end.z && ptrk.end.z < (500. - 50));
 
 			 	   if(contained) recop = ptrk.rangeP.p_muon;
@@ -90,7 +90,7 @@ namespace ana
 			    float crttrktime(-5.f);
                             if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
                               int ptrkid = kPrimaryMuonTrkIdx(slc);
-                              const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+                              const caf::SRTrackProxy& ptrk = slc->reco.pfp[ptrkid].trk;
 			      crttrktime = ptrk.crthit.hit.time;
 			    }
          		    return crttrktime;
@@ -101,7 +101,7 @@ namespace ana
 			    float crttrkangle(-5.f);
                             if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
                               int ptrkid = kPrimaryMuonTrkIdx(slc);
-                              const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+                              const caf::SRTrackProxy& ptrk = slc->reco.pfp[ptrkid].trk;
 			      crttrkangle = ptrk.crttrack.angle;
 			    }
          		    return crttrkangle;
@@ -112,7 +112,7 @@ namespace ana
 			    float crttrkdist(-5.f);
                             if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
                               int ptrkid = kPrimaryMuonTrkIdx(slc);
-                              const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+                              const caf::SRTrackProxy& ptrk = slc->reco.pfp[ptrkid].trk;
 			      crttrkdist = ptrk.crthit.distance;
 			    }
          		    return crttrkdist;
@@ -128,7 +128,7 @@ namespace ana
 			    float ptrklen(-5.f);
                             if ( kPrimaryMuonTrkIdx(slc) >= 0 ){
                               int ptrkid = kPrimaryMuonTrkIdx(slc);
-                              const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+                              const caf::SRTrackProxy& ptrk = slc->reco.pfp[ptrkid].trk;
 			      ptrklen = ptrk.len;
 			    }
          		    return ptrklen;

@@ -10,9 +10,9 @@ const Var kLargestRecoShowerIdx(
       int bestIdx(-1);
       double maxEnergy(-1);
 
-      for (unsigned int i = 0; i < slc->reco.nshw; i++) {
-        auto const& shw = slc->reco.shw[i];
-        if (!shw.pfp.parent_is_primary)
+      for (unsigned int i = 0; i < slc->reco.npfp; i++) {
+        auto const& shw = slc->reco.pfp[i].shw;
+        if (!slc->reco.pfp[i].parent_is_primary || slc->reco.pfp[i].trackScore > 0.5)
           continue;
         if (shw.bestplane_energy > maxEnergy) {
           bestIdx = i;
@@ -27,7 +27,7 @@ const caf::SRShowerProxy* LargestRecoShower(const caf::SRSliceProxy* slc)
 {
   const int largestShwIdx = kLargestRecoShowerIdx(slc);
   if(largestShwIdx == -1) return 0;
-  return &slc->reco.shw[largestShwIdx];
+  return &slc->reco.pfp[largestShwIdx].shw;
 }
 
 // Currently assumes shw 0 is the primary
@@ -144,7 +144,8 @@ const Var kRecoShower_trackWidth(
 const Var kRecoShowers_EnergyCut(
     [](const caf::SRSliceProxy* slc) -> unsigned {
       unsigned int counter(0);
-      for (auto const& shw : slc->reco.shw) {
+      for (auto const& pfp : slc->reco.pfp) {
+	auto const& shw = pfp.shw;
         if (shw.bestplane_energy > 0.2f)
           ++counter;
       }
@@ -156,9 +157,9 @@ const Var kLongestTrackIdx(
       int bestIdx(-1);
       double maxLength(-1);
 
-      for (unsigned int i = 0; i < slc->reco.ntrk; i++) {
-        auto const& trk = slc->reco.trk[i];
-        if (!trk.pfp.parent_is_primary)
+      for (unsigned int i = 0; i < slc->reco.npfp; i++) {
+        auto const& trk = slc->reco.pfp[i].trk;
+        if (!slc->reco.pfp[i].parent_is_primary || slc->reco.pfp[i].trackScore < 0.5)
           continue;
 
         if (trk.len > maxLength) {
@@ -174,7 +175,7 @@ const caf::SRTrackProxy* LongestRecoTrack(const caf::SRSliceProxy* slc)
 {
   const int longestTrackIdx = kLongestTrackIdx(slc);
   if(longestTrackIdx == -1) return 0;
-  return &slc->reco.trk[longestTrackIdx];
+  return &slc->reco.pfp[longestTrackIdx].trk;
 }
 
 const Var kLongestTrackTruePdg(
