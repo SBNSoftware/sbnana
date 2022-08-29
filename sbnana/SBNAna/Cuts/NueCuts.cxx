@@ -79,7 +79,7 @@ namespace ana{
   const Cut kNueHasTrackCut(
     [](const caf::SRSliceProxy* slc)
     {
-      return longestTrackIdx(kLongestTrackIdx(slc)) > 0;
+      return kLongestTrackIdx(slc) > 0;
     }
     );
 
