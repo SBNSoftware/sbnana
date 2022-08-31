@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "cafanacore/Spectrum.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -20,6 +20,8 @@
 #include "TGraph.h"
 #include "TH2.h"
 #include "TLatex.h"
+#include "TMatrixD.h"
+#include "TVectorD.h"
 
 #include <string>
 
@@ -107,19 +109,13 @@ void diag_flux_systs(bool force_rebuild = false)
   // TODO does anything in here impact the flux shape?
   //  const Var kWeight = SIMPLEVAR(reco.weight);
 
-  const Cut kOneTrue([](const caf::SRProxy* sr)
-         {
-           return (sr->truth.size() == 1);
-         });
-
-  const Var kTrueE = SIMPLEVAR(truth[0].neutrino.energy);
-
   const HistAxis axis("True neutrino energy (GeV)",
-                      Binning::Simple(NEnergyBins, 0, MaxEnergy), kTrueE);
+                      Binning::Simple(NEnergyBins, 0, MaxEnergy),
+                      SIMPLEVAR(truth.E));
 
   // NB beam nues are only about 0.08% of the flux. Anti-numus are as much as 0.8%. Anti-nues basically don't exist
-  const Cut kIsNumu = kOneTrue && SIMPLEVAR(truth[0].neutrino.initpdg) == 14;
-  const Cut kIsNue  = kOneTrue && SIMPLEVAR(truth[0].neutrino.initpdg) == 12;
+  const Cut kIsNumu = SIMPLEVAR(truth.initpdg) == 14;
+  const Cut kIsNue  = SIMPLEVAR(truth.initpdg) == 12;
 
   if(force_rebuild || TFile(state_name).IsZombie()){
     TFile fout(state_name, "RECREATE");
@@ -133,12 +129,12 @@ void diag_flux_systs(bool force_rebuild = false)
 
       SpectrumLoader loader(fname);
 
-      Spectrum numu_nom(loader, axis, kIsNumu);
-      Spectrum nue_nom(loader, axis, kIsNue);
+      Spectrum numu_nom(loader.Slices()[kIsNumu], axis);
+      Spectrum nue_nom(loader.Slices()[kIsNue], axis);
       std::vector<Spectrum*> numus, nues;
 
       for(int univIdx = 0; univIdx < NUnivs; ++univIdx){
-        const Var wei = GetUniverseWeight({
+        const Weight wei = GetUniverseWeight({
             "kminus_PrimaryHadronNormalization",
              "kplus_PrimaryHadronFeynmanScaling",
              "kzero_PrimaryHadronSanfordWang",
@@ -146,8 +142,8 @@ void diag_flux_systs(bool force_rebuild = false)
            "piminus_PrimaryHadronSWCentralSplineVariation",
               }, univIdx);
 
-        numus.push_back(new Spectrum(loader, axis, kIsNumu, kNoShift, wei));
-        nues .push_back(new Spectrum(loader, axis, kIsNue,  kNoShift, wei));
+        numus.push_back(new Spectrum(loader.Slices()[kIsNumu].Weighted(wei), axis));
+        nues .push_back(new Spectrum(loader.Slices()[kIsNue].Weighted(wei), axis));
       } // end for univIdx
 
       loader.Go();

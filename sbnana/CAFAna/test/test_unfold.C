@@ -6,6 +6,8 @@
 #include "TH2.h"
 #include "TRandom3.h"
 
+#include <iostream>
+
 using namespace ana;
 
 const Binning recobins = Binning::Simple(40, 0, 10);

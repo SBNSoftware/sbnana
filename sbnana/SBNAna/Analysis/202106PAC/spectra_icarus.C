@@ -1,6 +1,7 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -13,6 +14,8 @@
 
 #include "TH1.h"
 #include "TPad.h"
+
+#include <iostream>
 
 using namespace ana;
 
@@ -35,7 +38,7 @@ void spectra_icarus()
   const Var kTrueE = SIMPLEVAR(truth.E);
   const Var kRecoE = kTrueE; // TODO
 
-  const Var kCryostatWeight = Constant(2); // only using cryo0
+  const SpillWeight kCryostatWeight([](const caf::SRSpillProxy*){return 2;}); // only using cryo0
 
   const SpillCut kNumuSpillSel = kNoSpillCut; // TODO
   const Cut kNumuSel = kNuMuCC_FullSelection;
@@ -47,9 +50,9 @@ void spectra_icarus()
 
   const HistAxis axEnergy(/*Reconstructed*/"True energy (GeV)", binsEnergy, kRecoE);
 
-  Spectrum sTot(loader, axEnergy, kNumuSpillSel, kNumuSel, kNoShift, kCryostatWeight);
-  Spectrum sNC(loader, axEnergy, kNumuSpillSel, kNumuSel && kIsNC, kNoShift, kCryostatWeight);
-  //  Spectrum sCosmic(loader, axEnergy, kNumuSpillSel, kNumuSel && kIsCosmic, kNoShift, kCryostatWeight);
+  Spectrum sTot(loader.Weighted(kCryostatWeight)[kNumuSpillSel].Slices()[kNumuSel], axEnergy);
+  Spectrum sNC(loader.Weighted(kCryostatWeight)[kNumuSpillSel].Slices()[kNumuSel][kIsNC], axEnergy);
+  //  Spectrum sCosmic(loader.Weighted(kCryostatWeight)[kNumuSpillSel][kNumuSel][kIsCosmic], axEnergy);
 
   loader.Go();
 

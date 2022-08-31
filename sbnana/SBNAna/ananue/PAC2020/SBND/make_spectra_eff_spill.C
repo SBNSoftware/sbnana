@@ -2,6 +2,7 @@
 
 #include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 
 #include "helper_eff_spill.h"
 
@@ -61,7 +62,7 @@ void make_spectra_eff_spill(const std::string fname = "etyley_caf_NuEOverlay_caf
   for (unsigned int iSel = 0; iSel < kNSel; ++iSel) {
     for (unsigned int jType = 0; jType < kNType; ++jType) {
       for (unsigned int lVar = 0; lVar < kNVar; ++lVar) {
-        specs[iSel][jType][lVar] = new Spectrum(plots[lVar].label, plots[lVar].bins, loader, plots[lVar].var, types[jType].cut && sels[iSel].cut);
+        specs[iSel][jType][lVar] = new Spectrum(loader[types[jType].cut][sels[iSel].cut], SpillHistAxis(plots[lVar].label, plots[lVar].bins, plots[lVar].var));
       }
     }
   }

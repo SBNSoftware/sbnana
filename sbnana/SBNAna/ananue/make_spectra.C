@@ -1,11 +1,14 @@
 // Make a few spectra with different cuts.
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "cafanacore/Spectrum.h"
 
 #include "helper.h"
 
 #include "TFile.h"
+
+#include <iostream>
 
 using namespace ana;
 
@@ -29,15 +32,15 @@ void make_spectra()
 
   for(unsigned int iSel = 0; iSel < kNSel; ++iSel){
     for(unsigned int jVar = 0; jVar < kNVar; ++jVar){
-      specs[iSel][jVar] = new Spectrum(plots[jVar].label, plots[jVar].bins, loader, plots[jVar].var, sels[iSel].cut);
+      specs[iSel][jVar] = new Spectrum(loader.Slices()[sels[iSel].cut], HistAxis(plots[jVar].label, plots[jVar].bins, plots[jVar].var));
     }
   }
 
   // Example spectra with both SpillCut and Cut
-  Spectrum *s0 = new Spectrum("crthitx__flashtrig", kPositionXFDBinning, loader, kCRTHitX, kFlashTrigger); // SpillMultiVar with SpillCut
-  Spectrum *s1 = new Spectrum("shwlen__firstevt_longshw", kLengthBinning, loader, kRecoShower_Length, kFirstEvents, !kShortShower); // (Slice)Var with SpillCut and (Slice)Cut
-  Spectrum *s2 = new Spectrum("shwlen__flashtrig_longshw", kLengthBinning, loader, kRecoShower_Length, kFlashTrigger, !kShortShower); // (Slice)Var with SpillCut and (Slice)Cut
-  Spectrum *s3 = new Spectrum("shwlen__flashtrig_shortshw", kLengthBinning, loader, kRecoShower_Length, kFlashTrigger, kShortShower); // (Slice)Var with SpillCut and (Slice)Cut
+  //  Spectrum *s0 = new Spectrum(loader[kFlashTrigger], SpillHistAxis("crthitx__flashtrig", kPositionXFDBinning, kCRTHitX)); // SpillMultiVar with SpillCut
+  Spectrum *s1 = new Spectrum(loader[kFirstEvents].Slices()[!kShortShower], HistAxis("shwlen__firstevt_longshw", kLengthBinning, kRecoShower_Length)); // (Slice)Var with SpillCut and (Slice)Cut
+  Spectrum *s2 = new Spectrum(loader[kFlashTrigger].Slices()[!kShortShower], HistAxis("shwlen__flashtrig_longshw", kLengthBinning, kRecoShower_Length)); // (Slice)Var with SpillCut and (Slice)Cut
+  Spectrum *s3 = new Spectrum(loader[kFlashTrigger].Slices()[kShortShower], HistAxis("shwlen__flashtrig_shortshw", kLengthBinning, kRecoShower_Length)); // (Slice)Var with SpillCut and (Slice)Cut
 
   // This is the call that actually fills in the spectra
   loader.Go();
@@ -53,7 +56,7 @@ void make_spectra()
     }
   }
 
-  s0->SaveTo(&fout, "s0");
+  //  s0->SaveTo(&fout, "s0");
   s1->SaveTo(&fout, "s1");
   s2->SaveTo(&fout, "s2");
   s3->SaveTo(&fout, "s3");

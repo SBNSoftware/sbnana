@@ -23,7 +23,7 @@ void demo1b()
   const std::string fnameIcarus = "/sbnd/data/users/bckhouse/sample_2.1_fitters/output_SBNOsc_NumuSelection_Proposal_Icarus.flat.root";
   SpectrumLoader loaderIcarus(fnameIcarus);
   const Var kRecoE = SIMPLEVAR(reco.reco_energy);
-  const Var kWeight = SIMPLEVAR(reco.weight);
+  const Weight kWeight = SIMPLEWEIGHT(reco.weight);
   const HistAxis axEnergy("Reconstructed energy (GeV)", Binning::Simple(50, 0, 5), kRecoE);
   OscCalcSterileApprox calc;
   calc.SetDmsq(1);
@@ -33,8 +33,8 @@ void demo1b()
 
   // A Prediction is an objects holding a variety of "OscillatableSpectrum"
   // objects, one for each original and final flavour combination.
-  PredictionNoExtrap pred(loaderIcarus, kNullLoader, kNullLoader, kNullLoader,
-                          axEnergy, kNoCut, kNoShift, kWeight);
+  PredictionNoExtrap pred(loaderIcarus.Slices().Weighted(kWeight), kNullSliceSource, kNullSliceSource, kNullSliceSource,
+                          axEnergy);
 
   // This call will fill all of the constituent parts of the prediction
   loaderIcarus.Go();

@@ -1,9 +1,8 @@
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
-#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
@@ -171,7 +170,7 @@ void syst_spec(const std::string anatype = numuStr)
       hists.push_back(p_nd->PredictSyst(&unosc, shifts).ToTH1(sbndPOT));
     }
     double xbins[] = {0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1., 1.25, 1.5, 2., 2.5, 3.};
-    TH1D *shifted = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
+    TH1D *shifted = new TH1D(("h"+std::to_string(i)).c_str(), "hist",19,xbins);
     TH1D *lower = new TH1D("h2", "hist", 19, xbins);
     for (int k = 1; k <= 19; ++k ) {
       std::vector<double> bincont;
@@ -190,7 +189,7 @@ void syst_spec(const std::string anatype = numuStr)
       for(auto s : all_systs_vec[i]) shifts2.SetShift(s, gRandom->Gaus());
       hists2.push_back(p_fd->PredictSyst(&unosc, shifts2).ToTH1(icarusPOT));
     }
-    TH1D *shifted2 = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
+    TH1D *shifted2 = new TH1D(("h"+std::to_string(i)).c_str(), "hist",19,xbins);
     TH1D *lower2 = new TH1D("h2", "hist", 19, xbins);
     for (int k = 1; k <= 19; ++k ) {
       std::vector<double> bincont;
@@ -209,7 +208,7 @@ void syst_spec(const std::string anatype = numuStr)
       for(auto s : all_systs_vec[i]) shifts3.SetShift(s, gRandom->Gaus());
       hists3.push_back(p_ub->PredictSyst(&unosc, shifts3).ToTH1(uboonePOT));
     }
-    TH1D *shifted3 = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
+    TH1D *shifted3 = new TH1D(("h"+std::to_string(i)).c_str(), "hist",19,xbins);
     TH1D *lower3 = new TH1D("h2", "hist", 19, xbins);
     for (int k = 1; k <= 19; ++k ) {
       std::vector<double> bincont;

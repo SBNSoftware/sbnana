@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
 
@@ -13,8 +13,7 @@ using namespace ana;
 #include "TH2.h"
 #include "TPad.h"
 
-const Cut kOneNu([](const caf::SRProxy* sr){return sr->truth.size() == 1;});
-const Var kTrueE = SIMPLEVAR(truth[0].neutrino.energy);
+const Var kTrueE = SIMPLEVAR(truth.E);
 const Var kRecoE = SIMPLEVAR(reco.reco_energy);
 
 void osc_prob()
@@ -22,10 +21,10 @@ void osc_prob()
   const std::string dir = "/sbnd/data/users/jlarkin/workshop_samples/";
   const std::string fnameBeam = dir + "output_SBNOsc_NumuSelection_Modern_SBND.flat.root";
 
-  SpectrumLoader loader(fnameBeam, ana::kBeam);
+  SpectrumLoader loader(fnameBeam);
 
-  OscillatableSpectrum s("True E (GeV)", Binning::Simple(100, .5, 1.5), loader, kTrueE, kOneNu && kIsNumuCC);
-  OscillatableSpectrum s_reco("Reco E (GeV)", Binning::Simple(100, .5, 1.5), loader, kRecoE, kOneNu && kIsNumuCC);
+  OscillatableSpectrum s(loader.Slices()[kIsNumuCC], HistAxis("True E (GeV)", Binning::Simple(100, .5, 1.5), kTrueE));
+  OscillatableSpectrum s_reco(loader.Slices()[kIsNumuCC], HistAxis("Reco E (GeV)", Binning::Simple(100, .5, 1.5), kRecoE));
 
   loader.Go();
 

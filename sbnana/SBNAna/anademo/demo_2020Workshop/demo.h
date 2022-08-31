@@ -27,17 +27,17 @@ const Var kPrimTrkCosth([](const caf::SRSliceProxy *slc) -> double
 // Slice Vertex position
 const Var kSlcVtxX([](const caf::SRSliceProxy *slc) -> double
 		   {
-		     return slc->slc.vertex.x;
+		     return slc->vertex.x;
 		   });
 
 const Var kSlcVtxY([](const caf::SRSliceProxy *slc) -> double
 		   {
-		     return slc->slc.vertex.y;
+		     return slc->vertex.y;
 		   });
 
 const Var kSlcVtxZ([](const caf::SRSliceProxy *slc) -> double
 		   {
-		     return slc->slc.vertex.z;
+		     return slc->vertex.z;
 		   });
 
 // These are examples of useful structs to

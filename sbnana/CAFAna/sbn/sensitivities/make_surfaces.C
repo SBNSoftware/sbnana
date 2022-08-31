@@ -1,10 +1,10 @@
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
-#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
@@ -79,11 +79,8 @@ void make_surfaces(const std::string anatype = numuStr)
   if (anatype == nueStr) {
     seed->calc.SetSinSq2ThetaMuE(1e-2);
     seed->calc.SetDmsq(1);
-    seed->SetL(kBaselineSBND);
     p_nd->SetOscSeed(seed);
-    seed->SetL(kBaselineIcarus);
     p_fd->SetOscSeed(seed);
-    seed->SetL(kBaselineMicroBoone);
     p_ub->SetOscSeed(seed);
   }
 
@@ -115,17 +112,10 @@ void make_surfaces(const std::string anatype = numuStr)
   SingleSampleExperiment expt_fd(p_fd, data_fd);
   SingleSampleExperiment expt_ub(p_ub, data_ub);
 
-  MultiExperimentSBN multiExpt({&expt_nd, &expt_fd, &expt_ub}, {kSBND, kICARUS, kMicroBoone});
-  MultiExperimentSBN fd_nd({&expt_nd, &expt_fd}, {kSBND, kICARUS});
+  MultiExperiment multiExpt({&expt_nd, &expt_fd, &expt_ub});
+  MultiExperiment fd_nd({&expt_nd, &expt_fd});
 
-  //Surface surf_nom(&multiExpt, calc, kAxForTh, kAxDmSq);
   Surface surf_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq);
-  calc->SetL(kBaselineSBND);
-  //Surface surf_nom_nd(&expt_nd, calc, kAxForTh, kAxDmSq);
-  calc->SetL(kBaselineIcarus);
-  //Surface surf_nom_fd(&expt_fd, calc, kAxForTh, kAxDmSq);
-  calc->SetL(kBaselineMicroBoone);
-  //Surface surf_nom_ub(&expt_ub, calc, kAxForTh, kAxDmSq);
 
   fout.mkdir("exclusion");
   fout.cd("exclusion");
@@ -185,16 +175,13 @@ void make_surfaces(const std::string anatype = numuStr)
   SingleSampleExperiment expt_fd2(p_fd, data_fd2);
   SingleSampleExperiment expt_ub2(p_ub, data_ub2);
 
-  MultiExperimentSBN multiExpt2({&expt_nd2, &expt_fd2, &expt_ub2}, {kSBND, kICARUS, kMicroBoone});
-  MultiExperimentSBN fd_nd2({&expt_nd2, &expt_fd2}, {kSBND, kICARUS});
+  MultiExperiment multiExpt2({&expt_nd2, &expt_fd2, &expt_ub2});
+  MultiExperiment fd_nd2({&expt_nd2, &expt_fd2});
 
   //Surface surf_nom2(&multiExpt2, calc2, kAxForTh, kAxDmSq);
   //Surface surf_nd_fd2(&fd_nd2, calc2, kAxForTh, kAxDmSq);
-  calc2->SetL(kBaselineSBND);
   //Surface surf_nom_nd2(&expt_nd2, calc2, kAxForTh, kAxDmSq);
-  calc2->SetL(kBaselineIcarus);
   //Surface surf_nom_fd2(&expt_fd2, calc2, kAxForTh, kAxDmSq);
-  calc2->SetL(kBaselineMicroBoone);
   //Surface surf_nom_ub2(&expt_ub2, calc2, kAxForTh, kAxDmSq);
 
   //fout.cd("..");
@@ -210,11 +197,8 @@ void make_surfaces(const std::string anatype = numuStr)
   for(const std::vector<const ISyst*> slist: slists){
     //Surface surf_syst2(&multiExpt2, calc2, kAxForTh, kAxDmSq, {}, slist);
     //Surface surf_syst_nd_fd2(&fd_nd2, calc2, kAxForTh, kAxDmSq, {}, slist);
-    calc2->SetL(kBaselineSBND);
     //Surface surf_syst_nd2(&expt_nd2, calc2, kAxForTh, kAxDmSq, {}, slist);
-    calc2->SetL(kBaselineIcarus);
     //Surface surf_syst_fd2(&expt_fd2, calc2, kAxForTh, kAxDmSq, {}, slist);
-    calc2->SetL(kBaselineMicroBoone);
     //Surface surf_syst_ub2(&expt_ub2, calc2, kAxForTh, kAxDmSq, {}, slist);
 
     std::string suffix = "prop_systs";

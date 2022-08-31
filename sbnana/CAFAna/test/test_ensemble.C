@@ -49,8 +49,8 @@ void test_ensemble(bool reload = false)
     weis.push_back(kUnweighted); // nominal
     for(int i = 0; i < 99; ++i) weis.push_back(GetUniverseWeight("multisim_Genie", i));
 
-    EnsembleSpectrum sCC(loader.Slices().Ensemble(weis, 0)[kNumuSel][kIsNumuCC], axEnergy);
-    EnsembleSpectrum sNC(loader.Slices().Ensemble(weis, 0)[kNumuSel][kIsNC],     axEnergy);
+    EnsembleSpectrum sCC(loader.Slices().Ensemble(weis)[kNumuSel][kIsNumuCC], axEnergy);
+    EnsembleSpectrum sNC(loader.Slices().Ensemble(weis)[kNumuSel][kIsNC],     axEnergy);
 
     loader.Go();
 

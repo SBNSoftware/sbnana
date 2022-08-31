@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/EnsembleSpectrum.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -247,7 +247,7 @@ void test_GENIESyst(){
       h_3Dn->Draw("histsame");
       h_CV->Draw("histsame");
 
-      h_1Up->GetYaxis()->SetRangeUser(0., 1.1*max(h_3Up->GetMaximum(), h_3Dn->GetMaximum()));
+      h_1Up->GetYaxis()->SetRangeUser(0., 1.1*std::max(h_3Up->GetMaximum(), h_3Dn->GetMaximum()));
 
       //==== ratio
       c_ratio->cd();
@@ -322,7 +322,7 @@ void test_GENIESyst(){
       TH1D *h_es = es->Universe(i).ToTH1(kPOTnominal);
       h_es->SetLineColor(kRed-10);
       if(i==0) lg_es->AddEntry(h_es, "Universes", "l");
-      y_max = max(y_max, h_es->GetMaximum());
+      y_max = std::max(y_max, h_es->GetMaximum());
 
       c_es_rate->cd();
       h_es->Draw("histsame");

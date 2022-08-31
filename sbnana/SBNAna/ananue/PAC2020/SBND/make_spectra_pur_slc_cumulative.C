@@ -2,6 +2,7 @@
 
 #include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 
 #include "helper_pur_slc_cumulative.h"
 
@@ -63,7 +64,7 @@ void make_spectra_pur_slc_cumulative(const std::string fname = "etyley_caf_NuEOv
     kCumulative = kCumulative && sels[iSel].cut;
     for (unsigned int jType = 0; jType < kNType; ++jType) {
       for (unsigned int lVar = 0; lVar < kNVar; ++lVar) {
-        specs[iSel][jType][lVar] = new Spectrum(plots[lVar].label, plots[lVar].bins, loader, plots[lVar].var, kCRTHitVetoND && kSpillSingleNu, types[jType].cut && kCumulative);
+        specs[iSel][jType][lVar] = new Spectrum(loader[kCRTHitVetoND && kSpillSingleNu].Slices()[types[jType].cut][kCumulative], HistAxis(plots[lVar].label, plots[lVar].bins, plots[lVar].var));
       }
     }
   }

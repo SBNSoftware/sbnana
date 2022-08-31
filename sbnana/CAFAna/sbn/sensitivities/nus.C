@@ -22,7 +22,6 @@
 #include "sbnana/CAFAna/Analysis/MedianSurface.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
 #include "sbnana/CAFAna/Experiment/MultiExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
 #include "sbnana/CAFAna/Experiment/GaussianConstraint.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
@@ -57,7 +56,6 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
 
   // Calculator
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
-  calc->SetL(kBaselineSBND);
 
   // To make a fit we need to have a "data" spectrum to compare to our MC
   // Prediction object
@@ -99,7 +97,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
   const Spectrum data2 = pred_fd_numu.Predict(calc).FakeData(icarusPOT);
   SingleSampleExperiment expt2(&pred_fd_numu, data2);
 
-  MultiExperimentSBN multiExpt({&expt, &expt2}, {kSBND,kICARUS});
+  MultiExperiment multiExpt({&expt, &expt2});
 
   Surface surf2(&expt2, calc,
                 kAxSinSq2ThetaMuMu,
@@ -130,13 +128,11 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     const FitAxis kCoarseAxDmSq(&kFitDmSqSterile, 20, 2e-2, 100, true);
 
     osc::IOscCalcAdjustable* c = DefaultSterileApproxCalc();
-    c->SetL(kBaselineSBND);
     SingleSampleExperiment e1(&pred_nd_numu, pred_nd_numu.Predict(c).MockData(sbndPOT));
 
-    c->SetL(kBaselineIcarus); // Icarus
     SingleSampleExperiment e2(&pred_fd_numu, pred_fd_numu.Predict(c).MockData(icarusPOT));
 
-    MultiExperimentSBN me({&e1, &e2}, {kSBND, kICARUS});
+    MultiExperiment me({&e1, &e2});
 
     Surface ms(&me, c,
                kCoarseAxSinSq2ThetaMuMu,

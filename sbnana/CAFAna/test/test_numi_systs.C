@@ -1,5 +1,6 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "cafanacore/Spectrum.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 
 #include "sbnana/CAFAna/Systs/NuMIFluxSysts.h"
@@ -25,7 +26,7 @@ void test_numi_systs()
                 Binning::Simple(50, 0, 5),
                 kTrueE);
 
-  Spectrum snom(loader, axis, kNoCut);
+  Spectrum snom(loader.Slices(), axis);
   std::vector<Spectrum*> sup, sdn;
 
   for(const ISyst* s: systs){

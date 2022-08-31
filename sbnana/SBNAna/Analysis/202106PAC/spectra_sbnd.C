@@ -1,6 +1,7 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -14,6 +15,8 @@
 
 #include "TH1.h"
 #include "TPad.h"
+
+#include <iostream>
 
 using namespace ana;
 
@@ -37,9 +40,9 @@ void spectra_sbnd()
 
   const HistAxis axEnergy(/*Reconstructed*/"True energy (GeV)", binsEnergy, kRecoE);
 
-  Spectrum sTot(loader, axEnergy, kNumuSpillSel, kNumuSel);
-  Spectrum sNC(loader, axEnergy, kNumuSpillSel, kNumuSel && kIsNC);
-  //  Spectrum sCosmic(loader, axEnergy, kNumuSpillSel, kNumuSel && kIsCosmic);
+  Spectrum sTot(loader[kNumuSpillSel].Slices()[kNumuSel], axEnergy);
+  Spectrum sNC(loader[kNumuSpillSel].Slices()[kNumuSel][kIsNC], axEnergy);
+  //  Spectrum sCosmic(loader[kNumuSpillSel].Slices[kNumuSel][kIsCosmic], axEnergy);
 
   loader.Go();
 

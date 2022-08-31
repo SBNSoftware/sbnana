@@ -14,7 +14,7 @@
 
 #include "sbnana/CAFAna/Analysis/Surface.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
@@ -60,15 +60,13 @@ void nus_extrap(const char* stateFname = basicFname)
 
   // To make a fit we need to have a "data" spectrum to compare to our MC
   // Prediction object
-  calc->SetL(kBaselineIcarus);
   const Spectrum data = pred->Predict(calc).FakeData(icarusPOT);
   SingleSampleExperiment expt(pred, data);
 
-  calc->SetL(kBaselineSBND);
   const Spectrum dataND = predND->Predict(calc).FakeData(sbndPOT);
   CountingExperiment exptCount(predND, dataND);
 
-  MultiExperimentSBN multiExpt({&expt, &exptCount}, {kICARUS, kSBND});
+  MultiExperiment multiExpt({&expt, &exptCount});
 
   //Define fit axes
   const FitAxis kAxSinSq2ThetaMuMu(&kFitSinSq2ThetaMuMu, 40, 1e-3, 1, true);
@@ -90,7 +88,6 @@ void nus_extrap(const char* stateFname = basicFname)
                    kAxSinSq2ThetaMuMu,
                    kAxDmSq);
 
-  calc->SetL(kBaselineSBND);
   Surface surfCount(&exptCount, calc,
                     kAxSinSq2ThetaMuMuCoarse,
                     kAxDmSqCoarse,
