@@ -114,7 +114,7 @@ namespace ana
     assert(!f->IsZombie());
 
     TTree* tr = (TTree*)f->Get("recTree");
-    assert(tr); // Must exist in one form or the other
+    assert(tr);
 
     // We try to access this field for every record. It was only added to the
     // files in late 2021, and we don't want to render all earlier files

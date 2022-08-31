@@ -23,22 +23,8 @@ void check_proxy(std::string fname, std::string fname2 = "", int N = -1)
   TFile* f2 = TFile::Open(fname2.c_str());
   assert(!f2->IsZombie());
 
-  // This is the logic from SpectrumLoader than also handles multitree flatcafs
-  TDirectory* dir = 0;
-  TTree* tr = 0;
-
-  TObject* obj = f2->Get("recTree");
-  assert(obj);
-  if(obj->ClassName() == std::string("TTree")){
-    tr = (TTree*)obj;
-  }
-  else{
-    dir = (TDirectory*)obj;
-    tr = (TTree*)dir->Get("rec");
-    assert(tr);
-  }
-
-  const caf::CAFType type = caf::GetCAFType(dir, tr);
+  TTree* tr = (TTree*)f2->Get("recTree");
+  assert(tr);
 
   // Read one directly via dictionary
   caf::StandardRecord* sr = 0;
