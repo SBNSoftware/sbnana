@@ -1,11 +1,14 @@
 // Make a few spectra with different cuts.
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "cafanacore/Spectrum.h"
 
 #include "eventsel.h"
 
 #include "TFile.h"
+
+#include <iostream>
 
 using namespace ana;
 
@@ -30,7 +33,7 @@ void make_eventsel()
 
   for(unsigned int iSel = 0; iSel < kNSel; ++iSel){
     for(unsigned int jVar = 0; jVar < kNVar; ++jVar){
-      specs[iSel][jVar] = new Spectrum(plots[jVar].label, plots[jVar].bins, loader, plots[jVar].var, sels[iSel].cut);
+      specs[iSel][jVar] = new Spectrum(loader.Slices()[sels[iSel].cut], HistAxis(plots[jVar].label, plots[jVar].bins, plots[jVar].var));
     }
   }
 
@@ -45,7 +48,7 @@ void make_eventsel()
     for( unsigned int jVar = 0; jVar < kNVar; ++jVar ){
       std::string mysuffix = sels[iSel].suffix + "_" + plots[jVar].suffix;
       std::cout << "Saving spctra: " << mysuffix << std::endl;
-      specs[iSel][jVar]->SaveTo( fout.mkdir(mysuffix.c_str()) );
+      specs[iSel][jVar]->SaveTo( &fout, mysuffix );
     }
   }
 

@@ -2,7 +2,8 @@
 
 #include "sbnana/CAFAna/Experiment/IExperiment.h"
 #include "sbnana/CAFAna/Prediction/IPrediction.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+
+#include "cafanacore/FwdDeclare.h"
 
 namespace ana
 {
@@ -22,7 +23,7 @@ namespace ana
     /// In MC studies you might not want to bother with cosmics
     SingleSampleExperiment(const IPrediction* pred,
                            const Spectrum& data)
-      : fMC(pred), fData(data), fCosmicInTime(0, {}, {}, 0, 0), fCosmicOutOfTime(0, {}, {}, 0, 0), fMask(0)
+      : fMC(pred), fData(data), fCosmicInTime(Spectrum::Uninitialized()), fCosmicOutOfTime(Spectrum::Uninitialized())
     {
     }
 
@@ -31,10 +32,10 @@ namespace ana
     virtual double ChiSq(osc::IOscCalcAdjustable* osc,
                          const SystShifts& syst = SystShifts::Nominal()) const override;
 
-    virtual void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<SingleSampleExperiment> LoadFrom(TDirectory* dir);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<SingleSampleExperiment> LoadFrom(TDirectory* dir, const std::string& name);
 
-    // Didn't make provisions for copying fCosmic or fMC
+    // Didn't make provisions for copying fMC
     SingleSampleExperiment(const SingleSampleExperiment&) = delete;
     SingleSampleExperiment& operator=(const SingleSampleExperiment&) = delete;
 
@@ -48,13 +49,17 @@ namespace ana
       s.fMC = nullptr;
     };
 
-    void SetMaskHist(double xmin=0, double xmax=-1, 
+    void SetMaskHist(double xmin=0, double xmax=-1,
 		     double ymin=0, double ymax=-1);
 
   protected:
+    virtual void ApplyMask(Eigen::ArrayXd& a, Eigen::ArrayXd& b) const;
+
     const IPrediction* fMC;
     Spectrum fData;
+
     Spectrum fCosmicInTime, fCosmicOutOfTime;
-    TH1* fMask;
+
+    Eigen::ArrayXd fMaskA;
   };
 }

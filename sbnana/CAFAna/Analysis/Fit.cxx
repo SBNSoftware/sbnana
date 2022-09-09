@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Analysis/Fit.h"
 
-#include "sbnana/CAFAna/Core/Progress.h"
+#include "cafanacore/Progress.h"
 #include "sbnana/CAFAna/Core/IFitVar.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 #include "sbnana/CAFAna/Experiment/IExperiment.h"
@@ -166,7 +166,7 @@ namespace ana
 	mnMin->GetMinosError(i, errLow, errHigh);
 	std::cout << i << "/" << mnMin->NDim() << " " << fParamNames[i] << ": " << errLow << ", +" << errHigh << " (" << mnMin->Errors()[i] << ")" << std::endl;
 	fTempMinosErrors.push_back(std::make_pair(errLow,errHigh));
-      }      
+      }
     }
 
     return mnMin;
@@ -191,8 +191,8 @@ namespace ana
       // Need to deal with parameters that are not fit values!
       SystShifts shift = pt.shift;
 
-      // Need to copy over syst values into the seed for this fit 
-      // that were in the input syst shifts, but are not being fit for, 
+      // Need to copy over syst values into the seed for this fit
+      // that were in the input syst shifts, but are not being fit for,
       // and therefore not part of the seedPts list
       for(auto s: bestSysts.ActiveSysts()) {
         auto fit_systs = shift.ActiveSysts();

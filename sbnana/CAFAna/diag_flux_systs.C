@@ -1,6 +1,6 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "cafanacore/Spectrum.h"
+#include "cafanacore/Ratio.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -20,6 +20,8 @@
 #include "TGraph.h"
 #include "TH2.h"
 #include "TLatex.h"
+#include "TMatrixD.h"
+#include "TVectorD.h"
 
 #include <string>
 
@@ -107,19 +109,13 @@ void diag_flux_systs(bool force_rebuild = false)
   // TODO does anything in here impact the flux shape?
   //  const Var kWeight = SIMPLEVAR(reco.weight);
 
-  const Cut kOneTrue([](const caf::SRProxy* sr)
-         {
-           return (sr->truth.size() == 1);
-         });
-
-  const Var kTrueE = SIMPLEVAR(truth[0].neutrino.energy);
-
   const HistAxis axis("True neutrino energy (GeV)",
-                      Binning::Simple(NEnergyBins, 0, MaxEnergy), kTrueE);
+                      Binning::Simple(NEnergyBins, 0, MaxEnergy),
+                      SIMPLEVAR(truth.E));
 
   // NB beam nues are only about 0.08% of the flux. Anti-numus are as much as 0.8%. Anti-nues basically don't exist
-  const Cut kIsNumu = kOneTrue && SIMPLEVAR(truth[0].neutrino.initpdg) == 14;
-  const Cut kIsNue  = kOneTrue && SIMPLEVAR(truth[0].neutrino.initpdg) == 12;
+  const Cut kIsNumu = SIMPLEVAR(truth.initpdg) == 14;
+  const Cut kIsNue  = SIMPLEVAR(truth.initpdg) == 12;
 
   if(force_rebuild || TFile(state_name).IsZombie()){
     TFile fout(state_name, "RECREATE");
@@ -133,12 +129,12 @@ void diag_flux_systs(bool force_rebuild = false)
 
       SpectrumLoader loader(fname);
 
-      Spectrum numu_nom(loader, axis, kIsNumu);
-      Spectrum nue_nom(loader, axis, kIsNue);
+      Spectrum numu_nom(loader.Slices()[kIsNumu], axis);
+      Spectrum nue_nom(loader.Slices()[kIsNue], axis);
       std::vector<Spectrum*> numus, nues;
 
       for(int univIdx = 0; univIdx < NUnivs; ++univIdx){
-        const Var wei = GetUniverseWeight({
+        const Weight wei = GetUniverseWeight({
             "kminus_PrimaryHadronNormalization",
              "kplus_PrimaryHadronFeynmanScaling",
              "kzero_PrimaryHadronSanfordWang",
@@ -146,19 +142,19 @@ void diag_flux_systs(bool force_rebuild = false)
            "piminus_PrimaryHadronSWCentralSplineVariation",
               }, univIdx);
 
-        numus.push_back(new Spectrum(loader, axis, kIsNumu, kNoShift, wei));
-        nues .push_back(new Spectrum(loader, axis, kIsNue,  kNoShift, wei));
+        numus.push_back(new Spectrum(loader.Slices()[kIsNumu].Weighted(wei), axis));
+        nues .push_back(new Spectrum(loader.Slices()[kIsNue].Weighted(wei), axis));
       } // end for univIdx
 
       loader.Go();
 
       TDirectory* ddet = fout.mkdir(det.c_str());
       TDirectory* dnumu = ddet->mkdir("numu");
-      numu_nom.SaveTo(dnumu->mkdir("nom"));
-      for(int i = 0; i < NUnivs; ++i) numus[i]->SaveTo(dnumu->mkdir(TString::Format("univ_%d", i).Data()));
+      numu_nom.SaveTo(dnumu, "nom");
+      for(int i = 0; i < NUnivs; ++i) numus[i]->SaveTo(dnumu, TString::Format("univ_%d", i).Data());
       TDirectory* dnue = ddet->mkdir("nue");
-      nue_nom.SaveTo(dnue->mkdir("nom"));
-      for(int i = 0; i < NUnivs; ++i) nues[i]->SaveTo(dnue->mkdir(TString::Format("univ_%d", i).Data()));
+      nue_nom.SaveTo(dnue, "nom");
+      for(int i = 0; i < NUnivs; ++i) nues[i]->SaveTo(dnue, TString::Format("univ_%d", i).Data());
     } // end for det
   } // end if rebuild
 
@@ -167,13 +163,13 @@ void diag_flux_systs(bool force_rebuild = false)
 
   DontAddDirectory guard;
 
-  Spectrum snom_numu_nd(*LoadFrom<Spectrum>(fin.GetDirectory("nd/numu/nom")));
-  Spectrum snom_numu_fd(*LoadFrom<Spectrum>(fin.GetDirectory("fd/numu/nom")));
-  Spectrum snom_numu_ub(*LoadFrom<Spectrum>(fin.GetDirectory("ub/numu/nom")));
+  Spectrum snom_numu_nd(*LoadFrom<Spectrum>(&fin, "nd/numu/nom"));
+  Spectrum snom_numu_fd(*LoadFrom<Spectrum>(&fin, "fd/numu/nom"));
+  Spectrum snom_numu_ub(*LoadFrom<Spectrum>(&fin, "ub/numu/nom"));
 
-  Spectrum snom_nue_nd(*LoadFrom<Spectrum>(fin.GetDirectory("nd/nue/nom")));
-  Spectrum snom_nue_fd(*LoadFrom<Spectrum>(fin.GetDirectory("fd/nue/nom")));
-  Spectrum snom_nue_ub(*LoadFrom<Spectrum>(fin.GetDirectory("ub/nue/nom")));
+  Spectrum snom_nue_nd(*LoadFrom<Spectrum>(&fin, "nd/nue/nom"));
+  Spectrum snom_nue_fd(*LoadFrom<Spectrum>(&fin, "fd/nue/nom"));
+  Spectrum snom_nue_ub(*LoadFrom<Spectrum>(&fin, "ub/nue/nom"));
 
   TMatrixD mcov(NSpectra*NEnergyBins, NSpectra*NEnergyBins);
 
@@ -182,16 +178,16 @@ void diag_flux_systs(bool force_rebuild = false)
                        NSpectra*NEnergyBins, 0, NSpectra*NEnergyBins);
 
   for(int univIdx = 0; univIdx < NUnivs; ++univIdx){
-    TH1* hmnd = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("nd/numu/univ_%d", univIdx).Data())), snom_numu_nd).ToTH1();
-    TH1* hmub = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("ub/numu/univ_%d", univIdx).Data())), snom_numu_ub).ToTH1();
-    TH1* hmfd = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("fd/numu/univ_%d", univIdx).Data())), snom_numu_fd).ToTH1();
+    TH1* hmnd = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("nd/numu/univ_%d", univIdx).Data()), snom_numu_nd).ToTH1();
+    TH1* hmub = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("ub/numu/univ_%d", univIdx).Data()), snom_numu_ub).ToTH1();
+    TH1* hmfd = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("fd/numu/univ_%d", univIdx).Data()), snom_numu_fd).ToTH1();
 
     // We don't use these for anything. They're basically insignificant, and
     // make the matrix decomposition fail.
     /*
-    TH1* hend = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("nd/nue/univ_%d", univIdx).Data())), snom_nue_nd).ToTH1();
-    TH1* heub = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("ub/nue/univ_%d", univIdx).Data())), snom_nue_ub).ToTH1();
-    TH1* hefd = Ratio(*LoadFrom<Spectrum>(fin.GetDirectory(TString::Format("fd/nue/univ_%d", univIdx).Data())), snom_nue_fd).ToTH1();
+    TH1* hend = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("nd/nue/univ_%d", univIdx).Data()), snom_nue_nd).ToTH1();
+    TH1* heub = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("ub/nue/univ_%d", univIdx).Data()), snom_nue_ub).ToTH1();
+    TH1* hefd = Ratio(*LoadFrom<Spectrum>(&fin, TString::Format("fd/nue/univ_%d", univIdx).Data()), snom_nue_fd).ToTH1();
     */
 
     TH1* htot = new TH1D("", "", NSpectra*NEnergyBins, 0, NSpectra*NEnergyBins);

@@ -1,10 +1,10 @@
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
-#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
@@ -40,7 +40,7 @@ void make_surfaces(const std::string anatype = numuStr)
 
   auto systs_flux = GetBoosterFluxWeightSysts();
   auto systs_genie = GetSBNGenieWeightSysts();
-  
+
   std::vector<const ISyst*> systs_to_process;
 
   std::vector<std::string> syst_names{"expskin_FluxUnisim","horncurrent_FluxUnisim","kminus_PrimaryHadronNormalization","kplus_PrimaryHadronFeynmanScaling","kzero_PrimaryHadronSanfordWang","nucleoninexsec_FluxUnisim","nucleonqexsec_FluxUnisim","nucleontotxsec_FluxUnisim","piminus_PrimaryHadronSWCentralSplineVariation","pioninexsec_FluxUnisim","pionqexsec_FluxUnisim","piontotxsec_FluxUnisim","piplus_PrimaryHadronSWCentralSplineVariation","genie_ccresAxial_Genie","genie_ncresAxial_Genie","genie_qema_Genie","genie_NC_Genie","genie_NonResRvbarp1pi_Genie","genie_NonResRvbarp2pi_Genie","genie_NonResRvp1pi_Genie","genie_NonResRvp2pi_Genie","genie_NonResRvbarp1piAlt_Genie","genie_NonResRvbarp2piAlt_Genie","genie_NonResRvp1piAlt_Genie","genie_NonResRvp2piAlt_Genie"};
@@ -67,26 +67,23 @@ void make_surfaces(const std::string anatype = numuStr)
   TFile fin(name_in);
   TFile fout(name_out,"RECREATE");
 
-  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
+  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
+  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
 
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
   OscCalcSterileApproxAdjustable* seed = DefaultSterileApproxCalc();
 
   //JL - try different values here, how much does it matter what values we choose, does this
-  //have any impact on disappearance? 
+  //have any impact on disappearance?
   if (anatype == nueStr) {
     seed->calc.SetSinSq2ThetaMuE(1e-2);
     seed->calc.SetDmsq(1);
-    seed->SetL(kBaselineSBND);
     p_nd->SetOscSeed(seed);
-    seed->SetL(kBaselineIcarus);
     p_fd->SetOscSeed(seed);
-    seed->SetL(kBaselineMicroBoone);
     p_ub->SetOscSeed(seed);
   }
-    
+
 
 
   //Define fit axes
@@ -115,26 +112,19 @@ void make_surfaces(const std::string anatype = numuStr)
   SingleSampleExperiment expt_fd(p_fd, data_fd);
   SingleSampleExperiment expt_ub(p_ub, data_ub);
 
-  MultiExperimentSBN multiExpt({&expt_nd, &expt_fd, &expt_ub}, {kSBND, kICARUS, kMicroBoone});
-  MultiExperimentSBN fd_nd({&expt_nd, &expt_fd}, {kSBND, kICARUS});
+  MultiExperiment multiExpt({&expt_nd, &expt_fd, &expt_ub});
+  MultiExperiment fd_nd({&expt_nd, &expt_fd});
 
-  //Surface surf_nom(&multiExpt, calc, kAxForTh, kAxDmSq);
   Surface surf_nd_fd(&fd_nd, calc, kAxForTh, kAxDmSq);
-  calc->SetL(kBaselineSBND);
-  //Surface surf_nom_nd(&expt_nd, calc, kAxForTh, kAxDmSq);
-  calc->SetL(kBaselineIcarus);
-  //Surface surf_nom_fd(&expt_fd, calc, kAxForTh, kAxDmSq);
-  calc->SetL(kBaselineMicroBoone);
-  //Surface surf_nom_ub(&expt_ub, calc, kAxForTh, kAxDmSq);
 
   fout.mkdir("exclusion");
-  fout.cd("exclusion");    
+  fout.cd("exclusion");
 
-  //surf_nom.SaveTo(gDirectory->mkdir("nom"));
-  //surf_nom_nd.SaveTo(gDirectory->mkdir("nom_nd"));
-  //surf_nom_fd.SaveTo(gDirectory->mkdir("nom_fd"));
-  //surf_nom_ub.SaveTo(gDirectory->mkdir("nom_ub"));
-  surf_nd_fd.SaveTo(gDirectory->mkdir("nom_nd_fd"));
+  //surf_nom.SaveTo(gDirectory, "nom");
+  //surf_nom_nd.SaveTo(gDirectory, "nom_nd");
+  //surf_nom_fd.SaveTo(gDirectory, "nom_fd");
+  //surf_nom_ub.SaveTo(gDirectory, "nom_ub");
+  surf_nd_fd.SaveTo(gDirectory, "nom_nd_fd");
 
   std::vector<std::vector<const ISyst*>> slists;
   //slists.emplace_back(1, systs[0]);
@@ -152,11 +142,11 @@ void make_surfaces(const std::string anatype = numuStr)
 
     std::string suffix = "prop_systs";
 
-    //surf_syst_nd.SaveTo(gDirectory->mkdir(("nd_"+suffix).c_str()));
-    //surf_syst_fd.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
-    //surf_syst_ub.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
-    //surf_syst.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
-    surf_syst_nd_fd.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
+    //surf_syst_nd.SaveTo(gDirectory, "nd_"+suffix);
+    //surf_syst_fd.SaveTo(gDirectory, "fd_"+suffix);
+    //surf_syst_ub.SaveTo(gDirectory, "ub_"+suffix);
+    //surf_syst.SaveTo(gDirectory, "allexpt_"+suffix);
+    surf_syst_nd_fd.SaveTo(gDirectory, "nd_fd_"+suffix);
 
   } // end for s
 
@@ -185,45 +175,39 @@ void make_surfaces(const std::string anatype = numuStr)
   SingleSampleExperiment expt_fd2(p_fd, data_fd2);
   SingleSampleExperiment expt_ub2(p_ub, data_ub2);
 
-  MultiExperimentSBN multiExpt2({&expt_nd2, &expt_fd2, &expt_ub2}, {kSBND, kICARUS, kMicroBoone});
-  MultiExperimentSBN fd_nd2({&expt_nd2, &expt_fd2}, {kSBND, kICARUS});
+  MultiExperiment multiExpt2({&expt_nd2, &expt_fd2, &expt_ub2});
+  MultiExperiment fd_nd2({&expt_nd2, &expt_fd2});
 
   //Surface surf_nom2(&multiExpt2, calc2, kAxForTh, kAxDmSq);
   //Surface surf_nd_fd2(&fd_nd2, calc2, kAxForTh, kAxDmSq);
-  calc2->SetL(kBaselineSBND);
   //Surface surf_nom_nd2(&expt_nd2, calc2, kAxForTh, kAxDmSq);
-  calc2->SetL(kBaselineIcarus);
   //Surface surf_nom_fd2(&expt_fd2, calc2, kAxForTh, kAxDmSq);
-  calc2->SetL(kBaselineMicroBoone);
   //Surface surf_nom_ub2(&expt_ub2, calc2, kAxForTh, kAxDmSq);
-    
+
   //fout.cd("..");
   //fout.mkdir("allowed");
   //fout.cd("allowed");
 
-  //surf_nom2.SaveTo(gDirectory->mkdir("nom"));
-  //surf_nom_nd2.SaveTo(gDirectory->mkdir("nom_nd"));
-  //surf_nom_fd2.SaveTo(gDirectory->mkdir("nom_fd"));
-  //surf_nom_ub2.SaveTo(gDirectory->mkdir("nom_ub"));
-  //surf_nd_fd2.SaveTo(gDirectory->mkdir("nom_nd_fd"));
+  //surf_nom2.SaveTo(gDirectory, "nom");
+  //surf_nom_nd2.SaveTo(gDirectory, "nom_nd");
+  //surf_nom_fd2.SaveTo(gDirectory, "nom_fd");
+  //surf_nom_ub2.SaveTo(gDirectory, "nom_ub");
+  //surf_nd_fd2.SaveTo(gDirectory, "nom_nd_fd");
 
   for(const std::vector<const ISyst*> slist: slists){
     //Surface surf_syst2(&multiExpt2, calc2, kAxForTh, kAxDmSq, {}, slist);
     //Surface surf_syst_nd_fd2(&fd_nd2, calc2, kAxForTh, kAxDmSq, {}, slist);
-    calc2->SetL(kBaselineSBND);
     //Surface surf_syst_nd2(&expt_nd2, calc2, kAxForTh, kAxDmSq, {}, slist);
-    calc2->SetL(kBaselineIcarus);
     //Surface surf_syst_fd2(&expt_fd2, calc2, kAxForTh, kAxDmSq, {}, slist);
-    calc2->SetL(kBaselineMicroBoone);
     //Surface surf_syst_ub2(&expt_ub2, calc2, kAxForTh, kAxDmSq, {}, slist);
 
     std::string suffix = "prop_systs";
 
-    //surf_syst_nd2.SaveTo(gDirectory->mkdir(("nd_"+suffix).c_str()));
-    //surf_syst_fd2.SaveTo(gDirectory->mkdir(("fd_"+suffix).c_str()));
-    //surf_syst_ub2.SaveTo(gDirectory->mkdir(("ub_"+suffix).c_str()));
-    //surf_syst2.SaveTo(gDirectory->mkdir(("allexpt_"+suffix).c_str()));
-    //surf_syst_nd_fd2.SaveTo(gDirectory->mkdir(("nd_fd_"+suffix).c_str()));
+    //surf_syst_nd2.SaveTo(gDirectory, "nd_"+suffix);
+    //surf_syst_fd2.SaveTo(gDirectory, "fd_"+suffix);
+    //surf_syst_ub2.SaveTo(gDirectory, "ub_"+suffix);
+    //surf_syst2.SaveTo(gDirectory, "allexpt_"+suffix);
+    //surf_syst_nd_fd2.SaveTo(gDirectory, "nd_fd_"+suffix);
 
   } // end for s
 }

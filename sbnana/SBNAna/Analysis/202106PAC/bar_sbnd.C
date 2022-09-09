@@ -1,6 +1,7 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -41,18 +42,18 @@ void bar_sbnd()
 
   const Cut kIsCosmic = SIMPLEVAR(truth.index) < 0;
 
-  const HistAxis axCount("", Binning::Simple(1, 0, 1), Constant(.5));
+  const HistAxis axCount("", Binning::Simple(1, 0, 1), Var([](const caf::SRSliceProxy*){return .5;}));
 
   std::vector<Spectrum*> sNumuCC;
   std::vector<Spectrum*> sCosmic;
   std::vector<Spectrum*> sOther;
-  
+
   Cut accumCut = kNoCut;
   for(auto& it: cuts){
     accumCut = accumCut && it.second;
-    sNumuCC.push_back(new Spectrum(loader, axCount, kNumuSpillSel, accumCut && kIsNumuCC));
-    sCosmic.push_back(new Spectrum(loader, axCount, kNumuSpillSel, accumCut && kIsCosmic));
-    sOther.push_back(new Spectrum(loader, axCount, kNumuSpillSel, accumCut && !kIsNumuCC && !kIsCosmic));
+    sNumuCC.push_back(new Spectrum(loader[kNumuSpillSel].Slices()[accumCut][kIsNumuCC], axCount));
+    sCosmic.push_back(new Spectrum(loader[kNumuSpillSel].Slices()[accumCut][kIsCosmic], axCount));
+    sOther.push_back(new Spectrum(loader[kNumuSpillSel].Slices()[accumCut][!kIsNumuCC && !kIsCosmic], axCount));
   }
 
   loader.Go();

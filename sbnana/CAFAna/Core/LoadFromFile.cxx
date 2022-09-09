@@ -19,8 +19,11 @@ namespace ana
 {
   //----------------------------------------------------------------------
   template<> std::unique_ptr<osc::IOscCalc>
-  LoadFrom<osc::IOscCalc>(TDirectory* dir)
+  LoadFrom<osc::IOscCalc>(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* ptag = (TObjString*)dir->Get("type");
     assert(ptag);
     const TString tag = ptag->GetString();
@@ -88,10 +91,11 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  template<> void SaveTo(const osc::IOscCalc& x, TDirectory* dir)
+  template<> void SaveTo(const osc::IOscCalc& x, TDirectory* dir, const std::string& name)
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
 
     if(dynamic_cast<const osc::NoOscillations*>(&x)){
@@ -124,10 +128,10 @@ namespace ana
       std::cout << "Unknown calculator in SaveTo " << typeid(x).name() << std::endl;
       abort();
     }
-    
+
     const osc::OscCalcSterile* tmpSterile = dynamic_cast<const osc::OscCalcSterile*>(&x);
     if(tmpSterile) {
-      TObjString("OscCalculatorSterile").Write("type");      
+      TObjString("OscCalculatorSterile").Write("type");
       std::vector<double> state = tmpSterile->GetState();
       TVectorD params(state.size());
       for (unsigned int i = 0; i < state.size(); ++i) params[i] = state[i];
@@ -139,7 +143,7 @@ namespace ana
     //for the implementation of OscCalcPMNS_NSI
     const osc::OscCalcPMNS_NSI* tmpNSI = dynamic_cast<const osc::OscCalcPMNS_NSI*>(&x);
     if(tmpNSI) {
-      TObjString("OscCalcPMNS_NSI").Write("type");      
+      TObjString("OscCalcPMNS_NSI").Write("type");
       std::vector<double> state = tmpNSI->GetState();
       TVectorD params(state.size());
       for (unsigned int i = 0; i < state.size(); ++i) params[i] = state[i];
@@ -156,7 +160,7 @@ namespace ana
       std::cout << "Unimplemented calculator in SaveTo " << typeid(x).name() << std::endl;
       abort();
     }
-    
+
     TVectorD params(8);
 
     params[0] = y->GetL();
@@ -169,6 +173,9 @@ namespace ana
     params[7] = y->GetdCP();
 
     params.Write("params");
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }

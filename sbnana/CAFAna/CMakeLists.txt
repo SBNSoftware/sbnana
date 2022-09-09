@@ -1,6 +1,8 @@
-include_directories($ENV{SRPROXY_INC})
+include_directories(${SRPROXY_INC})
 
 include_directories($ENV{EIGEN_INC})
+
+include_directories(${CAFANACORE_INC})
 
 # CAFAna expects assert() to still function even in the prof build
 add_definitions(-UNDEBUG)
@@ -23,8 +25,6 @@ add_subdirectory(bin)
 
 # These are in SBNAna for now
 #cet_script(cafe)
-# same place as cafe script so we can find it
-#cet_script(load_cafana_libs.C)
 cet_script(cafana.py)
 cet_script(rootlogon.C)
 

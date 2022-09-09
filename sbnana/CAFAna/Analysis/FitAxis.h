@@ -13,7 +13,7 @@ namespace ana
     FitAxis(const IFitVar* var,
             int nbins, double min, double max,
             bool islog = false);
-    
+
     const IFitVar* var;
     int nbins;
     double min;

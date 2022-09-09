@@ -1,6 +1,7 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -14,6 +15,8 @@
 
 #include "TH1.h"
 #include "TPad.h"
+
+#include <iostream>
 
 using namespace ana;
 
@@ -32,14 +35,14 @@ void spectra_sbnd()
 
   const Cut kIsCosmic = SIMPLEVAR(truth.index) < 0;
 
-  // This looks much better than the official fit binning 
+  // This looks much better than the official fit binning
   const Binning binsEnergy = Binning::Simple(30, 0, 3);
 
   const HistAxis axEnergy(/*Reconstructed*/"True energy (GeV)", binsEnergy, kRecoE);
 
-  Spectrum sTot(loader, axEnergy, kNumuSpillSel, kNumuSel);
-  Spectrum sNC(loader, axEnergy, kNumuSpillSel, kNumuSel && kIsNC);
-  //  Spectrum sCosmic(loader, axEnergy, kNumuSpillSel, kNumuSel && kIsCosmic);
+  Spectrum sTot(loader[kNumuSpillSel].Slices()[kNumuSel], axEnergy);
+  Spectrum sNC(loader[kNumuSpillSel].Slices()[kNumuSel][kIsNC], axEnergy);
+  //  Spectrum sCosmic(loader[kNumuSpillSel].Slices[kNumuSel][kIsCosmic], axEnergy);
 
   loader.Go();
 

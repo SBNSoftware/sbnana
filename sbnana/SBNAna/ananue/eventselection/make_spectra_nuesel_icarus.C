@@ -1,16 +1,17 @@
 ///////////////////////////////////////////////////////////////////////
 // Author: Diana Patricia Mendez                                     //
 // Contact: dmendezme@bnl.gov                                        //
-// Last edited: January 15 2021                                      //   
-//                                                                   // 
-// Makes spectra of the variables defined in helper with specific    // 
+// Last edited: January 15 2021                                      //
+//                                                                   //
+// Makes spectra of the variables defined in helper with specific    //
 // cuts applied to the sample(s).                                    //
 // Takes a CAF from where to read the data and outputs a ROOT file   //
 // containing the resulted histograms                                //
 ///////////////////////////////////////////////////////////////////////
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "cafanacore/Spectrum.h"
 
 #include "helper_nuesel_icarus.h"
 
@@ -99,15 +100,16 @@ void make_spectra_nuesel_icarus(std::string finname = "nucosmics", int setno = 1
   for(unsigned int iSel = 0; iSel < kNSel; ++iSel){
     for(unsigned int iType = 0; iType < kNType; ++iType){
       for(unsigned int jVar = 0; jVar < kNVar; ++jVar){
-        specs[iSel][iType][jVar] = new Spectrum(plots[jVar].label, plots[jVar].bins, loader, plots[jVar].var, sels[iSel].cut && types[iType].cut);
-        specsveto[iSel][iType][jVar] = new Spectrum(plots[jVar].label, plots[jVar].bins, loader, plots[jVar].var, kCRTHitVetoFD, sels[iSel].cut && types[iType].cut); // Add CRT veto
+        const HistAxis ax(plots[jVar].label, plots[jVar].bins, plots[jVar].var);
+        specs[iSel][iType][jVar] = new Spectrum(loader.Slices()[sels[iSel].cut][types[iType].cut], ax);
+        specsveto[iSel][iType][jVar] = new Spectrum(loader[kCRTHitVetoFD].Slices()[sels[iSel].cut][types[iType].cut], ax); // Add CRT veto
       }
     }
   }
 
   for(unsigned int iSel = 0; iSel < kNSelCRTSpill; ++iSel){
     for(unsigned int jVar = 0; jVar < kNVarCRTSpill; ++jVar){
-      specscrtspill[iSel][jVar] = new Spectrum(crtplots_spill[jVar].label, crtplots_spill[jVar].bins, loader, crtplots_spill[jVar].var, crtsels_spill[iSel].cut);
+      //      specscrtspill[iSel][jVar] = new Spectrum(loader[crtsels_spill[iSel].cut], SpillHistAxis(crtplots_spill[jVar].label, crtplots_spill[jVar].bins, crtplots_spill[jVar].var));
     }
   }
   // actually make the spectra
@@ -132,8 +134,8 @@ void make_spectra_nuesel_icarus(std::string finname = "nucosmics", int setno = 1
             specveto->OverridePOT(cosmicPOT);
           }
         } // fake cosmics pot
-        spec->SaveTo(fout.mkdir(mysuffix.c_str()));
-        specveto->SaveTo(fout.mkdir(mysuffixveto.c_str()));
+        spec->SaveTo(&fout, mysuffix);
+        specveto->SaveTo(&fout, mysuffixveto);
       }
     }
   }
@@ -141,8 +143,8 @@ void make_spectra_nuesel_icarus(std::string finname = "nucosmics", int setno = 1
   for( unsigned int iSel = 0; iSel < kNSelCRTSpill; ++iSel ){
     for( unsigned int jVar = 0; jVar < kNVarCRTSpill; ++jVar ){
       std::string mysuffix = crtsels_spill[iSel].suffix + "_" + crtplots_spill[jVar].suffix;
-      std::cout << "Saving spectra: " << mysuffix << std::endl;
-      specscrtspill[iSel][jVar]->SaveTo( fout.mkdir(mysuffix.c_str()) );
+      //      std::cout << "Saving spectra: " << mysuffix << std::endl;
+      //      specscrtspill[iSel][jVar]->SaveTo(&fout, mysuffix);
     }
   }
 

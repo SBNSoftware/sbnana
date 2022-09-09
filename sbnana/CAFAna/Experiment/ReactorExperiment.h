@@ -18,8 +18,8 @@ namespace ana
     virtual double ChiSq(osc::IOscCalcAdjustable* osc,
                          const SystShifts& shift = SystShifts::Nominal()) const override;
 
-    void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<ReactorExperiment> LoadFrom(TDirectory* dir);
+    void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<ReactorExperiment> LoadFrom(TDirectory* dir, const std::string& name);
   protected:
     double fBestFit, fSigma;
   };
@@ -33,6 +33,6 @@ namespace ana
   /// Updated value for SecondAna based on the latest PDG
   const ReactorExperiment* WorldReactorConstraint2016();
 
-  /// Reactor constraint from PDG 2017 update 
+  /// Reactor constraint from PDG 2017 update
   const ReactorExperiment* WorldReactorConstraint2017();
 }

@@ -1,15 +1,15 @@
-#pragma once 
+#pragma once
 
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
-#include "SBNAna/Vars/Binnings.h"
-#include "SBNAna/Vars/NueVars.h"
-#include "SBNAna/Vars/Vars.h"
-#include "SBNAna/Cuts/Cuts.h"
-#include "SBNAna/Cuts/NueCuts.h"
-#include "SBNAna/Cuts/TruthCuts.h"
+#include "sbnana/SBNAna/Vars/Binnings.h"
+#include "sbnana/SBNAna/Vars/NueVars.h"
+#include "sbnana/SBNAna/Vars/Vars.h"
+#include "sbnana/SBNAna/Cuts/Cuts.h"
+#include "sbnana/SBNAna/Cuts/NueCuts.h"
+#include "sbnana/SBNAna/Cuts/TruthCuts.h"
 
 using namespace ana;
 
@@ -40,10 +40,10 @@ const Binning kTimeBinning      = Binning::Simple(70,0.,3500);
 
 
 // // In this example, we are making the following Spectra
-std::vector<PlotDef> plots = 
+std::vector<PlotDef> plots =
   {{"count", "", Binning::Simple(3,0,3), kCounting},
-   {"bestenergy", "Best plane energy (GeV)", kLowEnergyBinningGeV,	kRecoShower_BestEnergy},  
-   {"conversion", "Conversion gap (cm)",     kGapBinning,       kRecoShower_ConversionGap},  
+   {"bestenergy", "Best plane energy (GeV)", kLowEnergyBinningGeV,	kRecoShower_BestEnergy},
+   {"conversion", "Conversion gap (cm)",     kGapBinning,       kRecoShower_ConversionGap},
    {"density",    "Shower density (MeV/cm)", kDensityBinning,   kRecoShower_Density},
    {"energy",     "Energy (MeV)",            kNueEnergyBinning, kRecoShower_Energy},
    {"length",     "Length (cm)",             kLengthBinning,    kRecoShower_Length},

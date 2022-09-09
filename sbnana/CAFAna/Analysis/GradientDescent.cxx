@@ -119,7 +119,7 @@ namespace ana
     const unsigned int N = pt.size();
     ROOT::Minuit2::MnAlgebraicVector vec(N);
     for(unsigned int i = 0; i < N; ++i) vec(i) = pt[i];
-    ROOT::Minuit2::MinimumParameters params(vec, chi);    
+    ROOT::Minuit2::MinimumParameters params(vec, chi);
     ROOT::Minuit2::MinimumState state(params, 0, ncalls);
     ROOT::Minuit2::MnUserTransformation trans(pt, std::vector<double>(N));
     ROOT::Minuit2::MinimumSeed seed(state, trans);

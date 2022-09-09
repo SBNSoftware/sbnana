@@ -1,9 +1,9 @@
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
-#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
@@ -44,12 +44,12 @@ void post_spec(const std::string anatype = numuStr)
   for (auto s : systs) {
     for (auto n : syst_names) if (n == s->ShortName()) systs_to_process.push_back(s);
   }
-  
+
   std::vector<std::vector<const ISyst*>> all_systs_vec;
   all_systs_vec.push_back(systs_to_process);
   all_systs_vec.push_back(systs_flux);
   all_systs_vec.push_back(systs_genie);
-  
+
   std::string n[] = {"all", "flux", "genie"};
 
    const char* name_in;
@@ -82,9 +82,9 @@ void post_spec(const std::string anatype = numuStr)
    }
 
 
-   PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-   PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-   PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+   PredictionInterp* p_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
+   PredictionInterp* p_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
+   PredictionInterp* p_ub = LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
 
    TLegend* leg_updn = new TLegend(.6, .6, .85, .85);
    leg_updn->SetFillStyle(0);
@@ -179,7 +179,7 @@ void post_spec(const std::string anatype = numuStr)
        hists.push_back(p_nd->PredictSyst(&unosc, shifts).ToTH1(sbndPOT));
      }
      double xbins[] = {0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1., 1.25, 1.5, 2., 2.5, 3.};
-     TH1D *shifted = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
+     TH1D *shifted = new TH1D(("h"+std::to_string(i)).c_str(), "hist",19,xbins);
      TH1D *lower = new TH1D("h2", "hist", 19, xbins);
      for (int k = 1; k <= 19; ++k ) {
        std::vector<double> bincont;
@@ -187,18 +187,18 @@ void post_spec(const std::string anatype = numuStr)
        std::sort(bincont.begin(),bincont.end());
        shifted->SetBinContent(k, bincont[840]);
        lower->SetBinContent(k, bincont[160]);
-     }    
-    
+     }
+
      shifted->Write(("spect_nd_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
      lower->Write(("spect_nd_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
-     
+
      SystShifts shifts2;
      std::vector<TH1*> hists2;
      for (int j = 0; j < 1000; ++j){
        for(auto s : all_systs_vec[i]) shifts2.SetShift(s, gRandom->Gaus(0, postFit[s->ShortName()]));
        hists2.push_back(p_fd->PredictSyst(&unosc, shifts2).ToTH1(icarusPOT));
      }
-     TH1D *shifted2 = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
+     TH1D *shifted2 = new TH1D(("h"+std::to_string(i)).c_str(), "hist",19,xbins);
      TH1D *lower2 = new TH1D("h2", "hist", 19, xbins);
      for (int k = 1; k <= 19; ++k ) {
       std::vector<double> bincont;
@@ -206,8 +206,8 @@ void post_spec(const std::string anatype = numuStr)
       std::sort(bincont.begin(),bincont.end());
       shifted2->SetBinContent(k, bincont[840]);
       lower2->SetBinContent(k, bincont[160]);
-     }    
-    
+     }
+
      shifted2->Write(("spect_fd_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
      lower2->Write(("spect_fd_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
 
@@ -217,7 +217,7 @@ void post_spec(const std::string anatype = numuStr)
        for(auto s : all_systs_vec[i]) shifts3.SetShift(s, gRandom->Gaus(0, postFit[s->ShortName()]));
        hists3.push_back(p_ub->PredictSyst(&unosc, shifts3).ToTH1(uboonePOT));
      }
-     TH1D *shifted3 = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
+     TH1D *shifted3 = new TH1D(("h"+std::to_string(i)).c_str(), "hist",19,xbins);
      TH1D *lower3 = new TH1D("h2", "hist", 19, xbins);
      for (int k = 1; k <= 19; ++k ) {
        std::vector<double> bincont;
@@ -225,8 +225,8 @@ void post_spec(const std::string anatype = numuStr)
        std::sort(bincont.begin(),bincont.end());
        shifted3->SetBinContent(k, bincont[840]);
        lower3->SetBinContent(k, bincont[160]);
-     }    
-     
+     }
+
      shifted3->Write(("spect_ub_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
      lower3->Write(("spect_ub_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
    }

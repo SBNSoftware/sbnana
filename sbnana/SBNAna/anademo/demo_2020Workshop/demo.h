@@ -1,8 +1,8 @@
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
-#include "SBNAna/Vars/NumuVars.h"
-#include "SBNAna/Cuts/TruthCuts.h"
+#include "sbnana/SBNAna/Vars/NumuVars.h"
+#include "sbnana/SBNAna/Cuts/TruthCuts.h"
 
 using namespace ana;
 
@@ -27,17 +27,17 @@ const Var kPrimTrkCosth([](const caf::SRSliceProxy *slc) -> double
 // Slice Vertex position
 const Var kSlcVtxX([](const caf::SRSliceProxy *slc) -> double
 		   {
-		     return slc->slc.vertex.x;
+		     return slc->vertex.x;
 		   });
 
 const Var kSlcVtxY([](const caf::SRSliceProxy *slc) -> double
 		   {
-		     return slc->slc.vertex.y;
+		     return slc->vertex.y;
 		   });
 
 const Var kSlcVtxZ([](const caf::SRSliceProxy *slc) -> double
 		   {
-		     return slc->slc.vertex.z;
+		     return slc->vertex.z;
 		   });
 
 // These are examples of useful structs to
@@ -51,7 +51,7 @@ struct PlotDef
 };
 
 // In this example, we are making the following Spectra
-std::vector<PlotDef> plots = 
+std::vector<PlotDef> plots =
   {{"count",   "",          Binning::Simple(3,0,3),       kCounting},
    {"mucosth", "cos#theta", Binning::Simple(10,-1,1),     kPrimTrkCosth},
    {"vtxx",    "X (cm)",    Binning::Simple(10,-200,200), kSlcVtxX},
@@ -72,9 +72,9 @@ struct SelDef
 // See Cuts/TruthCuts to check out these cuts
 const Cut kSig = kIsNumu && !kIsNC;
 
-// We are making the Spectra defined above 
-// for 3 different selections. 
-std::vector<SelDef> sels = 
+// We are making the Spectra defined above
+// for 3 different selections.
+std::vector<SelDef> sels =
   {{"nocut", "All Slices",  kNoCut, kBlack},
    {"sig",   "True NumuCC", kSig,   kRed+1},
    {"bkg",   "Not NumuCC",  !kSig,  kAzure+2},
@@ -82,7 +82,7 @@ std::vector<SelDef> sels =
 
 // If you wanted to  add a new cut, define an
 // expression for kYourCut (see examples in SBNAna/Cuts)
-// and then add the following lines to the sels vector: 
+// and then add the following lines to the sels vector:
 /* {"all_yourcut", "All Slices",  kYourCut,            kBlack}, */
 /* {"sig_yourcut", "True NumuCC", (kSig && kYourCut),  kRed+1}, */
 /* {"bkg_yourcut", "Not NumuCC",  (!kSig && kYourCut), kAzure+2}, */

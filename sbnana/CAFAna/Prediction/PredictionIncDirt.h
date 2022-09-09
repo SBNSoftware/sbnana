@@ -12,29 +12,21 @@ namespace ana
   class PredictionIncDirt: public IPrediction
   {
   public:
-    PredictionIncDirt(SpectrumLoaderBase& loaderNonswap,
-                      SpectrumLoaderBase& loaderNue,
-                      SpectrumLoaderBase& loaderNuTau,
-                      SpectrumLoaderBase& loaderIntrinsic,
-                      SpectrumLoaderBase& loaderDirt,
-                      const HistAxis& axis,
-                      const SpillCut& spillcut,
-                      const Cut& cut,
-                      const SystShifts& shift = kNoShift,
-                      const Var& wei = kUnweighted);
+    PredictionIncDirt(ISliceSource& srcNonswap,
+                      ISliceSource& srcNue,
+                      ISliceSource& srcNuTau,
+                      ISliceSource& srcIntrinsic,
+                      ISliceSource& srcDirt,
+                      const HistAxis& axis);
 
-    PredictionIncDirt(Loaders& loaders,
-                      SpectrumLoaderBase& loaderDirt,
-                      const HistAxis& axis,
-                      const SpillCut& spillcut,
-                      const Cut& cut,
-                      const SystShifts& shift = kNoShift,
-                      const Var& wei = kUnweighted);
+    PredictionIncDirt(SliceSources& srcs,
+                      ISliceSource& srcDirt,
+                      const HistAxis& axis);
 
     virtual ~PredictionIncDirt();
 
-    static std::unique_ptr<PredictionIncDirt> LoadFrom(TDirectory* dir);
-    virtual void SaveTo(TDirectory* dir) const override;
+    static std::unique_ptr<PredictionIncDirt> LoadFrom(TDirectory* dir, const std::string& name);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
 
     Spectrum PredictDet(osc::IOscCalc* calc) const
     {
@@ -61,7 +53,7 @@ namespace ana
     {
       return fDirt.PredictComponent(calc, flav, curr, sign);
     }
-    
+
     virtual Spectrum Predict(osc::IOscCalc* calc) const override
     {
       return PredictDet(calc) + PredictDirt(calc);

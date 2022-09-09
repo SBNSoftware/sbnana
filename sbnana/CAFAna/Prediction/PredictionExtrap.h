@@ -24,14 +24,13 @@ namespace ana
     OscillatableSpectrum ComponentCC(int from, int to) const override;
     //    Spectrum ComponentNC() const override;
 
-    virtual void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<PredictionExtrap> LoadFrom(TDirectory* dir);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<PredictionExtrap> LoadFrom(TDirectory* dir, const std::string& name);
 
     PredictionExtrap() = delete;
 
     IExtrap* GetExtrap() const {return fExtrap;}
   protected:
-
     IExtrap* fExtrap;
   };
 }

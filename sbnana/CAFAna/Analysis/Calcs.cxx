@@ -25,7 +25,7 @@ namespace ana
     calc->SetTh23(M_PI/4);
 
     // NH from PDG2014 + 2015 update
-    //http://pdg.lbl.gov/2015/tables/rpp2015-sum-leptons.pdf 
+    //http://pdg.lbl.gov/2015/tables/rpp2015-sum-leptons.pdf
     calc->SetDmsq32(2.44e-3); // NB: this is normal hierarchy
 
     // Reactor average from PDG2014 + 2015 update
@@ -46,11 +46,11 @@ namespace ana
   //----------------------------------------------------------------------
   void ResetOscCalcToDefaultIH(osc::IOscCalcAdjustable* calc)
   {
-    //Share most defaults 
+    //Share most defaults
     ResetOscCalcToDefault(calc);
-    // IH from PDG2014 + 2015 update 
+    // IH from PDG2014 + 2015 update
     // http://pdg.lbl.gov/2015/tables/rpp2015-sum-leptons.pdf
-    calc->SetDmsq32(-2.49e-3); 
+    calc->SetDmsq32(-2.49e-3);
 
   }
 

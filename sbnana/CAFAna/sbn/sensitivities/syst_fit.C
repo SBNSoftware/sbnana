@@ -1,9 +1,9 @@
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
-#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
@@ -40,7 +40,7 @@ void syst_fit(const std::string anatype = numuStr)
   for (auto s : wtsysts) {
     for (auto n : syst_names) if (n == s->ShortName()) systs_to_process.push_back(s);
   }
-  
+
   std::vector<const ISyst*> systs;
   //for (const ISyst* s : det_systs) systs.push_back(s);
   for (const ISyst* s : systs_to_process) systs.push_back(s);
@@ -59,46 +59,43 @@ void syst_fit(const std::string anatype = numuStr)
     std::cout << "Must specifiy nue or numu" << std::endl;
     return;
   }
-  
+
   TFile fin(name_in);
-  
-  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
-  
+
+  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
+  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
+  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
+
   //std::vector<const ISyst*> bigsysts;
-  
+
   //osc::NoOscillations unosc;
   //for(const ISyst* s: systs){
   //if(fabs(p_fd->PredictSyst(&unosc, SystShifts(s, +1)).Integral(1e20)/p_fd->Predict(&unosc).Integral(1e20)-1) > .01) bigsysts.push_back(s);
   //}
-  
+
   //std::cout << bigsysts.size() << " big systs out of " << systs.size() << std::endl;
   //for(const ISyst* s: bigsysts) std::cout << s->ShortName() << " ";
   //std::cout << std::endl;
-  
+
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
-  
-  calc->SetL(kBaselineSBND);
+
   const Spectrum data_nd = p_nd->Predict(calc).FakeData(sbndPOT);
-  calc->SetL(kBaselineIcarus);
   const Spectrum data_fd = p_fd->Predict(calc).FakeData(icarusPOT);
-  calc->SetL(kBaselineMicroBoone);
   const Spectrum data_ub = p_ub->Predict(calc).FakeData(uboonePOT);
-  
+
   SingleSampleExperiment expt_nd(p_nd, data_nd);
   SingleSampleExperiment expt_fd(p_fd, data_fd);
   SingleSampleExperiment expt_ub(p_ub, data_ub);
-   
-  MultiExperimentSBN multiExpt({&expt_nd, &expt_fd, &expt_ub}, {kSBND, kICARUS, kMicroBoone});
-  
+
+  MultiExperiment multiExpt({&expt_nd, &expt_fd, &expt_ub});
+
    std::vector<std::vector<const ISyst*>> slists;
    //slists.push_back(bigsysts);
    slists.push_back(systs);
    //for(const ISyst* s: systs) slists.emplace_back(1, s); // and then each
 
    std::vector<const IFitVar*> oscVars;
-   if (anatype == numuStr) {   
+   if (anatype == numuStr) {
      oscVars = {&kFitDmSqSterile, &kFitSinSq2ThetaMuMu};
    }
    else {
@@ -118,7 +115,7 @@ void syst_fit(const std::string anatype = numuStr)
      std::vector<double> prefit_err = fit_syst.GetPreFitErrors();
      std::vector<double> postfit = fit_syst.GetPostFitValues();
      std::vector<double> postfit_err = fit_syst.GetPostFitErrors();
-  
+
      // std::cout << "Parameters considered: " << std::endl;
      // for (const string st: pnames) {
      //   std::cout << st << std::endl;
@@ -156,7 +153,6 @@ void syst_fit(const std::string anatype = numuStr)
      std::cout << "Fitting ND only..." << std::endl;
      Fitter fit_nd(&expt_nd, oscVars, slist, Fitter::kCareful);
      OscCalcSterileApproxAdjustable* calc_nd = DefaultSterileApproxCalc();
-     calc_nd->SetL(kBaselineSBND);
      SystShifts bestSysts_nd;
      double chi_nd = fit_nd.Fit(calc_nd, bestSysts_nd);
      std::vector<double> prefitnd = fit_nd.GetPreFitValues();
@@ -177,7 +173,6 @@ void syst_fit(const std::string anatype = numuStr)
      std::cout << "Fitting FD only..." << std::endl;
      Fitter fit_fd(&expt_fd, oscVars, slist, Fitter::kCareful);
      OscCalcSterileApproxAdjustable* calc_fd = DefaultSterileApproxCalc();
-     calc_fd->SetL(kBaselineIcarus);
      SystShifts bestSysts_fd;
      double chi_fd = fit_fd.Fit(calc_fd, bestSysts_fd);
      std::vector<double> prefitfd = fit_fd.GetPreFitValues();

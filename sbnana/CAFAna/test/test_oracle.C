@@ -10,7 +10,7 @@ using namespace ana;
 
 void test_oracle()
 {
-  UniverseOracle oracle;
+  const UniverseOracle& oracle = UniverseOracle::Instance();
 
   const unsigned int N = oracle.Systs().size();
   unsigned int Nx = sqrt(N);
@@ -23,7 +23,7 @@ void test_oracle()
 
   int i = 0;
   for(const std::string& name: oracle.Systs()){
-    const std::vector<double>& shifts = oracle.ShiftsForSyst(name);
+    const std::vector<float>& shifts = oracle.ShiftsForSyst(name);
     std::cout << name << ": " << shifts.size() << " universes" << std::endl;
     for(int sigma = -3; sigma <= +3; ++sigma){
       if(sigma == 0) continue;

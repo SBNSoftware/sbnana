@@ -12,7 +12,7 @@ namespace ana {
     bool ub = (detector == EnergyScaleSystDetector::kMicroBooNE && det != caf::kSBND && det != caf::kICARUS);
     bool fd = (detector == EnergyScaleSystDetector::kICARUS && det == caf::kICARUS);
     bool detector_cut = all || nd || ub || fd;
-    if(!sr->truth.iscc || abs(sr->truth.pdg) != 14 || isnan(sr->fake_reco.nuE) || !detector_cut) 
+    if(!sr->truth.iscc || abs(sr->truth.pdg) != 14 || isnan(sr->fake_reco.nuE) || !detector_cut)
       return ;
     double particle_energy = 0.0;
     switch(part) {
@@ -58,7 +58,7 @@ namespace ana {
       break;
     }
     sr->fake_reco.nuE += particle_energy * scale;
-   
+
   }
 
    const EnergyScaleSyst kEnergyScaleMuon(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuon", "Correlated linear E_{#mu} scale");

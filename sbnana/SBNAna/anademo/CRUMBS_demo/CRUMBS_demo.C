@@ -1,5 +1,6 @@
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 using namespace ana;
@@ -18,9 +19,9 @@ void CRUMBS_demo()
   const Binning binsCRUMBSScore = Binning::Simple(20,-1,1);
   const Binning binsSliceNTracks = Binning::Simple(10,0,10);
 
-  Spectrum specCRUMBSScore = Spectrum("CRUMBS Score", binsCRUMBSScore, loader, kCRUMBSScore, kNoSpillCut, kNonUnambiguousSlice);
-  Spectrum specBestCRUMBSScore = Spectrum("Best CRUMBS Score", binsCRUMBSScore, loader, kBestCRUMBSScore, kHasNonUnambiguousSlice);
-  Spectrum specBestCRUMBSSliceNTracks = Spectrum("# Tracks", binsSliceNTracks, loader, kBestCRUMBSSliceNTracks, kHasNonUnambiguousSlice && kBestCRUMBSSliceCut);
+  Spectrum specCRUMBSScore = Spectrum(loader.Slices()[kNonUnambiguousSlice], HistAxis("CRUMBS Score", binsCRUMBSScore, kCRUMBSScore));
+  Spectrum specBestCRUMBSScore = Spectrum(loader[kHasNonUnambiguousSlice], SpillHistAxis("Best CRUMBS Score", binsCRUMBSScore, kBestCRUMBSScore));
+  Spectrum specBestCRUMBSSliceNTracks = Spectrum(loader[kHasNonUnambiguousSlice][kBestCRUMBSSliceCut], SpillHistAxis("# Tracks", binsSliceNTracks, kBestCRUMBSSliceNTracks));
 
   loader.Go();
 

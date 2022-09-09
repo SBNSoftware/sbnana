@@ -4,9 +4,10 @@
 #include "sbnana/CAFAna/Analysis/Fit.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/IFitVar.h"
-#include "sbnana/CAFAna/Core/Progress.h"
-#include "sbnana/CAFAna/Core/ThreadPool.h"
+#include "cafanacore/Progress.h"
+#include "cafanacore/ThreadPool.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
+#include "cafanacore/UtilsExt.h"
 
 #include "OscLib/IOscCalc.h"
 
@@ -222,16 +223,17 @@ namespace ana
                   << "This should never happen." << std::endl;
       }
 
-      if(fParallel){
-        pool->AddMemberTask(this, &Surface::FillSurfacePoint,
-                            expt, calc,
-                            xax, xv, yax, yv,
-                            profVars, profSysts, seedPts, systSeedPts);
-      }
-      else{
+      ThreadPool::func_t task = [=](){
         FillSurfacePoint(expt, calc,
                          xax, xv, yax, yv,
                          profVars, profSysts, seedPts, systSeedPts);
+      };
+
+      if(fParallel){
+        pool->AddTask(task);
+      }
+      else{
+        task(); // Just do it straight away
         ++neval;
         prog->SetProgress(neval*grid_stride/double(Nx*Ny));
       }
@@ -556,10 +558,13 @@ namespace ana
   TH2* Gaussian5Sigma1D1Sided(const Surface& s){return Flat(23.66, s);}
 
   //----------------------------------------------------------------------
-  void Surface::SaveTo(TDirectory* dir) const
+  void Surface::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
+
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("Surface").Write("type");
 
     TVectorD v(3);
@@ -577,7 +582,7 @@ namespace ana
     int idx = 0;
     for(auto it: fProfHists){
       profDir->cd();
-      it->Write( TString::Format("hist%d", idx++));
+      it->Write(TString::Format("hist%d", idx++));
     }
 
     if(!fBinMask.empty()){
@@ -590,12 +595,19 @@ namespace ana
     TObjString(fLogX ? "yes" : "no").Write("logx");
     TObjString(fLogY ? "yes" : "no").Write("logy");
 
+    dir->Write();
+    delete dir;
+
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr< Surface > Surface::LoadFrom(TDirectory* dir)
+  std::unique_ptr<Surface> Surface::LoadFrom(TDirectory* dir,
+                                             const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     DontAddDirectory guard;
 
     TObjString* tag = (TObjString*)dir->Get("type");
@@ -641,7 +653,7 @@ namespace ana
   {
     std::vector<std::unique_ptr<Surface>> surfs;
     for(TFile* f: files) {
-      surfs.push_back(Surface::LoadFrom(f->GetDirectory(label.c_str())));
+      surfs.push_back(Surface::LoadFrom(f, label));
     }
 
     int Nx = surfs[0]->fHist->GetNbinsX();

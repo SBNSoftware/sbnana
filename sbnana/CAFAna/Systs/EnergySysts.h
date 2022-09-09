@@ -33,7 +33,7 @@ namespace ana
   class EnergyScaleSyst: public ISyst
   {
   public:
-    EnergyScaleSyst(EnergyScaleSystTerm _term, EnergyScaleSystParticle _part, EnergyScaleSystDetector _detector, double _uncertainty, const std::string& name, const std::string& latexName) : 
+    EnergyScaleSyst(EnergyScaleSystTerm _term, EnergyScaleSystParticle _part, EnergyScaleSystDetector _detector, double _uncertainty, const std::string& name, const std::string& latexName) :
       ISyst(name, latexName), term(_term), part(_part), detector(_detector), uncertainty(_uncertainty) {}
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;

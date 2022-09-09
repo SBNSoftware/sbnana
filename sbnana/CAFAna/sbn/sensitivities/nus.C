@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -7,7 +7,7 @@
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Analysis/Calcs.h"
 #include "OscLib/OscCalcSterile.h"
-#include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/StandardRecord.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterile.h"
 #include "sbnana/CAFAna/Analysis/FitAxis.h"
 
@@ -22,7 +22,6 @@
 #include "sbnana/CAFAna/Analysis/MedianSurface.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
 #include "sbnana/CAFAna/Experiment/MultiExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
 #include "sbnana/CAFAna/Experiment/GaussianConstraint.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
@@ -50,14 +49,13 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     return;
   }
 
-  std::cout << "Loading state from " << stateFname << std::endl; 
+  std::cout << "Loading state from " << stateFname << std::endl;
   TFile fin(stateFname);
-  PredictionInterp& pred_nd_numu = *ana::LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd_numu")).release();
-  PredictionInterp& pred_fd_numu = *ana::LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd_numu")).release();
+  PredictionInterp& pred_nd_numu = *ana::LoadFrom<PredictionInterp>(&fin, "pred_nd_numu").release();
+  PredictionInterp& pred_fd_numu = *ana::LoadFrom<PredictionInterp>(&fin, "pred_fd_numu").release();
 
   // Calculator
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
-  calc->SetL(kBaselineSBND);
 
   // To make a fit we need to have a "data" spectrum to compare to our MC
   // Prediction object
@@ -79,7 +77,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
                {},
                allSysts);
 
-  surf.SaveTo(fOutput->mkdir("surf"));
+  surf.SaveTo(fOutput, "surf");
 
   TCanvas* c1 = new TCanvas("c1");
   c1->SetLeftMargin(0.12);
@@ -99,15 +97,15 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
   const Spectrum data2 = pred_fd_numu.Predict(calc).FakeData(icarusPOT);
   SingleSampleExperiment expt2(&pred_fd_numu, data2);
 
-  MultiExperimentSBN multiExpt({&expt, &expt2}, {kSBND,kICARUS});
+  MultiExperiment multiExpt({&expt, &expt2});
 
   Surface surf2(&expt2, calc,
                 kAxSinSq2ThetaMuMu,
                 kAxDmSq,
                 {},
                 allSysts);
-		  
-  surf2.SaveTo(fOutput->mkdir("surf2"));
+
+  surf2.SaveTo(fOutput, "surf2");
 
   c1->Clear(); // just in case
 
@@ -130,13 +128,11 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     const FitAxis kCoarseAxDmSq(&kFitDmSqSterile, 20, 2e-2, 100, true);
 
     osc::IOscCalcAdjustable* c = DefaultSterileApproxCalc();
-    c->SetL(kBaselineSBND); 
     SingleSampleExperiment e1(&pred_nd_numu, pred_nd_numu.Predict(c).MockData(sbndPOT));
 
-    c->SetL(kBaselineIcarus); // Icarus
     SingleSampleExperiment e2(&pred_fd_numu, pred_fd_numu.Predict(c).MockData(icarusPOT));
 
-    MultiExperimentSBN me({&e1, &e2}, {kSBND, kICARUS});
+    MultiExperiment me({&e1, &e2});
 
     Surface ms(&me, c,
                kCoarseAxSinSq2ThetaMuMu,
@@ -147,14 +143,14 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     mockSurfs.push_back(ms);
   }
 
-  surfMulti.SaveTo(fOutput->mkdir("surfMulti"));
+  surfMulti.SaveTo(fOutput, "surfMulti");
 
   c1->Clear(); // just in case
 
   TH2* crit2sigMulti = Gaussian3Sigma1D1Sided(surfMulti);
 
   surfMulti.DrawContour(crit2sigMulti, kSolid, kRed);
-    
+
   c1->SaveAs(useSysts ? "nus_BOTH.pdf" : "nus_BOTH_statsOnly.pdf");
 
   c1->Clear();
@@ -165,7 +161,7 @@ void nus(const char* stateFname = basicFname, int nmock = 0, bool useSysts = tru
     ms.DrawEnsemble(crit2);
     ms.DrawContour(crit2, kSolid, kRed);
 
-    ms.SaveTo(fOutput->mkdir("median_surf"));
+    ms.SaveTo(fOutput, "median_surf");
   }
 
   surfMulti.DrawContour(crit2sigMulti, nmock > 0 ? 7 : kSolid, kRed);

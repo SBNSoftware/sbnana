@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -14,7 +14,7 @@
 
 #include "sbnana/CAFAna/Analysis/Surface.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
@@ -48,10 +48,10 @@ void nus_extrap(const char* stateFname = basicFname)
   // But only use the first 10 of them
   for(const ISyst* s: GetBoosterFluxHadronSysts(10)) systs.push_back(s);
 
-  std::cout << "Loading state from " << stateFname << std::endl; 
+  std::cout << "Loading state from " << stateFname << std::endl;
   TFile fin(stateFname);
-  IPrediction* pred = ana::LoadFrom<IPrediction>(fin.GetDirectory("pred_syst")).release();
-  IPrediction* predND = ana::LoadFrom<IPrediction>(fin.GetDirectory("predND_syst")).release();
+  IPrediction* pred = ana::LoadFrom<IPrediction>(&fin, "pred_syst").release();
+  IPrediction* predND = ana::LoadFrom<IPrediction>(&fin, "predND_syst").release();
 
   // Calculator
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
@@ -60,15 +60,13 @@ void nus_extrap(const char* stateFname = basicFname)
 
   // To make a fit we need to have a "data" spectrum to compare to our MC
   // Prediction object
-  calc->SetL(kBaselineIcarus);
   const Spectrum data = pred->Predict(calc).FakeData(icarusPOT);
   SingleSampleExperiment expt(pred, data);
 
-  calc->SetL(kBaselineSBND);
   const Spectrum dataND = predND->Predict(calc).FakeData(sbndPOT);
   CountingExperiment exptCount(predND, dataND);
 
-  MultiExperimentSBN multiExpt({&expt, &exptCount}, {kICARUS, kSBND});
+  MultiExperiment multiExpt({&expt, &exptCount});
 
   //Define fit axes
   const FitAxis kAxSinSq2ThetaMuMu(&kFitSinSq2ThetaMuMu, 40, 1e-3, 1, true);
@@ -90,7 +88,6 @@ void nus_extrap(const char* stateFname = basicFname)
                    kAxSinSq2ThetaMuMu,
                    kAxDmSq);
 
-  calc->SetL(kBaselineSBND);
   Surface surfCount(&exptCount, calc,
                     kAxSinSq2ThetaMuMuCoarse,
                     kAxDmSqCoarse,

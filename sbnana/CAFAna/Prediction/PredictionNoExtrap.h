@@ -4,6 +4,8 @@
 
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 
+#include "sbnana/CAFAna/Extrap/TrivialExtrap.h"
+
 namespace ana
 {
   class Loaders;
@@ -12,57 +14,28 @@ namespace ana
   class PredictionNoExtrap: public PredictionExtrap
   {
   public:
-    PredictionNoExtrap(PredictionExtrap* pred);
+    PredictionNoExtrap(ISliceSource& srcNonswap,
+                       ISliceSource& srcNue,
+                       ISliceSource& srcNuTau,
+                       ISliceSource& srcIntrinsic,
+                       const HistAxis& axis);
 
-    PredictionNoExtrap(SpectrumLoaderBase& loaderNonswap,
-                       SpectrumLoaderBase& loaderNue,
-                       SpectrumLoaderBase& loaderNuTau,
-                       SpectrumLoaderBase& loaderIntrinsic,
-                       const std::string& label,
-                       const Binning& bins,
-                       const Var& var,
-                       const SpillCut& spillcut,
-                       const Cut& cut,
-                       const SystShifts& shift = kNoShift,
-                       const Var& wei = kUnweighted);
-
-    PredictionNoExtrap(SpectrumLoaderBase& loaderNonswap,
-                       SpectrumLoaderBase& loaderNue,
-                       SpectrumLoaderBase& loaderNuTau,
-                       SpectrumLoaderBase& loaderIntrinsic,
-		       const HistAxis& axis,
-                       const SpillCut& spillcut,
-		       const Cut& cut,
-                       const SystShifts& shift = kNoShift,
-                       const Var& wei = kUnweighted);
-
-    PredictionNoExtrap(Loaders& loaders,
-                       const std::string& label,
-                       const Binning& bins,
-                       const Var& var,
-                       const SpillCut& spillcut,
-                       const Cut& cut,
-                       const SystShifts& shift = kNoShift,
-                       const Var& wei = kUnweighted);
-
-    PredictionNoExtrap(Loaders& loaders,
-                       const HistAxis& axis,
-                       const SpillCut& spillcut,
-                       const Cut& cut,
-                       const SystShifts& shift = kNoShift,
-                       const Var& wei = kUnweighted);
+    PredictionNoExtrap(SliceSources& srcs, const HistAxis& axis);
 
     virtual ~PredictionNoExtrap();
 
-    static std::unique_ptr<PredictionNoExtrap> LoadFrom(TDirectory* dir);
-    virtual void SaveTo(TDirectory* dir) const override;
+    static std::unique_ptr<PredictionNoExtrap> LoadFrom(TDirectory* dir, const std::string& name);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
 
+  protected:
+    PredictionNoExtrap(TrivialExtrap* extrap) : PredictionExtrap(extrap) {}
   };
 
+  /* TODO think about generators
   class NoExtrapPredictionGenerator: public IPredictionGenerator
   {
   public:
-    NoExtrapPredictionGenerator(HistAxis axis, SpillCut spillcut, Cut cut, Var wei = kUnweighted)
+    NoExtrapPredictionGenerator(HistAxis axis, SpillCut spillcut, Cut cut, Weight wei = kUnweighted)
       : fAxis(axis), fSpillCut(spillcut), fCut(cut), fWei(wei)
     {
     }
@@ -77,6 +50,7 @@ namespace ana
     HistAxis fAxis;
     SpillCut fSpillCut;
     Cut fCut;
-    Var fWei;
+    Weight fWei;
   };
+  */
 }

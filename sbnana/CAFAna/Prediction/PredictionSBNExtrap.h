@@ -12,15 +12,18 @@ namespace ana
   class PredictionSBNExtrap: public IPrediction
   {
   public:
+    // TODO TODO TODO
+    /*
     PredictionSBNExtrap(Loaders& loadersND,
                         Loaders& loadersFD,
                         const HistAxis& axis,
                         const SpillCut& spillcut,
                         const Cut& cut,
                         const SystShifts& shift_mc = kNoShift,
-                        const Var& wei_mc = kUnweighted,
+                        const Weight& wei_mc = kUnweighted,
                         const SystShifts& shift_data = kNoShift,
-                        const Var& wei_data = kUnweighted);
+                        const Weight& wei_data = kUnweighted);
+    */
     virtual ~PredictionSBNExtrap();
 
     virtual Spectrum Predict(osc::IOscCalc* calc) const override;
@@ -33,8 +36,8 @@ namespace ana
     OscillatableSpectrum ComponentCC(int from, int to) const override;
     //    Spectrum ComponentNC() const override;
 
-    virtual void SaveTo(TDirectory* dir) const override;
-    static std::unique_ptr<PredictionSBNExtrap> LoadFrom(TDirectory* dir);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const override;
+    static std::unique_ptr<PredictionSBNExtrap> LoadFrom(TDirectory* dir, const std::string& name);
 
     PredictionSBNExtrap() = delete;
 
@@ -57,9 +60,9 @@ namespace ana
                        const HistAxis& ax,
                        const SpillCut& spillcut,
                        const Cut& cut,
-                       const Var& wei_mc,
+                       const Weight& wei_mc,
                        const SystShifts& shift_data = kNoShift,
-                       const Var& wei_data = kUnweighted);
+                       const Weight& wei_data = kUnweighted);
 
     std::unique_ptr<IPrediction> Generate(Loaders& loaders_fd,
                                           const SystShifts& shiftMC = kNoShift) const override;

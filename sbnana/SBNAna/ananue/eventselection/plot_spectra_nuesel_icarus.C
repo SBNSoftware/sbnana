@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////
 // Author: Diana Patricia Mendez                                     //
 // Contact: dmendezme@bnl.gov                                        //
-// Last edited: January 15 2021                                      //   
-//                                                                   // 
+// Last edited: January 15 2021                                      //
+//                                                                   //
 // Plots the spectra produced by make_spectra.C                      //
 // Setting effpur to true will plot a split canvas, with the spectra //
 // at the top and efficiency and purity at the bottom.               //
@@ -11,7 +11,7 @@
 #pragma once
 
 #include "../../../CAFAna/rootlogon.C"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "helper_nuesel_icarus.h"
@@ -180,7 +180,7 @@ void plot_spectra_nuesel_icarus(
       float iother  = hother->Integral();
       float itotbkg = htotbkg->Integral();
 
-      // Make a simple canvas, with only one pad 
+      // Make a simple canvas, with only one pad
       TCanvas *cEvents = new TCanvas(plots[iVar].suffix.c_str(),plots[iVar].suffix.c_str(), 700, 500);
       if(iVar==0){ // fake stacking
         hnumu->Add(hnc);
@@ -198,7 +198,7 @@ void plot_spectra_nuesel_icarus(
         hother->GetYaxis()->SetRangeUser(1.,100 * GetHistMax({hnue,hnumu,hnc,htotcos,hother}));
       }
       else{
-        hother->GetYaxis()->SetRangeUser(0.,1.3 * GetHistMax({hnue,hnumu,hnc,htotcos,hother}));        
+        hother->GetYaxis()->SetRangeUser(0.,1.3 * GetHistMax({hnue,hnumu,hnc,htotcos,hother}));
       }
       hother->GetYaxis()->SetTitle("Slices");
       hother->Draw("hist same");
@@ -290,7 +290,7 @@ void plot_spectra_nuesel_icarus(
         float integral = hist_crt->Integral();
 
         TCanvas *cEventsCRT = new TCanvas(crtplots_spill[iVar].suffix.c_str(),crtplots_spill[iVar].suffix.c_str(), 700, 500);
-        hist_crt->GetYaxis()->SetRangeUser(0.,1.3 * hist_crt->GetMaximum());        
+        hist_crt->GetYaxis()->SetRangeUser(0.,1.3 * hist_crt->GetMaximum());
         hist_crt->GetYaxis()->SetTitle("Spills");
         Simulation(true);
         cEventsCRT->Update();

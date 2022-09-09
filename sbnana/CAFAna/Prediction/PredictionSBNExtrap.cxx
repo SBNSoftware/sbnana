@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Prediction/PredictionSBNExtrap.h"
 
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
@@ -13,6 +13,7 @@
 
 namespace ana
 {
+  /*
   //----------------------------------------------------------------------
   PredictionSBNExtrap::PredictionSBNExtrap(Loaders& loadersND,
                                            Loaders& loadersFD,
@@ -20,15 +21,16 @@ namespace ana
                                            const SpillCut& spillcut,
                                            const Cut& cut,
                                            const SystShifts& shift_mc,
-                                           const Var& wei_mc,
+                                           const Weight& wei_mc,
                                            const SystShifts& shift_data,
-                                           const Var& wei_data)
+                                           const Weight& wei_data)
     : fPredND(loadersND, axis, spillcut, cut, shift_mc, wei_mc),
       fPredFD(loadersFD, axis, spillcut, cut, shift_mc, wei_mc),
       // TODO how on earth do fake ND oscillations get in here?
       fDataND(loadersND.GetLoader(Loaders::kData), axis, spillcut, cut, shift_data, wei_data)
   {
   }
+  */
 
   //----------------------------------------------------------------------
   PredictionSBNExtrap::~PredictionSBNExtrap()
@@ -88,33 +90,36 @@ namespace ana
   // }
 
   //----------------------------------------------------------------------
-  void PredictionSBNExtrap::SaveTo(TDirectory* dir) const
+  void PredictionSBNExtrap::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
 
     TObjString("PredictionSBNExtrap").Write("type");
 
-    fPredND.SaveTo(dir->mkdir("predND"));
-    fPredFD.SaveTo(dir->mkdir("predFD"));
-    fDataND.SaveTo(dir->mkdir("dataND"));
+    fPredND.SaveTo(dir, "predND");
+    fPredFD.SaveTo(dir, "predFD");
+    fDataND.SaveTo(dir, "dataND");
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<PredictionSBNExtrap> PredictionSBNExtrap::LoadFrom(TDirectory* dir)
+  std::unique_ptr<PredictionSBNExtrap> PredictionSBNExtrap::LoadFrom(TDirectory* dir, const std::string& name)
   {
-    assert(dir->GetDirectory("predND"));
-    assert(dir->GetDirectory("predFD"));
-    assert(dir->GetDirectory("dataND"));
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
 
     // TODO are these leaks?
     return std::unique_ptr<PredictionSBNExtrap>(new PredictionSBNExtrap(
-      *ana::LoadFrom<PredictionNoExtrap>(dir->GetDirectory("predND")).release(),
-      *ana::LoadFrom<PredictionNoExtrap>(dir->GetDirectory("predFD")).release(),
-      *ana::LoadFrom<Spectrum>(dir->GetDirectory("dataND")).release()));
+      *ana::LoadFrom<PredictionNoExtrap>(dir, "predND").release(),
+      *ana::LoadFrom<PredictionNoExtrap>(dir, "predFD").release(),
+      *ana::LoadFrom<Spectrum>(dir, "dataND").release()));
   }
 
   //----------------------------------------------------------------------
@@ -122,9 +127,9 @@ namespace ana
                                          const HistAxis& ax,
                                          const SpillCut& spillcut,
                                          const Cut& cut,
-                                         const Var& wei_mc,
+                                         const Weight& wei_mc,
                                          const SystShifts& shift_data,
-                                         const Var& wei_data)
+                                         const Weight& wei_data)
     : fLoadersND(loaders_nd), fAxis(ax), fSpillCut(spillcut), fCut(cut), fWeightMC(wei_mc),
       fShiftData(shift_data), fWeightData(wei_data)
   {
@@ -134,7 +139,8 @@ namespace ana
   std::unique_ptr<IPrediction> SBNExtrapGenerator::Generate(Loaders& loaders_fd,
                                                             const SystShifts& shiftMC) const
   {
+    abort(); // TODO TODO TODO
     // No data shifts or weights
-    return std::unique_ptr<IPrediction>(new PredictionSBNExtrap(fLoadersND, loaders_fd, fAxis, fSpillCut, fCut, shiftMC, fWeightMC, fShiftData, fWeightData));
+    //    return std::unique_ptr<IPrediction>(new PredictionSBNExtrap(fLoadersND, loaders_fd, fAxis, fSpillCut, fCut, shiftMC, fWeightMC, fShiftData, fWeightData));
   }
 }

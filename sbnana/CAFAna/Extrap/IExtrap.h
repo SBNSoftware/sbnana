@@ -44,6 +44,6 @@ namespace ana
     virtual OscillatableSpectrum NCComponentFromNumu() = 0;
     virtual OscillatableSpectrum NCComponentFromNue() = 0;
 
-    virtual void SaveTo(TDirectory* dir) const;
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const;
   };
 }

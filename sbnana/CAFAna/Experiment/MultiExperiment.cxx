@@ -72,7 +72,7 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void MultiExperiment::SaveTo(TDirectory* dir) const
+  void MultiExperiment::SaveTo(TDirectory* dir, const std::string& name) const
   {
     bool hasCorr = false;
     for(auto it: fSystCorrelations) if(!it.empty()) hasCorr = true;
@@ -83,19 +83,27 @@ namespace ana
 
     TDirectory* tmp = dir;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("MultiExperiment").Write("type");
 
     for(unsigned int i = 0; i < fExpts.size(); ++i){
-      fExpts[i]->SaveTo(dir->mkdir(TString::Format("expt%d", i)));
+      fExpts[i]->SaveTo(dir, TString::Format("expt%d", i).Data());
     }
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<MultiExperiment> MultiExperiment::LoadFrom(TDirectory* dir)
+  std::unique_ptr<MultiExperiment> MultiExperiment::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* ptag = (TObjString*)dir->Get("type");
     assert(ptag);
     assert(ptag->GetString() == "MultiExperiment");
@@ -103,10 +111,11 @@ namespace ana
     std::vector<const IExperiment*> expts;
 
     for(int i = 0; ; ++i){
-      TDirectory* subdir = dir->GetDirectory(TString::Format("expt%d", i));
+      const std::string subname = TString::Format("expt%d", i).Data();
+      TDirectory* subdir = dir->GetDirectory(subname.c_str());
       if(!subdir) break;
 
-      expts.push_back(ana::LoadFrom<IExperiment>(subdir).release());
+      expts.push_back(ana::LoadFrom<IExperiment>(dir, subname).release());
     }
 
     assert(!expts.empty());

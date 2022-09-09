@@ -2,7 +2,7 @@
 // cafe demo1.C
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
@@ -29,13 +29,13 @@ void demo1(int step = 99)
   // Mocked up reconstruction
   const Var kRecoE = SIMPLEVAR(reco.reco_energy);
   // Mock selection efficiencies etc
-  const Var kWeight = SIMPLEVAR(reco.weight);
+  const Weight kWeight = SIMPLEWEIGHT(reco.weight);
 
   const HistAxis axEnergy("Reconstructed energy (GeV)", Binning::Simple(50, 0, 5), kRecoE);
 
   // These are 2D reco-vs-true distributions
-  OscillatableSpectrum sOscND(loaderSBND,   axEnergy, kIsNumuCC, kNoShift, kWeight);
-  OscillatableSpectrum sOscFD(loaderIcarus, axEnergy, kIsNumuCC, kNoShift, kWeight);
+  OscillatableSpectrum sOscND(loaderSBND.Slices().Weighted(kWeight)[kIsNumuCC],   axEnergy);
+  OscillatableSpectrum sOscFD(loaderIcarus.Slices().Weighted(kWeight)[kIsNumuCC], axEnergy);
 
   loaderSBND.Go();
   loaderIcarus.Go();

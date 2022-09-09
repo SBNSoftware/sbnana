@@ -3,14 +3,15 @@
 
 // Includes from demo0.C
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 // New includes
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h" // for kIsNC
 
 using namespace ana;
@@ -31,8 +32,8 @@ void demo0b()
 
   // We will also use two different Vars. For such simple ones we can use this
   // shortcut macro.
-  const Var kTruthEnergy = SIMPLEVAR(truth[0].neutrino.energy);
-  const Var kTruthY = SIMPLEVAR(truth[0].neutrino.inelasticityY);
+  const Var kTruthEnergy = SIMPLEVAR(truth.E);
+  const Var kTruthY = SIMPLEVAR(truth.inelasticityY);
 
   // Define axes for the spectra we'll make
   const HistAxis axEnergy("True energy (GeV)", Binning::Simple(50, 0, 5), kTruthEnergy);
@@ -40,26 +41,26 @@ void demo0b()
 
   // A Cut is the same as a Var but returns a boolean. Here we're selecting
   // truly numu CC interactions.
-  const Cut kIsNumuCC([](const caf::SRProxy* sr)
+  const Cut kIsNumuCC([](const caf::SRSliceProxy* sr)
                       {
-                        return (sr->truth[0].neutrino.iscc &&
-                                abs(sr->truth[0].neutrino.pdg) == 14);
+                        return (sr->truth.iscc &&
+                                abs(sr->truth.pdg) == 14);
                       });
 
   // Can also make combinations of existing Cuts and Vars in the obvious
   // ways. kIsNC here comes from Cuts/TruthCuts.h. Really we should have just
   // used kIsNumuCC from there.
-  const Var kPdg = SIMPLEVAR(truth[0].neutrino.pdg);
+  const Var kPdg = SIMPLEVAR(truth.pdg);
   const Cut kIsNumuCC2 = (kPdg == 14 || kPdg == -14) && !kIsNC;
 
-  Spectrum sEnergySig(loaderSBND, axEnergy, kIsNumuCC);
-  Spectrum sEnergyBkg(loaderSBND, axEnergy, !kIsNumuCC);
+  Spectrum sEnergySig(loaderSBND.Slices()[ kIsNumuCC], axEnergy);
+  Spectrum sEnergyBkg(loaderSBND.Slices()[!kIsNumuCC], axEnergy);
 
-  Spectrum sEnergySigIc(loaderIcarus, axEnergy, kIsNumuCC);
-  Spectrum sEnergyBkgIc(loaderIcarus, axEnergy, !kIsNumuCC);
+  Spectrum sEnergySigIc(loaderIcarus.Slices()[ kIsNumuCC], axEnergy);
+  Spectrum sEnergyBkgIc(loaderIcarus.Slices()[!kIsNumuCC], axEnergy);
 
-  Spectrum sYSig(loaderSBND, axY, kIsNumuCC);
-  Spectrum sYBkg(loaderSBND, axY, !kIsNumuCC);
+  Spectrum sYSig(loaderSBND.Slices()[ kIsNumuCC], axY);
+  Spectrum sYBkg(loaderSBND.Slices()[!kIsNumuCC], axY);
 
   // Fill in the 4 ND spectra
   loaderSBND.Go();

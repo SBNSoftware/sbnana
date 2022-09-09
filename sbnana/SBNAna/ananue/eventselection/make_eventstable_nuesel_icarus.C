@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////
 // Author: Diana Patricia Mendez                                     //
 // Contact: dmendezme@bnl.gov                                        //
-// Last edited: January 15 2021                                      //   
-//                                                                   // 
+// Last edited: January 15 2021                                      //
+//                                                                   //
 // Makes summary event count tables from the spectra produced by     //
 // make_spectra.C                                                    //
 // Setting N1table to true will make a table of the N1 cuts only     //
@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "helper_nuesel_icarus.h"
@@ -49,7 +49,7 @@ void make_eventstable_nuesel_icarus(bool crtveto = true)
   // }
 
   const unsigned int kNSel = sels.size();
-  
+
   std::vector<std::string> names_cut;
   std::vector<float> events_nue;
   std::vector<float> events_numu;
@@ -63,7 +63,7 @@ void make_eventstable_nuesel_icarus(bool crtveto = true)
 
   unsigned int endLoop = kNSel;
   if(crtveto) endLoop = kNSel+2; // add one for crtveto and one for the N-1 crtveto
-  for(unsigned int iSel = 0; iSel < endLoop; iSel++){ 
+  for(unsigned int iSel = 0; iSel < endLoop; iSel++){
 
     // std::string mysuffixall;
     std::string mysuffix;
@@ -88,7 +88,7 @@ void make_eventstable_nuesel_icarus(bool crtveto = true)
       }
     }
     names_cut.push_back(cutname);
-    
+
     std::cout << "cutname: " << cutname << ", mysuffix: " << mysuffix << std::endl;
     Spectrum *spec_allnue = LoadFromFile<Spectrum>(inFile_nue, "nue_nocut_count").release();
     Spectrum *spec_nue    = LoadFromFile<Spectrum>(inFile_nue, "nue_"+mysuffix).release();
@@ -126,7 +126,7 @@ void make_eventstable_nuesel_icarus(bool crtveto = true)
     float itotbkg = htotbkg->Integral();
     float itotal  = htotal->Integral();
     float ieff    = inue / iallnue;
-    float ipur    = inue / (inue + itotbkg);      
+    float ipur    = inue / (inue + itotbkg);
 
     events_nue.push_back(inue);
     events_numu.push_back(inumu);
@@ -137,13 +137,13 @@ void make_eventstable_nuesel_icarus(bool crtveto = true)
     events_total.push_back(itotal);
     if(iSel==0){
       eff.push_back(0.);
-      pur.push_back(0.);      
+      pur.push_back(0.);
     }
     else{
       eff.push_back(ieff);
       pur.push_back(ipur);
     }
-    
+
   } // iSel simple
 
   // print single cuts only table

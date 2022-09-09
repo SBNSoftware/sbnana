@@ -49,7 +49,7 @@ namespace ana
 
     // Uniform throws within +/-3 sigma
     if(hie > 0){
-      ret->SetDmsq32(gRandom->Uniform(kNuFitDmsq32CVNH-3*kNuFitDmsq32ErrNH, 
+      ret->SetDmsq32(gRandom->Uniform(kNuFitDmsq32CVNH-3*kNuFitDmsq32ErrNH,
 				      kNuFitDmsq32CVNH+3*kNuFitDmsq32ErrNH));
       ret->SetTh23(gRandom->Uniform(kNuFitTh23CVNH-3*kNuFitTh23ErrNH,
 				    kNuFitTh23CVNH+3*kNuFitTh23ErrNH));
@@ -64,7 +64,7 @@ namespace ana
                                     kNuFitTh13CVIH+3*kNuFitTh13ErrIH));
     }
     ret->SetdCP(gRandom->Uniform(-1*TMath::Pi(), TMath::Pi()));
-		  
+
     return ret;
   }
 
@@ -145,9 +145,9 @@ namespace ana
     fTh23Err = (hietrue > 0) ? 0.058*fTh23 : 0.048*fTh23;
 
     fRhoErr = 0.02*fRho;
-    
+
   }
-    
+
   double Penalizer_GlbLikeCDR::ChiSq(osc::IOscCalcAdjustable* calc,
 				  const SystShifts& /*syst*/) const {
 
@@ -156,7 +156,7 @@ namespace ana
 
     double ret =
       util::sqr((calc->GetDmsq21() - fDmsq21)/fDmsq21Err) +
-      util::sqr((calc->GetTh12() - fTh12)/fTh12Err) + 
+      util::sqr((calc->GetTh12() - fTh12)/fTh12Err) +
       util::sqr((calc->GetRho() - fRho)/fRhoErr);
 
     // if fWeakOnly is set, only apply a constraint to the parameter we can only weakly constrain in DUNE

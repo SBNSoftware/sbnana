@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -170,7 +170,7 @@ void make_state(const std::string anatype = numuStr)
 
   const Var kWeighthack([](const caf::SRSliceProxy* sr)
                         {
-			  std::cout << sr->truth[0].neutrino.iscc << " " << sr->truth[0].neutrino.pdg << " " << sr->reco.weight << std::endl; 
+			  std::cout << sr->truth[0].neutrino.iscc << " " << sr->truth[0].neutrino.pdg << " " << sr->reco.weight << std::endl;
 			  if (sr->truth[0].neutrino.iscc && sr->truth[0].neutrino.pdg == 12) return 0.8;
 			  if (sr->truth[0].neutrino.iscc && sr->truth[0].neutrino.pdg == 14) return 0.0058;
 			  if (sr->truth[0].neutrino.isnc) return 0.058;
@@ -228,11 +228,11 @@ void make_state(const std::string anatype = numuStr)
 
   TFile fout(("cafe_state_smear_"+anatype+".root").c_str(), "RECREATE");
   for(unsigned int i = 0; i < systWs.size(); ++i){
-    preds_nd[i]->SaveTo(fout.mkdir(TString::Format("pred_nd_%s_%d", anatype.c_str(), i).Data()));
-    preds_fd[i]->SaveTo(fout.mkdir(TString::Format("pred_fd_%s_%d", anatype.c_str(), i).Data()));
+    preds_nd[i]->SaveTo(&fout, TString::Format("pred_nd_%s_%d", anatype.c_str(), i).Data());
+    preds_fd[i]->SaveTo(&fout, TString::Format("pred_fd_%s_%d", anatype.c_str(), i).Data());
   }
 
-  pred_nom_nd.SaveTo(fout.mkdir(TString::Format("pred_nd_%s_nom", anatype.c_str()).Data()));
-  pred_nom_fd.SaveTo(fout.mkdir(TString::Format("pred_fd_%s_nom", anatype.c_str()).Data()));
+  pred_nom_nd.SaveTo(&fout, TString::Format("pred_nd_%s_nom", anatype.c_str()).Data());
+  pred_nom_fd.SaveTo(&fout, TString::Format("pred_fd_%s_nom", anatype.c_str()).Data());
 
 }

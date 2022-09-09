@@ -1,10 +1,10 @@
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
+#include "cafanacore/Ratio.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
 #include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Experiment/RatioExperiment.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
@@ -67,12 +67,12 @@ void plot_multi()
   std::vector<PredictionInterp*> preds_nd(Nuniv), preds_fd(Nuniv);
 
   for(int i = 0; i < Nuniv; ++i){
-    preds_nd[i] = LoadFrom<PredictionInterp>(fin.GetDirectory(TString::Format("pred_nd_numu_%d", i).Data())).release();
-    preds_fd[i] = LoadFrom<PredictionInterp>(fin.GetDirectory(TString::Format("pred_fd_numu_%d", i).Data())).release();
+    preds_nd[i] = LoadFrom<PredictionInterp>(&fin, TString::Format("pred_nd_numu_%d", i).Data()).release();
+    preds_fd[i] = LoadFrom<PredictionInterp>(&fin, TString::Format("pred_fd_numu_%d", i).Data()).release();
   }
 
-  PredictionInterp* nom_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd_numu_nom")).release();
-  PredictionInterp* nom_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd_numu_nom")).release();
+  PredictionInterp* nom_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd_numu_nom").release();
+  PredictionInterp* nom_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd_numu_nom").release();
 
   //  osc::NoOscillations calc;
   OscCalcSterileApproxAdjustable* calc = DefaultSterileApproxCalc();
@@ -109,9 +109,7 @@ void plot_multi()
   const FitAxis kAxDmSq(&kFitDmSqSterile, 15/*40*/, 2e-2, 1e2, true);
 
   // We'll call zero nominal
-  calc->SetL(kBaselineSBND);
   const Spectrum data_nd = nom_nd->Predict(calc).FakeData(sbndPOT);
-  calc->SetL(kBaselineIcarus);
   const Spectrum data_fd = nom_fd->Predict(calc).FakeData(icarusPOT);
 
   new TCanvas;
@@ -124,8 +122,8 @@ void plot_multi()
     SingleSampleExperiment expt_nd(nom_nd, data_nd);
     SingleSampleExperiment expt_fd(nom_fd, data_fd);
 
-    MultiExperimentSBN multiExpt({&expt_nd, &expt_fd}, {kSBND, kICARUS});
-    //    MultiExperimentSBN multiExpt({&expt_fd}, {kICARUS});
+    MultiExperiment multiExpt({&expt_nd, &expt_fd});
+    //    MultiExperiment multiExpt({&expt_fd});
 
     surf_nom = new Surface(&multiExpt, calc,
                            kAxSinSq2ThetaMuMu,
@@ -154,7 +152,6 @@ void plot_multi()
     rsurf_nom = new Surface(&rexp, calc, kAxSinSq2ThetaMuMu, kAxDmSq);
 
     CountingExperiment cexp(nom_nd, data_nd);
-    calc->SetL(kBaselineSBND);
     csurf_nom = new Surface(&cexp, calc, kAxSinSq2ThetaMuMu, kAxDmSq);
 
     //    rsurf_nom->DrawContour(crit90, 2, kRed);
@@ -198,8 +195,8 @@ void plot_multi()
     // SingleSampleExperiment expt_nd(preds_nd[univ], data_nd);
     // SingleSampleExperiment expt_fd(preds_fd[univ], data_fd);
 
-    // MultiExperimentSBN multiExpt({&expt_nd, &expt_fd}, {kSBND, kICARUS});
-    // //    MultiExperimentSBN multiExpt({&expt_fd}, {kICARUS});
+    // MultiExperiment multiExpt({&expt_nd, &expt_fd});
+    // //    MultiExperiment multiExpt({&expt_fd});
 
     // Surface surf(&multiExpt, calc,
     //              kAxSinSq2ThetaMuMu,

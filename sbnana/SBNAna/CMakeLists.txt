@@ -1,10 +1,6 @@
-# SBNAna starts all its includes with just SBNAna/ -- allow that
-include_directories(..)
-
-# But we also want to find the generated SRProxy.h under "StandardRecord/Proxy"
- include_directories($ENV{MRB_BUILDDIR}/sbnana/sbnana/CAFAna/)
-
 include_directories($ENV{SRPROXY_INC})
+
+include_directories($ENV{EIGEN_INC})
 
 # And expects assert() to still function even in the prof build
 add_definitions(-UNDEBUG)
@@ -24,8 +20,6 @@ add_definitions(-Wno-vla)
 # add_subdirectory(Systs)
 
 cet_script(cafe)
-# same place as cafe script so we can find it
-cet_script(load_cafana_libs.C)
 #cet_script(rootlogon.C)
 
 install_headers()

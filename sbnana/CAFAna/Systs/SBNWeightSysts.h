@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/ISyst.h"
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnana/CAFAna/Core/Var.h"
+#include "sbnana/CAFAna/Core/Weight.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
@@ -16,6 +16,7 @@ namespace ana
   public:
     UniverseWeight(const std::string& psetName, int univIdx);
 
+    double operator()(const caf::SRTrueInteractionProxy* sr) const;
     double operator()(const caf::SRSliceProxy* sr) const;
 
   protected:
@@ -24,9 +25,13 @@ namespace ana
     int fUnivIdx;
   };
 
-  Var GetUniverseWeight(const std::string& psetName, int univIdx)
+  NuTruthWeight GetNuTruthUniverseWeight(const std::string& psetName, int univIdx)
   {
-    return Var(UniverseWeight(psetName, univIdx));
+    return NuTruthWeight(UniverseWeight(psetName, univIdx));
+  }
+  Weight GetUniverseWeight(const std::string& psetName, int univIdx)
+  {
+    return Weight(UniverseWeight(psetName, univIdx));
   }
 
 

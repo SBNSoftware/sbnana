@@ -2,6 +2,11 @@
 
 #include "sbnana/CAFAna/Core/SpectrumLoaderBase.h"
 
+#include "sbnana/CAFAna/Core/IRecordSource.h"
+#include "sbnana/CAFAna/Core/IRecordSink.h"
+
+#include "cafanacore/Passthrough.h"
+
 class TFile;
 
 namespace ana
@@ -16,22 +21,24 @@ namespace ana
   /// need. They will register with this loader. Finally, calling \ref Go will
   /// cause all the spectra to be filled at once. After this the loader may not
   /// be used again.
-  class SpectrumLoader: public SpectrumLoaderBase
+  class SpectrumLoader: public SpectrumLoaderBase, public Passthrough<caf::SRSpillProxy>
   {
   public:
-    SpectrumLoader(const std::string& wildcard, DataSource src = kBeam, int max = 0);
-    SpectrumLoader(const std::vector<std::string>& fnames,
-                   DataSource src = kBeam, int max = 0);
+    SpectrumLoader(const std::string& wildcard, int max = 0);
+    SpectrumLoader(const std::vector<std::string>& fnames, int max = 0);
     /// Named constructor for SAM projects
-    static SpectrumLoader FromSAMProject(const std::string& proj,
-					 DataSource src = kBeam,
-					 int fileLimit = -1);
+    static SpectrumLoader* FromSAMProject(const std::string& proj,
+                                          int fileLimit = -1);
     virtual ~SpectrumLoader();
 
     virtual void Go() override;
 
+    virtual void PrintGraph(std::ostream& os) const override;
+    // Print to stdout
+    virtual void PrintGraph() const;
+
   protected:
-    SpectrumLoader(DataSource src = kBeam);
+    SpectrumLoader();
 
     // Move operations
     SpectrumLoader(SpectrumLoader&&) = default;
@@ -43,15 +50,21 @@ namespace ana
 
     virtual void HandleFile(TFile* f, Progress* prog = 0);
 
-    virtual void HandleRecord(caf::SRSpillProxy* sr);
-
     /// Save accumulated exposures into the individual spectra
     virtual void StoreExposures();
 
-    /// All unique cuts contained in fHistDefs
-    //    std::vector<Cut> fAllCuts;
-    //    std::vector<double> fLivetimeByCut; ///< Indexing matches fAllCuts
-    //    std::vector<double> fPOTByCut;      ///< Indexing matches fAllCuts
     int max_entries;
   };
+
+
+  class NullLoader: public SpectrumLoader
+  {
+  public:
+    virtual void Go() override {}
+  };
+  static NullLoader kNullLoader;
+
+
+  static NullSource<caf::SRSpillProxy> kNullSpillSource;
+  static NullSource<caf::SRSliceProxy> kNullSliceSource;
 }

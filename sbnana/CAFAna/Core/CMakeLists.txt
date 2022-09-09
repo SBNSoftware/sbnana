@@ -1,8 +1,5 @@
 include_directories( $ENV{IFDHC_FQ_DIR}/inc )
 
-# Allow "StandardRecord/" to find the right directory
-include_directories(..)
-
 include_directories($ENV{OSCLIB_INC})
 
 cet_make(LIBRARY_NAME CAFAnaCore
@@ -12,6 +9,8 @@ cet_make(LIBRARY_NAME CAFAnaCore
 #                  ${OSCLIB}
                    -L$ENV{OSCLIB_LIB}
                    OscLib
+                  -L$ENV{CAFANACORE_LIB}
+                   CAFAnaCoreExt
                    pthread
                    ${ROOT_BASIC_LIB_LIST}
                    ifdh::ifdh

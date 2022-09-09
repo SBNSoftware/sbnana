@@ -63,7 +63,7 @@ namespace ana
 				    std::string hist_name,
 				    double pot,
 				    bool force1D = false);
-  
+
   std::vector<TH1*> GetMCSystComponents(const IPrediction* mc,
 					osc::IOscCalc* calc,
 					const SystShifts& shift,
@@ -115,12 +115,12 @@ namespace ana
   /// \param pot    POT to evaluate prediction at
   /// \param col    Color of the prediction, default kRed
   /// \param errCol Color of the shading, default col-7 (kRed-7 is light red)
-  /// \param headroom   Fraction of maximum bin for headroom, default 30%  
+  /// \param headroom   Fraction of maximum bin for headroom, default 30%
   void PlotWithSystErrorBand(IPrediction* pred,
                              const std::vector<const ISyst*>& systs,
                              osc::IOscCalc* calc,
                              double pot,
-                             int col = -1, int errCol = -1, 
+                             int col = -1, int errCol = -1,
                              float headroom = 1.3,
 			     bool newaxis = true);
 
@@ -128,14 +128,14 @@ namespace ana
   ///
   /// When multiple systematics are used, the errors are the quadrature sum
   ///
-  /// \param nominal    Nominal spectrum 
-  /// \param upShifts   Vector of spectra which have + shifts  
+  /// \param nominal    Nominal spectrum
+  /// \param upShifts   Vector of spectra which have + shifts
   /// \param downShifts Vector of spectra which have - shifts, same order as +
-  /// \param pot        POT to scale spectra to 
+  /// \param pot        POT to scale spectra to
   /// \param col        Color of the prediction, default kRed
   /// \param errCol     Color of the shading, default col-7(kRed-7 is light red)
   /// \param headroom   Fraction of maximum bin for headroom, default 30%
-  void PlotWithSystErrorBand(const Spectrum& nominal, 
+  void PlotWithSystErrorBand(const Spectrum& nominal,
                              const std::vector<Spectrum>& upShifts,
                              const std::vector<Spectrum>& downShifts,
                              double pot,
@@ -164,7 +164,7 @@ namespace ana
   /// Calculate statistical errors appropriate for small Poisson numbers
   TGraphAsymmErrors* GraphWithPoissonErrors(const TH1* h, bool noErrorsXaxis = false, bool drawEmptyBins = true);
 
-  /// Gives a TGraph with the area between two histograms. Do Draw("f") to draw 
+  /// Gives a TGraph with the area between two histograms. Do Draw("f") to draw
   /// this area. By default it has a lighter version of the colour of hmin
   TGraph* ShadeBetweenHistograms(TH1* hmin, TH1* hmax);
 

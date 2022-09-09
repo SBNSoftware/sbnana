@@ -3,7 +3,7 @@
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "sbnana/CAFAna/Core/Loaders.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
@@ -26,7 +26,7 @@
 
 using namespace ana;
 
-// Put an "SBND simulation" tag in the corner                                                       
+// Put an "SBND simulation" tag in the corner
 void Experiment(std::string expt)
 {
   TLatex* prelim = new TLatex(.9, .95, (expt+" Simulation").c_str());
@@ -126,19 +126,19 @@ void event_numbers_nue(const std::string expt = "SBND")
 
   h_numu->SetLineColor(kGreen+2);
   h_numu->SetMarkerColor(kGreen+2);
-  h_numu->Write((expt+"_numu").c_str());   
+  h_numu->Write((expt+"_numu").c_str());
 
   h_NC->SetLineColor(kBlack);
   h_NC->SetMarkerColor(kBlack);
-  h_NC->Write((expt+"_NC").c_str()); 
+  h_NC->Write((expt+"_NC").c_str());
 
   h_int->SetLineColor(kRed);
   h_int->SetMarkerColor(kRed);
-  h_int->Write((expt+"_int").c_str()); 
+  h_int->Write((expt+"_int").c_str());
 
   h_osc->SetLineColor(kBlue);
   h_osc->SetMarkerColor(kBlue);
-  h_osc->Write((expt+"_osc").c_str()); 
+  h_osc->Write((expt+"_osc").c_str());
 
   fOutput->Close();
 

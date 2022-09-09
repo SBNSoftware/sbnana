@@ -1,8 +1,9 @@
 // Make a simple spectrum plot
 // cafe demo0.C
 
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 
 #include "sbnana/CAFAna/Analysis/ExpInfo.h" // for kPOTnominal
@@ -27,15 +28,15 @@ void demo0()
 
   // A Var is a little snippet of code that takes a "proxy" representing the
   // event record and returns a single number to plot
-  const Var kTruthEnergy([](const caf::SRProxy* sr)
-                         {
-                           return sr->mc.nu[0].E;
-                         });
+  const SpillVar kTruthEnergy([](const caf::SRSpillProxy* sr)
+                              {
+                                return sr->mc.nu[0].E;
+                              });
 
   // Define a spectrum, ie a histogram with associated POT information
   const Binning binsEnergy = Binning::Simple(50, 0, 5);
-  const HistAxis axEnergy("True energy (GeV)", binsEnergy, kTruthEnergy);
-  Spectrum sEnergy(loader, axEnergy, kNoCut);
+  const SpillHistAxis axEnergy("True energy (GeV)", binsEnergy, kTruthEnergy);
+  Spectrum sEnergy(loader, axEnergy);
 
   // This is the call that actually fills in the spectrum
   loader.Go();

@@ -3,7 +3,7 @@
   // Replace SBND with the appropriate experiment
 
   TFile* f = new TFile("output/output_nue_SBND.root");
-  
+
   TH1D* SBND_NC = (TH1D*) f->Get("SBND_NC");
   TH1D* SBND_numu = (TH1D*) f->Get("SBND_numu");
   TH1D* SBND_int = (TH1D*) f->Get("SBND_int");
@@ -53,7 +53,7 @@
   prelim->Draw();
   c1->SaveAs("output/Stack_nue.root");
   c1->SaveAs("output/Stack_nue.pdf");
-  
+
   TCanvas* c2 = new TCanvas("c2","c2", 700,800);
   c2->Divide(1,2);
 

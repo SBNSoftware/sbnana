@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 
 #include "sbnana/CAFAna/Core/OscillatableSpectrum.h"
 
@@ -75,10 +75,10 @@ namespace ana
                                           Sign::Sign_t sign) const;
 
     virtual OscillatableSpectrum ComponentCC(int from, int to) const
-    {std::cout << "OscillatableSpectrum::ComponentCC() unimplemented" << std::endl; abort();}
+    {/*std::cout << "OscillatableSpectrum::ComponentCC() unimplemented" << std::endl;*/ abort();}
     //virtual Spectrum ComponentNC() const
     //{std::cout << "OscillatableSpectrum::ComponentNC() unimplemented" << std::endl; abort();}
 
-    virtual void SaveTo(TDirectory* dir) const;
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const;
   };
 }

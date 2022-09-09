@@ -1,27 +1,31 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Ratio.h"
+#include "cafanacore/Spectrum.h"
 
 #include "sbnana/CAFAna/XSec/Flux.h"
 
-#include "sbnana/CAFAna/StandardRecord/Proxy/SRProxy.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TH2.h"
+#include "TPad.h"
+
+#include <iostream>
 
 using namespace ana;
 
 void test_xsec_flux()
 {
-  //  SpectrumLoader loader("/icarus/data/users/mmr/CAFMaker/v09_20_00/NuMIBeamWindow/ICARUS_prod_2020A_00_numioffaxis_v09_10_01_reco2/ICARUS_prod_2020A_00_numioffaxis_v09_10_01_reco2_CAFMaker_out_flat.root");
+  // Need to export SAM_EXPERIMENT=sbn
+  //  SpectrumLoader loader("Official_icarusprod_2021C_NUMI_Nu_Cosmics_v09_37_01_03p01_caf");
 
-  // The only file currently existing with the correct genie inttype filled
-  SpectrumLoader loader("/sbnd/app/users/bckhouse/dev/simulation_genie_icarus_numi_volDetEnclosure_20201215T090631_113-0083_gen_20201215T104338_filter_20201215T115238_g4_20201215T215526_detsim_20210113T201733_reco1_20210114T015949_reco2.caf.root");
+  // Far faster
+  SpectrumLoader loader("/sbnd/data/users/bckhouse/icarusprod_2021C_NUMI_Nu_Cosmics_v09_37_01_03p01_caf/flat*.root");
 
-  const Cut fidvol([](const caf::SRSliceProxy* sr)
+  const NuTruthCut fidvol([](const caf::SRTrueInteractionProxy* nu)
                    {
-                     const auto& v = sr->truth.position;
+                     const auto& v = nu->position;
 
                      // Didn't simulate the other cryostat
                      return ((//( v.x < -71.1 - 25 && v.x > -369.33 + 25 ) ||
@@ -30,7 +34,7 @@ void test_xsec_flux()
                               ( v.z > -895.95 + 30 && v.z < 895.95 - 50 ) ));
                    });
 
-  FluxTimesNuclei flux(loader, Binning::Simple(40, 0, 10), fidvol, 14);
+  FluxTimesNuclei flux(loader.NuTruths(), Binning::Simple(50, 0, 5), fidvol, 14);
 
   loader.Go();
 
@@ -56,4 +60,6 @@ void test_xsec_flux()
     hnom->SetLineColor(kRed);
     hnom->Draw("hist same");
   }
+
+  gPad->Print("test_xsec_flux.pdf");
 }

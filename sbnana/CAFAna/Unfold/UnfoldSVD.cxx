@@ -31,7 +31,10 @@ namespace ana
 
     // TODO in principle these should be the true labels and bins. Will be
     // easier with cafanacore
-    return Spectrum(std::move(h_unf), reco.GetLabels(), reco.GetBinnings(),
+    Eigen::ArrayXd arr = Eigen::Map<Eigen::ArrayXd>(h_unf->GetArray(),
+                                                    h_unf->GetNbinsX()+2);
+    return Spectrum(arr,
+                    LabelsAndBins(reco.GetLabels(), recoVsTrue.GetTrueBinnings()),
                     pot, reco.Livetime());
   }
 }

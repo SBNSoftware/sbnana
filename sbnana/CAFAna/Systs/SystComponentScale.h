@@ -3,6 +3,10 @@
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/ISyst.h"
 
+#include <memory>
+
+class TDirectory;
+
 namespace ana
 {
   /// Uncertainty in the scale of a single component of the spectrum
@@ -35,8 +39,8 @@ namespace ana
 
     // Some derived classes might have a back-channel allowing them to
     // implement this.
-    static std::unique_ptr<SystComponentScale> LoadFrom(TDirectory* dir);
-    virtual void SaveTo(TDirectory* dir) const {assert(0 && "unimplemented");}
+    static std::unique_ptr<SystComponentScale> LoadFrom(TDirectory* dir, const std::string& name);
+    virtual void SaveTo(TDirectory* dir, const std::string& name) const {assert(0 && "unimplemented");}
 
   protected:
     Cut fCut;

@@ -30,7 +30,7 @@ namespace ana
   extern const Cut kPTrack;
 
   extern const Cut kPTrackContained;
-  
+
   extern const Cut kPTrackExiting;
 
   // "Successive" cuts for the selection.

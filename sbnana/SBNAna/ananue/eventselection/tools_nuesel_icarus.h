@@ -1,4 +1,4 @@
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 
 #include "TCanvas.h"
@@ -187,9 +187,9 @@ namespace ana{
     leg->AddEntry(h2, name2,"l");
     leg->AddEntry(h2, TString::Format("%.2f",iBkg),"");
     //leg->AddEntry(h2, TString::Format("Ratio=%.2f",iRatio),"");
-    leg->SetBorderSize(0); //no border for legend                                                                                                                                                                                                                             
-    leg->SetFillColor(0);  //fill colour is white                                                                                                                                                                                                                             
-    leg->SetFillStyle(0);  //fill colour is white                                                                                                                                                                                                                             
+    leg->SetBorderSize(0); //no border for legend
+    leg->SetFillColor(0);  //fill colour is white
+    leg->SetFillStyle(0);  //fill colour is white
     leg->SetTextSize(0.04);
     leg->Draw();
 
@@ -197,7 +197,7 @@ namespace ana{
 
   //--------------------------------------------------
   void DrawIntEffPurLegend(TH1D* g1, char *name1, TH1D* g2, char *name2){
-    
+
     float int1 = g1->Integral();
     float int2 = g2->Integral();
     TLegend *leg = new TLegend(.65,.2,.85,.3);
@@ -265,7 +265,7 @@ namespace ana{
     pText2->Draw();
   }
 
-  // Efficiency and purity graphs 
+  // Efficiency and purity graphs
   //-----------------------------------------------------------------
 
   TH1D* EffOrPurHistogram(TH1* hSelSignal, TH1* hSelBack, TH1* hSignal, bool geteff) {

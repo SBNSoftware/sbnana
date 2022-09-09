@@ -36,7 +36,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
   WERROR
   NO_UNDEFINED
   ALLOW_DEPRECATIONS
-  EXTRA_FLAGS -pedantic -Wno-unused-local-typedefs -Wno-undefined-var-template -I $ENV{CLANG_FQ_DIR}/include/c++/v1
+  EXTRA_FLAGS -pedantic -Wno-unused-local-typedefs -Wno-undefined-var-template -I $ENV{CLANG_FQ_DIR}/include/c++/v1 -DTBB_INTERFACE_NEW
 )
 
 cet_report_compiler_flags()
@@ -49,6 +49,8 @@ find_ups_root(v6_00_00)
 find_ups_product(ifdhc)
 find_ups_product( srproxy )
 find_ups_product( osclib )
+find_ups_product( cafanacore )
+find_ups_product( stan_math )
 find_ups_product( pygccxml )
 
 #ifdhc

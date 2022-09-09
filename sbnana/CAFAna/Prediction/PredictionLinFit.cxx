@@ -1,11 +1,10 @@
 #include "sbnana/CAFAna/Prediction/PredictionLinFit.h"
 
-#include "sbnana/CAFAna/Core/HistCache.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/MathUtil.h"
-#include "sbnana/CAFAna/Core/Progress.h"
-#include "sbnana/CAFAna/Core/Ratio.h"
-#include "sbnana/CAFAna/Core/SystRegistry.h"
+#include "cafanacore/Progress.h"
+#include "cafanacore/Ratio.h"
+#include "cafanacore/Registry.h"
 
 #include "sbnana/CAFAna/Prediction/PredictionGenerator.h"
 
@@ -114,7 +113,7 @@ namespace ana
 
     TH1D* hnom = snom.ToTH1(1); // only need this to count the bins :(
     const int Nbins = hnom->GetNbinsX();
-    HistCache::Delete(hnom);
+    delete hnom;
 
     // The data (ratios) that we're trying to fit
     std::vector<std::vector<double>> ds(Nbins+2, std::vector<double>(fUnivs.size()));
@@ -127,7 +126,7 @@ namespace ana
         ds[binIdx][univIdx] = log(hr->GetBinContent(binIdx));
       }
 
-      HistCache::Delete(hr);
+      delete hr;
     }
 
     Progress prog("Initializing PredictionLinFit");
@@ -308,8 +307,9 @@ namespace ana
     if(fCoeffs.empty()) InitFits();
 
     // To get correct binning
-    TH1D* hret = fNom->PredictUnoscillated().ToTH1(1);
-    hret->Reset();
+    Spectrum unosc = fNom->PredictUnoscillated();
+    Eigen::ArrayXd aret = unosc.GetEigen(1);
+    aret.setZero();
 
     const std::vector<double> coords = GetCoords(shift);
     const unsigned int N = coords.size();
@@ -318,28 +318,28 @@ namespace ana
       double factor = 0;
       for(unsigned int i = 0; i < N; ++i) factor += fCoeffs[binIdx][i] * coords[i];
 
-      hret->SetBinContent(binIdx, exp(factor));
+      aret[binIdx] = exp(factor);
     }
 
-    const Ratio ret(hret);
-    HistCache::Delete(hret);
-    return ret;
+    return Ratio(std::move(aret), unosc.GetLabels(), unosc.GetBinnings());
   }
 
   //----------------------------------------------------------------------
-  void PredictionLinFit::SaveTo(TDirectory* dir) const
+  void PredictionLinFit::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("PredictionLinFit").Write("type");
 
-    fNom->SaveTo(dir->mkdir("nom"));
+    fNom->SaveTo(dir, "nom");
 
     for(unsigned int univIdx = 0; univIdx < fUnivs.size(); ++univIdx){
       TDirectory* ud = dir->mkdir(TString::Format("univ_%d", univIdx).Data());
-      fUnivs[univIdx].first.SaveTo(ud->mkdir("shift"));
-      fUnivs[univIdx].second->SaveTo(ud->mkdir("pred"));
+      fUnivs[univIdx].first.SaveTo(ud, "shift");
+      fUnivs[univIdx].second->SaveTo(ud, "pred");
     } // end for it
 
     if(!fSysts.empty()){
@@ -350,6 +350,9 @@ namespace ana
       }
       hSystNames.Write("syst_names");
     }
+
+    dir->Write();
+    delete dir;
 
     tmp->cd();
   }
@@ -510,19 +513,22 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<PredictionLinFit> PredictionLinFit::LoadFrom(TDirectory* dir)
+  std::unique_ptr<PredictionLinFit> PredictionLinFit::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* tag = (TObjString*)dir->Get("type");
     assert(tag);
     assert(tag->GetString() == "PredictionLinFit");
 
-    std::unique_ptr<IPrediction> nom = ana::LoadFrom<IPrediction>(dir->GetDirectory("nom"));
+    std::unique_ptr<IPrediction> nom = ana::LoadFrom<IPrediction>(dir, "nom");
 
     std::vector<const ISyst*> systs;
     TH1* hSystNames = (TH1*)dir->Get("syst_names");
     if(hSystNames){
       for(int systIdx = 0; systIdx < hSystNames->GetNbinsX(); ++systIdx){
-        systs.push_back(SystRegistry::ShortNameToSyst(hSystNames->GetXaxis()->GetBinLabel(systIdx+1)));
+        systs.push_back(Registry<ISyst>::ShortNameToPtr(hSystNames->GetXaxis()->GetBinLabel(systIdx+1)));
       }
     }
 
@@ -532,8 +538,8 @@ namespace ana
       TDirectory* ud = dir->GetDirectory(TString::Format("univ_%d", univIdx).Data());
       if(!ud) break; // out of universes
 
-      univs.emplace_back(*ana::LoadFrom<SystShifts>(ud->GetDirectory("shift")),
-                         ana::LoadFrom<IPrediction>(ud->GetDirectory("pred")).release());
+      univs.emplace_back(*ana::LoadFrom<SystShifts>(ud, "shift"),
+                         ana::LoadFrom<IPrediction>(ud, "pred").release());
     }
 
     // TODO think about memory management

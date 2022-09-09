@@ -10,7 +10,7 @@ LIBDIR=$MRB_INSTALL/sbnana/$SBNANA_VERSION/${CET_SUBDIR}.${MRB_QUALS/:/.}/lib/
 
 DIRS="Cuts Vars"
 
-find $DIRS -name '*.h' | sed 's:\(.*\):#include "SBNAna/\1":' > classes.h
+find $DIRS -name '*.h' | sed 's:\(.*\):#include "sbnana/SBNAna/\1":' > classes.h
 
 genreflex classes.h \
     -s classes_def.xml \

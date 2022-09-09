@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -54,6 +54,6 @@ void make_state_extrap()
   std::cout << "Creating file " << "cafe_state_extrap.root" << std::endl;
 
   TFile fout("cafe_state_extrap.root", "RECREATE");
-  pred.SaveTo(fout.mkdir("pred"));
-  predND.SaveTo(fout.mkdir("predND"));
+  pred.SaveTo(&fout, "pred");
+  predND.SaveTo(&fout, "predND");
 }

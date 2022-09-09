@@ -2,7 +2,8 @@
 // cafe demo3.C
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/HistAxis.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 
@@ -20,7 +21,7 @@ void demo3()
   const Var kRecoE = SIMPLEVAR(reco.reco_energy);
   const Var kWeight = SIMPLEVAR(reco.weight);
   const HistAxis axEnergy("True energy (GeV)", Binning::Simple(50, 0, 5), kRecoE);
-  Spectrum sNominal(loader, axEnergy, kNoCut, kNoShift, kWeight);
+  Spectrum sNominal(loader.Weighted(kWeight), axEnergy);
 
   // Systematics are implemented as objects that either compute a weight for
   // each event...
@@ -30,7 +31,7 @@ void demo3()
     TailScaleSyst() : ISyst("tailScale", "High energy scale factor") {}
 
     // 50% 1sigma shift on normalization of events above 2GeV
-    void Shift(double sigma, caf::SRProxy* sr, double& weight) const
+    void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const
     {
       const double E = sr->reco.reco_energy;
       /**/ if(E > 2) weight *= 1+.5*sigma;
@@ -47,7 +48,7 @@ void demo3()
     EnergyScaleSyst() : ISyst("energyScale", "Energy scale") {}
 
     // 20% 1sigma shift on all event energies
-    void Shift(double sigma, caf::SRProxy* sr, double& weight) const
+    void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const
     {
       sr->reco.reco_energy *= 1+.2*sigma;
     }

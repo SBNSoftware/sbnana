@@ -6,13 +6,13 @@
 namespace ana
 {
   const Cut kIsNuSlice = ( kTruthIndex >= 0.f );
-  
+
   const Cut kIsCosmic = ( !kIsNuSlice );
-  
+
   const Cut kIsNuMuCC([](const caf::SRSliceProxy* slc) {
       return ( kIsNuSlice(slc) && slc->truth.iscc && ( slc->truth.pdg == 14 || slc->truth.pdg == -14 ) );
     });
-  
+
   const Cut kIsNuOther = ( kIsNuSlice && !kIsNuMuCC );
 
   const Cut kCryo0([](const caf::SRSliceProxy* slc) {
@@ -58,7 +58,7 @@ namespace ana
   const Cut kPTrackContained([](const caf::SRSliceProxy* slc) {
       int Ind = kPTrackInd(slc);
       bool Contained(false);
-      if ( Ind >= 0 ) 
+      if ( Ind >= 0 )
       {
 	auto const& trk = slc->reco.trk.at(Ind);
 	Contained = ( !isnan(trk.end.x) &&
@@ -74,7 +74,7 @@ namespace ana
   const Cut kPTrackExiting([](const caf::SRSliceProxy* slc) {
       int Ind = kPTrackInd(slc);
       bool Exiting(false);
-      if ( Ind >= 0 ) 
+      if ( Ind >= 0 )
       {
 	auto const& trk = slc->reco.trk.at(Ind);
 	Exiting = !( !isnan(trk.end.x) &&
@@ -94,7 +94,7 @@ namespace ana
   const Cut kCosmic_Cryo0 = ( kIsCosmic && kCryo0 );
 
   const Cut kNuOther_Cryo0 = ( kIsNuOther && kCryo0 );
-  
+
   const Cut kNuMuCC_TFiducial = ( kNuMuCC_Cryo0 && kTFiducial );
 
   const Cut kNuMuCC_RFiducial = ( kNuMuCC_Cryo0 && kRFiducial );
@@ -106,31 +106,31 @@ namespace ana
   const Cut kNuOther_TFiducial = ( kNuOther_Cryo0 && kTFiducial );
 
   const Cut kNuOther_RFiducial = ( kNuOther_Cryo0 && kRFiducial );
-  
+
   const Cut kNuMuCC_ClearCos = ( kNuMuCC_TFiducial && kNotClearCosmic );
 
   const Cut kCosmic_ClearCos = ( kCosmic_RFiducial && kNotClearCosmic );
- 
+
   const Cut kNuOther_ClearCos = ( kNuOther_TFiducial && kNotClearCosmic );
-  
+
   const Cut kNuMuCC_NuScore = ( kNuMuCC_ClearCos && kNuScore );
- 
+
   const Cut kCosmic_NuScore = ( kCosmic_ClearCos && kNuScore );
 
   const Cut kNuOther_NuScore = ( kNuOther_ClearCos && kNuScore );
-  
+
   const Cut kNuMuCC_FMScore = ( kNuMuCC_NuScore && kFMScore );
 
   const Cut kCosmic_FMScore = ( kCosmic_NuScore && kFMScore );
 
   const Cut kNuOther_FMScore = ( kNuOther_NuScore && kFMScore );
-  
+
   const Cut kNuMuCC_PTrack = ( kNuMuCC_FMScore && kPTrack );
 
   const Cut kCosmic_PTrack = ( kCosmic_FMScore && kPTrack );
 
   const Cut kNuOther_PTrack = ( kNuOther_FMScore && kPTrack );
-  
+
   // The full selection cut using only reco information.
   const Cut kNuMuCC_FullSelection = ( kCryo0 && kRFiducial && kNotClearCosmic && kNuScore && kFMScore && kPTrack );
 

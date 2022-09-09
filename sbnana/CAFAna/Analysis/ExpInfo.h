@@ -7,7 +7,7 @@ namespace ana
   const double kPOTuBoone = 1.3e21;
   const double kBaselineSBND = 0.11;
   const double kBaselineMicroBoone = 0.47;
-  const double kBaselineIcarus = 0.6; 
+  const double kBaselineIcarus = 0.6;
   const int kSBND = 0;
   const int kMicroBoone = 1;
   const int kICARUS = 2;

@@ -1,16 +1,16 @@
-#pragma once 
+#pragma once
 
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
-#include "SBNAna/Vars/Binnings.h"
-#include "SBNAna/Vars/NueVars.h"
-#include "SBNAna/Vars/TruthVars.h"
-#include "SBNAna/Vars/Vars.h"
-#include "SBNAna/Cuts/Cuts.h"
-#include "SBNAna/Cuts/NueCuts.h"
-#include "SBNAna/Cuts/TruthCuts.h"
+#include "sbnana/SBNAna/Vars/Binnings.h"
+#include "sbnana/SBNAna/Vars/NueVars.h"
+#include "sbnana/SBNAna/Vars/TruthVars.h"
+#include "sbnana/SBNAna/Vars/Vars.h"
+#include "sbnana/SBNAna/Cuts/Cuts.h"
+#include "sbnana/SBNAna/Cuts/NueCuts.h"
+#include "sbnana/SBNAna/Cuts/TruthCuts.h"
 
 #include "TStyle.h"
 
@@ -183,7 +183,7 @@ const SpillCut kFullSpillCut([](const caf::SRSpillProxy* sr) {
 
 // ----------------------------------------------------------------------------------------------
 // Plots
-std::vector<PlotDef> plots_slice = 
+std::vector<PlotDef> plots_slice =
   {{"count",      "Number of slices",             Binning::Simple(3,0,3), kCounting},
    {"openangle",  "Opening angle",                kOpenAngleBinning,      kRecoShower_OpenAngle},
    {"startx",     "Shower start position X (cm)", kPositionXFDBinning,    kRecoShower_StartX},
@@ -195,9 +195,9 @@ std::vector<PlotDef> plots_slice =
    {"vtxx",       "Slice vertex X (cm)",          kPositionXFDBinning,    kSlcVtxX},
    {"vtxy",       "Slice vertes Y (cm)",          kPositionYFDBinning,    kSlcVtxY},
    {"vtxz",       "Slice vertex Z (cm)",          kPositionZFDBinning,    kSlcVtxZ},
-   {"conversion", "Conversion gap (cm)",          kGapBinning,            kRecoShower_ConversionGap},  
-   {"bestdedx",   "Best plane dEdx (MeV)",        kDedxBinning,           kRecoShower_BestdEdx},  
-   {"bestenergy", "Best plane energy (MeV)",      kEnergyBinning,         kRecoShower_BestEnergy},  
+   {"conversion", "Conversion gap (cm)",          kGapBinning,            kRecoShower_ConversionGap},
+   {"bestdedx",   "Best plane dEdx (MeV)",        kDedxBinning,           kRecoShower_BestdEdx},
+   {"bestenergy", "Best plane energy (MeV)",      kEnergyBinning,         kRecoShower_BestEnergy},
    {"density",    "Shower density (MeV/cm)",      kDensityBinning,        kRecoShower_Density},
    {"energy",     "Shower energy (MeV)",          kNueEnergyBinning,      kRecoShower_Energy},
    {"lengthshw",  "Shower length (cm)",           kLengthBinning,         kRecoShower_Length},
@@ -207,7 +207,7 @@ std::vector<PlotDef> plots_slice =
    {"truthenergy","True #nu energy (GeV)",        kLowEnergyGeVBinning,   kTruthEnergy},
  };
 
-std::vector<PlotDefSpill> plots_spill = 
+std::vector<PlotDefSpill> plots_spill =
   {{"count",        "Number of spills", Binning::Simple(3,0,3), kSpillCounting},
   { "nuenergy",     "True Neutrino Energy (GeV)", kLowEnergyGeVBinning, kTruthNuEnergy },
   { "leptonenergy", "True Lepton Energy (GeV)",   kLowEnergyGeVBinning, kTruthLeptonEnergy }

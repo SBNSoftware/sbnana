@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
@@ -69,7 +69,7 @@ void contours_icarus()
 
   const FitAxis kAxTh(&kFitSinSq2ThetaMuMu, 60, 1e-3, 1, true);
   const FitAxis kAxDmSq(&kFitDmSqSterile, 60, 1e-2, 1e2, true);
-  
+
   SingleSampleExperiment expt(&pred, fake);
 
   Surface surf(&expt, calc, kAxTh, kAxDmSq);
@@ -91,5 +91,5 @@ void contours_icarus()
   surf.GetGraphs(crit95pc)[0]->Write("fd_stat_95pct");
   surf.GetGraphs(crit99pc)[0]->Write("fd_stat_99pct");
 
-  expt.SaveTo(fout.mkdir("fd_expt"));
+  expt.SaveTo(fout, "fd_expt");
 }

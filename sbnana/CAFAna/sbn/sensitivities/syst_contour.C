@@ -1,9 +1,9 @@
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
-#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
@@ -57,9 +57,9 @@ void syst_contour()
 
   TFile fin("cafe_state_syst_numu.root");
 
-  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
-  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
-  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+  PredictionInterp* p_nd = LoadFrom<PredictionInterp>(&fin, "pred_nd").release();
+  PredictionInterp* p_fd = LoadFrom<PredictionInterp>(&fin, "pred_fd").release();
+  PredictionInterp* p_ub = LoadFrom<PredictionInterp>(&fin, "pred_ub").release();
 
   TLegend* leg_updn = new TLegend(.6, .6, .85, .85);
   leg_updn->SetFillStyle(0);
@@ -95,26 +95,20 @@ void syst_contour()
   const FitAxis kAxSinSq2ThetaMuMu(&kFitSinSq2ThetaMuMu, 20/*40*/, 1e-3, 1, true);
   const FitAxis kAxDmSq(&kFitDmSqSterile, 40, 1e-2, 1e2, true);
 
-  calc->SetL(kBaselineSBND);
   const Spectrum data_nd = p_nd->Predict(calc).FakeData(sbndPOT);
-  calc->SetL(kBaselineIcarus);
   const Spectrum data_fd = p_fd->Predict(calc).FakeData(icarusPOT);
-  calc->SetL(kBaselineMicroBoone);
   const Spectrum data_ub = p_ub->Predict(calc).FakeData(uboonePOT);
 
   SingleSampleExperiment expt_nd(p_nd, data_nd);
   SingleSampleExperiment expt_fd(p_fd, data_fd);
   SingleSampleExperiment expt_ub(p_ub, data_ub);
 
-  MultiExperimentSBN multiExpt({&expt_nd, &expt_fd, &expt_ub}, {kSBND, kICARUS, kMicroBoone});
+  MultiExperiment multiExpt({&expt_nd, &expt_fd, &expt_ub});
 
 
   Surface surf_nom(&multiExpt, calc, kAxSinSq2ThetaMuMu, kAxDmSq);
-  calc->SetL(kBaselineSBND);
   Surface surf_nom_nd(&expt_nd, calc, kAxSinSq2ThetaMuMu, kAxDmSq);
-  calc->SetL(kBaselineIcarus);
   Surface surf_nom_fd(&expt_fd, calc, kAxSinSq2ThetaMuMu, kAxDmSq);
-  calc->SetL(kBaselineMicroBoone);
   Surface surf_nom_ub(&expt_ub, calc, kAxSinSq2ThetaMuMu, kAxDmSq);
 
 
@@ -159,11 +153,8 @@ void syst_contour()
 
     Surface surf_syst(&multiExpt, calc, kAxSinSq2ThetaMuMu, kAxDmSq, {}, slist);
 
-    calc->SetL(kBaselineSBND);
     Surface surf_syst_nd(&expt_nd, calc, kAxSinSq2ThetaMuMu, kAxDmSq, {}, slist);
-    calc->SetL(kBaselineIcarus);
     Surface surf_syst_fd(&expt_fd, calc, kAxSinSq2ThetaMuMu, kAxDmSq, {}, slist);
-    calc->SetL(kBaselineMicroBoone);
     Surface surf_syst_ub(&expt_ub, calc, kAxSinSq2ThetaMuMu, kAxDmSq, {}, slist);
 
     std::string suffix = "big";

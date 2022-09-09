@@ -19,6 +19,7 @@ namespace ana
     SystShifts();
     SystShifts(const ISyst* syst, double shift);
     SystShifts(const std::map<const ISyst*, double>& shifts);
+    SystShifts(const std::unordered_map<const ISyst*, double>& shifts);
 
     static SystShifts Nominal(){return SystShifts();}
     static SystShifts RandomThrow(const std::vector<const ISyst*>& systs);
@@ -46,8 +47,8 @@ namespace ana
     std::vector<const ISyst*> ActiveSysts() const;
 
 
-    void SaveTo(TDirectory* dir) const;
-    static std::unique_ptr<SystShifts> LoadFrom(TDirectory* dir);
+    void SaveTo(TDirectory* dir, const std::string& name) const;
+    static std::unique_ptr<SystShifts> LoadFrom(TDirectory* dir, const std::string& name);
 
 
   protected:
@@ -58,5 +59,5 @@ namespace ana
     static int fgNextID;
   };
 
-  const SystShifts kNoShift = SystShifts::Nominal();
+  extern const SystShifts kNoShift;
 }

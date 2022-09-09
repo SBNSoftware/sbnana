@@ -2,7 +2,7 @@
   // event_numbers.C has to be executed first!
   // Replace SBND with the appropriate experiment
   TFile* f = new TFile("output/output_finalstate_SBND.root");
-  
+
   TH1D* SBND_All_NC_all = (TH1D*) f->Get("SBND_All_NC_all");
   TH1D* SBND_0pi_CC_all = (TH1D*) f->Get("SBND_0pi_CC_all");
   TH1D* SBND_1piCh_CC_all = (TH1D*) f->Get("SBND_1piCh_CC_all");
@@ -68,7 +68,7 @@
   prelim->Draw();
   c1->SaveAs("output/Stack_finalstate_numu.root");
   c1->SaveAs("output/Stack_finalstate_numu.pdf");
-  
+
   TCanvas* c2 = new TCanvas("c2","c2", 700,800);
   c2->Divide(1,2);
 

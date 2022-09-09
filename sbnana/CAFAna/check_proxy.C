@@ -5,7 +5,7 @@
 #include "TFile.h"
 #include "TTree.h"
 
-#include "sbnana/CAFAna/StandardRecord/StandardRecord.h"
+#include "sbnanaobj/StandardRecord/StandardRecord.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <iostream>
@@ -39,7 +39,7 @@ void check_proxy(std::string fname, std::string fname2 = "", int N = -1)
 
     recTree->GetEntry(i);
 
-    if(type != caf::kFlatMultiTree) tr->LoadTree(i);
+    tr->LoadTree(i);
 
     srProxy.CheckEquals(*sr);
   }

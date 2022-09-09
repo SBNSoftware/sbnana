@@ -1,7 +1,7 @@
 #include "sbnana/CAFAna/Core/SystShifts.h"
 
 #include "sbnana/CAFAna/Core/MathUtil.h"
-#include "sbnana/CAFAna/Core/SystRegistry.h"
+#include "cafanacore/Registry.h"
 
 #include <cassert>
 
@@ -15,6 +15,8 @@ namespace ana
 {
   // Reserve 0 for unshifted
   int SystShifts::fgNextID = 1;
+
+  const SystShifts kNoShift = SystShifts::Nominal();
 
   //----------------------------------------------------------------------
   SystShifts::SystShifts() : fID(0)
@@ -30,6 +32,13 @@ namespace ana
 
   //----------------------------------------------------------------------
   SystShifts::SystShifts(const std::map<const ISyst*, double>& shifts)
+    : fID(fgNextID++)
+  {
+    for(auto it: shifts) if(it.second != 0) fSysts.emplace(it.first, it.second);
+  }
+
+  //----------------------------------------------------------------------
+  SystShifts::SystShifts(const std::unordered_map<const ISyst*, double>& shifts)
     : fID(fgNextID++)
   {
     for(auto it: shifts) if(it.second != 0) fSysts.emplace(it.first, it.second);
@@ -125,11 +134,13 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void SystShifts::SaveTo(TDirectory* dir) const
+  void SystShifts::SaveTo(TDirectory* dir, const std::string& name) const
   {
     TDirectory* tmp = gDirectory;
 
+    dir = dir->mkdir(name.c_str()); // switch to subdir
     dir->cd();
+
     TObjString("SystShifts").Write("type");
 
     // Don't write any histogram for the nominal case
@@ -144,12 +155,18 @@ namespace ana
       h.Write("vals");
     }
 
+    dir->Write();
+    delete dir;
+
     tmp->cd();
   }
 
   //----------------------------------------------------------------------
-  std::unique_ptr<SystShifts> SystShifts::LoadFrom(TDirectory* dir)
+  std::unique_ptr<SystShifts> SystShifts::LoadFrom(TDirectory* dir, const std::string& name)
   {
+    dir = dir->GetDirectory(name.c_str()); // switch to subdir
+    assert(dir);
+
     TObjString* tag = (TObjString*)dir->Get("type");
     assert(tag);
     assert(tag->GetString() == "SystShifts");
@@ -159,7 +176,7 @@ namespace ana
     TH1* h = (TH1*)dir->Get("vals");
     if(h){ // no histogram means nominal
       for(int i = 1; i <= h->GetNbinsX(); ++i){
-        ret->SetShift(SystRegistry::ShortNameToSyst(h->GetXaxis()->GetBinLabel(i)),
+        ret->SetShift(Registry<ISyst>::ShortNameToPtr(h->GetXaxis()->GetBinLabel(i)),
                       h->GetBinContent(i));
       }
     }

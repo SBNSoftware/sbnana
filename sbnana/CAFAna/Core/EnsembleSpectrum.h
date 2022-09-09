@@ -1,6 +1,11 @@
 #pragma once
 
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "cafanacore/Spectrum.h"
+
+#include "sbnana/CAFAna/Core/Cut.h"
+#include "sbnana/CAFAna/Core/HistAxis.h"
+#include "sbnana/CAFAna/Core/IRecordSource.h"
+#include "sbnana/CAFAna/Core/Weight.h"
 
 #include <cassert>
 
@@ -9,43 +14,60 @@ class TGraphAsymmErrors;
 namespace ana
 {
   class EnsembleRatio;
+  class FitMultiverse;
 
-  // TODO Multiverse class encapsulating a vector of shifts/weights and an ID
-  // number?
-
-  class EnsembleSpectrum
+  class EnsembleSpectrum : public IValueEnsembleSink
   {
   public:
-    EnsembleSpectrum(SpectrumLoaderBase& loader,
-                     const HistAxis& axis,
-                     const SpillCut& spillcut,
-                     const Cut& cut,
-                     const std::vector<SystShifts>& univ_shifts,
-                     const Var& cv_wei = kUnweighted);
+    friend class EnsembleRatio;
 
-    EnsembleSpectrum(SpectrumLoaderBase& loader,
-                     const HistAxis& axis,
-                     const SpillCut& spillcut,
-                     const Cut& cut,
-                     const std::vector<Var>& univ_weis,
-                     const Var& cv_wei = kUnweighted);
+    /// Construct an ensemble spectrum from a source of values and an axis
+    /// definition
+    EnsembleSpectrum(IValueEnsembleSource& src, const LabelsAndBins& axis);
 
-    Spectrum Nominal() const {return fNom;}
-    unsigned int NUniverses() const {return fUnivs.size();}
-    Spectrum Universe(unsigned int i) const
+    /// \brief Shorthand construction with a source of records and a HistAxis
+    /// defining the Var to extract from those records.
+    template<class RecT>
+    EnsembleSpectrum(_IRecordEnsembleSource<RecT>& src,
+                     const _HistAxis<_Var<RecT>>& axis)
+      : EnsembleSpectrum(src[axis.GetVar1D()], axis)
     {
-      assert(i < fUnivs.size());
-      return fUnivs[i];
     }
 
-    double POT() const {return fNom.POT();}
+    /// \brief Creates an ensemble spectrum for "data" from an input \ref Spectrum
+    //         which is replicated nUniverse times from the multiverse which it adopts.
+    //         Note that this is a temporary workaround for now
+    static EnsembleSpectrum ReplicatedData(const Spectrum& spec, const FitMultiverse* multiverse);
 
-    double Livetime() const {return fNom.Livetime();}
+    Spectrum Nominal() const {return Universe(0);}
+    unsigned int NUniverses() const;
+    Spectrum Universe(unsigned int i) const;
+
+    // TODO consider naming confusion with Universe() above
+    const FitMultiverse& GetMultiverse() const {return *fMultiverse;}
+
+    double POT() const {return fPOT;}
+
+    double Livetime() const {return fLivetime;}
 
     /// Result can be painted prettily with \ref DrawErrorBand
     TGraphAsymmErrors* ErrorBand(double exposure,
                                  EExposureType expotype = kPOT,
                                  EBinType bintype = kBinContent) const;
+
+    /// Wrapper for \ref CalcCovMx
+    Eigen::MatrixXd CovarianceMatrix(const double exposure, EExposureType expotype=kPOT);
+
+    /// Wrapper for \ref CalcBiasMx
+    Eigen::MatrixXd BiasMatrix(const double exposure, EExposureType expotype=kPOT);
+
+    virtual void FillSingle(double x, double w, int universeId) override;
+
+    virtual void FillEnsemble(double x, const std::vector<double>& ws) override;
+
+    virtual void FillPOT(double pot) override;
+
+    virtual void FillLivetime(double livetime) override;
 
     void Scale(double c);
 
@@ -61,18 +83,37 @@ namespace ana
     EnsembleSpectrum& operator/=(const EnsembleRatio& rhs);
     EnsembleSpectrum operator/(const EnsembleRatio& rhs) const;
 
-    void SaveTo(TDirectory* dir) const;
-    static std::unique_ptr<EnsembleSpectrum> LoadFrom(TDirectory* dir);
+    void SaveTo(TDirectory* dir, const std::string& name) const;
+    static std::unique_ptr<EnsembleSpectrum> LoadFrom(TDirectory* dir,
+                                                      const std::string& name);
 
-    unsigned int NDimensions() const{return fNom.NDimensions();}
-    std::vector<std::string> GetLabels() const {return fNom.GetLabels();}
-    std::vector<Binning> GetBinnings() const {return fNom.GetBinnings();}
+    unsigned int NDimensions() const{return fAxis.NDimensions();}
+    std::vector<std::string> GetLabels() const {return fAxis.GetLabels();}
+    std::vector<Binning> GetBinnings() const {return fAxis.GetBinnings();}
 
   protected:
-    EnsembleSpectrum(const Spectrum& nom) : fNom(nom) {}
+    friend class EnsembleReweightableSpectrum;
 
-    Spectrum fNom;
-    std::vector<Spectrum> fUnivs;
+    /// Helper for LoadFrom()
+    EnsembleSpectrum(const FitMultiverse* multiverse,
+                     const Hist&& hist,
+                     double pot,
+                     double livetime,
+                     const LabelsAndBins& axis);
+
+    void CheckMultiverses(const FitMultiverse& rhs,
+                          const std::string& func) const;
+
+    /// Helper for operator+= and operator-=
+    EnsembleSpectrum& PlusEqualsHelper(const EnsembleSpectrum& rhs, int sign,
+                                       const std::string& func);
+
+    const FitMultiverse* fMultiverse;
+
+    Hist fHist;
+    double fPOT;
+    double fLivetime;
+    LabelsAndBins fAxis;
   };
 
   // Commutative

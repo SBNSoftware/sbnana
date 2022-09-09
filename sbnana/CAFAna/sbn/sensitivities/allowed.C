@@ -1,9 +1,8 @@
+#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Core/LoadFromFile.h"
 #include "sbnana/CAFAna/Core/OscCalcSterileApprox.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
-#include "sbnana/CAFAna/Prediction/PredictionInterp.h"
 #include "sbnana/CAFAna/Experiment/SingleSampleExperiment.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
 #include "sbnana/CAFAna/Experiment/CountingExperiment.h"
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
@@ -28,19 +27,19 @@ const double uboonePOT = 1.3e21;
 
 void allowed()
 {
-  TFile fin("surfaces.root");  
+  TFile fin("surfaces.root");
 
-  Surface& surf_syst_nd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nd_prop_systs")).release(); 
-  Surface& surf_syst_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/fd_prop_systs")).release(); 
-  Surface& surf_syst_ub = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/ub_prop_systs")).release(); 
-  Surface& surf_syst_nd_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nd_fd_prop_systs")).release();
-  Surface& surf_syst_all = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/allexpt_prop_systs")).release(); 
-  
-  Surface& surf_nom_nd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom_nd")).release(); 
-  Surface& surf_nom_ub = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom_ub")).release(); 
-  Surface& surf_nom_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom_fd")).release(); 
-  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom_nd_fd")).release(); 
-  Surface& surf_nom = *ana::LoadFrom<Surface>(fin.GetDirectory("allowed/nom")).release(); 
+  Surface& surf_syst_nd = *ana::LoadFrom<Surface>(&fin, "allowed/nd_prop_systs").release();
+  Surface& surf_syst_fd = *ana::LoadFrom<Surface>(&fin, "allowed/fd_prop_systs").release();
+  Surface& surf_syst_ub = *ana::LoadFrom<Surface>(&fin, "allowed/ub_prop_systs").release();
+  Surface& surf_syst_nd_fd = *ana::LoadFrom<Surface>(&fin, "allowed/nd_fd_prop_systs").release();
+  Surface& surf_syst_all = *ana::LoadFrom<Surface>(&fin, "allowed/allexpt_prop_systs").release();
+
+  Surface& surf_nom_nd = *ana::LoadFrom<Surface>(&fin, "allowed/nom_nd").release();
+  Surface& surf_nom_ub = *ana::LoadFrom<Surface>(&fin, "allowed/nom_ub").release();
+  Surface& surf_nom_fd = *ana::LoadFrom<Surface>(&fin, "allowed/nom_fd").release();
+  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(&fin, "allowed/nom_nd_fd").release();
+  Surface& surf_nom = *ana::LoadFrom<Surface>(&fin, "allowed/nom").release();
 
   TH2* crit5sig = Gaussian5Sigma2D(surf_nom);
   TH2* crit3sig = Gaussian3Sigma2D(surf_nom);
@@ -49,7 +48,7 @@ void allowed()
   TH2* crit99 = Gaussian99Percent2D(surf_nom);
 
   surf_nom.SetTitle("3 Sigma Allowed Regions");
- 
+
   surf_nom.DrawContour(crit3sig, 7, kBlack);
   surf_nom_nd_fd.DrawContour(crit3sig, 7, kMagenta);
   surf_nom_nd.DrawContour(crit3sig,7,kRed);
@@ -61,7 +60,7 @@ void allowed()
   surf_syst_ub.DrawContour(crit3sig, kSolid, kGreen);
   surf_syst_fd.DrawContour(crit3sig, kSolid, kBlue);
   surf_syst_nd_fd.DrawContour(crit3sig, kSolid, kMagenta);
-    
+
   TLegend * lgdis = new TLegend(0.11,0.11,0.3,0.3);
   lgdis->SetFillColor(0);
   lgdis->SetBorderSize(0);
@@ -83,7 +82,7 @@ void allowed()
   gPad->Print("allowed_3sig.pdf");
 
 //  TFile fout("allowed_graphs.root", "RECREATE");
-//  
+//
 //  std::vector<Surface> surfaces {surf_nom, surf_nom_nd, surf_nom_ub, surf_nom_fd, surf_nom_nd_fd, surf_syst_all, surf_syst_nd, surf_syst_ub, surf_syst_fd, surf_syst_nd_fd};
 //
 //  std::vector<TH2*> con_lev {crit90, crit95, crit99, crit3sig, crit5sig};
@@ -91,12 +90,12 @@ void allowed()
 //  std::vector<std::string> s_name {"all_stat", "nd_stat", "ub_stat", "fd_stat", "nd_fd_stat", "all_syst", "nd_syst", "ub_syst", "fd_syst", "nd_fd_syst"};
 //
 //  std::vector<std::string> c_name {"_90pct", "_95pct", "_99pct", "_3sig", "_5sig"};
-//  
+//
 //  std::cout<<"Before Loop"<<std::endl;
 //
 //  ofstream txtfile;
 //  txtfile.open("CAFAna_allowed.txt");
-// 
+//
 //  for (int i = 0; i < 10; ++i) {
 //    txtfile<<s_name[i]<<"\n"<<"=========="<<"\n";
 //    for (int j = 0; j < 5; ++j) {
@@ -117,8 +116,8 @@ void allowed()
 //      txtfile<<"\n";
 //    }
 //    txtfile<<"\n\n";
-//  } 
+//  }
 //
 //  txtfile.close();
-  
+
 }

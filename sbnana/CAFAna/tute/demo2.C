@@ -2,7 +2,7 @@
 // cafe demo2.C
 
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
-#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Cuts/TruthCuts.h"
@@ -16,7 +16,7 @@
 #include "sbnana/CAFAna/Analysis/FitAxis.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
 #include "sbnana/CAFAna/Vars/FitVarsSterileApprox.h"
-#include "sbnana/CAFAna/Experiment/MultiExperimentSBN.h"
+#include "sbnana/CAFAna/Experiment/MultiExperiment.h"
 
 using namespace ana;
 
@@ -33,12 +33,14 @@ void demo2(int step = 99)
   SpectrumLoader loaderIcarus(fnameIcarus);
   SpectrumLoader loaderSBND(fnameSBND);
   const Var kRecoE = SIMPLEVAR(reco.reco_energy);
-  const Var kWeight = SIMPLEVAR(reco.weight);
+  const Weight kWeight = SIMPLEWEIGHT(reco.weight);
   const HistAxis axEnergy("Reconstructed energy (GeV)", Binning::Simple(50, 0, 5), kRecoE);
-  PredictionNoExtrap predSBND(loaderSBND, kNullLoader, kNullLoader, kNullLoader,
-                              axEnergy, kNoCut, kNoShift, kWeight);
-  PredictionNoExtrap predIcarus(loaderIcarus, kNullLoader, kNullLoader, kNullLoader,
-                                axEnergy, kNoCut, kNoShift, kWeight);
+  PredictionNoExtrap predSBND(loaderSBND.Slices().Weighted(kWeight),
+                              kNullSliceSource, kNullSliceSource, kNullSliceSource,
+                              axEnergy);
+  PredictionNoExtrap predIcarus(loaderIcarus.Slices().Weighted(kWeight),
+                                kNullSliceSource, kNullSliceSource, kNullSliceSource,
+                                axEnergy);
 
   loaderSBND.Go();
   loaderIcarus.Go();
@@ -108,9 +110,8 @@ void demo2(int step = 99)
   surfSBND.DrawContour(critSurf, kSolid, kRed);
   surfIcarus.DrawContour(critSurf, kSolid, kBlue);
 
-  // MultiExperimentSBN sums the chisqs from its constituent parts. It also
-  // makes sure to set the right baselines at the right times during the fit.
-  MultiExperimentSBN exptMulti({&exptSBND, &exptIcarus}, {kSBND, kICARUS});
+  // MultiExperiment sums the chisqs from its constituent parts.
+  MultiExperiment exptMulti({&exptSBND, &exptIcarus});
   Surface surfMulti(&exptMulti, &calc, kAxSinSq2ThetaMuMu, kAxDmSq);
 
   surfMulti.DrawContour(critSurf, kSolid, kMagenta);
