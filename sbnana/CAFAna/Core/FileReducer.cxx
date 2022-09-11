@@ -176,10 +176,10 @@ namespace ana
     TTree* recTree = (TTree*)fin->Get("recTree");
     assert(recTree);
 
-    const caf::CAFType type = caf::GetCAFType(0, recTree);
+    const caf::CAFType type = caf::GetCAFType(recTree);
 
     if(trOut){
-      const caf::CAFType outtype = caf::GetCAFType(0, trOut);
+      const caf::CAFType outtype = caf::GetCAFType(trOut);
       if(type != outtype){
         std::cerr << "FileReducer: Error: dataset contains mixed CAF types (flat vs nested)" << std::endl;
         abort();
@@ -189,9 +189,9 @@ namespace ana
     if(type == caf::kNested) HandleNestedTree(fout, recTree, trOut,
                                               prog,
                                               nRecSeen, nRecPassed);
-    else if(type == caf::kFlatSingleTree) HandleFlatTree(fout, recTree, trOut,
-                                                         prog,
-                                                         nRecSeen, nRecPassed);
+    else if(type == caf::kFlat) HandleFlatTree(fout, recTree, trOut,
+                                               prog,
+                                               nRecSeen, nRecPassed);
 
     else{
       std::cerr << "FileReducer: Error: Unrecognized file type: "
@@ -215,7 +215,7 @@ namespace ana
     }
 
     // Use this one for assessing cuts etc
-    caf::Proxy<caf::StandardRecord> srProxy(0, recTree, "rec", 0, 0);
+    caf::Proxy<caf::StandardRecord> srProxy(recTree, "rec");
 
     // And if they pass load into this one for writing out
     caf::StandardRecord* sr = 0;
