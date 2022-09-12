@@ -95,7 +95,7 @@ namespace ana
   void FileReducer::Go()
   {
     //    FloatingExceptionOnNaN fpnan;
-    
+
     // Don't want overflow to happen. Set to 1 petabyte: effectively infinite.
     TTree::SetMaxTreeSize(1e15);
 
@@ -107,15 +107,10 @@ namespace ana
 
     const int Nfiles = NFiles();
 
-    Progress* prog = 0;
-    
+    Progress prog(TString::Format("Filling from %d files matching '%s'", Nfiles, fWildcard.c_str()).Data());
+
     TFile fout(fOutfile.c_str(), "RECREATE");
-    TTree* trOut = new TTree("recTree", "recTree");
-    {
-      //      FloatingExceptionOnNaN fpnan(false);
-      caf::StandardRecord dummy;
-      trOut->Branch("rec", &dummy);
-    }
+    TTree* trOut = 0; // created in first call to HandleFile()
 
     TH1* hPOTOut = new TH1F("TotalPOT", "", 1, 0, 1);
     TH1* hEventsOut = new TH1F("TotalEvents", "", 1, 0, 1);
@@ -125,117 +120,36 @@ namespace ana
     std::map<std::string, std::string> meta;
     std::set<std::string> meta_mask;
 
-    caf::StandardRecord* oldsr = 0;
-
     long nRecSeen = 0;
     long nRecPassed = 0;
 
     int fileIdx = -1;
-    while(TFile* f = GetNextFile()){
+    while(TFile* fin = GetNextFile()){
       ++fileIdx;
 
-      assert(!f->IsZombie());
+      assert(!fin->IsZombie());
 
-      TH1* hPOT = (TH1*)f->Get("TotalPOT");
+      fnames.push_back(fin->GetName());
 
+      TH1* hPOT = (TH1*)fin->Get("TotalPOT");
       assert(hPOT);
       hPOTOut->Add(hPOT);
 
-      fnames.push_back(f->GetName());
-
-      TDirectory* meta_dir = (TDirectory*)f->Get("metadata");
+      TDirectory* meta_dir = (TDirectory*)fin->Get("metadata");
       assert(meta_dir);
       CombineMetadata(meta, GetCAFMetadata(meta_dir), meta_mask);
 
-      TH1* hEvents = (TH1*)f->Get("TotalEvents");
+      TH1* hEvents = (TH1*)fin->Get("TotalEvents");
       assert(hEvents);
       hEventsOut->Add(hEvents);
 
-      TTree* recTree = (TTree*)f->Get("recTree");
-      assert(recTree);
+      HandleFile(fin, &fout, trOut,
+                 Nfiles == 1 ? &prog : 0,
+                 nRecSeen, nRecPassed);
 
-      // Use this one for assessing cuts etc
-      caf::Proxy<caf::StandardRecord> srProxy(recTree, "rec");
+      if(fileIdx == 0) CopyGlobalTree(fin, &fout);
 
-      // And if they pass load into this one for writing out
-      caf::StandardRecord* sr = 0;
-      recTree->SetBranchAddress("rec", &sr);
-
-      const int Nentries = recTree->GetEntries();
-      for(int n = 0; n < Nentries; ++n){
-        ++nRecSeen;
-        recTree->LoadTree(n);
-
-        // Apply EventList cut if it's been enabled
-        if(!fEventList.empty() &&
-           !fEventList.count(std::make_tuple(srProxy.hdr.run,
-                                             srProxy.hdr.subrun,
-                                             srProxy.hdr.evt))) continue;
-
-        /// Do we need to include the event? Either based on the selection...
-        const bool passesSpillCut = !fSpillCut || (*fSpillCut)(&srProxy);
-        // Or if it carries POT or spill counting information
-        if(passesSpillCut || srProxy.hdr.pot > 0 || srProxy.hdr.ngenevt > 0){
-          recTree->GetEntry(n);
-
-          if(sr != oldsr){
-            trOut->SetBranchAddress("rec", &sr);
-            oldsr = sr;
-          }
-
-          if(!passesSpillCut){
-            // We're only keeping this one for the exposure info
-            Huskify(sr);
-            trOut->Fill();
-            continue;
-          }
-          // Otherwise, need to proceed to keep/reject individual slices
-
-          std::vector<int> tocut;
-          for(unsigned int i = 0; i < srProxy.slc.size(); ++i){
-            if(fSliceCut && !(*fSliceCut)(&srProxy.slc[i])) tocut.push_back(i);
-          }
-
-          // Remove slices in reverse order so that the indices remain valid
-          for(auto it = tocut.rbegin(); it != tocut.rend(); ++it){
-            sr->slc.erase(sr->slc.begin() + *it);
-          }
-
-          // Apply any additional reduction steps
-          for(const auto& f: fReductionFuncs) f(sr);
-          // This is kind of problematic since the proxy and actual record
-          // could be out of sync. Let's just disable this option for now.
-          //          for(const auto & f: fReductionFuncsWithProxy) f(sr, &srProxy);
-
-          ++nRecPassed;
-          trOut->Fill();
-        }
-
-        if(Nfiles >= 0 && !prog) prog = new Progress(TString::Format("Filling from %d files matching '%s'", Nfiles, fWildcard.c_str()).Data());
-
-        if(n%100 == 0 && Nfiles == 1 && prog)
-          prog->SetProgress(double(n)/Nentries);
-      } // end for n
-
-      if(fileIdx == 0){
-        TTree* globalIn = (TTree*)f->Get("globalTree");
-        if(globalIn){
-          // Copy globalTree verbatim from input to output
-          caf::SRGlobal global;
-          caf::SRGlobal* pglobal = &global;
-          globalIn->SetBranchAddress("global", &pglobal);
-          fout.cd();
-          TTree globalOut("globalTree", "globalTree");
-          globalOut.Branch("global", "caf::SRGlobal", &global);
-          assert(globalIn->GetEntries() == 1);
-          // TODO check that the globalTree is the same in every file
-          globalIn->GetEntry(0);
-          globalOut.Fill();
-          globalOut.Write();
-        }
-      }
-
-      if(prog) prog->SetProgress((fileIdx+1.)/Nfiles);
+      prog.SetProgress((fileIdx+1.)/Nfiles);
     } // end while GetNextFile
 
     fout.cd();
@@ -248,13 +162,180 @@ namespace ana
 
     fout.Close();
 
-    if(prog){
-      prog->Done();
-      delete prog;
-    }
+    prog.Done();
 
     std::cout << "Passed " << nRecPassed << " / " << nRecSeen << " records";
     std::cout << std::endl;
+  }
+
+  //----------------------------------------------------------------------
+  void FileReducer::HandleFile(TFile* fin, TFile* fout, TTree*& trOut,
+                               Progress* prog,
+                               long& nRecSeen, long& nRecPassed)
+  {
+    TTree* recTree = (TTree*)fin->Get("recTree");
+    assert(recTree);
+
+    const caf::CAFType type = caf::GetCAFType(recTree);
+
+    if(trOut){
+      const caf::CAFType outtype = caf::GetCAFType(trOut);
+      if(type != outtype){
+        std::cerr << "FileReducer: Error: dataset contains mixed CAF types (flat vs nested)" << std::endl;
+        abort();
+      }
+    }
+
+    if(type == caf::kNested) HandleNestedTree(fout, recTree, trOut,
+                                              prog,
+                                              nRecSeen, nRecPassed);
+    else if(type == caf::kFlat) HandleFlatTree(fout, recTree, trOut,
+                                               prog,
+                                               nRecSeen, nRecPassed);
+
+    else{
+      std::cerr << "FileReducer: Error: Unrecognized file type: "
+                << fin->GetName() << std::endl;
+      abort();
+    }
+  }
+
+  //----------------------------------------------------------------------
+  void FileReducer::HandleNestedTree(TFile* fout,
+                                     TTree* recTree, TTree*& trOut,
+                                     Progress* prog,
+                                     long& nRecSeen, long& nRecPassed)
+  {
+    if(!trOut){
+      fout->cd();
+      trOut = new TTree("recTree", "recTree");
+      //      FloatingExceptionOnNaN fpnan(false);
+      caf::StandardRecord dummy;
+      trOut->Branch("rec", &dummy);
+    }
+
+    // Use this one for assessing cuts etc
+    caf::Proxy<caf::StandardRecord> srProxy(recTree, "rec");
+
+    // And if they pass load into this one for writing out
+    caf::StandardRecord* sr = 0;
+    recTree->SetBranchAddress("rec", &sr);
+
+    caf::StandardRecord* oldsr = 0;
+
+    const int Nentries = recTree->GetEntries();
+    for(int n = 0; n < Nentries; ++n){
+      ++nRecSeen;
+      recTree->LoadTree(n);
+
+      // Apply EventList cut if it's been enabled
+      if(!fEventList.empty() &&
+         !fEventList.count(std::make_tuple(srProxy.hdr.run,
+                                           srProxy.hdr.subrun,
+                                           srProxy.hdr.evt))) continue;
+
+      /// Do we need to include the event? Either based on the selection...
+      const bool passesSpillCut = !fSpillCut || (*fSpillCut)(&srProxy);
+      // Or if it carries POT or spill counting information
+      if(passesSpillCut || srProxy.hdr.pot > 0 || srProxy.hdr.ngenevt > 0){
+        recTree->GetEntry(n);
+
+        if(sr != oldsr){
+          trOut->SetBranchAddress("rec", &sr);
+          oldsr = sr;
+        }
+
+        if(!passesSpillCut){
+          // We're only keeping this one for the exposure info
+          Huskify(sr);
+          trOut->Fill();
+          continue;
+        }
+        // Otherwise, need to proceed to keep/reject individual slices
+
+        std::vector<int> tocut;
+        for(unsigned int i = 0; i < srProxy.slc.size(); ++i){
+          if(fSliceCut && !(*fSliceCut)(&srProxy.slc[i])) tocut.push_back(i);
+        }
+
+        // Remove slices in reverse order so that the indices remain valid
+        for(auto it = tocut.rbegin(); it != tocut.rend(); ++it){
+          sr->slc.erase(sr->slc.begin() + *it);
+        }
+
+        // Apply any additional reduction steps
+        for(const auto& f: fReductionFuncs) f(sr);
+        // This is kind of problematic since the proxy and actual record
+        // could be out of sync. Let's just disable this option for now.
+        //          for(const auto & f: fReductionFuncsWithProxy) f(sr, &srProxy);
+
+        ++nRecPassed;
+        trOut->Fill();
+      }
+
+      // prog won't be passed if the caller doesn't want per-event updates
+      if(n%100 == 0 && prog) prog->SetProgress(double(n)/Nentries);
+    } // end for n
+  }
+
+  //----------------------------------------------------------------------
+  void FileReducer::HandleFlatTree(TFile* fout, TTree* recTree, TTree*& trOut,
+                                   Progress* prog,
+                                   long& nRecSeen, long& nRecPassed)
+  {
+    if(!fEventList.empty()){
+      std::cerr << "FileReducer: Event list not supported for FlatCAFs (yet)" << std::endl;
+      abort();
+    }
+
+    if(fSpillCut){
+      std::cerr << "FileReducer: Spill cuts not supported for FlatCAFs" << std::endl;
+      abort();
+    }
+
+    if(fSliceCut){
+      std::cerr << "FileReducer: Slice cuts not supported for FlatCAFs" << std::endl;
+      abort();
+    }
+
+    if(!fReductionFuncs.empty()){
+      std::cerr << "FileReducer: Reduction functions not supported for FlatCAFs" << std::endl;
+      abort();
+    }
+
+    // Do the actual copy
+    if(!trOut){
+      fout->cd();
+      trOut = recTree->CloneTree();
+    }
+    else{
+      fout->cd();
+      recTree->CopyAddresses(trOut);
+      trOut->CopyEntries(recTree);
+    }
+
+    nRecSeen += recTree->GetEntries();
+    nRecPassed += recTree->GetEntries();
+  }
+
+  //----------------------------------------------------------------------
+  void FileReducer::CopyGlobalTree(TFile* fin, TFile* fout)
+  {
+    TTree* globalIn = (TTree*)fin->Get("globalTree");
+    if(!globalIn) return;
+
+    // Copy globalTree verbatim from input to output
+    caf::SRGlobal global;
+    caf::SRGlobal* pglobal = &global;
+    globalIn->SetBranchAddress("global", &pglobal);
+    fout->cd();
+    TTree globalOut("globalTree", "globalTree");
+    globalOut.Branch("global", "caf::SRGlobal", &global);
+    assert(globalIn->GetEntries() == 1);
+    // TODO check that the globalTree is the same in every file
+    globalIn->GetEntry(0);
+    globalOut.Fill();
+    globalOut.Write();
   }
 
   //----------------------------------------------------------------------
