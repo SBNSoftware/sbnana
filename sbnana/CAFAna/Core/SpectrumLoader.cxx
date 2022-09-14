@@ -225,6 +225,15 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  unsigned int SpectrumLoader::Nevents()
+  {
+    TFile* f = GetNextFile();
+    TTree* tr = (TTree*)f->Get("recTree");
+
+    return tr->GetEntries();
+  }
+
+  //----------------------------------------------------------------------
   /// Helper for \ref HandleRecord
   template<class T, class U, class V> class CutVarCache
   {

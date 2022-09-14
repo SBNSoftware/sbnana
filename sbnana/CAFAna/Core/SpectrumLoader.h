@@ -30,6 +30,7 @@ namespace ana
 
     virtual void Go() override;
     virtual void Select(unsigned int N = 0);
+    unsigned int Nevents();
 
   protected:
     SpectrumLoader(DataSource src = kBeam);
