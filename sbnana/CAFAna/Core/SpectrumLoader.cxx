@@ -113,6 +113,54 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoader::Select(unsigned int N)
+  {
+    if(fGone){
+      std::cerr << "Error: can only call Go() once on a SpectrumLoader" << std::endl;
+      abort();
+    }
+    fGone = true;
+
+    // Find all the unique cuts
+    //    std::set<Cut, CompareByID> cuts;
+    //    for(auto& shiftdef: fHistDefs)
+    //      for(auto& cutdef: shiftdef.second)
+    //        cuts.insert(cutdef.first);
+    //    for(const Cut& cut: cuts) fAllCuts.push_back(cut);
+
+    //    fLivetimeByCut.resize(fAllCuts.size());
+    //    fPOTByCut.resize(fAllCuts.size());
+
+
+    const int Nfiles = NFiles();
+
+    Progress* prog = 0;
+
+    caf::SRBranchRegistry::clear();
+
+    int fileIdx = -1;
+    while(TFile* f = GetNextFile()){
+      ++fileIdx;
+
+      if(Nfiles >= 0 && !prog) prog = new Progress(TString::Format("Filling %lu spectra from %d files matching '%s'", fHistDefs.TotalSize(), Nfiles, fWildcard.c_str()).Data());
+
+      HandleFile(f, Nfiles == 1 ? prog : 0, N);
+
+      if(Nfiles > 1 && prog) prog->SetProgress((fileIdx+1.)/Nfiles);
+    } // end for fileIdx
+
+    if(prog){
+      prog->Done();
+      delete prog;
+    }
+
+    StoreExposures(); // also triggers the POT printout
+
+    fHistDefs.RemoveLoader(this);
+    fHistDefs.Clear();
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoader::HandleFile(TFile* f, Progress* prog)
   {
     assert(!f->IsZombie());
@@ -143,6 +191,37 @@ namespace ana
 
       if(prog) prog->SetProgress(double(n)/Nentries);
     } // end for n
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoader::HandleFile(TFile* f, Progress* prog, unsigned int N)
+  {
+    assert(!f->IsZombie());
+
+    TTree* tr = (TTree*)f->Get("recTree");
+    assert(tr);
+
+    // We try to access this field for every record. It was only added to the
+    // files in late 2021, and we don't want to render all earlier files
+    // unusable at a stroke. This logic can safely be removed once all extant
+    // files have such a field (estimate mid-2022?)
+    const bool has_husk = tr->GetLeaf("rec.hdr.husk");
+
+    caf::SRSpillProxy sr(tr, "rec");
+
+    //    FloatingExceptionOnNaN fpnan;
+
+    long Nentries = tr->GetEntries();
+    if (max_entries != 0 && max_entries < Nentries) Nentries = max_entries;
+
+    tr->LoadTree(N);
+
+    // If there is no husk field there is no concept of husk events
+    if(!has_husk) sr.hdr.husk = false;
+
+    HandleRecord(&sr);
+
+    if(prog) prog->SetProgress(double(N)/Nentries);
   }
 
   //----------------------------------------------------------------------

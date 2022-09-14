@@ -29,6 +29,7 @@ namespace ana
     virtual ~SpectrumLoader();
 
     virtual void Go() override;
+    virtual void Select(unsigned int N = 0);
 
   protected:
     SpectrumLoader(DataSource src = kBeam);
@@ -42,6 +43,7 @@ namespace ana
     SpectrumLoader& operator=(const SpectrumLoader&) = delete;
 
     virtual void HandleFile(TFile* f, Progress* prog = 0);
+    virtual void HandleFile(TFile* f, Progress* prog, unsigned int N);
 
     virtual void HandleRecord(caf::SRSpillProxy* sr);
 
