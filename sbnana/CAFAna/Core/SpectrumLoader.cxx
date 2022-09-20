@@ -211,17 +211,12 @@ namespace ana
 
     //    FloatingExceptionOnNaN fpnan;
 
-    long Nentries = tr->GetEntries();
-    if (max_entries != 0 && max_entries < Nentries) Nentries = max_entries;
-
     tr->LoadTree(N); // Only want a specific event from the TTree
 
     // If there is no husk field there is no concept of husk events
     if(!has_husk) sr.hdr.husk = false;
 
     HandleRecord(&sr);
-
-    if(prog) prog->SetProgress(double(N)/Nentries);
   }
 
   //----------------------------------------------------------------------
