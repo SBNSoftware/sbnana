@@ -58,4 +58,22 @@ namespace ana
   /// \f$ \sin^22\theta_{\mu e} \f$
   const FitSinSq2ThetaMuE kFitSinSq2ThetaMuE = FitSinSq2ThetaMuE();
 
+  //----------------------------------------------------------------------
+  
+  /// \f$ \sin^22\theta_{e e} \f$
+  class FitSinSq2ThetaEE: public IConstrainedFitVar
+  {
+  public:
+    virtual double GetValue(const osc::IOscCalcAdjustable* osc) const;
+    virtual void SetValue(osc::IOscCalcAdjustable* osc, double val) const;
+    virtual std::string ShortName() const {return "ss2thee";}
+    virtual std::string LatexName() const {return "sin^{2}2#theta_{ee}";}
+
+    virtual double LowLimit() const {return 0;}
+    virtual double HighLimit() const {return 1;}
+  };
+
+  /// \f$ \sin^22\theta_{e e} \f$
+  const FitSinSq2ThetaEE kFitSinSq2ThetaEE = FitSinSq2ThetaEE();
+
 } // namespace
