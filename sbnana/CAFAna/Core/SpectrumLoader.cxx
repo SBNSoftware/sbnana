@@ -178,6 +178,7 @@ namespace ana
   {
     if(sr->hdr.first_in_subrun){
       fPOT += sr->hdr.pot;
+      fBlind = sr->hdr.isblind;
       // TODO think about if this should be gated behind first_in_file. At the
       // moment I think these will be synonymous. And despite the comment on
       // hdr.pot, I think it may be file-based in practice too.
@@ -325,11 +326,25 @@ namespace ana
   //----------------------------------------------------------------------
   void SpectrumLoader::StoreExposures()
   {
-    if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.001){
-      std::cout << fPOT << " POT from hdr differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
+    if (fBlind) {
+      if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.01){
+      std::cout << fPOT << " POT from hdr differs from " << fPOTFromHist << " POT from the TotalPOT histogram by >1% for blinded data!" << std::endl;
       abort();
+      }
+      else {
+	std::cout << fPOT << " POT from hdr matches " << fPOTFromHist << " POT from the TotalPOT histogram" << std::endl;
+      }
     }
-
+    else {
+      if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.001){
+	std::cout << fPOT << " POT from hdr differs from " << fPOTFromHist << " POT from the TotalPOT histogram by >0.1%!" << std::endl;
+	abort();
+      }
+      else {
+	std::cout << fPOT << " POT from hdr matches " << fPOTFromHist << " POT from the TotalPOT histogram" << std::endl;
+      }
+    }
+      
     std::cout << fPOT << " POT over " << fNReadouts << " readouts" << std::endl;
 
     for(auto& shiftdef: fHistDefs){

@@ -130,6 +130,7 @@ namespace ana
 
     double fPOT;
     double fPOTFromHist; ///< Accumulated by calls to \ref GetNextFile
+    bool fBlind;
     int fNReadouts;
 
     /// \brief Helper class for \ref SpectrumLoaderBase
