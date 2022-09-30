@@ -187,14 +187,15 @@ namespace ana
     if(!sr->hdr.ismc){
       const int nbnb  = sr->hdr.bnbinfo.size();
       const int nnumi = sr->hdr.numiinfo.size();
-      if(nbnb > 0 && nnumi > 0){
-        std::cout << "SpectrumLoader: nonzero number of both BNB (" << nbnb
-                  << ") and NuMI (" << nnumi << ") triggers. I'm confused"
+      const int next = sr->hdr.extinfo.size();
+      if(nbnb > 0 && nnumi > 0 && next > 0){
+        std::cout << "SpectrumLoader: nonzero number of BNB (" << nbnb
+                  << "), NuMI (" << nnumi << "), and EXT (" << next << ") triggers. I'm confused"
                   << std::endl;
         abort();
       }
 
-      fNReadouts += nbnb + nnumi;
+      fNReadouts += nbnb + nnumi + next;
     }
 
     // This record was only kept as a receptacle for exposure information. It
