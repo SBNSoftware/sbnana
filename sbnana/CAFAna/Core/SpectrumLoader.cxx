@@ -188,8 +188,8 @@ namespace ana
       const int nbnb  = sr->hdr.bnbinfo.size();
       const int nnumi = sr->hdr.numiinfo.size();
       const int next = sr->hdr.extinfo.size();
-      if(nbnb > 0 && nnumi > 0 && next > 0){
-        std::cout << "SpectrumLoader: nonzero number of BNB (" << nbnb
+      if((nbnb > 0 && nnumi > 0) || (nbnb > 0 && next > 0) || (nnumi > 0 && next > 0)){
+        std::cout << "SpectrumLoader: nonzero number of 2 of 3 BNB (" << nbnb
                   << "), NuMI (" << nnumi << "), and EXT (" << next << ") triggers. I'm confused"
                   << std::endl;
         abort();
