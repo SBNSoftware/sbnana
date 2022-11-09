@@ -136,6 +136,7 @@ namespace ana{
     {
       for (auto const& pfp : slc->reco.pfp)
       {
+      if (pfp.trackScore < 0.5) { continue; }
       const auto& trk = pfp.trk;
         if (trk.dazzle.pdg==13)
           return false;
@@ -149,6 +150,7 @@ namespace ana{
     {
       for (auto const& pfp : slc->reco.pfp)
       {
+        if (pfp.trackScore < 0.5) { continue; }
         const auto& trk = pfp.trk;
         if (trk.dazzle.muonScore > 0.8)
           return false;
