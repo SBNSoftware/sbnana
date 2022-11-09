@@ -145,6 +145,7 @@ const Var kRecoShowers_EnergyCut(
     [](const caf::SRSliceProxy* slc) -> unsigned {
       unsigned int counter(0);
       for (auto const& pfp : slc->reco.pfp) {
+        if (pfp.trackScore > 0.5) { continue; }
 	auto const& shw = pfp.shw;
         if (shw.bestplane_energy > 0.2f)
           ++counter;
