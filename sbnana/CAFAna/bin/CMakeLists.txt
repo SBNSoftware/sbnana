@@ -1,12 +1,14 @@
-cet_make_exec( diff_spectra
+cet_make_exec( NAME diff_spectra
                SOURCE diff_spectra.cc
-               LIBRARIES ${ROOT_BASIC_LIB_LIST}
+               LIBRARIES ROOT::Core ROOT::TreePlayer
                )
 
-cet_make_exec( concat_cafs
+cet_make_exec( NAME concat_cafs
                SOURCE concat_cafs.cc
-               LIBRARIES ${ROOT_BASIC_LIB_LIST} CAFAnaCore
+               LIBRARIES ROOT::Core CAFAnaCore
                )
+
+target_include_directories( concat_cafs PRIVATE $ENV{SRPROXY_INC} )
 
 install_headers()
 install_source()
