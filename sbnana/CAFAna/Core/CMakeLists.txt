@@ -13,6 +13,7 @@ cet_make_library(LIBRARY_NAME CAFAnaCore
                    ROOT::Core
                    ifdh::ifdh
                    Eigen3::Eigen
+                   Boost::system
         )
 
 
