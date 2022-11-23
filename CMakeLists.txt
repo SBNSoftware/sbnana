@@ -16,7 +16,7 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 # cmake_policy(VERSION 3.19)
 
-find_package(cetmodules )
+find_package( cetmodules )
 project(sbnana VERSION 09.62.00 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
@@ -41,19 +41,18 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
-find_package(sbnanaobj 09.15.00 )
-find_package( Boost )
-find_package( ROOT 6.00.00 )
-find_package( ifdhc )
-find_package( srproxy  )
+find_package( sbnanaobj REQUIRED )
+find_package( Boost COMPONENTS system filesystem REQUIRED )
+find_package( ROOT REQUIRED )
+find_package( ifdhc REQUIRED)
+find_package( srproxy )
 find_package( osclib  )
 find_package( pygccxml  )
-find_package( Threads )
-find_package( Eigen3 )
+find_package( Threads REQUIRED )
+find_package( Eigen3 REQUIRED )
 
 #ifdhc
 cet_find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB   NO_DEFAULT_PATH )
-
 
 add_subdirectory(sbnana)
 
