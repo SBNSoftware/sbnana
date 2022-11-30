@@ -10,7 +10,8 @@ namespace ana{
 			     bool hastrk = ( slc->reco.npfp > 0 );
 			     if (!hastrk) return hastrk;
 
-			     unsigned int muIdx = (unsigned int)kPrimMuonIdx(slc);
+			     int muIdx = kPrimMuonIdx(slc);
+			     if  (muIdx < 0) { return false; }
  			     double len = slc->reco.pfp[muIdx].trk.len;
 			     return (len > 0 );
 			   });
@@ -34,7 +35,8 @@ namespace ana{
 			  bool hastrk = ( slc->reco.npfp > 0 );
 			  if (!hastrk) return hastrk;
 			  
-			  unsigned int muIdx = (unsigned int)kPrimMuonIdx(slc);
+			  int muIdx = kPrimMuonIdx(slc);
+			  if (muIdx < 0) { return false; }
 			  double len = slc->reco.pfp[muIdx].trk.len;
 			  return (len > 50 );
 			});
@@ -45,7 +47,8 @@ namespace ana{
   // 			  if (!hastrk) return hastrk;
   // 			  // CosmicContain from sbnanalysis OscRecoPostprocess
   // 			  //  ytop: 40	 ybottom: 15  zfront: 15   zback: 15
-  // 			  unsigned int muIdx = (unsigned int)kPrimMuonIdx(slc);
+  // 			  int muIdx = kPrimMuonIdx(slc);
+  //                      if (muIdx < 0) { return false; }
   // 			  return ( slc->reco.pfp[muIdx].trk.start.x > ( kNDTopX -15 ) &&
   // 				   slc->reco.pfp[muIdx].trk.start.x < 15 &&
   // 				   slc->reco.pfp[muIdx].trk.start.y > ( kNDTopY -40 ) &&
