@@ -39,14 +39,14 @@ namespace ana{
   const Cut kCRTTrackAngleCut([](const caf::SRSliceProxy* slc)
                         {
                           int ptrkid = kPrimaryMuonTrkIdx(slc);
-			  const caf::SRTrackProxy& ptrk = slc->reco.trk[ptrkid];
+			  const caf::SRTrackProxy& ptrk = slc->reco.pfp[ptrkid].trk;
                           return ( isnan(ptrk.crttrack.angle) || ptrk.crttrack.angle > 0.05);
                         });
 
   const Cut kCRTHitDistanceCut([](const caf::SRSliceProxy* slc)
                         {
                           int ptrkid = kPrimaryMuonTrkIdx(slc);
-			  const caf::SRCRTHitMatchProxy& crthit = slc->reco.trk[ptrkid].crthit;
+			  const caf::SRCRTHitMatchProxy& crthit = slc->reco.pfp[ptrkid].trk.crthit;
 
                           // No candidate CRT hit matches
                           if(std::isnan(crthit.hit.time) || std::isnan(crthit.distance)) return true;

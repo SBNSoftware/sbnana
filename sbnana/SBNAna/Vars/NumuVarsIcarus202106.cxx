@@ -10,9 +10,10 @@ namespace ana
 
   const Var kMuMaxTrack([](const caf::SRSliceProxy* slc) -> float {
       float len(-5.f);
-      for (auto const& trk : slc->reco.trk)
+      for (auto const& pfp: slc->reco.pfp)
       {
-	if ( (trk.truth.p.pdg == 13 || trk.truth.p.pdg == -13) && trk.truth.p.length > len ) len = trk.truth.p.length;
+        const auto& trk = pfp.trk;
+	if ( pfp.trackScore > 0.5 && (trk.truth.p.pdg == 13 || trk.truth.p.pdg == -13) && trk.truth.p.length > len ) len = trk.truth.p.length;
       }
       return len;
     });
@@ -21,10 +22,10 @@ namespace ana
       // The (dis)qualification of a slice is based upon the track level information.
       float Longest(0);
       int PTrackInd(-1);
-      for (std::size_t i(0); i < slc->reco.trk.size(); ++i)
+      for (std::size_t i(0); i < slc->reco.pfp.size(); ++i)
       {
-	auto const& trk = slc->reco.trk.at(i);
-        if(trk.bestplane == -1) continue;
+	auto const& trk = slc->reco.pfp.at(i).trk;
+        if(trk.bestplane == -1 || slc->reco.pfp.at(i).trackScore < 0.5) continue;
 
 	// First we calculate the distance of each track to the slice vertex.
         const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
@@ -33,7 +34,7 @@ namespace ana
 
 	// We require that the distance of the track from the slice is less than
 	// 10 cm and that the parent of the track has been marked as the primary.
-	const bool AtSlice = ( Atslc < 10.0 && trk.pfp.parent_is_primary);
+	const bool AtSlice = ( Atslc < 10.0 && slc->reco.pfp.at(i).parent_is_primary);
 
         const float Chi2Proton = trk.chi2pid[trk.bestplane].chi2_proton;
         const float Chi2Muon = trk.chi2pid[trk.bestplane].chi2_muon;
@@ -60,7 +61,7 @@ namespace ana
 
       if ( kPTrackInd(slc) >= 0 )
       {
-	auto const& trk = slc->reco.trk.at(kPTrackInd(slc));
+	auto const& trk = slc->reco.pfp.at(kPTrackInd(slc)).trk;
 	const bool Contained = ( !isnan(trk.end.x) &&
 		      ( trk.end.x < -71.1 - 25 && trk.end.x > -369.33 + 25 ) &&
 		      !isnan(trk.end.y) &&
@@ -78,7 +79,7 @@ namespace ana
 
       if ( kPTrackInd(slc) >= 0 )
       {
-	auto const& trk = slc->reco.trk.at(kPTrackInd(slc));
+	auto const& trk = slc->reco.pfp.at(kPTrackInd(slc)).trk;
 	p = std::hypot(trk.truth.p.genp.x, trk.truth.p.genp.y, trk.truth.p.genp.z);
       }
       return p;
