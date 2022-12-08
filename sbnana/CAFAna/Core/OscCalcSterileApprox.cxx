@@ -13,8 +13,19 @@
 namespace ana
 {
   // --------------------------------------------------------------------------
+  void OscCalcSterileApprox::SetSinSq2ThetaEE(double t)
+  {
+    assert(!fSinSq2ThetaMuMuSet || !fSinSq2ThetaMuESet);
+    fSinSq2ThetaEESet = true;
+    fSinSq2ThetaEE = t;
+  }
+  
+  // --------------------------------------------------------------------------
   double OscCalcSterileApprox::GetSinSq2ThetaEE() const
   {
+    if(fSinSq2ThetaEESet) return fSinSq2ThetaEE;
+    if(!fSinSq2ThetaMuMuSet && !fSinSq2ThetaMuESet) return 0;
+
     // The three angles are coupled via
     //
     // ss2thmm = 4*Um4^2*(1-Um4^2)
@@ -31,7 +42,7 @@ namespace ana
     // General case
     const double Ue4sq = fSinSq2ThetaMuE/(2*fSinSq2ThetaMuMu)*(1-sqrt(1-fSinSq2ThetaMuMu));
     assert(!isinf(Ue4sq) && !isnan(Ue4sq));
-    const double sinsq2thetaee = Ue4sq*(1-Ue4sq);
+    const double sinsq2thetaee = 4.0*Ue4sq*(1-Ue4sq);
 
     assert(sinsq2thetaee >= 0 && sinsq2thetaee <= 1);
 
@@ -42,6 +53,85 @@ namespace ana
     }
 
     return sinsq2thetaee;
+  }
+
+  // --------------------------------------------------------------------------
+  void OscCalcSterileApprox::SetSinSq2ThetaMuMu(double t)
+  {
+    assert(!fSinSq2ThetaEESet || ! fSinSq2ThetaMuESet);
+    fSinSq2ThetaMuMuSet = true;
+    fSinSq2ThetaMuMu = t;
+  }
+
+  // --------------------------------------------------------------------------
+  double OscCalcSterileApprox::GetSinSq2ThetaMuMu() const
+  {
+    if(fSinSq2ThetaMuMuSet) return fSinSq2ThetaMuMu;
+    if(!fSinSq2ThetaEESet && !fSinSq2ThetaMuESet) return 0;
+
+    // The three angles are coupled via
+    //
+    // ss2thmm = 4*Um4^2*(1-Um4^2)
+    // ss2thee = 4*Ue4^2*(1-Ue4^2)
+    // ss2thme = 4*Um4^2*Ue4^2
+    //
+    // Solve for the final (numu survival angle). Emperically, choosing the
+    // negative sign in the expression works well.
+
+    // A couple of limits
+    if(fSinSq2ThetaEE <= 0) return fSinSq2ThetaMuE / 4;
+    if(fSinSq2ThetaEE >= 1) return fSinSq2ThetaMuE / 2;
+
+    // General case
+    const double Um4sq = fSinSq2ThetaMuE/(2*fSinSq2ThetaEE)*(1-sqrt(1-fSinSq2ThetaEE));
+    assert(!isinf(Um4sq) && !isnan(Um4sq));
+    const double sinsq2thetamm = 4.0*Um4sq*(1-Um4sq);
+
+    assert(sinsq2thetamm >= 0 && sinsq2thetamm <= 1);
+
+    // Cross-check that we actually solved the equations correctly
+    if(Um4sq > 0){
+      const double Ue4sq = fSinSq2ThetaMuE/(4*Um4sq);
+      assert(fabs(4*Ue4sq*(1-Ue4sq) - fSinSq2ThetaEE) < 1e-6);
+    }
+
+    return sinsq2thetamm;
+  }
+
+  // --------------------------------------------------------------------------
+  void OscCalcSterileApprox::SetSinSq2ThetaMuE(double t)
+  {
+    assert(!fSinSq2ThetaMuMuSet || !fSinSq2ThetaEESet);
+    fSinSq2ThetaMuESet = true;
+    fSinSq2ThetaMuE = t;
+  }
+
+  // --------------------------------------------------------------------------
+  double OscCalcSterileApprox::GetSinSq2ThetaMuE() const
+  {
+    if(fSinSq2ThetaMuESet) return fSinSq2ThetaMuE;
+    if(!fSinSq2ThetaMuMuSet && !fSinSq2ThetaEESet) return 0;
+
+    // The three angles are coupled via
+    //
+    // ss2thmm = 4*Um4^2*(1-Um4^2)
+    // ss2thee = 4*Ue4^2*(1-Ue4^2)
+    // ss2thme = 4*Um4^2*Ue4^2
+    //
+    // Choose 1-sqrt() case instead of 1+sqrt() since in the later
+    // if both ss2thmm and ss2thee are 0 we stil get ss2thme = 1,
+    // which seems wrong.
+
+    const double Um4sq = 0.5 * (1.0 - std::sqrt(1.0 - fSinSq2ThetaMuMu));
+    const double Ue4sq = 0.5 * (1.0 - std::sqrt(1.0 - fSinSq2ThetaEE));
+
+    assert(!isinf(Um4sq) && !isnan(Um4sq));
+    assert(!isinf(Ue4sq) && !isnan(Ue4sq));
+    const double sinsq2thetame = 4.0*Um4sq*Ue4sq;
+
+    assert(sinsq2thetame >= 0 && sinsq2thetame <= 1);
+
+    return sinsq2thetame;
   }
 
   // --------------------------------------------------------------------------
@@ -94,17 +184,17 @@ namespace ana
   double OscCalcSterileApprox::PFromDelta(int from, int to, double Delta) const
   {
     if(abs(from) == 14 && abs(to) == 14){
-      return 1-fSinSq2ThetaMuMu*Delta;
+      return 1-GetSinSq2ThetaMuMu()*Delta;
     }
     else if(abs(from) == 12 && abs(to) == 12){
       return 1-GetSinSq2ThetaEE()*Delta;
     }
     else if(abs(from) == 14 && abs(to) == 12){
-      return fSinSq2ThetaMuE*Delta;
+      return GetSinSq2ThetaMuE()*Delta;
     }
     else if(abs(from) == 12 && abs(to) == 14){
       // TODO - this seems reasonable, is it right?
-      return fSinSq2ThetaMuE*Delta;
+      return GetSinSq2ThetaMuE()*Delta;
     }
     else if(abs(to) == 16){ // no tau appearance
       return 0;
@@ -112,10 +202,10 @@ namespace ana
 
     //Option to return the active fraction
     else if (abs(from) == 14 && to == 0) {
-      return (1-fSinSq2ThetaMuMu*Delta) + (fSinSq2ThetaMuE*Delta);
+      return (1-GetSinSq2ThetaMuMu()*Delta) + (GetSinSq2ThetaMuE()*Delta);
     }
     else if (abs(from) == 12 && to == 0) {
-      return (1-GetSinSq2ThetaEE()*Delta) + (fSinSq2ThetaMuE*Delta);
+      return (1-GetSinSq2ThetaEE()*Delta) + (GetSinSq2ThetaMuE()*Delta);
     }
 
     std::cout << "OscCalcSterileApprox: P(" << from << ", " << to << ") not implemented" << std::endl;
@@ -164,8 +254,15 @@ namespace ana
     OscCalcSterileApprox* ret = new OscCalcSterileApprox;
 
     ret->fDmsq = fDmsq;
-    ret->fSinSq2ThetaMuMu = fSinSq2ThetaMuMu;
-    ret->fSinSq2ThetaMuE = fSinSq2ThetaMuE;
+    ret->fSinSq2ThetaMuMuSet = fSinSq2ThetaMuMuSet;
+    ret->fSinSq2ThetaMuESet = fSinSq2ThetaMuESet;
+    ret->fSinSq2ThetaEESet = fSinSq2ThetaEESet;
+    if(fSinSq2ThetaMuMuSet)
+      ret->fSinSq2ThetaMuMu = fSinSq2ThetaMuMu;
+    if(fSinSq2ThetaMuESet)
+      ret->fSinSq2ThetaMuE = fSinSq2ThetaMuE;
+    if(fSinSq2ThetaEESet)
+      ret->fSinSq2ThetaEE = fSinSq2ThetaEE;
     ret->fL = fL;
 
     return ret;
@@ -178,19 +275,31 @@ namespace ana
     const std::string txt = "SterileApprox";
     ret->Update((unsigned char*)txt.c_str(), txt.size());
     const int kNumParams = 4;
-    double buf[kNumParams] = {fDmsq, fSinSq2ThetaMuMu, fSinSq2ThetaMuE, fL};
+    double angles[2] = {0, 0};
+    int angles_set = 0;
+    if(fSinSq2ThetaMuMuSet && angles_set < 2)
+      angles[angles_set++] = fSinSq2ThetaMuMu;
+    if(fSinSq2ThetaMuESet && angles_set < 2)
+      angles[angles_set++] = fSinSq2ThetaMuE;
+    if(fSinSq2ThetaEESet && angles_set < 2)
+      angles[angles_set++] = fSinSq2ThetaEE;
+    double buf[kNumParams] = {fDmsq, angles[0], angles[1], fL};
     ret->Update((unsigned char*)buf, sizeof(double)*kNumParams);
     ret->Final();
     return ret;
   }
 
   //---------------------------------------------------------------------------
-  OscCalcSterileApproxAdjustable* DefaultSterileApproxCalc()
+  OscCalcSterileApproxAdjustable* DefaultSterileApproxCalc(SterileOscAngles angles)
   {
     auto ret = new OscCalcSterileApproxAdjustable;
     ret->calc.SetDmsq(0);
-    ret->calc.SetSinSq2ThetaMuMu(0);
-    ret->calc.SetSinSq2ThetaMuE(0);
+    if((angles & SterileOscAngles::kSinSq2ThetaMuMu) != SterileOscAngles::kNone)
+      ret->calc.SetSinSq2ThetaMuMu(0);
+    if((angles & SterileOscAngles::kSinSq2ThetaMuE) != SterileOscAngles::kNone)
+      ret->calc.SetSinSq2ThetaMuE(0);
+    if((angles & SterileOscAngles::kSinSq2ThetaEE) != SterileOscAngles::kNone)
+      ret->calc.SetSinSq2ThetaEE(0);
     ret->calc.SetL(0); // make clear this is uninitialized
 
     return ret;

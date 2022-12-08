@@ -7,6 +7,8 @@
 
 namespace ana
 {
+  class Progress;
+
   // Example reduction steps
   void ClearTrueParticles(caf::StandardRecord* sr);
 
@@ -49,6 +51,19 @@ namespace ana
     virtual void Go() override;
 
   protected:
+    void HandleFile(TFile* fin, TFile* fout, TTree*& trOut, Progress* prog,
+                    long& nRecSeen, long& nRecPassed);
+
+    void HandleNestedTree(TFile* fout, TTree* recTree, TTree*& trOut,
+                          Progress* prog,
+                          long& nRecSeen, long& nRecPassed);
+
+    void HandleFlatTree(TFile* fout, TTree* recTree, TTree*& trOut,
+                        Progress* prog,
+                        long& nRecSeen, long& nRecPassed);
+
+    void CopyGlobalTree(TFile* fin, TFile* fout);
+
     void UpdateMetadata(std::map<std::string, std::string>& meta,
                         const std::set<std::string>& mask,
                         const std::vector<std::string>& fnames) const;

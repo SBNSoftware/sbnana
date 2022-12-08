@@ -39,4 +39,16 @@ namespace ana
   {
     DowncastToSterileApprox(osc)->SetSinSq2ThetaMuE(Clamp(val));
   }
+
+  // --------------------------------------------------------------------------
+  double FitSinSq2ThetaEE::GetValue(const osc::IOscCalcAdjustable* osc) const
+  {
+    return DowncastToSterileApprox(osc)->GetSinSq2ThetaEE();
+  }
+
+  // --------------------------------------------------------------------------
+  void FitSinSq2ThetaEE::SetValue(osc::IOscCalcAdjustable* osc, double val) const
+  {
+    DowncastToSterileApprox(osc)->SetSinSq2ThetaEE(Clamp(val));
+  }
 }

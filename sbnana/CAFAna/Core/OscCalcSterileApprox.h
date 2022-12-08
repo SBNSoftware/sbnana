@@ -4,6 +4,13 @@
 
 namespace ana
 {
+  enum class SterileOscAngles {
+    kNone = 0,
+    kSinSq2ThetaMuMu = 1,
+    kSinSq2ThetaMuE  = (1 << 1),
+    kSinSq2ThetaEE   = (1 << 2)
+  };
+  
   class OscCalcSterileApprox: public osc::IOscCalc
   {
   public:
@@ -20,13 +27,14 @@ namespace ana
     void SetDmsq(double d) {fDmsq = d;}
     double GetDmsq() const {return fDmsq;}
 
-    void SetSinSq2ThetaMuMu(double t) {fSinSq2ThetaMuMu = t;}
-    double GetSinSq2ThetaMuMu() const {return fSinSq2ThetaMuMu;}
+    void SetSinSq2ThetaMuMu(double t);
+    double GetSinSq2ThetaMuMu() const;
 
-    void SetSinSq2ThetaMuE(double t) {fSinSq2ThetaMuE = t;}
-    double GetSinSq2ThetaMuE() const {return fSinSq2ThetaMuE;}
+    void SetSinSq2ThetaMuE(double t);
+    double GetSinSq2ThetaMuE() const;
 
-    double GetSinSq2ThetaEE() const; ///< calculated from the others
+    void SetSinSq2ThetaEE(double t);
+    double GetSinSq2ThetaEE() const;
 
     // TODO - potentially remove L in the brave new L/E future
     void SetL(double L) {fL = L;}
@@ -39,6 +47,10 @@ namespace ana
     double fDmsq;
     double fSinSq2ThetaMuMu;
     double fSinSq2ThetaMuE;
+    double fSinSq2ThetaEE;
+    bool   fSinSq2ThetaMuMuSet = false;
+    bool   fSinSq2ThetaMuESet  = false;
+    bool   fSinSq2ThetaEESet   = false;
     double fL;
   };
 
@@ -75,7 +87,21 @@ namespace ana
     TMD5* GetParamsHash() const override {return calc.GetParamsHash();}
   };
 
-  OscCalcSterileApproxAdjustable* DefaultSterileApproxCalc();
+  inline SterileOscAngles operator|(const SterileOscAngles a, const SterileOscAngles b)
+  {
+    int a_int = static_cast<int>(a);
+    int b_int = static_cast<int>(b);
+    return static_cast<SterileOscAngles>(a_int | b_int);
+  }
+
+  inline SterileOscAngles operator&(const SterileOscAngles a, const SterileOscAngles b)
+  {
+    int a_int = static_cast<int>(a);
+    int b_int = static_cast<int>(b);
+    return static_cast<SterileOscAngles>(a_int & b_int);
+  }
+
+  OscCalcSterileApproxAdjustable* DefaultSterileApproxCalc(SterileOscAngles angles = SterileOscAngles::kSinSq2ThetaMuMu | SterileOscAngles::kSinSq2ThetaMuE);
 
   const OscCalcSterileApprox* DowncastToSterileApprox(const osc::IOscCalc* calc, bool allowFail = false);
   OscCalcSterileApprox* DowncastToSterileApprox(osc::IOscCalc* calc, bool allowFail = false);
