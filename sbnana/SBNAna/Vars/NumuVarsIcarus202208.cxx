@@ -17,13 +17,15 @@ const Var kIcarus202208MuonIdx([](const caf::SRSliceProxy* slc) -> int {
       // The (dis)qualification of a slice is based upon the track level information.
       float Longest(0);
       int PTrackInd(-1);
-      for (std::size_t i(0); i < slc->reco.trk.size(); ++i) {
-        auto const& trk = slc->reco.trk.at(i);
+      for (std::size_t i(0); i < slc->reco.npfp; ++i) {
+        auto const& pfp = slc->reco.pfp.at(i);
+        if (pfp.trackScore < 0.5) { continue; }
+        auto const& trk = pfp.trk;
         if(trk.bestplane == -1) continue;
         const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
                                        slc->vertex.y - trk.start.y,
                                        slc->vertex.z - trk.start.z);
-        const bool AtSlice = ( Atslc < 10.0 && trk.pfp.parent_is_primary);
+        const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
 
         const float Chi2Proton = trk.chi2pid[trk.bestplane].chi2_proton;
         const float Chi2Muon = trk.chi2pid[trk.bestplane].chi2_muon;
@@ -55,9 +57,11 @@ const Var kIcarus202208NumPions([](const caf::SRSliceProxy* slc)
   int count = 0;
   auto idx = kIcarus202208MuonIdx(slc);
   int muID = -1;
-  if (idx >= 0) muID = slc->reco.trk.at(idx).pfp.id;
-  for(auto& trk: slc->reco.trk) {
-    if(trk.pfp.id != muID && !Icarus202208_proton_cut(trk) && trk.pfp.parent_is_primary)
+  if (idx >= 0) muID = slc->reco.pfp.at(idx).id;
+  for(auto& pfp: slc->reco.pfp) {
+    if (pfp.trackScore < 0.5) { continue; }
+    auto const& trk = pfp.trk;
+    if(pfp.id != muID && !Icarus202208_proton_cut(trk) && pfp.parent_is_primary)
       ++count;
   }
   return count;
