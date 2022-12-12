@@ -34,15 +34,17 @@ const Cut kIcarus202208NoPion = kIcarus202208NumPions == 0;
 const Cut kIcarus202208ContainedHadrons([](const caf::SRSliceProxy* slc){
   auto idx = kIcarus202208MuonIdx(slc);
   int muID = -1;
-  if (idx >= 0) muID = slc->reco.trk.at(idx).pfp.id;
-  for(auto& trk: slc->reco.trk) {
-    if(trk.pfp.id != muID && trk.pfp.parent_is_primary)
+  if (idx >= 0) muID = slc->reco.pfp.at(idx).id;
+  for(auto& pfp: slc->reco.pfp) {
+    if (pfp.trackScore < 0.5) { continue; }
+    auto const& trk = pfp.trk;
+    if(pfp.id != muID && pfp.parent_is_primary)
       if(!Icarus202208contained(trk)) return false;
   }
   return true;
 });
 const Cut kIcarus202208ContainedMuon([](const caf::SRSliceProxy* slc){
-  return kIcarus202208FoundMuon(slc) && Icarus202208contained(slc->reco.trk.at(kIcarus202208MuonIdx(slc)));
+  return kIcarus202208FoundMuon(slc) && Icarus202208contained(slc->reco.pfp.at(kIcarus202208MuonIdx(slc)).trk);
 });
 const Cut kIcarus202208ContainedMuonAndHadrons = kIcarus202208ContainedMuon && kIcarus202208ContainedHadrons;
 const Cut kIcarus202208QELike = kIcarus202208NumuSelection && kIcarus202208NoPion && kIcarus202208ContainedHadrons;

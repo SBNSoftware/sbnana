@@ -60,7 +60,7 @@ namespace ana
       bool Contained(false);
       if ( Ind >= 0 ) 
       {
-	auto const& trk = slc->reco.trk.at(Ind);
+	auto const& trk = slc->reco.pfp.at(Ind).trk;
 	Contained = ( !isnan(trk.end.x) &&
 		      ( trk.end.x < -71.1 - 25 && trk.end.x > -369.33 + 25 ) &&
 		      !isnan(trk.end.y) &&
@@ -76,7 +76,7 @@ namespace ana
       bool Exiting(false);
       if ( Ind >= 0 ) 
       {
-	auto const& trk = slc->reco.trk.at(Ind);
+	auto const& trk = slc->reco.pfp.at(Ind).trk;
 	Exiting = !( !isnan(trk.end.x) &&
 		     ( trk.end.x < -71.1 - 25 && trk.end.x > -369.33 + 25 ) &&
 		     !isnan(trk.end.y) &&
