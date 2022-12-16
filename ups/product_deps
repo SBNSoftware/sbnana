@@ -252,7 +252,7 @@ libdir	fq_dir		lib
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-ifdhc		v2_6_10		-
+ifdhc		v2_6_11		-
 osclib		v00.17		-
 sbnanaobj	v09_20_01	-
 sbndata		v01_04		-
