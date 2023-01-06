@@ -326,7 +326,7 @@ namespace ana
 
     TH1* hPOT = (TH1*)f->Get("TotalPOT");
     if(!hPOT){
-      std::cout << "\n[SpectrumLoaderBase::GetNextFil] " << f->GetName() << " has missing TotalPOT, skipping.." << std::endl;
+      std::cout << "\n[SpectrumLoaderBase::GetNextFile] " << f->GetName() << " has missing TotalPOT, skipping.." << std::endl;
       return GetNextFile();
     }
     assert(hPOT);
