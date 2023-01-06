@@ -291,7 +291,8 @@ namespace ana
                   std::cerr << "Warning: Bad value: " << val
                             << " returned from a Var. The input variable(s) could "
                             << "be NaN in the CAF, or perhaps your "
-                            << "Var code computed 0/0?";
+                            << "Var code computed 0/0?" << std::endl;
+                  std::cerr << "Bad value Spectrum name = " << vardef.second.spects.at(0)->GetLabels()[0] << std::endl;
                   std::cout << " Not filling into this histogram for this slice." << std::endl;
                   continue;
                 }
