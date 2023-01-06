@@ -98,6 +98,12 @@ namespace ana
     // loc = pnfs2xrootd(loc); // no-op for non /pnfs locations
 
     fFile = TFile::Open(loc.c_str()); // This pattern allows xrootd
+    if(!fFile){
+      std::cout << "[FileListSource::GetNextFile] File error : " << loc.c_str() << std::endl;
+      std::cout << "[FileListSource::GetNextFile] -> Skipping.." << std::endl;
+      ++fIt;
+      GetNextFile();
+    }
     assert(fFile);
 
     for(int i = 0; i < fStride; ++i){
