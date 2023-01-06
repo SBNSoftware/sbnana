@@ -41,6 +41,38 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  EnsembleSpectrum::EnsembleSpectrum(SpectrumLoaderBase& loader,
+                                     const HistAxis& xAxis,
+                                     const HistAxis& yAxis,
+                                     const SpillCut& spillcut,
+                                     const Cut& cut,
+                                     const std::vector<SystShifts>& univ_shifts,
+                                     const Var& cv_wei)
+    : fNom(loader, xAxis, yAxis, spillcut, cut, kNoShift, cv_wei)
+  {
+    fUnivs.reserve(univ_shifts.size());
+    for(const SystShifts& ss: univ_shifts){
+      fUnivs.emplace_back(loader, xAxis, yAxis, spillcut, cut, ss, cv_wei);
+    }
+  }
+
+  //----------------------------------------------------------------------
+  EnsembleSpectrum::EnsembleSpectrum(SpectrumLoaderBase& loader,
+                                     const HistAxis& xAxis,
+                                     const HistAxis& yAxis,
+                                     const SpillCut& spillcut,
+                                     const Cut& cut,
+                                     const std::vector<Var>& univ_weis,
+                                     const Var& cv_wei)
+    : fNom(loader, xAxis, yAxis, spillcut, cut, kNoShift, cv_wei)
+  {
+    fUnivs.reserve(univ_weis.size());
+    for(const Var& w: univ_weis){
+      fUnivs.emplace_back(loader, xAxis, yAxis, spillcut, cut, kNoShift, cv_wei * w);
+    }
+  }
+
+  //----------------------------------------------------------------------
   TGraphAsymmErrors* EnsembleSpectrum::ErrorBand(double exposure,
                                                  EExposureType expotype,
                                                  EBinType bintype) const
