@@ -59,7 +59,8 @@ namespace ana
     double Livetime() const {return fNom.Livetime();}
 
     /// Result can be painted prettily with \ref DrawErrorBand
-    TGraphAsymmErrors* ErrorBand(double exposure,
+    TGraphAsymmErrors* ErrorBand(double z,
+                                 double exposure,
                                  EExposureType expotype = kPOT,
                                  EBinType bintype = kBinContent) const;
 

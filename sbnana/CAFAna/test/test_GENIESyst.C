@@ -329,7 +329,7 @@ void test_GENIESyst(){
 
     }
 
-    TGraphAsymmErrors* g_errband = es->ErrorBand(kPOTnominal);
+    TGraphAsymmErrors* g_errband = es->ErrorBand(kPOTnominal, +1.);
     g_errband->Draw("esame");
 
     h_CV->Draw("histsame");
