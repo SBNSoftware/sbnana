@@ -22,6 +22,7 @@ add_definitions(-Wno-vla)
 # add_subdirectory(Extrap)
 # add_subdirectory(Analysis)
 # add_subdirectory(Systs)
+add_subdirectory(NuMINumuXSec)
 
 cet_script(cafe)
 # same place as cafe script so we can find it
