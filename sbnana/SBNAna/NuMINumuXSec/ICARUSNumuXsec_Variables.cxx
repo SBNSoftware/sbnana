@@ -13,19 +13,42 @@ namespace ICARUSNumuXsec{
   const SpillVar spillvarTest([](const caf::SRSpillProxy *sr) ->int {
     double ret = 0.;
     for(std::size_t i(0); i < sr->slc.size(); ++i){
-      const auto& slc = sr->slc.at(i);
-      //std::cout << "[spillvarTest] Slice index = " << i << ", slc.reco.pfp.size() = " << slc.reco.pfp.size() << std::endl;
       int nTrk=0, nShw=0;
+      const auto& slc = sr->slc.at(i);
+      std::cout << "[spillvarTest] Slice index = " << i << ", slc.reco.pfp.size() = " << slc.reco.pfp.size() << std::endl;
       for(std::size_t ip(0); ip < slc.reco.pfp.size(); ++ip){
         bool IsTrack = slc.reco.pfp.at(ip).trackScore > 0.5;
         if(IsTrack) nTrk++;
         else nShw++;
       }
-      //std::cout << "[spillvarTest] npfp = " << slc.reco.pfp.size() << ", (Trk, Shw) = (" << nTrk << ", " << nShw << ")" << std::endl;
-      std::cout << nTrk << "\t" << nShw << std::endl;
       ret = (nTrk+nShw);
+      std::cout << "[spillvarTest] npfp = " << slc.reco.pfp.size() << ", (Trk, Shw) = (" << nTrk << ", " << nShw << ")" << std::endl;
     }
     return ret;
+  });
+  const SpillVar spillvarNTrack([](const caf::SRSpillProxy *sr) ->int {
+    int nTrk=0;
+    for(std::size_t i(0); i < sr->slc.size(); ++i){
+      const auto& slc = sr->slc.at(i);
+      //std::cout << "[spillvarTest] Slice index = " << i << ", slc.reco.pfp.size() = " << slc.reco.pfp.size() << std::endl;
+      for(std::size_t ip(0); ip < slc.reco.pfp.size(); ++ip){
+        bool IsTrack = slc.reco.pfp.at(ip).trackScore > 0.5;
+        if(IsTrack) nTrk++;
+      }
+    }
+    return nTrk;
+  });
+  const SpillVar spillvarNShower([](const caf::SRSpillProxy *sr) ->int {
+    int nShw=0;
+    for(std::size_t i(0); i < sr->slc.size(); ++i){
+      const auto& slc = sr->slc.at(i);
+      //std::cout << "[spillvarTest] Slice index = " << i << ", slc.reco.pfp.size() = " << slc.reco.pfp.size() << std::endl;
+      for(std::size_t ip(0); ip < slc.reco.pfp.size(); ++ip){
+        bool IsShower = slc.reco.pfp.at(ip).trackScore < 0.5;
+        if(IsShower) nShw++;
+      }
+    }
+    return nShw;
   });
   // - PMT-CRT matching
   const SpillMultiVar spillvarOpFlashTime([](const caf::SRSpillProxy *sr)
@@ -53,6 +76,28 @@ namespace ICARUSNumuXsec{
     }
     return rets;
   });
+  const SpillMultiVar spillvarTopCRTHitTime([](const caf::SRSpillProxy *sr)
+  {
+    std::vector<double> rets;
+    for(const auto& hit : sr->crt_hits){
+      if(hit.plane>=30&&hit.plane<=39){
+        double this_crttime = sr->hdr.ismc ? hit.t0 : hit.t1;
+        rets.push_back(this_crttime);
+      }
+    }
+    return rets;
+  });
+  const SpillMultiVar spillvarSideCRTHitTime([](const caf::SRSpillProxy *sr)
+  {
+    std::vector<double> rets;
+    for(const auto& hit : sr->crt_hits){
+      if(hit.plane>=40&&hit.plane<=49){
+        double this_crttime = sr->hdr.ismc ? hit.t0 : hit.t1;
+        rets.push_back(this_crttime);
+      }
+    }
+    return rets;
+  });
   const SpillMultiVar spillvarCRTPMTTime([](const caf::SRSpillProxy *sr)
   {
     vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr);
@@ -60,7 +105,8 @@ namespace ICARUSNumuXsec{
     for(const auto& opt : intimeTimes){
       int crtHitIdx = cpmt.GetMatchedCRTHitIndex(opt, sr->crt_hits, 0);
       if(crtHitIdx>=0){
-        rets.push_back( sr->crt_hits.at(crtHitIdx).t1 - opt );
+        double this_crttime = sr->hdr.ismc ? sr->crt_hits.at(crtHitIdx).t0 : sr->crt_hits.at(crtHitIdx).t1;
+        rets.push_back( this_crttime - opt );
       }
     }
     return rets;

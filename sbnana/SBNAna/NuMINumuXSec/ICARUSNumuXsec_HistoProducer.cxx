@@ -57,8 +57,15 @@ void HistoProducer::FillLongestTrack(SpectrumLoader& loader, SpillCut spillCut, 
   );
 */
 
-  map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("LongestTrackLength", Binning::Simple(100, 0.,500.), loader, varLongestTrackLength, spillCut, cut) );
+  map_cutName_to_vec_Spectrums[currentCutName].push_back(
+    new Spectrum("NTrack", Binning::Simple(100, 0.,100), loader, spillvarNTrack, spillCut)
+  );
+  map_cutName_to_vec_Spectrums[currentCutName].push_back(
+    new Spectrum("NShower", Binning::Simple(1000, 0.,1000), loader, spillvarNShower, spillCut)
+  );
+
 /*
+  map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("LongestTrackLength", Binning::Simple(100, 0.,500.), loader, varLongestTrackLength, spillCut, cut) );
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("LongestTrackDirectionX", Binning::Simple(40, -1., 1.), loader, varLongestTrackDirectionX, spillCut, cut) );
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("LongestTrackDirectionY", Binning::Simple(40, -1., 1.), loader, varLongestTrackDirectionY, spillCut, cut) );
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("LongestTrackDirectionZ", Binning::Simple(40, -1., 1.), loader, varLongestTrackDirectionZ, spillCut, cut) );
@@ -84,7 +91,14 @@ void HistoProducer::CRTPMTMatchingStudy(SpectrumLoader& loader, SpillCut spillCu
   );
 
   map_cutName_to_vec_Spectrums[currentCutName].push_back(
-    new Spectrum("CRTPMTTime", Binning::Simple(1500, -0.1, 0.05), loader, spillvarCRTPMTTime, spillCut)
+    new Spectrum("TopCRTHitTime", Binning::Simple(200, -50.,50.), loader, spillvarTopCRTHitTime, spillCut)
+  );
+  map_cutName_to_vec_Spectrums[currentCutName].push_back(
+    new Spectrum("SideCRTHitTime", Binning::Simple(200, -50.,50.), loader, spillvarSideCRTHitTime, spillCut)
+  );
+
+  map_cutName_to_vec_Spectrums[currentCutName].push_back(
+    new Spectrum("CRTPMTTime", Binning::Simple(3000, -0.15, 0.15), loader, spillvarCRTPMTTime, spillCut)
   );
 
   map_cutName_to_vec_Spectrums[currentCutName].push_back(

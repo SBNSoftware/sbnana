@@ -286,6 +286,7 @@ SterileNuTool& SterileNuTool::Instance(){
 
 CRTPMTMatchingTool::CRTPMTMatchingTool(){
   std::cout << "[CRTPMTMatchingTool::CRTPMTMatchingTool] called" << std::endl;
+  UseTS0 = false;
 }
 
 CRTPMTMatchingTool& CRTPMTMatchingTool::Instance(){
@@ -333,7 +334,7 @@ int CRTPMTMatchingTool::GetMatchedCRTHitIndex(
   for(size_t i=0; i<crt_hits.size(); i++){
     const auto& hit = crt_hits.at(i);
     if(hit.plane>=30 && hit.plane<=34){
-      double crtt = hit.t1;
+      double crtt = UseTS0 ? hit.t0 : hit.t1;
       double this_diff = crtt-opt;
       if(fabs(this_diff)<fabs(mindiff)){
         mindiff = this_diff;
@@ -354,11 +355,12 @@ int CRTPMTMatchingTool::GetMatchID(
   static double interval = 0.1;
   int topen = 0, topex = 0, sideen = 0, sideex = 0;
   for(size_t i=0; i<crt_hits.size(); i++){
-    const auto& crtHit = crt_hits.at(i);
-    double tof = crtHit.t1 - opt;
+    const auto& hit = crt_hits.at(i);
+    double crtt = UseTS0 ? hit.t0 : hit.t1;
+    double tof = crtt - opt;
 
     if(tof<0 && abs(tof)<interval){
-      if(crtHit.plane > 36){
+      if(hit.plane > 36){
         sideen++;
       }
       else{
@@ -366,7 +368,7 @@ int CRTPMTMatchingTool::GetMatchID(
       }
     }
     else if(tof>=0 && abs(tof)<interval){
-      if(crtHit.plane > 36){
+      if(hit.plane > 36){
         sideex++;
       }
       else{

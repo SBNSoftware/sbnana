@@ -21,9 +21,9 @@ namespace ICARUSNumuXsec{
   {
     UNKNOWN = 0,
     BNB = +1,
-    BNBOffBeam = -1,
+    OffBeamBNB = -1,
     NUMI = +2,
-    NUMIOffBeam = -2,
+    OffBeamNUMI = -2,
   };
 
   class FiducialVolumeTool{
@@ -166,6 +166,7 @@ namespace ICARUSNumuXsec{
 
     bool IsNegativeTOF(double timediff) const;
 
+    mutable bool UseTS0;
     mutable GateType GT;
     mutable double timecut_min, timecut_max;
 

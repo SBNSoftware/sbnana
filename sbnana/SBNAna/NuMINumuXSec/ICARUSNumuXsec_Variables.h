@@ -15,10 +15,14 @@ namespace ICARUSNumuXsec{
   extern const SpillVar spillvarCountSpill;
   // - Test
   extern const SpillVar spillvarTest;
+  extern const SpillVar spillvarNTrack;
+  extern const SpillVar spillvarNShower;
   // - PMT-CRT matching
   extern const SpillMultiVar spillvarOpFlashTime;
   extern const SpillMultiVar spillvarValidOpFlashTime;
   extern const SpillMultiVar spillvarInTimeOpFlashTime; // Valid AND InTime
+  extern const SpillMultiVar spillvarTopCRTHitTime;
+  extern const SpillMultiVar spillvarSideCRTHitTime;
   extern const SpillMultiVar spillvarCRTPMTTime;
   extern const SpillMultiVar spillvarCRTPMTMatchingID;
   extern const SpillVar spillvarCRTPMTMatchingEventID;
