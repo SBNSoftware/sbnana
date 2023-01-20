@@ -13,7 +13,7 @@ void test_CRTPMT(){
   cpmt.SetGateType(NUMI);
 
   SpectrumLoader loader("/pnfs/icarus/persistent/users/jskim/data/run_8515/flatcaf/v09_63_00_02/221212_UseOldFlashMatching_FixCAFT1/NUMIMAJORITY/flatcaf_0.root");
-  Spectrum *s = new Spectrum("CRTPMTTime", Binning::Simple(3000, -0.15, 0.15), loader, spillvarCRTPMTTime, kSpillNoCut);
+  Spectrum *s = new Spectrum("CRTPMTTime", Binning::Simple(3000, -0.15, 0.15), loader, spillvarCRTPMTTime, kNoSpillCut);
   loader.Go();
 
   TFile *f_out = new TFile("output.root","RECREATE");
