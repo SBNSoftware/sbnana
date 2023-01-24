@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/Utilities.h"
 
-#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h" // TONY: this appears to have moved
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TFile.h"
 #include "TH1.h"
