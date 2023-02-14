@@ -17,6 +17,9 @@ def broadcast(v, df):
     return pd.Series(v_rpt, df.index).rename(v.name) 
 
 def multicol_add(df, s):
+    if isinstance(s.name, str):
+        s.name = (s.name,)
+
     nlevel = max(df.columns.nlevels, len(s.name))
     def pad(c):
        return tuple(list(c) + [""]*(nlevel - len(c))) 

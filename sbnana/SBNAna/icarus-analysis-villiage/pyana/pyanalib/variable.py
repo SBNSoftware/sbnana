@@ -41,15 +41,11 @@ class Variable(object):
         else:
             return Variable(lambda x: self.f(x) >= othr)
 
-class VarAccessor(Variable):
-    def __init__(self, idx):
-        self.idx = idx
-        self.f = lambda df: df[idx]
-
     def __getattr__(self, idx):
-        return VarAccessor(tuple(list(self.idx) + [idx]))
+        return Variable(lambda x: self.f(x).__getattr__(idx))
 
 def VAR(f):
     return Variable(f)
 
-
+def ARGVAR(f):
+    return lambda **kw: Variable(lambda x: f(x, **kw))

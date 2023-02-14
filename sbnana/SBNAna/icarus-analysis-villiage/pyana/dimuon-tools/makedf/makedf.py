@@ -16,18 +16,32 @@ def make_mcnudf(f, include_weights=True):
         mcdf = pd.concat([mcdf, wgtdf], axis=1)
     return mcdf
 
-def make_trkdf(f, scoreCut=False):
+def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False):
     trkdf = loadbranches(f["recTree"], trkbranches)
     if scoreCut:
-        trkdf = trkdf.rec.slc.reco.pfp[trkdf.rec.slc.reco.pfp.trackScore > 0.5]
+        trkdf = trkdf.rec.slc.reco[trkdf.rec.slc.reco.pfp.trackScore > 0.5]
     else:
         trkdf = trkdf.rec.slc.reco
+
+    if requiret0:
+        trkdf = trkdf[~np.isnan(trkdf.pfp.t0)]
+
+    if requireCosmic:
+        trkdf = trkdf[trkdf.pfp.parent == -1]
+
     trkdf["tindex"] = trkdf.index.get_level_values(2)
 
     # trk_daughterdf = loadbranches(f["recTree"], pfp_daughter_branch).rec.slc.reco.pfp
 
     return trkdf
-    
+
+def make_costrkdf(f):
+    trkdf = make_trkdf(f, requiret0=True, requireCosmic=True)
+    slcdf = loadbranches(f["recTree"], slcbranches).rec
+    return multicol_merge(slcdf, trkdf, left_index=True, right_index=True, how="right", validate="one_to_many")
+
+def make_trkhitdf(f):
+    return loadbranches(f["recTree"], trkhitbranches).rec.slc.reco.pfp.trk.calo.I2.points
 
 def make_slc_trkdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True):
     # load

@@ -1,4 +1,7 @@
-from pyanalib.variable import VAR, VarAccessor
+from pyanalib.variable import VAR
+
+# Re-export stuff
+from pid import dedxdf, dedx, hchi2u, hchi2p, scale_recombination
 
 @VAR
 def trk(df):
@@ -40,8 +43,14 @@ def chgfracspread(pfp):
 def linfitdiff(pfp):
     return pfp.pfochar.linfitdiff
 
-SLCVAR = VarAccessor(["slc"])
-TRKVAR = VarAccessor(["pfp", "trk"])
+@VAR
+def SLCVAR(df):
+    return df.slc
 
-#def VAR(pfp):
-#    return pfp.pfochar.VAR
+@VAR
+def TRKVAR(df):
+    return df.pfp.trk
+
+@VAR
+def DF(df):
+    return df

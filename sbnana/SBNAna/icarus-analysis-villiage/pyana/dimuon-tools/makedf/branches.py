@@ -47,6 +47,7 @@ pfpbranches = [
     pfpbranch + "trackScore",
     pfpbranch + "parent",
     pfpbranch + "id",
+    pfpbranch + "t0",
 ] + pfobranches
 
 pfp_daughter_branch = [
@@ -71,6 +72,26 @@ trkbranches = [
     trkbranch + "chi2pid.2.chi2_proton",
 ] + pfpbranches
 
+trkhitbranches = [
+    trkbranch + "calo.2.points.dedx",
+    trkbranch + "calo.2.points.dqdx",
+    trkbranch + "calo.2.points.pitch",
+    trkbranch + "calo.2.points.integral",
+    trkbranch + "calo.2.points.rr",
+    trkbranch + "calo.2.points.wire",
+    trkbranch + "calo.2.points.tpc",
+    trkbranch + "calo.2.points.width",
+    trkbranch + "calo.2.points.sumadc",
+    trkbranch + "calo.2.points.mult",
+    trkbranch + "calo.2.points.t",
+    trkbranch + "calo.2.points.x",
+    trkbranch + "calo.2.points.y",
+    trkbranch + "calo.2.points.z",
+    trkbranch + "calo.2.points.truth.e",
+    trkbranch + "calo.2.points.truth.nelec",
+    trkbranch + "calo.2.points.truth.pitch",
+    trkbranch + "calo.2.points.truth.rr",
+]
 
 for n in trueparticlenames: trkbranches.append(trkbranch + "truth.p." + n)
 

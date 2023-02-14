@@ -14,7 +14,7 @@ def main(output, inputs):
 if __name__ == "__main__":
     printhelp = len(sys.argv) < 4 or sys.argv[1] == "-h"
     if printhelp:
-        print("Usage: python make_alldfs.py [config.py] [output.df] [inputs.root,]")
+        print("Usage: python rundf.py [config.py] [output.df] [inputs.root,]")
     else:
         exec(open(sys.argv[1]).read())
         if "NAMES" not in globals() or "DFS" not in globals():
