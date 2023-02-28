@@ -60,6 +60,11 @@ namespace ana
 
       for(const caf::SRWeightMapEntry& entry: pset.map){
         std::cout << "    " << entry.param.name << std::endl;
+/*
+        for(unsigned int i_val=0; i_val<entry.vals.size(); i_val++){
+          std::cout << "      i = " << i_val << ", val = " << entry.vals[i_val] << std::endl;
+        }
+*/
       }
     }
   }
@@ -83,7 +88,7 @@ namespace ana
 
       // Save the pset index in all cases
       fPSetIdxs[pset.name] = i;
-
+/*
       // Only save the remaining fields in parameter sets where only a single
       // knob is shifted
       if(pset.map.size() != 1) continue;
@@ -92,6 +97,12 @@ namespace ana
       fSystIdxs[pset.map[0].param.name] = i;
       // Save all the knob values
       fShiftVals[pset.map[0].param.name] = pset.map[0].vals;
+*/
+
+      // Save which position in the vector this was
+      fSystIdxs[pset.name] = i;
+      // Save all the knob values
+      fShiftVals[pset.name] = pset.map[0].vals;
     }
   }
 

@@ -154,17 +154,20 @@ namespace ICARUSNumuXsec{
     void SetGateType(GateType gt) const;
     void SetInTimeRange(double t_min, double t_max) const;
     bool IsInTime(double t_gate) const;
-    int GetMatchedCRTHitIndex(
+    std::vector<int> GetMatchedCRTHitIndex(
       double opt,
       const caf::Proxy<std::vector<caf::SRCRTHit> >& crt_hits,
       int mode
     ) const;
     int GetMatchID(
       double opt,
-      const caf::Proxy<std::vector<caf::SRCRTHit> >& crt_hits
+      const caf::Proxy<std::vector<caf::SRCRTHit> >& crt_hits,
+      int mode=0
     ) const;
 
     bool IsNegativeTOF(double timediff) const;
+
+    mutable bool Debug;
 
     mutable bool UseTS0;
     mutable GateType GT;

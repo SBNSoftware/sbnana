@@ -28,10 +28,15 @@
 //#include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_Weight.h"
 //#include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_Systematics.h"
 
+// ThreeTrack
+#include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_TwoTrack_Cuts.h"
+#include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_ThreeTrack_Cuts.h"
 
+#include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_TruthMatch_Variables.h"
 
 using namespace ana;
 using namespace std;
+using namespace ICARUSNumuXsec;
 
 namespace ICARUSNumuXsec{
 
@@ -52,6 +57,13 @@ namespace ICARUSNumuXsec{
     void CRTPMTMatchingStudy(SpectrumLoader& loader, SpillCut spillCut=kNoSpillCut, Cut cut=kNoCut);
     // - NuMu event selection
     void NuMINumuXSec(SpectrumLoader& loader, SpillCut spillCut=kNoSpillCut, Cut cut=kNoCut);
+    // - 230216_ThreeTrack
+    void TruthMatchStudy(SpectrumLoader& loader, SpillCut spillCut=kNoSpillCut, Cut cut=kNoCut);
+    void TrackPIDStudy(SpectrumLoader& loader, SpillCut spillCut=kNoSpillCut, Cut cut=kNoCut);
+    void TwoTrackAnalysis(SpectrumLoader& loader, SpillCut spillCut=kNoSpillCut, Cut cut=kNoCut);
+    void ThreeTrackAnalysis(SpectrumLoader& loader, SpillCut spillCut=kNoSpillCut, Cut cut=kNoCut);
+    // - 230223_WWTPCFieldTest
+    void WWTPCFieldTest(SpectrumLoader& loader, SpillCut spillCut=kNoSpillCut, Cut cut=kNoCut);
 
 
     void saveHistograms();
