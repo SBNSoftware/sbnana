@@ -150,7 +150,9 @@ void HistoProducer::TruthStudy(SpectrumLoader& loader, SpillCut spillCut, Cut cu
 
   using namespace ICARUSNumuXsec::TruthMatch;
 
-  map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("TruthE", Binning::Simple(20, 0., 5.), loader, varNeutrinoTruthE, spillCut, cut) );
+  FillSpectrum(loader, "TruthE", varNeutrinoTruthE, Binning::Simple(20, 0., 5.), spillCut, cut);
+  //map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("TruthE", Binning::Simple(20, 0., 5.), loader, varNeutrinoTruthE, spillCut, cut) );
+/*
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("TruthQ2", Binning::Simple(20, 0., 2.), loader, varTruthQ2, spillCut, cut) );
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("Truthq0_lab", Binning::Simple(20, 0., 2.), loader, varTruthq0_lab, spillCut, cut) );
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("Truthmodq_lab", Binning::Simple(20, 0., 2.), loader, varTruthmodq_lab, spillCut, cut) );
@@ -162,7 +164,7 @@ void HistoProducer::TruthStudy(SpectrumLoader& loader, SpillCut spillCut, Cut cu
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("TruthProtonLength", Binning::Simple(100, 0., 100.), loader, TruthProtonLength, spillCut, cut) );
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("TruthChargedPionKE", Binning::Simple(100, 0., 1.0), loader, TruthChargedPionKE, spillCut, cut) );
   map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum("TruthChargedPionLength", Binning::Simple(500, 0., 500.), loader, TruthChargedPionLength, spillCut, cut) );
-
+*/
 }
 
 void HistoProducer::TrackPIDStudy(SpectrumLoader& loader, SpillCut spillCut, Cut cut){
@@ -727,34 +729,13 @@ void HistoProducer::setSystematicWeights(){
 
   const std::vector<std::string> genieKnobNames = GetSBNGenieWeightNames();
   for(const std::string& name: genieKnobNames){
-    std::string psetname(name);
-    IGENIESysts.push_back( new SBNWeightSyst(name) );
-  }
-
-  std::vector<Var> weis;
-  weis.reserve(1000);
-  for(int i = 0; i < 1000; ++i) weis.push_back(GetUniverseWeight("multisim_Genie", i));
-  vec_UniverseWeightsForEachGENIESource.push_back( weis );
-
-/*
-  //==== For EnsembleSpectrum
-  for(unsigned int i=0; i<IGENIESysts.size(); ++i){
-    cout << "[HistoProducer::setSystematicWeights] " << i << " : " << IGENIESysts.at(i)->ShortName() << endl;
-
-    vector<const ISyst*> this_GENIESyst;
-    this_GENIESyst.clear();
-    this_GENIESyst.push_back(IGENIESysts.at(i));
-
-    vector<Var> weis;
-    for(unsigned iu=0; iu<100; iu++){
-      weis.push_back( GetUniverseWeight(this_GENIESyst, iu) );
+    if(name=="FormZone"){
+      std::cout << "[HistoProducer::setSystematicWeights] Skipping FormZone" << std::endl;
+      continue;
     }
-    vec_UniverseWeightsForEachGENIESource.push_back( weis );
-
+    std::string psetname = "GENIEReWeight_ICARUS_v1_multisigma_"+name;
+    IGENIESysts.push_back( new SBNWeightSyst(psetname) );
   }
-*/
-
-  
 
   cout << "[HistoProducer::setSystematicWeights] Setting flux systematics" << endl;
   IFluxSysts = GetAllNuMIFluxSysts(5);
@@ -802,6 +783,23 @@ void HistoProducer::AddUpDownSystematic(SpectrumLoader& loader, const HistAxis& 
   map_cutName_to_vec_SystSpectrumPairs[currentCutName].push_back(
     std::make_pair( s->ShortName()+"_Down", new Spectrum(loader, axX, axY, spillCut, cut, SystShifts(s, -1)) )
   );
+
+}
+
+void HistoProducer::FillSpectrum(SpectrumLoader& loader, const std::string& label, const Var& var, const Binning& binning, SpillCut spillCut, Cut cut){
+
+  map_cutName_to_vec_Spectrums[currentCutName].push_back( new Spectrum(label, loader, binning, var, spillCut, cut) );
+
+  // GENIE Syst
+  for(const auto& s: IGENIESysts){
+    map_cutName_to_vec_SystSpectrumPairs[currentCutName].push_back(
+      std::make_pair( s->ShortName()+"_Up", new Spectrum(label, loader, binning, var, spillCut, cut, SystShifts(s, +1)) )
+    );
+    map_cutName_to_vec_SystSpectrumPairs[currentCutName].push_back(
+      std::make_pair( s->ShortName()+"_Down", new Spectrum(label, loader, binning, var, spillCut, cut, SystShifts(s, -1)) )
+    );
+  }
+
 
 }
 
