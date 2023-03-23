@@ -50,8 +50,8 @@ namespace ana
              const Cut& cut,
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted)
+      :Spectrum(label, bins, loader, var, spillcut, cut, shift, wei)
     {
-      Spectrum(label, bins, loader, var, spillcut, cut, kNoShift, wei);
     }
 
     Spectrum(const std::string& label, const Binning& bins,
