@@ -44,6 +44,16 @@ namespace ana
              const SystShifts& shift = kNoShift,
              const Var& wei = kUnweighted);
 
+    Spectrum(const std::string& label, SpectrumLoaderBase& loader,
+             const Binning& bins, const Var& var,
+             const SpillCut& spillcut,
+             const Cut& cut,
+             const SystShifts& shift = kNoShift,
+             const Var& wei = kUnweighted)
+    {
+      Spectrum(label, bins, loader, var, spillcut, cut, kNoShift, wei);
+    }
+
     Spectrum(const std::string& label, const Binning& bins,
              SpectrumLoaderBase& loader,
              const Var& var,
