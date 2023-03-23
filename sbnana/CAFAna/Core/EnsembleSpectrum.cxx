@@ -7,6 +7,7 @@
 #include "TH1.h"
 #include "TObjString.h"
 #include "TPad.h"
+#include "Math/ProbFuncMathCore.h"
 
 namespace ana
 {
@@ -41,7 +42,40 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  TGraphAsymmErrors* EnsembleSpectrum::ErrorBand(double exposure,
+  EnsembleSpectrum::EnsembleSpectrum(SpectrumLoaderBase& loader,
+                                     const HistAxis& xAxis,
+                                     const HistAxis& yAxis,
+                                     const SpillCut& spillcut,
+                                     const Cut& cut,
+                                     const std::vector<SystShifts>& univ_shifts,
+                                     const Var& cv_wei)
+    : fNom(loader, xAxis, yAxis, spillcut, cut, kNoShift, cv_wei)
+  {
+    fUnivs.reserve(univ_shifts.size());
+    for(const SystShifts& ss: univ_shifts){
+      fUnivs.emplace_back(loader, xAxis, yAxis, spillcut, cut, ss, cv_wei);
+    }
+  }
+
+  //----------------------------------------------------------------------
+  EnsembleSpectrum::EnsembleSpectrum(SpectrumLoaderBase& loader,
+                                     const HistAxis& xAxis,
+                                     const HistAxis& yAxis,
+                                     const SpillCut& spillcut,
+                                     const Cut& cut,
+                                     const std::vector<Var>& univ_weis,
+                                     const Var& cv_wei)
+    : fNom(loader, xAxis, yAxis, spillcut, cut, kNoShift, cv_wei)
+  {
+    fUnivs.reserve(univ_weis.size());
+    for(const Var& w: univ_weis){
+      fUnivs.emplace_back(loader, xAxis, yAxis, spillcut, cut, kNoShift, cv_wei * w);
+    }
+  }
+
+  //----------------------------------------------------------------------
+  TGraphAsymmErrors* EnsembleSpectrum::ErrorBand(double z,
+                                                 double exposure,
                                                  EExposureType expotype,
                                                  EBinType bintype) const
   {
@@ -67,8 +101,8 @@ namespace ana
       }
 
       // 1 sigma
-      const double y0 = FindQuantile(.5-0.6827/2, ys);
-      const double y1 = FindQuantile(.5+0.6827/2, ys);
+      const double y0 = FindQuantile( ROOT::Math::gaussian_cdf_c(z,1) , ys);
+      const double y1 = FindQuantile( ROOT::Math::gaussian_cdf(z,1), ys);
 
       // It's theoretically possible for the central value to be outside the
       // error bands - clamp to zero in that case

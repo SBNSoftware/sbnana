@@ -325,6 +325,10 @@ namespace ana
     if(!f) return 0; // out of files
 
     TH1* hPOT = (TH1*)f->Get("TotalPOT");
+    if(!hPOT){
+      std::cout << "\n[SpectrumLoaderBase::GetNextFile] " << f->GetName() << " has missing TotalPOT, skipping.." << std::endl;
+      return GetNextFile();
+    }
     assert(hPOT);
     fPOTFromHist  += hPOT->Integral(0, -1);
 

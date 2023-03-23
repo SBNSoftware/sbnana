@@ -1,0 +1,666 @@
+#!/usr/bin/env python
+
+import os,sys,time
+import argparse
+import datetime
+import random
+import subprocess
+import JobStatusTool
+import Logger
+
+## Arguments
+
+parser = argparse.ArgumentParser(description='jobsub script creation')
+parser.add_argument('-a', dest='Analyzer', default="")
+parser.add_argument('--ss', dest='SampleSelectionConfigFileName')
+parser.add_argument('--es', dest='EventSelectionConfigFileName')
+parser.add_argument('-i', dest='InputSample', default="")
+parser.add_argument('-l', dest='InputSampleList', default="")
+parser.add_argument('-n', dest='NJobs', default=1, type=int)
+parser.add_argument('-o', dest='Outputdir', default="")
+parser.add_argument('--userflags', dest='Userflags', default="")
+parser.add_argument('--args', dest='ArgsToPass', default="")
+#parser.add_argument('--memory', dest='Memory', default="5GB")
+parser.add_argument('--no_exec', action='store_true')
+parser.add_argument('--batchname',dest='BatchName', default="")
+parser.add_argument('--lifetime',dest='Lifetime',default="1h")
+parser.add_argument('--server',dest='Server',default="")
+parser.add_argument('--verbos',dest="Verbos",default="INFO")
+args = parser.parse_args()
+
+logger = Logger.Logger("create-batch", args.Verbos)
+
+## Parse sample and cuts
+
+exec('from %s import *'%(args.SampleSelectionConfigFileName.removesuffix('.py').replace('/','.')))
+exec('from %s import *'%(args.EventSelectionConfigFileName.removesuffix('.py').replace('/','.')))
+
+ssDefLines = ""
+for SampleSelectionInfo in SampleSelectionInfos:
+  ssDefLines += SampleSelectionInfo.GetSampleSelectionLines()
+
+esDefLines = ""
+for EventSelectionInfo in EventSelectionInfos:
+  esDefLines += EventSelectionInfo.GetEventSelectionLines()
+
+## make userflags as a list
+
+Userflags = []
+if args.Userflags != "":
+  Userflags = (args.Userflags).split(',')
+
+## args for the cafe script if any
+
+ArgsToPass = args.ArgsToPass
+
+## Add Abosolute path for outputdir
+
+if args.Outputdir!='':
+  if args.Outputdir[0]!='/':
+    args.Outputdir = os.getcwd()+'/'+args.Outputdir
+
+## TimeStamp
+
+# 1) dir/file name style
+JobStartTime = datetime.datetime.now()
+timestamp =  JobStartTime.strftime('%Y_%m_%d_%H%M%S')
+# 2) log style
+JobStartTime = datetime.datetime.now()
+string_JobStartTime =  JobStartTime.strftime('%Y-%m-%d %H:%M:%S')
+string_ThisTime = ""
+
+## Environment Variables
+
+cwd = os.getcwd()
+
+SBNANA_VERSION = os.environ['SBNANA_VERSION']
+
+gridWD = os.environ['gridWD']
+gridJobDir = os.environ['gridJobDir']
+gridLibDir = os.environ['gridLibDir']
+gridLibDirPNFS = os.environ['gridLibDirPNFS']
+gridDataDir = os.environ['gridDataDir']
+gridOutputDir = os.environ['gridOutputDir']
+USER = os.environ['USER']
+UID = str(os.getuid())
+HOSTNAME = os.environ['HOSTNAME']
+
+IsICARUSGPVM = ("icarusgpvm" in HOSTNAME)
+
+## Make Sample List
+
+InputSamples = []
+StringForHash = ""
+
+## When using txt file for input (i.e., -l option)
+
+if args.InputSampleList != "":
+  lines = open(args.InputSampleList)
+  for line in lines:
+    if "#" in line:
+      continue
+    line = line.strip('\n')
+    InputSamples.append(line)
+    StringForHash += line
+else:
+  InputSamples.append(args.InputSample)
+  StringForHash += args.InputSample
+
+FileRangesForEachSample = []
+
+## add flags to hash
+for flag in Userflags:
+  StringForHash += flag
+
+## Get Random Number for webdir
+
+random.seed(hash(StringForHash+timestamp))
+RandomNumber = int(random.random()*1000000)
+str_RandomNumber = str(RandomNumber)
+
+## Define MasterJobDir
+
+MasterJobDir = gridJobDir+'/'+timestamp+'__'+str_RandomNumber+"__"+args.Analyzer
+for flag in Userflags:
+  MasterJobDir += '__'+flag
+MasterJobDir += '__'+HOSTNAME+'/'
+
+## Copy libray
+
+logger.LOG("INFO", "Creating MasterJobDir: %s"%(MasterJobDir))
+#os.system('mkdir -p '+MasterJobDir+'/lib/')
+#logger.LOG("INFO", "Copying local.tar to MasterJobDir")
+#os.system('ifdh cp '+gridLibDir+'/local.tar '+MasterJobDir+'/lib/local.tar')
+#os.system('cp '+gridLibDir+'/local.tar '+MasterJobDir+'/lib/')
+
+## Set Output directory
+## if args.Outputdir is not set, go to default setting
+
+FinalOutputPath = args.Outputdir
+if args.Outputdir=="":
+  FinalOutputPath = gridOutputDir+'/'+args.Analyzer+'/'
+  for flag in Userflags:
+    FinalOutputPath += flag+"__"
+
+logger.LOG("INFO", "Creating FinalOutputPath: %s"%(FinalOutputPath))
+os.system('mkdir -p %s'%(FinalOutputPath))
+#os.system('chmod 777 -R %s'%(FinalOutputPath)) ## do we need this?
+
+## Loop over samples
+
+gridJobInfos = []
+baseRunDirs = []
+SampleFinishedForEachSample = []
+PostJobFinishedForEachSample = []
+
+for InputSample in InputSamples:
+
+  NJobs = args.NJobs
+
+  SampleFinishedForEachSample.append(False)
+  PostJobFinishedForEachSample.append(False)
+
+  IsDATA = False
+  DataStream = ""
+  DataRunNum = ""
+  if ":" in InputSample:
+    IsDATA = True
+    DataStream = InputSample.split(":")[0]
+    DataRunNum = InputSample.split(":")[1]
+
+  ## Prepare output
+
+  base_rundir = MasterJobDir+"/"+DataStream+"_Run%s"%(DataRunNum) if IsDATA else  MasterJobDir+InputSample
+  base_rundir = base_rundir+"/"
+  baseRunDirs.append(base_rundir)
+
+  outputname = args.Analyzer+'_Data_'+DataStream+"_Run"+DataRunNum if IsDATA else args.Analyzer+'_'+InputSample
+
+  os.system('mkdir -p '+base_rundir)
+  os.system('mkdir -p '+base_rundir+'/output/')
+  os.system('mkdir -p '+base_rundir+'/ToGrid/')
+  os.system('chmod 777 -R '+base_rundir)
+
+  ## Get Sample Path
+
+  lines_files = []
+
+  tmpfilepath = gridDataDir+'/Sample/Data/%s_Run%s.txt'%(DataStream,DataRunNum) if IsDATA else gridDataDir+'/Sample/MC/'+InputSample+'.txt' 
+  lines_files = os.popen("sed 's/#.*//' "+tmpfilepath+"|grep '.root'").readlines()
+  os.system('cp '+tmpfilepath+' '+base_rundir+'/input_filelist.txt')
+
+  NTotalFiles = len(lines_files)
+
+  if NJobs>NTotalFiles or NJobs==0:
+    NJobs = NTotalFiles
+
+  SubmitOutput = open(base_rundir+'/SubmitOutput.log','w')
+
+  SubmitOutput.write("<create-batch> NTotalFiles = "+str(NTotalFiles)+'\n')
+  SubmitOutput.write("<create-batch> NJobs = "+str(NJobs)+'\n')
+
+  nfilepjob = int(NTotalFiles/NJobs)
+  FileRanges = []
+  temp_end_largerjob = 0
+  nfile_checksum = 0
+  nfilepjob_remainder = NTotalFiles-(NJobs)*(nfilepjob)
+
+  SubmitOutput.write("<create-batch> --> # of files per job = "+str(nfilepjob)+'\n')
+
+  ## below should not happen
+  if nfilepjob_remainder>=(NJobs):
+    SubmitOutput.write('nfilepjob_remainder = '+str(nfilepjob_remainder)+'\n')
+    SubmitOutput.write('while, NJobs = '+str(NJobs)+'\n')
+    SubmitOutput.write('--> exit'+'\n')
+    sys.exit()
+
+  ## First nfilepjob_remainder jobs will have (nfilepjob+1) files per job
+
+  for it_job in range(0,nfilepjob_remainder):
+    FileRanges.append(range(it_job*(nfilepjob+1),(it_job+1)*(nfilepjob+1)))
+    temp_end_largerjob = (it_job+1)*(nfilepjob+1)
+    nfile_checksum += len(range(it_job*(nfilepjob+1),(it_job+1)*(nfilepjob+1)))
+
+  ## Remaining NJobs-nfilepjob_remainder jobs will have (nfilepjob) files per job
+
+  for it_job in range(0,NJobs-nfilepjob_remainder):
+    FileRanges.append(range(temp_end_largerjob+(it_job*nfilepjob),temp_end_largerjob+((it_job+1)*nfilepjob) ))
+    nfile_checksum += len(range(temp_end_largerjob+(it_job*nfilepjob),temp_end_largerjob+((it_job+1)*nfilepjob) ))
+  SubmitOutput.write('nfile_checksum = '+str(nfile_checksum)+'\n')
+  SubmitOutput.write('NTotalFiles = '+str(NTotalFiles)+'\n')
+  SubmitOutput.write('FinalOutputPath = %s\n'%(FinalOutputPath))
+  SubmitOutput.write('outputname = %s.root\n'%(outputname))
+  FileRangesForEachSample.append(FileRanges)
+
+  ## Write cafe script for each job
+  for it_job in range(0,len(FileRanges)):
+
+    cafeScriptFileName = base_rundir+'/ToGrid/run_%d.C'%(it_job)
+    cafeScriptFile = open(cafeScriptFileName,'w')
+
+    cafeScriptFile.write('''#include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_HistoProducer.h"
+#include "sbnana/SBNAna/Cuts/NumuCutsIcarus202106.h"
+#include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_Variables.h"
+#include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_Cuts.h"
+#include "sbnana/SBNAna/Cuts/Cuts.h"
+
+using namespace ana;
+using namespace ICARUSNumuXsec;
+
+void run_%d(){
+
+  //==== Inputfile
+
+  vector<string> vec_inputs;
+'''%(it_job))
+
+    for it_file in FileRanges[it_job]:
+      thisfilename = lines_files[it_file].strip('\n')
+      cafeScriptFile.write('  std::cout << "Adding input file : %s" << std::endl;\n'%(thisfilename))
+      cafeScriptFile.write('  vec_inputs.push_back("'+thisfilename+'");\n')
+
+    if IsDATA:
+      cafeScriptFile.write('  bool isDataInput = true;\n')
+    else:
+      cafeScriptFile.write('  bool isDataInput = false;\n')
+
+
+    cafeScriptFile.write('''  SpectrumLoader loader(vec_inputs);
+
+  //==== Define samples;
+  vector<TString> baseSampleNames;
+  vector<Cut> baseSampleCuts;
+  vector<SpillCut> baseSampleSpillCuts;
+
+%s
+
+  //==== Define Cuts
+
+  vector<Cut> cuts;
+  vector<SpillCut> spillcuts;
+  vector<TString> cutNames;
+
+%s
+
+  //==== Declare HistoProducer
+
+  HistoProducer m;
+  m.outputDir = "./";
+  m.outputName = "output.root";
+  m.sampleName = "%s";
+  m.FillMetaData = true;
+  m.IsData = isDataInput;
+
+  m.initialize();
+  //if(fillSystematic){
+  //  m.setSystematicWeights();
+  //}
+'''%(ssDefLines, esDefLines,InputSample))
+
+    cafeScriptFile.write('''  for(unsigned int is=0; is<baseSampleNames.size(); is++){
+
+    TString baseSampleName = baseSampleNames.at(is);
+    Cut baseSampleCut = baseSampleCuts.at(is);
+    SpillCut baseSampleSpillCut = baseSampleSpillCuts.at(is);
+
+    bool isCosmic = (baseSampleName=="Cosmic");
+
+    for(unsigned int i=0; i<cuts.size(); i++){
+
+      Cut myCut = baseSampleCut && cuts.at(i);
+      SpillCut mySpillCut = baseSampleSpillCut && spillcuts.at(i);
+      TString cutName = baseSampleName+"_"+cutNames.at(i);
+
+      if( m.setCut(cutName) ){
+
+        m.%s(loader, mySpillCut, myCut);
+
+      } // END if setCut
+
+    } // END loop cut
+
+  } // END sample cut
+
+  loader.Go();
+
+  m.saveHistograms();
+
+}
+'''%(args.Analyzer))
+
+    cafeScriptFile.close()  
+
+  ## Now Write executable
+  executable_filename = args.Analyzer+'_%s_Run%s'%(DataStream,DataRunNum) if IsDATA else args.Analyzer+'_'+InputSample
+  executable_file = open(base_rundir+'/'+executable_filename+'.sh','w')
+  executable_file.write('''#!/bin/bash
+
+nProcess=$PROCESS
+
+echo "@@ nProcess = "${nProcess}
+
+## In each node, the output will be written under ./output/
+echo "@@ mkdir ./output/"
+mkdir output
+echo "@@ Done!"
+
+nodeBaseDir=`pwd`
+thisOutputCreationDir=${nodeBaseDir}/output/
+filesFromSender=${CONDOR_DIR_INPUT}/ToGrid/ToGrid/
+
+echo "@@ setup_icarus.sh"
+source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh
+
+setup cetlib v3_13_04 -q e20:prof
+setup larsoft_data v1_02_02
+setup ifdhc v2_6_11 -q e20:p392:prof
+export IFDH_CP_MAXRETRIES=2
+
+echo "@@ Creating lib dir and go there"
+mkdir lib; cd lib
+echo "@@ Copying local.tar from %s"
+ifdh cp %s/local.tar ./
+tar -xvf local.tar
+export MRB_BUILDDIR=$(pwd)
+export MRB_PROJECT="larsoft"
+export MRB_PROJECT_VERSION=${%s}
+export MRB_QUALS="e20:prof"
+export MRB_TOP=$(pwd)
+export MRB_TOP_BUILD=$(pwd)
+export MRB_SOURCE=$(pwd)
+export MRB_INSTALL=$(pwd)
+export PRODUCTS="${MRB_INSTALL}:${PRODUCTS}"
+mrbslp
+
+echo "@@ Now go to "${thisOutputCreationDir}
+cd ${thisOutputCreationDir}
+
+## outDir that we will trasfer to
+outDir=%s
+
+echo "@@ outDir : ${outDir}"
+echo "@@ ifdh  mkdir_p ${outDir}"
+ifdh  mkdir_p ${outDir}
+
+echo "@@ ls -alh"
+ls -alh ./
+echo "@@ date :"
+date
+echo "@@ Running cafe -bq ${filesFromSender}/run_${nProcess}.C %s"
+cafe -bq ${filesFromSender}/run_${nProcess}.C %s
+echo "@@ date :"
+date
+echo "@@ Checking output file"
+ls -alh ${thisOutputCreationDir}/*
+
+echo "ifdh cp "${thisOutputCreationDir}"/output.root "${outDir}"/output_"${nProcess}".root"
+ifdh cp ${thisOutputCreationDir}/output.root ${outDir}/output_${nProcess}.root
+echo "@@ Done!"
+
+'''%(gridLibDirPNFS, gridLibDirPNFS, SBNANA_VERSION, base_rundir+'/output/', ArgsToPass, ArgsToPass))
+
+  executable_file.close()
+
+  os.system('tar -C %s -czf %s/ToGrid.tar ToGrid/'%(base_rundir, base_rundir))
+
+  submitcmd = 'jobsub_submit -G icarus --role=Analysis \\\n'
+  submitcmd += '--resource-provides="usage_model=DEDICATED,OPPORTUNISTIC" \\\n'
+  submitcmd += '''-l '+SingularityImage=\\\"/cvmfs/singularity.opensciencegrid.org/fermilab/fnal-wn-sl7:latest\\\"' \\\n'''
+  submitcmd += '''--lines '+FERMIHTC_AutoRelease=True' --lines '+FERMIHTC_GraceMemory=1000' --lines '+FERMIHTC_GraceLifetime=3600' \\\n'''
+  submitcmd += '''--append_condor_requirements='(TARGET.HAS_SINGULARITY=?=true)' \\\n'''
+  submitcmd += '''--tar_file_name "dropbox://$(pwd)/ToGrid.tar" \\\n'''
+  submitcmd += '''--email-to jae.sung.kim.3426@gmail.com \\\n'''
+  #submitcmd += '''--expected-lifetime %s \\\n'''%(args.Lifetime)
+  #submitcmd += '''--memory %s \\\n'''%(args.Memory)
+  submitcmd += '''-N %d \\\n'''%(NJobs)
+  if args.Server!="":
+    submitcmd += '''--jobsub-server %s \\\n'''%(args.Server)
+  submitcmd += '''"file://$(pwd)/%s.sh"'''%(executable_filename)
+
+  SubmitOutput.write("## Submit command :\n")
+  SubmitOutput.write(submitcmd+'\n')
+  SubmitOutput.close()
+
+  logger.LOG("DEBUG", "Submission command:\n%s"%(submitcmd))
+
+  this_GridJobInfo = "NONE"
+  if not args.no_exec:
+    cwd = os.getcwd()
+    os.chdir(base_rundir)
+    os.system(submitcmd+' &> submitlog.log')
+    os.chdir(cwd)
+
+    lines = open('%s/submitlog.log'%(base_rundir)).readlines()
+    for i in range(0,len(lines)):
+      line = lines[len(lines)-1-i]
+      if ("Use job id" in line) and ("to retrieve output" in line):
+        this_GridJobInfo = line.split()[3]
+        break
+    if this_GridJobInfo=="NONE":
+      raise ValueError("@@ Job submission failed; check %s/submitlog.log"%(base_rundir))
+
+    jobID_Cluster = this_GridJobInfo.split('@')[0].replace('.0','')
+    jobID_Schedd = this_GridJobInfo.split('@')[1]
+    this_GridJobInfo = [jobID_Cluster,jobID_Schedd]
+
+    killcmd_file = open(base_rundir+'/killcmd.sh','w')
+    for it_job in range(0,NJobs):
+      killcmd_file.write('jobsub_rm --user jskim --jobid %s.%d@%s\n'%(jobID_Cluster,it_job,jobID_Schedd))
+    killcmd_file.close()
+
+  gridJobInfos.append(this_GridJobInfo)
+
+print('##################################################')
+print('Submission Finished')
+print('- Analyzer = '+args.Analyzer)
+print('- InputSamples =',end="")
+print(InputSamples)
+print('- NJobs = '+str(NJobs))
+print('- UserFlags =',end="")
+print(Userflags)
+print('- MasterJobDir = '+MasterJobDir)
+print('- output will be send to : '+FinalOutputPath)
+print('##################################################')
+
+if args.no_exec:
+  exit()
+
+##########################
+## Submittion all done. ##
+## Now monitor job      ##
+##########################
+
+## Job status tool
+
+jobStatusTool = JobStatusTool.JobStatusTool(UserName=USER, RanStr=str_RandomNumber, LogThreshold=args.Verbos)
+
+## Loop over samples again
+
+AllSampleFinished = False
+GotError = False
+ErrorLog = ""
+
+try:
+  while not AllSampleFinished:
+
+    if GotError:
+      break
+
+    AllSampleFinished = True
+
+    logger.LOG("DEBUG","Running GetJobStatusByUser")
+    filepath_JobStatus = jobStatusTool.GetJobStatusByUser()
+    lines_JobStatus = open(filepath_JobStatus).readlines()
+    logger.LOG("DEBUG","lines_JobStatus:\n%s"%(lines_JobStatus))
+
+    for it_sample in range(0,len(InputSamples)):
+
+      InputSample = InputSamples[it_sample]
+      SampleFinished = SampleFinishedForEachSample[it_sample]
+      PostJobFinished = PostJobFinishedForEachSample[it_sample]
+
+      gridJobInfo = gridJobInfos[it_sample]
+      gridJob_Cluster = gridJobInfo[0]
+      gridJob_Schedd = gridJobInfo[1]
+
+      base_rundir = baseRunDirs[it_sample]
+
+      if PostJobFinished:
+        continue
+      else:
+        AllSampleFinished = False
+
+      ## Global Varialbes
+
+      IsDATA = False
+      DataStream = ""
+      DataRunNum = ""
+      if ":" in InputSample:
+        IsDATA = True
+        DataStream = InputSample.split(":")[0]
+        DataRunNum = InputSample.split(":")[1]
+
+      ## Prepare output
+      ## This should be copied from above
+
+      if not SampleFinished:
+
+        ## This sample was not finished in the previous monitoring
+        ## Monitor again this time
+
+        ThisSampleFinished = True
+
+        ## Write Job status until it's done
+
+        os.system('rm -rf %s'%(base_rundir+'/JobStatus.log'))
+        statuslog = open(base_rundir+'/JobStatus.log','w')
+        statuslog.write('Job submitted at '+string_JobStartTime+'\n')
+        statuslog.write('JobNumber\tStatus\tComment\n')
+
+        ToStatuslog = []
+        finished = []
+
+        FileRanges = FileRangesForEachSample[it_sample]
+
+        for it_job in range(0,len(FileRanges)):
+
+          thisjob_dir = base_rundir+'/'
+
+          this_jobID = "%s.%d@%s"%(gridJob_Cluster, it_job, gridJob_Schedd)
+
+          this_status = "NONE"
+          logger.LOG("DEBUG","Running GetJobStatusByJobID")
+          this_status = jobStatusTool.GetJobStatusByJobID(lines_JobStatus ,this_jobID)
+          logger.LOG("DEBUG","this_status = %s"%(this_status))
+
+          if "ERROR" in this_status:
+            #GotError = True
+            statuslog.write("#Job hold for %s, resubmitting\n"%(this_jobID))
+            os.system('jobsub_release --jobid=%s'%(this_jobID))
+            #ErrorLog = this_status
+            #break
+
+          if "FINISHED" not in this_status:
+            ThisSampleFinished = False
+
+          outlog = ""
+          if "FINISHED" in this_status:
+            finished.append("Finished")
+
+          elif "RUNNING" in this_status:
+
+            outlog = str(it_job)+'\tR\t%s'%(this_status.split('::')[1])
+
+            ToStatuslog.append(outlog)
+
+          else:
+            outlog = str(it_job)+'\t'+this_status
+            ToStatuslog.append(outlog)
+
+          ##---- END it_job loop
+
+        if GotError:
+
+          ## When error occured, change both Finished/PostJob Flag to True
+
+          SampleFinishedForEachSample[it_sample] = True
+          PostJobFinishedForEachSample[it_sample] = True
+          break
+
+        for l in ToStatuslog:
+          statuslog.write(l+'\n')
+        statuslog.write('\n==============================================================\n')
+
+        statuslog.write('%s.0@%s\n'%(gridJob_Cluster,gridJob_Schedd))
+        ThisTime = datetime.datetime.now()
+        string_ThisTime =  ThisTime.strftime('%Y-%m-%d %H:%M:%S')
+        statuslog.write('Last checked at '+string_ThisTime+'\n')
+        statuslog.write('\n\nFor debugging: %s\n'%(filepath_JobStatus))
+        for line_JobStatus in lines_JobStatus:
+          statuslog.write(line_JobStatus)
+        statuslog.close()
+
+        ## This time, it is found to be finished
+        ## Change the flag
+
+        if ThisSampleFinished:
+          SampleFinishedForEachSample[it_sample] = True
+
+      else:
+
+        ## Job was finished in the previous monitoring
+        ## Check if PostJob is also finished
+
+        if not PostJobFinished:
+
+          logger.LOG("DEBUG", "Job was finished in the previous monitoring, now running PostJob")
+
+          ## PostJob was not done in the previous monitoring
+          ## Copy output, and change the PostJob flag
+
+          outputname = args.Analyzer+'_Data_'+DataStream+"_Run"+DataRunNum if IsDATA else args.Analyzer+'_'+InputSample
+
+          if not GotError:
+            cwd = os.getcwd()
+            logger.LOG("DEBUG", "Moving to %s"%(cwd))
+            os.chdir(base_rundir)
+
+            #### if number of job is 1, we can just move the file, not hadd
+            nFiles = len( FileRangesForEachSample[it_sample] )
+            if nFiles==1:
+              logger.LOG("DEBUG", "nFile=1, so simply mv")
+              os.system('echo "nFiles = 1, so skipping hadd and just move the file" >> JobStatus.log')
+              os.system('ls -1 output/*.root >> PostJob.log')
+              os.system('mv output/output_0.root '+outputname+'.root')
+            else:
+              logger.LOG("DEBUG", "nFile>1, so hadd")
+              while True:
+                nhadd=int(os.popen("pgrep -x hadd -u $USER |wc -l").read().strip())
+                if nhadd<4:
+                  break
+                logger.LOG("DEBUG", "Too many hadd running; %d"%(nhadd))
+                os.system('echo "Too many hadd currently (nhadd='+str(nhadd)+'). Sleep 60s" >> JobStatus.log')
+                time.sleep(60)
+              logger.LOG("DEBUG", "Running hadd..")
+              os.system('hadd -f '+outputname+'.root output/*.root >> PostJob.log')
+              #print("@@@@ Jobstatus")
+              #print(lines_JobStatus)
+              #os.system('rm output/*.root') ## TODO enable this
+
+            ## Final Outputpath
+
+            logger.LOG("DEBUG", "Removing the output file if exist already")
+            os.system('ifdh rm %s/%s.root &> /dev/null'%(FinalOutputPath,outputname))
+            logger.LOG("DEBUG", "Copying the merged file to %s"%(FinalOutputPath))
+            os.system('cp %s.root %s/'%(outputname,FinalOutputPath))
+            os.chdir(cwd)
+
+          logger.LOG("DEBUG", "PostJob finished")
+          PostJobFinishedForEachSample[it_sample] = True
+
+
+    logger.LOG("DEBUG", "Sleeping for 20sec")
+    time.sleep(20)
+
+except KeyboardInterrupt:
+  print('interrupted!')

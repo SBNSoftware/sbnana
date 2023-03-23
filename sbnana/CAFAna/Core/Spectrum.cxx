@@ -199,7 +199,7 @@ namespace ana
                      const Cut& cut,
                      const SystShifts& shift,
                      const Var& wei)
-    : Spectrum(xAxis.GetLabels()[0], loader,
+    : Spectrum(xAxis.GetLabels()[0]+"_vs_"+yAxis.GetLabels()[0], loader,
                xAxis.GetBinnings()[0], xAxis.GetVars()[0],
                yAxis.GetBinnings()[0], yAxis.GetVars()[0],
                spillcut, cut, shift, wei)
@@ -319,7 +319,7 @@ namespace ana
                      const SystShifts& shift,
                      const Var& wei,
                      ESparse sparse)
-    : Spectrum(xAxis.GetLabels()[0], loader,
+    : Spectrum(xAxis.GetLabels()[0]+"_vs_"+yAxis.GetLabels()[0]+"_vs_"+zAxis.GetLabels()[0], loader,
                xAxis.GetBinnings()[0], xAxis.GetVars()[0],
                yAxis.GetBinnings()[0], yAxis.GetVars()[0],
                zAxis.GetBinnings()[0], zAxis.GetVars()[0],
@@ -520,8 +520,8 @@ namespace ana
           }
           std::cout << std::endl;
           //          abort();
-          //      fPOT = 1e18;
-          ret->Scale(pot/1e18); //hack while we add spill tree
+          //    fPOT = 1e18;
+          //ret->Scale(); //hack while we add spill tree
         }
       }
     }
@@ -937,6 +937,13 @@ namespace ana
     }
 
     tmp->cd();
+  }
+
+  void Spectrum::SetLabel(int idx, std::string newlabel)
+  {
+    if(idx<int(fLabels.size())){
+      fLabels.at(idx) = newlabel;
+    }
   }
 
   //----------------------------------------------------------------------
