@@ -26,11 +26,11 @@ namespace ICARUSNumuXsec{
     OffBeamNUMI = -2,
   };
 
-  class FiducialVolumeTool{
+  class VolumeTool{
 
   public:
 
-    FiducialVolumeTool()
+    VolumeTool()
     {
       fvCryo0 = {-358.489, -61.94,  // x
                  -181.86, +134.96,  // y
@@ -49,9 +49,24 @@ namespace ICARUSNumuXsec{
     int TPCIndex(double x, double y, double z) const;
 
 
-  }; // END Class FiducialVolumeTool
+  }; // END Class VolumeTool
 
-  class VertexContained : public FiducialVolumeTool{
+  class ActiveVolumeTool : public VolumeTool{
+
+  public:
+
+    ActiveVolumeTool(){
+      XMargin = 0.;
+      YMargin = 0.;
+      ZMarginUp = 0.;
+      ZMarginDown = 0.;
+    }
+
+    static ActiveVolumeTool& Instance();
+
+  }; // END ActiveVolumeTool class def
+
+  class VertexContained : public VolumeTool{
 
   public:
 
@@ -66,7 +81,7 @@ namespace ICARUSNumuXsec{
 
   }; // END VertexContained class def
 
-  class TrackContained : public FiducialVolumeTool{
+  class TrackContained : public VolumeTool{
 
   public:
 
@@ -115,6 +130,8 @@ namespace ICARUSNumuXsec{
 
     double GetdEdX(double rr, int ptlType) const;
     double GetdEdXErr(double rr, int ptlType) const;
+
+    double CalculateChi2(const caf::Proxy<caf::SRTrackCalo>& calo, int ptlType) const;
 
     static dEdXTemplateTool& Instance();
 

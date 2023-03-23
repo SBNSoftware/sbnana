@@ -15,26 +15,32 @@ namespace ICARUSNumuXsec{
 namespace TruthMatch{
 
   // For a given true muon (truth_index), find a reco track whose best-matched is this particle
-  extern const Var varTruthMuonIndex;
-  extern const Var varTruthMuonMatchedTrackIndex;
-  extern const Var varTruthMuonMatchedTrackContainedness;
-  extern const Var varTruthMuonMatchedTrackChi2Proton;
-  extern const Var varTruthMuonMatchedTrackChi2Muon;
-  extern const Var varTruthMuonMatchedTrackChi2Pion;
+  extern const Var TruthMuonIndex;
+  extern const Var TruthMuonLength;
+  extern const Var TruthMuonKE;
+  extern const Var TruthMuonMatchedTrackIndex;
+  extern const Var TruthMuonMatchedTrackContainedness;
+  extern const Var TruthMuonMatchedTrackChi2Proton;
+  extern const Var TruthMuonMatchedTrackChi2Muon;
+  extern const Var TruthMuonMatchedTrackChi2Pion;
 
   // For a given true proton (truth_index), find a reco track whose best-matched is this particle
-  extern const Var varTruthProtonIndex;
-  extern const Var varTruthProtonMatchedTrackIndex;
-  extern const Var varTruthProtonMatchedTrackContainedness;
-  extern const Var varTruthProtonMatchedTrackChi2Proton;
-  extern const Var varTruthProtonMatchedTrackChi2Muon;
-  extern const Var varTruthProtonMatchedTrackChi2Pion;
+  extern const Var TruthProtonIndex;
+  extern const Var TruthProtonLength;
+  extern const Var TruthProtonKE;
+  extern const Var TruthProtonMatchedTrackIndex;
+  extern const Var TruthProtonMatchedTrackContainedness;
+  extern const Var TruthProtonMatchedTrackChi2Proton;
+  extern const Var TruthProtonMatchedTrackChi2Muon;
+  extern const Var TruthProtonMatchedTrackChi2Pion;
 
   // For a given true charged pion (truth_index), find a reco track whose best-matched is this particle
-  extern const Var varTruthChargedPionIndex;
-  extern const Var varTruthChargedPionMatchedTrackIndex;
-  extern const Var varTruthChargedPionMatchedTrackContainedness;
-  extern const Var varTruthChargedPionMatchedTrackEndProcess;
+  extern const Var TruthChargedPionIndex;
+  extern const Var TruthChargedPionLength;
+  extern const Var TruthChargedPionKE;
+  extern const Var TruthChargedPionMatchedTrackIndex;
+  extern const Var TruthChargedPionMatchedTrackContainedness;
+  extern const Var TruthChargedPionMatchedTrackEndProcess;
 
 
 } // end namespace TruthMatch

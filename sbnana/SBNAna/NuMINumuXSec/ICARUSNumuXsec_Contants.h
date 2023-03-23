@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_Utilities.h"
+#include "sbnana/SBNAna/CRTPMTMatching/ICARUSCRTPMTMatching_Tool.h"
 
 #define M_MUON 0.1057
 #define M_CHARGEDPION 0.13957039
@@ -12,6 +13,7 @@ namespace ICARUSNumuXsec{
 
   static const TVector3 NuDirection_NuMI(3.94583e-01, 4.26067e-02, 9.17677e-01);
 
+  static const ActiveVolumeTool& av = ActiveVolumeTool::Instance();
   static const VertexContained& fv = VertexContained::Instance();
   static const TrackContained& fv_track = TrackContained::Instance();
 
@@ -21,10 +23,8 @@ namespace ICARUSNumuXsec{
 
   static const SterileNuTool& snt = SterileNuTool::Instance();
 
-  static const CRTPMTMatchingTool& cpmt = CRTPMTMatchingTool::Instance();
+  //static const CRTPMTMatchingTool& cpmt = CRTPMTMatchingTool::Instance();
 
-  //extern const CRTPMTMatchingTool cpmt;// = CRTPMTMatchingTool::Instance();
-  //extern const CRTPMTMatchingTool cpmt = CRTPMTMatchingTool::Instance();
 
 }
 

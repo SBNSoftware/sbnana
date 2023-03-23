@@ -64,6 +64,7 @@ namespace ICARUSNumuXsec{
   // - FV
 
   extern const Cut cutRecoVertexFV;
+  extern const Cut cutTruthVertexActiveVolume;
   extern const Cut cutRFiducial;
 
   // - Pandora decision

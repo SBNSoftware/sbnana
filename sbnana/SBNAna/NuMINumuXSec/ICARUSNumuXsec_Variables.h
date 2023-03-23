@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sbnana/SBNAna/CRTPMTMatching/ICARUSCRTPMTMatching.h"
 #include "sbnana/SBNAna/Cuts/NumuCutsIcarus202106.h"
 #include "sbnana/SBNAna/NuMINumuXSec/ICARUSNumuXsec_Contants.h"
 #include "sbnana/SBNAna/Vars/Vars.h"
@@ -24,20 +25,14 @@ namespace ICARUSNumuXsec{
   // - Pos
   extern const SpillMultiVar spillvarEastWestCRTHitPosX;
   extern const SpillMultiVar spillvarFlashPosX;
-  // - PMT-CRT matching
-  extern const SpillMultiVar spillvarOpFlashTime;
+  // - OpFlash
   extern const SpillMultiVar spillvarOpFlashPeakToFirstTime;
-  extern const SpillMultiVar spillvarValidOpFlashTime;
-  extern const SpillMultiVar spillvarInTimeOpFlashTime; // Valid AND InTime
-  extern const SpillMultiVar spillvarInTimeOpFlashPe; // Valid AND InTime, unit : 1e4
+  // - CRTHit
   extern const SpillMultiVar spillvarTopCRTHitTime;
   extern const SpillMultiVar spillvarSideCRTHitTime;
+  // - PMT-CRT matching extra
   extern const SpillMultiVar spillvarTopCRTPMTTime;
   extern const SpillMultiVar spillvarSideCRTPMTTime;
-  extern const SpillMultiVar spillvarCRTPMTTime;
-  extern const SpillMultiVar spillvarCRTPMTTimeOfID12;
-  extern const SpillMultiVar spillvarCRTPMTMatchingID;
-  extern const SpillVar spillvarCRTPMTMatchingEventID;
   // - WW test
   extern const SpillMultiVar spillvarWWTPCTrackEndX;
   extern const SpillMultiVar spillvarWWTPCTrackEndY;
@@ -58,6 +53,7 @@ namespace ICARUSNumuXsec{
   extern const Var varTruthW;
   // - Slice var
   extern const Var varCountSlice;
+  extern const Var varIsClearCosmic;
   // - Flash matching
   extern const Var varFMScore;
   extern const Var varFMTime;

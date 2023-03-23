@@ -10,15 +10,15 @@ namespace ICARUSNumuXsec{
   // - CRTPMT matching
 
   const SpillCut spillcutHasValidFlash([](const caf::SRSpillProxy* sr){
-    vector<double> validTimes = spillvarValidOpFlashTime(sr);
+    vector<double> validTimes = ICARUSCRTPMTMatching::spillvarValidOpFlashTime(sr);
     return validTimes.size()>0;
   });
   const SpillCut spillcutHasInTimeFlash([](const caf::SRSpillProxy* sr){
-    vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr); // Valid and InTime
+    vector<double> intimeTimes = ICARUSCRTPMTMatching::spillvarInTimeOpFlashTime(sr); // Valid and InTime
     return intimeTimes.size()>0;
   });
   const SpillCut spillcutHasOneTimeFlash([](const caf::SRSpillProxy* sr){
-    vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr); // Valid and InTime
+    vector<double> intimeTimes = ICARUSCRTPMTMatching::spillvarInTimeOpFlashTime(sr); // Valid and InTime
     return intimeTimes.size()==1;
   });
 
@@ -51,7 +51,7 @@ namespace ICARUSNumuXsec{
     // --- TEST
     // hasCRTHit = 12, >=1 entering top and >=1 exiting top
 
-    vector<double> intimeOpFlashIDs = spillvarCRTPMTMatchingID(sr);
+    vector<double> intimeOpFlashIDs = ICARUSCRTPMTMatching::spillvarCRTPMTMatchingID(sr);
     if(intimeOpFlashIDs.size()>0){
 
       bool IsAllEnteringInThisSpill = true;
@@ -98,7 +98,7 @@ namespace ICARUSNumuXsec{
     // --- TEST
     // hasCRTHit = 12, >=1 entering top and >=1 exiting top
 
-    vector<double> intimeOpFlashIDs = spillvarCRTPMTMatchingID(sr);
+    vector<double> intimeOpFlashIDs = ICARUSCRTPMTMatching::spillvarCRTPMTMatchingID(sr);
     if(intimeOpFlashIDs.size()>0){
 
       for(const auto& opID : intimeOpFlashIDs){
@@ -243,6 +243,10 @@ namespace ICARUSNumuXsec{
     if( !isnan(slc->vertex.x) ) return fv.isContained(slc->vertex.x, slc->vertex.y, slc->vertex.z);
     else return false;
 
+  });
+  const Cut cutTruthVertexActiveVolume([](const caf::SRSliceProxy* slc) {
+    if( !isnan(slc->truth.position.x) ) return av.isContained(slc->truth.position.x, slc->truth.position.y, slc->truth.position.z);
+    else return false;
   });
   const Cut cutRFiducial([](const caf::SRSliceProxy* slc) {
 

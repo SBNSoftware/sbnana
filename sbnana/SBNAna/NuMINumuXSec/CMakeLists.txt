@@ -9,6 +9,7 @@ cet_make_library(LIBRARY_NAME NuMINumuXSec
                    CAFAnaSysts
                    SBNAnaVars
                    SBNAnaCuts
+                   CRTPMTMatching
                    sbnanaobj::StandardRecordProxy
                    cetlib::cetlib
                    cetlib_except::cetlib_except

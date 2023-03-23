@@ -12,7 +12,12 @@ void test_CRTPMT(){
 
   cpmt.SetGateType(NUMI);
 
-  SpectrumLoader loader("/pnfs/icarus/persistent/users/jskim/data/run_8515/flatcaf/v09_63_00_02/221212_UseOldFlashMatching_FixCAFT1/NUMIMAJORITY/flatcaf_0.root");
+  //SpectrumLoader loader("/pnfs/icarus/persistent/users/jskim/data/run_8515/flatcaf/v09_63_00_02/221212_UseOldFlashMatching_FixCAFT1/NUMIMAJORITY/flatcaf_0.root");
+  SpectrumLoader loader("/pnfs/icarus/persistent/users/jskim/Run2/mc/NUMI_Nu_Cosmics/flatcaf/v09_63_00_02/230114_AddGHEPPtl_FixCRTTimingInCAF_CRTPMTMatchingVar/G18_10a_02_11a/flatcaf_0.root");
+
+  // if MC,
+  cpmt.UseTS0 = true;
+
   Spectrum *s_CRTPMTTime = new Spectrum("CRTPMTTime", Binning::Simple(3000, -0.15, 0.15), loader, spillvarCRTPMTTime, kNoSpillCut);
   Spectrum *s_CRTPMTMatchingID = new Spectrum("CRTPMTMatchingID", Binning::Simple(15, 0., 15.), loader, spillvarCRTPMTMatchingID, kNoSpillCut);
   Spectrum *s_MatchID2_CRTHitPosXs = new Spectrum("MatchID2_CRTHitPosXs", Binning::Simple(800, -400, 400.), loader, spillvarMatchID2_CRTHitPosXs, kNoSpillCut);

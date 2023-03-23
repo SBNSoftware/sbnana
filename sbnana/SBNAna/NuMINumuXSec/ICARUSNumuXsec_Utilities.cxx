@@ -2,6 +2,11 @@
 
 using namespace ICARUSNumuXsec;
 
+ActiveVolumeTool& ActiveVolumeTool::Instance(){
+  static ActiveVolumeTool avt;
+  return avt;
+}
+
 VertexContained& VertexContained::Instance(){
   static VertexContained vc;
   return vc;
@@ -12,14 +17,14 @@ TrackContained& TrackContained::Instance(){
   return tc;
 }
 
-bool FiducialVolumeTool::isContained(double x, double y, double z) const {
+bool VolumeTool::isContained(double x, double y, double z) const {
 
   int _containedCryo = containedCryo(x,y,z);
   return (_containedCryo==0 || _containedCryo==1);
 
 }
 
-int FiducialVolumeTool::containedCryo(double x, double y, double z) const {
+int VolumeTool::containedCryo(double x, double y, double z) const {
 
   int out=-1;
   //==== Cryo0
@@ -46,7 +51,7 @@ int FiducialVolumeTool::containedCryo(double x, double y, double z) const {
 
 }
 
-int FiducialVolumeTool::TPCIndex(double x, double y, double z) const {
+int VolumeTool::TPCIndex(double x, double y, double z) const {
 
   double x_cath = x<=0 ? (fvCryo0.xmax+fvCryo0.xmin)/2. : (fvCryo1.xmax+fvCryo1.xmin)/2.;
   double x_from_cath = x-x_cath;
@@ -260,6 +265,38 @@ double dEdXTemplateTool::GetdEdXErr(double rr, int ptlType) const {
     std::cout << "[dEdXTemplateTool::GetdEdX] rr = " << rr << ", bin = " << bin << std::endl;
     return -1.;
   }
+
+}
+
+double dEdXTemplateTool::CalculateChi2(const caf::Proxy<caf::SRTrackCalo>& calo, int ptlType) const {
+
+  int npt = 0;
+  double chi2 = 0;
+  for(unsigned i = 0; i < calo.points.size(); ++i) { //hits
+    const auto& pt = calo.points[i];
+    if (i == 0 || i == calo.points.size() - 1) continue;
+
+    if( pt.rr>=26. ) continue;
+
+    double dedx = GetdEdX(pt.rr, ptlType);
+    double dedx_err = GetdEdXErr(pt.rr, ptlType);
+
+    bool UseThisPoint = (dedx>0.5) && (dedx_err>0);
+    //bool UseThisPoint = (dedx>0.) && (dedx_err>0);
+
+    if(UseThisPoint){
+      double errdedx = 0.04231 + 0.0001783 * pt.dedx * pt.dedx; //resolution on dE/dx
+      errdedx *= pt.dedx;
+      chi2 += pow( (pt.dedx-dedx)/std::sqrt( pow(dedx_err, 2) + pow(errdedx, 2) ), 2);
+      npt++;
+    }
+
+  }
+  if(npt){
+    chi2 /= npt;
+  }
+
+  return chi2;
 
 }
 

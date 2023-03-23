@@ -24,7 +24,9 @@ namespace ICARUSCRTPMTMatching{
       double this_oft = opflash.firsttime;
       //if(sr->hdr.ismc) this_oft += -55.1e-3; // https://github.com/SBNSoftware/icaruscode/blob/v09_64_01/icaruscode/CRT/CrtOpHitMatchAnalysis_module.cc#L187
       if(sr->hdr.ismc) this_oft += -43.0e-3; // https://github.com/SBNSoftware/icaruscode/blob/v09_64_01/icaruscode/CRT/CrtOpHitMatchAnalysis.fcl#L60
-      if(opflash.onbeamtime) rets.push_back(this_oft); // TODO I'm using a hacked version of onbeamtime.. in my pricate samples, onbeamtime = "has >=5 OpHits with ADC>400"
+      if(opflash.onbeamtime){
+        rets.push_back(this_oft); // TODO I'm using a hacked version of onbeamtime.. in my pricate samples, onbeamtime = "has >=5 OpHits with ADC>400"
+      }
     }
     return rets;
   });

@@ -8,7 +8,7 @@ namespace ICARUSNumuXsec{
 namespace TruthMatch{
 
   // For a given true muon (truth_index), find a reco track whose best-matched is this particle
-  const Var varTruthMuonIndex([](const caf::SRSliceProxy* slc) -> int {
+  const Var TruthMuonIndex([](const caf::SRSliceProxy* slc) -> int {
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < slc->truth.prim.size(); ++i){
@@ -23,12 +23,31 @@ namespace TruthMatch{
     }
     return truth_idx;
   });
-  const Var varTruthMuonMatchedTrackIndex([](const caf::SRSliceProxy* slc) -> int {
-    int truth_idx = varTruthMuonIndex(slc);
+  const Var TruthMuonLength([](const caf::SRSliceProxy* slc) -> double {
+    int truth_idx = TruthMuonIndex(slc);
+    if(truth_idx>=0){
+      if(isnan(slc->truth.prim.at(truth_idx).length)) return -999.;
+      else return slc->truth.prim.at(truth_idx).length;
+    }
+    else{
+      return -999.;
+    }
+  });
+  const Var TruthMuonKE([](const caf::SRSliceProxy* slc) -> double {
+    int truth_idx = TruthMuonIndex(slc);
+    if(truth_idx>=0){
+      return slc->truth.prim.at(truth_idx).genE - M_MUON;
+    }
+    else{
+      return -999.;
+    }
+  });
+  const Var TruthMuonMatchedTrackIndex([](const caf::SRSliceProxy* slc) -> int {
+    int truth_idx = TruthMuonIndex(slc);
     return GetMatchedRecoTrackIndex(slc, truth_idx);
   });
-  const Var varTruthMuonMatchedTrackContainedness([](const caf::SRSliceProxy* slc) -> int {
-    int muonTrackIndex = varTruthMuonMatchedTrackIndex(slc);
+  const Var TruthMuonMatchedTrackContainedness([](const caf::SRSliceProxy* slc) -> int {
+    int muonTrackIndex = TruthMuonMatchedTrackIndex(slc);
     // -1 : No track found
     // 0 : Exiting
     // 1 : Contained
@@ -42,8 +61,8 @@ namespace TruthMatch{
       return -1;
     }
   });
-  const Var varTruthMuonMatchedTrackChi2Proton([](const caf::SRSliceProxy* slc) -> double {
-    int muonTrackIndex = varTruthMuonMatchedTrackIndex(slc);
+  const Var TruthMuonMatchedTrackChi2Proton([](const caf::SRSliceProxy* slc) -> double {
+    int muonTrackIndex = TruthMuonMatchedTrackIndex(slc);
     if(muonTrackIndex>=0){
       const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
       int bp = trk.bestplane;
@@ -56,8 +75,8 @@ namespace TruthMatch{
     }
   });
 
-  const Var varTruthMuonMatchedTrackChi2Muon([](const caf::SRSliceProxy* slc) -> double {
-    int muonTrackIndex = varTruthMuonMatchedTrackIndex(slc);
+  const Var TruthMuonMatchedTrackChi2Muon([](const caf::SRSliceProxy* slc) -> double {
+    int muonTrackIndex = TruthMuonMatchedTrackIndex(slc);
     if(muonTrackIndex>=0){
       const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
       int bp = trk.bestplane;
@@ -69,8 +88,8 @@ namespace TruthMatch{
       return 999999;
     }
   });
-  const Var varTruthMuonMatchedTrackChi2Pion([](const caf::SRSliceProxy* slc) -> double {
-    int muonTrackIndex = varTruthMuonMatchedTrackIndex(slc);
+  const Var TruthMuonMatchedTrackChi2Pion([](const caf::SRSliceProxy* slc) -> double {
+    int muonTrackIndex = TruthMuonMatchedTrackIndex(slc);
     if(muonTrackIndex>=0){
       const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
       int bp = trk.bestplane;
@@ -84,7 +103,7 @@ namespace TruthMatch{
   });
 
   // For a given true proton (truth_index), find a reco track whose best-matched is this particle
-  const Var varTruthProtonIndex([](const caf::SRSliceProxy* slc) -> int {
+  const Var TruthProtonIndex([](const caf::SRSliceProxy* slc) -> int {
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < slc->truth.prim.size(); ++i){
@@ -99,12 +118,31 @@ namespace TruthMatch{
     }
     return truth_idx;
   });
-  const Var varTruthProtonMatchedTrackIndex([](const caf::SRSliceProxy* slc) -> int {
-    int truth_idx = varTruthProtonIndex(slc);
+  const Var TruthProtonLength([](const caf::SRSliceProxy* slc) -> double {
+    int truth_idx = TruthProtonIndex(slc);
+    if(truth_idx>=0){
+      if(isnan(slc->truth.prim.at(truth_idx).length)) return -999.;
+      else return slc->truth.prim.at(truth_idx).length;
+    }
+    else{
+      return -999.;
+    }
+  });
+  const Var TruthProtonKE([](const caf::SRSliceProxy* slc) -> double {
+    int truth_idx = TruthProtonIndex(slc);
+    if(truth_idx>=0){
+      return slc->truth.prim.at(truth_idx).genE - M_PROTON;
+    }
+    else{
+      return -999.;
+    }
+  });
+  const Var TruthProtonMatchedTrackIndex([](const caf::SRSliceProxy* slc) -> int {
+    int truth_idx = TruthProtonIndex(slc);
     return GetMatchedRecoTrackIndex(slc, truth_idx);
   });
-  const Var varTruthProtonMatchedTrackContainedness([](const caf::SRSliceProxy* slc) -> int {
-    int protonTrackIndex = varTruthProtonMatchedTrackIndex(slc);
+  const Var TruthProtonMatchedTrackContainedness([](const caf::SRSliceProxy* slc) -> int {
+    int protonTrackIndex = TruthProtonMatchedTrackIndex(slc);
     // -1 : No track found
     // 0 : Exiting
     // 1 : Contained
@@ -118,8 +156,8 @@ namespace TruthMatch{
       return -1;
     }
   });
-  const Var varTruthProtonMatchedTrackChi2Proton([](const caf::SRSliceProxy* slc) -> double {
-    int protonTrackIndex = varTruthProtonMatchedTrackIndex(slc);
+  const Var TruthProtonMatchedTrackChi2Proton([](const caf::SRSliceProxy* slc) -> double {
+    int protonTrackIndex = TruthProtonMatchedTrackIndex(slc);
     if(protonTrackIndex>=0){
       const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
       int bp = trk.bestplane;
@@ -132,8 +170,8 @@ namespace TruthMatch{
     }
   });
 
-  const Var varTruthProtonMatchedTrackChi2Muon([](const caf::SRSliceProxy* slc) -> double {
-    int protonTrackIndex = varTruthProtonMatchedTrackIndex(slc);
+  const Var TruthProtonMatchedTrackChi2Muon([](const caf::SRSliceProxy* slc) -> double {
+    int protonTrackIndex = TruthProtonMatchedTrackIndex(slc);
     if(protonTrackIndex>=0){
       const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
       int bp = trk.bestplane;
@@ -145,8 +183,8 @@ namespace TruthMatch{
       return 999999;
     }
   });
-  const Var varTruthProtonMatchedTrackChi2Pion([](const caf::SRSliceProxy* slc) -> double {
-    int protonTrackIndex = varTruthProtonMatchedTrackIndex(slc);
+  const Var TruthProtonMatchedTrackChi2Pion([](const caf::SRSliceProxy* slc) -> double {
+    int protonTrackIndex = TruthProtonMatchedTrackIndex(slc);
     if(protonTrackIndex>=0){
       const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
       int bp = trk.bestplane;
@@ -160,7 +198,7 @@ namespace TruthMatch{
   });
 
   // For a given true charged pion (truth_index), find a reco track whose best-matched is this particle
-  const Var varTruthChargedPionIndex([](const caf::SRSliceProxy* slc) -> int {
+  const Var TruthChargedPionIndex([](const caf::SRSliceProxy* slc) -> int {
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < slc->truth.prim.size(); ++i){
@@ -175,13 +213,32 @@ namespace TruthMatch{
     }
     return truth_idx;
   });
-  const Var varTruthChargedPionMatchedTrackIndex([](const caf::SRSliceProxy* slc) -> int {
-    int truth_idx = varTruthChargedPionIndex(slc);
+  const Var TruthChargedPionLength([](const caf::SRSliceProxy* slc) -> double {
+    int truth_idx = TruthChargedPionIndex(slc);
+    if(truth_idx>=0){
+      if(isnan(slc->truth.prim.at(truth_idx).length)) return -999.;
+      else return slc->truth.prim.at(truth_idx).length;
+    }
+    else{
+      return -999.;
+    }
+  });
+  const Var TruthChargedPionKE([](const caf::SRSliceProxy* slc) -> double {
+    int truth_idx = TruthChargedPionIndex(slc);
+    if(truth_idx>=0){
+      return slc->truth.prim.at(truth_idx).genE - M_CHARGEDPION;
+    }
+    else{
+      return -999.;
+    }
+  });
+  const Var TruthChargedPionMatchedTrackIndex([](const caf::SRSliceProxy* slc) -> int {
+    int truth_idx = TruthChargedPionIndex(slc);
     if(truth_idx<0) return -999.;
     return GetMatchedRecoTrackIndex(slc, truth_idx);
   });
-  const Var varTruthChargedPionMatchedTrackEndProcess([](const caf::SRSliceProxy* slc) -> int {
-    int trackIndex = varTruthChargedPionMatchedTrackIndex(slc);
+  const Var TruthChargedPionMatchedTrackEndProcess([](const caf::SRSliceProxy* slc) -> int {
+    int trackIndex = TruthChargedPionMatchedTrackIndex(slc);
     if(trackIndex>=0){
       const auto& trk = slc->reco.pfp.at(trackIndex).trk;
       return trk.truth.p.end_process;

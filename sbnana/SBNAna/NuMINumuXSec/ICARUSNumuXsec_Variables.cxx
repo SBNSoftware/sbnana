@@ -86,18 +86,7 @@ namespace ICARUSNumuXsec{
     }
     return rets;
   });
-  // - PMT-CRT matching
-  const SpillMultiVar spillvarOpFlashTime([](const caf::SRSpillProxy *sr)
-  {
-    std::vector<double> rets;
-    for(const auto& opflash : sr->opflashes){
-      double this_oft = opflash.firsttime;
-      //if(sr->hdr.ismc) this_oft += -55.1e-3; // https://github.com/SBNSoftware/icaruscode/blob/v09_64_01/icaruscode/CRT/CrtOpHitMatchAnalysis_module.cc#L187
-      if(sr->hdr.ismc) this_oft += -43.0e-3; // https://github.com/SBNSoftware/icaruscode/blob/v09_64_01/icaruscode/CRT/CrtOpHitMatchAnalysis.fcl#L60
-      rets.push_back(this_oft);
-    }
-    return rets;
-  });
+  // - OpFlash
   const SpillMultiVar spillvarOpFlashPeakToFirstTime([](const caf::SRSpillProxy *sr)
   {
     std::vector<double> rets;
@@ -106,36 +95,7 @@ namespace ICARUSNumuXsec{
     }
     return rets;
   });
-  const SpillMultiVar spillvarValidOpFlashTime([](const caf::SRSpillProxy *sr)
-  {
-    std::vector<double> rets;
-    for(const auto& opflash : sr->opflashes){
-      double this_oft = opflash.firsttime;
-      //if(sr->hdr.ismc) this_oft += -55.1e-3; // https://github.com/SBNSoftware/icaruscode/blob/v09_64_01/icaruscode/CRT/CrtOpHitMatchAnalysis_module.cc#L187
-      if(sr->hdr.ismc) this_oft += -43.0e-3; // https://github.com/SBNSoftware/icaruscode/blob/v09_64_01/icaruscode/CRT/CrtOpHitMatchAnalysis.fcl#L60
-      if(opflash.onbeamtime) rets.push_back(this_oft); // TODO I'm using a hacked version of onbeamtime..
-    }
-    return rets;
-  });
-  const SpillMultiVar spillvarInTimeOpFlashPe([](const caf::SRSpillProxy *sr)
-  {
-    std::vector<double> rets;
-    for(const auto& opflash : sr->opflashes){
-      double this_oft = opflash.firsttime;
-      if(sr->hdr.ismc) this_oft += -43.0e-3; // https://github.com/SBNSoftware/icaruscode/blob/v09_64_01/icaruscode/CRT/CrtOpHitMatchAnalysis.fcl#L60
-      if(opflash.onbeamtime && cpmt.IsInTime(this_oft)) rets.push_back(opflash.totalpe/1e4);
-    }
-    return rets;
-  });
-  const SpillMultiVar spillvarInTimeOpFlashTime([](const caf::SRSpillProxy *sr)
-  {
-    vector<double> validTimes = spillvarValidOpFlashTime(sr);
-    std::vector<double> rets;
-    for(const auto& opt : validTimes){
-      if( cpmt.IsInTime(opt) ) rets.push_back(opt);
-    }
-    return rets;
-  });
+  // - CRTHit
   const SpillMultiVar spillvarTopCRTHitTime([](const caf::SRSpillProxy *sr)
   {
     std::vector<double> rets;
@@ -158,12 +118,13 @@ namespace ICARUSNumuXsec{
     }
     return rets;
   });
+  // - PMT-CRT matching
   const SpillMultiVar spillvarTopCRTPMTTime([](const caf::SRSpillProxy *sr)
   {
-    vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr);
+    vector<double> intimeTimes = ICARUSCRTPMTMatching::spillvarInTimeOpFlashTime(sr);
     std::vector<double> rets;
     for(const auto& opt : intimeTimes){
-      std::vector<int> crtHitIdices = cpmt.GetMatchedCRTHitIndex(opt, sr->crt_hits, 0);
+      std::vector<int> crtHitIdices = ICARUSCRTPMTMatching::cpmt.GetMatchedCRTHitIndex(opt, sr->crt_hits, 0);
       for(const auto& crtHitIdx:crtHitIdices){
         double this_crttime = sr->hdr.ismc ? sr->crt_hits.at(crtHitIdx).t0 : sr->crt_hits.at(crtHitIdx).t1;
         rets.push_back( this_crttime - opt );
@@ -173,80 +134,18 @@ namespace ICARUSNumuXsec{
   });
   const SpillMultiVar spillvarSideCRTPMTTime([](const caf::SRSpillProxy *sr)
   {
-    vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr);
+    vector<double> intimeTimes = ICARUSCRTPMTMatching::spillvarInTimeOpFlashTime(sr);
     std::vector<double> rets;
     for(const auto& opt : intimeTimes){
-      std::vector<int> crtHitIdices = cpmt.GetMatchedCRTHitIndex(opt, sr->crt_hits, 1);
+      std::vector<int> crtHitIdices = ICARUSCRTPMTMatching::cpmt.GetMatchedCRTHitIndex(opt, sr->crt_hits, 1);
       for(const auto& crtHitIdx:crtHitIdices){
         double this_crttime = sr->hdr.ismc ? sr->crt_hits.at(crtHitIdx).t0 : sr->crt_hits.at(crtHitIdx).t1;
         rets.push_back( this_crttime - opt );
-      }
-    }
-    return rets;
-  });
-  const SpillMultiVar spillvarCRTPMTTime([](const caf::SRSpillProxy *sr)
-  {
-    vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr);
-    std::vector<double> rets;
-    for(const auto& opt : intimeTimes){
-      std::vector<int> crtHitIdices = cpmt.GetMatchedCRTHitIndex(opt, sr->crt_hits, 2);
-      for(const auto& crtHitIdx:crtHitIdices){
-        double this_crttime = sr->hdr.ismc ? sr->crt_hits.at(crtHitIdx).t0 : sr->crt_hits.at(crtHitIdx).t1;
-        rets.push_back( this_crttime - opt );
-      }
-    }
-    return rets;
-  });
-  const SpillMultiVar spillvarCRTPMTTimeOfID12([](const caf::SRSpillProxy *sr)
-  {
-    vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr);
-    std::vector<double> rets;
-    for(const auto& opt : intimeTimes){
-      if( cpmt.GetMatchID(opt, sr->crt_hits)==12 ){
-        std::vector<int> crtHitIdices = cpmt.GetMatchedCRTHitIndex(opt, sr->crt_hits, 2);
-        for(const auto& crtHitIdx:crtHitIdices){
-          double this_crttime = sr->hdr.ismc ? sr->crt_hits.at(crtHitIdx).t0 : sr->crt_hits.at(crtHitIdx).t1;
-          rets.push_back( this_crttime - opt );
-        }
-      }
-    }
-    return rets;
-  });
-  const SpillMultiVar spillvarCRTPMTMatchingID([](const caf::SRSpillProxy *sr)
-  {
-    vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr);
-    std::vector<double> rets;
-    if(intimeTimes.size()>0){
-      for(const auto& opt : intimeTimes){
-        rets.push_back( cpmt.GetMatchID(opt, sr->crt_hits) );
       }
     }
     return rets;
   });
 
-  const SpillVar spillvarCRTPMTMatchingEventID([](const caf::SRSpillProxy *sr)
-  {
-/*
-    vector<double> intimeTimes = spillvarInTimeOpFlashTime(sr);
-    if(intimeTimes.size()>0){
-      int CountNoMatching = 0;
-      int CountEnteringTrack = 0;
-      int CountExitingTrack = 0;
-      int CountUnknown = 0
-      for(const auto& opt : intimeTimes){
-        int this_ID = cpmt.GetMatchID(opt, sr->crt_hits);
-        if(this_ID==0) CountNoMatching++;
-        if(this_ID==1 || this_ID==2 || this_ID==3 || this_ID==6 || this_ID==7) CountEnteringTrack++;
-        if(this_ID==4 || this_ID==5) CountExitingTrack++;
-        if(this_ID==8) CountUnknown++;
-      }
-    }
-    else{
-      return 9;
-    }
-*/
-    return 0;
-  });
   // - WW test
   const SpillMultiVar spillvarWWTPCTrackEndX([](const caf::SRSpillProxy *sr){
     vector<double> rets;
@@ -360,6 +259,10 @@ namespace ICARUSNumuXsec{
   // - Slice var
   const Var varCountSlice([](const caf::SRSliceProxy* slc) ->int {
     return 0.;
+  });
+  const Var varIsClearCosmic([](const caf::SRSliceProxy* slc) ->int {
+    if(slc->is_clear_cosmic) return 1;
+    else return 0;
   });
   // - Flash matching
   const Var varFMScore([](const caf::SRSliceProxy* slc) -> double {
