@@ -92,12 +92,15 @@ namespace ana
       fSystIdxs[pset.map[0].param.name] = i;
       // Save all the knob values
       fShiftVals[pset.map[0].param.name] = pset.map[0].vals;
+
+      //std::cout<<"Oracle: "<<pset.map[0].param.name<<std::endl;
     }
   }
 
   // --------------------------------------------------------------------------
   bool UniverseOracle::SystExists(const std::string& name) const
   {
+
     return fShiftVals.find(name) != fShiftVals.end();
   }
 
@@ -113,6 +116,7 @@ namespace ana
   // --------------------------------------------------------------------------
   const std::vector<float>& UniverseOracle::ShiftsForSyst(const std::string& name) const
   {
+    std::cout<<name<<std::endl;
     assert(SystExists(name));
     return fShiftVals.find(name)->second;
   }

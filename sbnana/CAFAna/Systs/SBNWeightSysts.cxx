@@ -16,6 +16,11 @@ namespace ana
     : fPSetName(psetName), fPSetIdx(-1), fUnivIdx(univIdx)
   {
   }
+  // --------------------------------------------------------------------------
+  UniverseWeight::UniverseWeight(const std::string& psetName, double x)
+    : fPSetName(psetName), fPSetIdx(-1), fUnivIdx(-1), fSigma(x)
+  {
+  }
 
   // --------------------------------------------------------------------------
   double UniverseWeight::operator()(const caf::SRSliceProxy* sr) const
@@ -41,6 +46,26 @@ namespace ana
     const unsigned int unividx = fUnivIdx % Nwgts;
 
     return wgts[fPSetIdx].univ[unividx];
+  }
+  double UniverseWeight::operator()(const caf::SRSpillProxy* sr) const
+  {
+    if(sr->mc.nu.size() == 0) return 1;
+
+    if(fPSetIdx == -1){
+      const UniverseOracle& uo = UniverseOracle::Instance();
+      fPSetIdx = uo.ParameterSetIndex(fPSetName);
+    }
+
+    //==== TODO now returning the weight of the "First" neutrino.. this is dumb
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->mc.nu[0].wgt;
+    if(wgts.empty()) return 1;
+    const int Nwgts = wgts[fPSetIdx].univ.size();
+
+    //const UniverseOracle& uo = UniverseOracle::Instance();
+    //double x0;
+    //unsigned int windex = uo.ClosestShiftIndex(fPSetName, fSigma, ESide::kBelow, &x0);
+    const unsigned int windex = fUnivIdx % Nwgts;
+    return wgts[fPSetIdx].univ[windex];
   }
 
   // --------------------------------------------------------------------------
@@ -154,6 +179,8 @@ namespace ana
         "NonRESBGvpNC2pi",
     };
   }
+
+
 
   // --------------------------------------------------------------------------
   const std::vector<const ISyst*>& GetSBNGenieWeightSysts()

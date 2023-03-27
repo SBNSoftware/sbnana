@@ -29,6 +29,13 @@ namespace ana
                      const Cut& cut,
                      const std::vector<Var>& univ_weis,
                      const Var& cv_wei = kUnweighted);
+    EnsembleSpectrum(const std::string& label, 
+                    const Binning& bins,
+                    SpectrumLoaderBase& loader,
+                    const SpillVar& var,
+                    const SpillCut& spillcut,
+                    const std::vector<SpillVar>& univ_weis,
+                     const SpillVar& cv_wei = kSpillUnweighted);
 
     Spectrum Nominal() const {return fNom;}
     unsigned int NUniverses() const {return fUnivs.size();}
