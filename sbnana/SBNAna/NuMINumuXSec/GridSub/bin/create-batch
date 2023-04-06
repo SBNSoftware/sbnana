@@ -25,6 +25,7 @@ parser.add_argument('--no_exec', action='store_true')
 parser.add_argument('--batchname',dest='BatchName', default="")
 parser.add_argument('--lifetime',dest='Lifetime',default="1h")
 parser.add_argument('--server',dest='Server',default="")
+parser.add_argument('--syst',action='store_true')
 parser.add_argument('--verbos',dest="Verbos",default="INFO")
 args = parser.parse_args()
 
@@ -292,10 +293,9 @@ void run_%d(){
   m.IsData = isDataInput;
 
   m.initialize();
-  //if(fillSystematic){
-  //  m.setSystematicWeights();
-  //}
 '''%(ssDefLines, esDefLines,InputSample))
+    if args.syst:
+      cafeScriptFile.write('  m.setSystematicWeights();\n')
 
     cafeScriptFile.write('''  for(unsigned int is=0; is<baseSampleNames.size(); is++){
 
@@ -353,7 +353,7 @@ source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh
 
 setup cetlib v3_13_04 -q e20:prof
 setup larsoft_data v1_02_02
-setup ifdhc v2_6_11 -q e20:p392:prof
+setup ifdhc v2_6_18 -q e20:p392:prof
 export IFDH_CP_MAXRETRIES=2
 
 echo "@@ Creating lib dir and go there"
