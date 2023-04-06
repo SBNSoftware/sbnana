@@ -567,12 +567,61 @@ namespace TwoTrack{
       return !IsCategorized;
     });
 
+    // some presels
+    // - muon
+    const Cut RelaxedMuonTrackIsochronous([](const caf::SRSliceProxy* slc) { 
+      int muonTrackIndex = RelaxedMuonTrackIndex(slc);
+      if(muonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
+        return ( fabs(trk.dir.x)<0.1 );
+
+      }
+      else{
+        return false;
+      }
+    });
+
+    const Cut RelaxedMuonTrackDriftDirection([](const caf::SRSliceProxy* slc) { 
+      int muonTrackIndex = RelaxedMuonTrackIndex(slc);
+      if(muonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
+        return ( fabs(trk.dir.x)>0.8 );
+
+      }
+      else{
+        return false;
+      }
+    });
+    const Cut RelaxedMuonTrackLengthCut([](const caf::SRSliceProxy* slc) {
+      int muonTrackIndex = RelaxedMuonTrackIndex(slc);
+      if(muonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
+        if(isnan(trk.len)) return false;
+        else return (trk.len>50.0);
+      }
+      else{
+        return false;
+      }
+    });
+    // - proton
     const Cut RelaxedProtonTrackIsochronous([](const caf::SRSliceProxy* slc) {
       int protonTrackIndex = RelaxedProtonTrackIndex(slc);
       if(protonTrackIndex>=0){
         const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
         return ( fabs(trk.dir.x)<0.1 );
        
+      }
+      else{
+        return false;
+      }
+    });
+
+    const Cut RelaxedProtonTrackDriftDirection([](const caf::SRSliceProxy* slc) {
+      int protonTrackIndex = RelaxedProtonTrackIndex(slc);
+      if(protonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
+        return ( fabs(trk.dir.x)>0.8 );
+
       }
       else{
         return false;

@@ -56,7 +56,14 @@ namespace TwoTrack{
     extern const Cut RelaxedProtonTrackTruthExitingChargedPion;
     extern const Cut RelaxedProtonTrackTruthOther;
 
+    // some presels
+    // - muon
+    extern const Cut RelaxedMuonTrackIsochronous;
+    extern const Cut RelaxedMuonTrackDriftDirection;
+    extern const Cut RelaxedMuonTrackLengthCut;
+    // - proton
     extern const Cut RelaxedProtonTrackIsochronous;
+    extern const Cut RelaxedProtonTrackDriftDirection;
     extern const Cut RelaxedProtonTrackHasChi2MuonExcess;
     extern const Cut RelaxedProtonTrackHasChi2MuonDeficit;
     extern const Cut RelaxedProtonTrackShort;
