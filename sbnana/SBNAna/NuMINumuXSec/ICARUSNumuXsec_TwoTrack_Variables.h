@@ -40,6 +40,7 @@ namespace TwoTrack{
     extern const Var RelaxedMuonTrackIndex;
     extern const Var RelaxedMuonTrackLength;
     extern const Var RelaxedMuonTrackP;
+    extern const Var RelaxedMuonTrackNuMICosineTheta;
     extern const Var RelaxedMuonTrackDirX;
     extern const Var RelaxedMuonTrackDirY;
     extern const Var RelaxedMuonTrackDirZ;
@@ -55,11 +56,18 @@ namespace TwoTrack{
     extern const MultiVar RelaxedMuonTrackCollectiondQdX;
     // truth match
     extern const Var RelaxedMuonTrackTruthLength;
+    extern const Var RelaxedMuonTrackTruthP;
+    extern const Var RelaxedMuonTrackTruthPResFrac;
+    extern const Var RelaxedMuonTrackTruthOneOverP;
+    extern const Var RelaxedMuonTrackTruthOneOverPResFrac;
+    extern const Var RelaxedMuonTrackTruthNuMICosineTheta;
     extern const Var RelaxedMuonTrackTruthStartProcess;
     extern const Var RelaxedMuonTrackTruthEndProcess;
 
     extern const Var RelaxedProtonTrackIndex;
     extern const Var RelaxedProtonTrackLength;
+    extern const Var RelaxedProtonTrackP;
+    extern const Var RelaxedProtonTrackNuMICosineTheta;
     extern const Var RelaxedProtonTrackDirX;
     extern const Var RelaxedProtonTrackDirY;
     extern const Var RelaxedProtonTrackDirZ;
@@ -76,8 +84,13 @@ namespace TwoTrack{
     extern const MultiVar RelaxedProtonTrackCollectiondQdX;
     // truth match
     extern const Var RelaxedProtonTrackTruthLength;
+    extern const Var RelaxedProtonTrackTruthP;
+    extern const Var RelaxedProtonTrackTruthPResFrac;
+    extern const Var RelaxedProtonTrackTruthNuMICosineTheta;
     extern const Var RelaxedProtonTrackTruthStartProcess;
     extern const Var RelaxedProtonTrackTruthEndProcess;
+
+    extern const Var RelaxedChargedPionTrackIndex;
 
   }
 

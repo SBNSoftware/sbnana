@@ -320,17 +320,14 @@ namespace TwoTrack{
   namespace Aux{
 
     const Var RelaxedMuonTrackIndex([](const caf::SRSliceProxy* slc) -> double {
-      vector<double> primTrackIndices = ICARUSNumuXsec::PrimaryTrackIndices(slc);
-      if(primTrackIndices.size()==0){
+      if(slc->reco.pfp.size()==0){
         return -999.;
       }
       else{
-
-        // Requiring good proton track 
-        int protonIdx = -1;
-        double protonMaxLength = -1;
-        for(const auto& trkIdx: primTrackIndices){
-          const auto& pfp = slc->reco.pfp.at(trkIdx);
+        int muonIdx = -1;
+        double muonMaxLength = -1;
+        for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); i_pfp++){
+          const auto& pfp = slc->reco.pfp.at(i_pfp);
           const auto& trk = pfp.trk;
 
           if(trk.bestplane == -1) continue;
@@ -345,84 +342,11 @@ namespace TwoTrack{
           // 10 cm and that the parent of the track has been marked as the primary.
           const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
 
-          const float Chi2Proton = trk.chi2pid[2].chi2_proton;
-          const float Chi2Muon = trk.chi2pid[2].chi2_muon;
-
-          const bool Contained = fv_track.isContained(trk.end.x, trk.end.y, trk.end.z);
-
-          if ( AtSlice && Contained && trk.calo[2].nhit!=0 && Chi2Proton <= 100 && Chi2Muon >= 30 && trk.len > protonMaxLength ) {
-            protonIdx = trkIdx;
-            protonMaxLength = trk.len;
-          }
-
-        }
-
-        int muonIdx = -1;
-/*
-        if(protonIdx>=0){
-
-          // then find the longest track
-
-          double muonMaxLength = -1;
-          for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); i_pfp++){
-            const auto& pfp = slc->reco.pfp.at(i_pfp);
-            const auto& trk = pfp.trk;
-
-            if(i_pfp==(unsigned int)protonIdx) continue;
-            if(trk.bestplane == -1) continue;
-
-            // First we calculate the distance of each track to the slice vertex.
-            if(isnan(trk.start.x)) continue;
-            const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
-                                           slc->vertex.y - trk.start.y,
-                                           slc->vertex.z - trk.start.z);
-
-            // We require that the distance of the track from the slice is less than
-            // 10 cm and that the parent of the track has been marked as the primary.
-            const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
-
-            if ( AtSlice && trk.len > muonMaxLength ) {
-              muonIdx = i_pfp;
-              muonMaxLength = trk.len;
-            }
-
-          }
-
-        }
-*/
-
-        // TODO TEST
-        // find the longest track
-
-        protonIdx=0;
-        if(protonIdx>=0){
-          double muonMaxLength = -1;
-          for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); i_pfp++){
-            const auto& pfp = slc->reco.pfp.at(i_pfp);
-            const auto& trk = pfp.trk;
-
-            if(trk.bestplane == -1) continue;
-
-            // First we calculate the distance of each track to the slice vertex.
-            if(isnan(trk.start.x)) continue;
-            const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
-                                           slc->vertex.y - trk.start.y,
-                                           slc->vertex.z - trk.start.z);
-
-            // We require that the distance of the track from the slice is less than
-            // 10 cm and that the parent of the track has been marked as the primary.
-            const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
-
-            if ( AtSlice && trk.len > muonMaxLength ) {
-              muonIdx = i_pfp;
-              muonMaxLength = trk.len;
-            }
+          if ( AtSlice && trk.len > muonMaxLength ) {
+            muonIdx = i_pfp;
+            muonMaxLength = trk.len;
           }
         }
-
-
-
-
         return muonIdx;
 
       }
@@ -451,6 +375,18 @@ namespace TwoTrack{
           return trk.mcsP.fwdP_muon;
         }
 
+      }
+      else{
+        return -999.;
+      }
+    });
+    const Var RelaxedMuonTrackNuMICosineTheta([](const caf::SRSliceProxy* slc) -> double {
+      int muonTrackIndex = RelaxedMuonTrackIndex(slc);
+      if(muonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
+        TVector3 v3_trk(trk.dir.x, trk.dir.y, trk.dir.z);
+        double angleNuMI = v3_trk.Angle(NuDirection_NuMI);
+        return TMath::Cos(angleNuMI);
       }
       else{
         return -999.;
@@ -612,6 +548,61 @@ namespace TwoTrack{
         return -999.;
       }
     });
+
+    const Var RelaxedMuonTrackTruthP([](const caf::SRSliceProxy* slc) -> double {
+      int muonTrackIndex = RelaxedMuonTrackIndex(slc);
+      if(muonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
+        if( isnan(trk.truth.p.genE) ) return -999.;
+        double P2 = trk.truth.p.genE*trk.truth.p.genE - M_MUON*M_MUON;
+        if(P2>0) return std::sqrt(P2);
+        else return -999.;
+      }
+      else{
+        return -999.;
+      }
+    });
+    const Var RelaxedMuonTrackTruthPResFrac([](const caf::SRSliceProxy* slc) -> double {
+      double Reco = RelaxedMuonTrackP(slc);
+      double True = RelaxedMuonTrackTruthP(slc);
+      if(Reco>0. && True>0.){
+        return (Reco-True)/True;
+      }
+      else{
+        return -999.;
+      }
+    });
+    const Var RelaxedMuonTrackTruthOneOverP([](const caf::SRSliceProxy* slc) -> double {
+      double P = RelaxedMuonTrackTruthP(slc);
+      if(P>0.) return 1./P;
+      else return -999.;
+    });
+    const Var RelaxedMuonTrackTruthOneOverPResFrac([](const caf::SRSliceProxy* slc) -> double {
+      double RecoP = RelaxedMuonTrackP(slc);
+      double True = RelaxedMuonTrackTruthOneOverP(slc);
+      if(RecoP>0. && True>0.){
+        double Reco = 1./RecoP;
+        return (Reco-True)/True;
+      }
+      else{
+        return -999.;
+      }
+    });
+
+    const Var RelaxedMuonTrackTruthNuMICosineTheta([](const caf::SRSliceProxy* slc) -> double {
+      int muonTrackIndex = RelaxedMuonTrackIndex(slc);
+      if(muonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(muonTrackIndex).trk;
+        const auto& truth_p = trk.truth.p;
+        if( isnan(truth_p.genp.x) ) return -999.;
+        TVector3 v3_gen_p(truth_p.genp.x, truth_p.genp.y, truth_p.genp.z);
+        double angleNuMI = v3_gen_p.Angle(NuDirection_NuMI);
+        return TMath::Cos(angleNuMI);
+      }
+      else{
+        return -999.;
+      }
+    });
     const Var RelaxedMuonTrackTruthStartProcess([](const caf::SRSliceProxy* slc) -> double {
       int muonTrackIndex = RelaxedMuonTrackIndex(slc);
       if(muonTrackIndex>=0){
@@ -634,8 +625,7 @@ namespace TwoTrack{
     });
 
     const Var RelaxedProtonTrackIndex([](const caf::SRSliceProxy* slc) -> double {
-      vector<double> primTrackIndices = ICARUSNumuXsec::PrimaryTrackIndices(slc);
-      if(primTrackIndices.size()==0){
+      if(slc->reco.pfp.size()==0){
         return -999.;
       }
       else{
@@ -643,13 +633,15 @@ namespace TwoTrack{
         // Requiring good muon
         int muonTrackIndex = MuonTrackIndex(slc);
         int protonIdx = -1;
-        bool HasPionCand = false;
-        if(muonTrackIndex>=0){
+
+        const int chargedpionTrackIndex = RelaxedChargedPionTrackIndex(slc);
+        const bool HasPionCand = (chargedpionTrackIndex>=0);
+
+        if(muonTrackIndex>=0 && !HasPionCand){
 
           double protonMaxLength = -1.;
 
           // find the longest track
-          // but the slice should not have another pion candidate
 
           for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); i_pfp++){
             const auto& pfp = slc->reco.pfp.at(i_pfp);
@@ -667,32 +659,16 @@ namespace TwoTrack{
             // 10 cm and that the parent of the track has been marked as the primary.
             const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
 
-            const float Chi2Proton = trk.chi2pid[2].chi2_proton;
-            const float Chi2Muon = trk.chi2pid[2].chi2_muon;
-            const bool Contained = fv_track.isContained(trk.end.x, trk.end.y, trk.end.z);
-            const bool MaybeTrackExiting = ( !Contained && trk.len > 100);
-            const bool MaybeTrackContained = ( Contained && trk.calo[2].nhit!=0 && Chi2Proton > 60 && Chi2Muon < 30 && trk.len > 20 );
+            const unsigned int idxPrim = (unsigned int)muonTrackIndex;
+            const TVector3 muDir( slc->reco.pfp[idxPrim].trk.dir.x, slc->reco.pfp[idxPrim].trk.dir.y, slc->reco.pfp[idxPrim].trk.dir.z );
+            const TVector3 pDir( trk.dir.x, trk.dir.y, trk.dir.z );
+            const float angle = TMath::Cos(muDir.Angle(pDir));
 
-            float angle = -5.0;
-            if ( muonTrackIndex >= 0 ) {
-              const unsigned int idxPrim = (unsigned int)muonTrackIndex;
-              TVector3 muDir( slc->reco.pfp[idxPrim].trk.dir.x, slc->reco.pfp[idxPrim].trk.dir.y, slc->reco.pfp[idxPrim].trk.dir.z );
-              TVector3 pDir( trk.dir.x, trk.dir.y, trk.dir.z );
-              angle = TMath::Cos(muDir.Angle(pDir));
+            if( AtSlice && angle>=-0.9 && trk.len > protonMaxLength ){
+              protonMaxLength = trk.len;
+              protonIdx = i_pfp;
             }
 
-            // check pion cand other than the good muon we found
-            if ( AtSlice && ( MaybeTrackExiting || MaybeTrackContained ) ){
-              HasPionCand = true;
-            }
-            else{
-
-              if( AtSlice && angle>=-0.9 && trk.len > protonMaxLength ){
-                protonMaxLength = trk.len;
-                protonIdx = i_pfp;
-              }
-
-            }
 
           }
 
@@ -707,6 +683,37 @@ namespace TwoTrack{
       int protonTrackIndex = RelaxedProtonTrackIndex(slc);
       if(protonTrackIndex>=0){
         return slc->reco.pfp.at(protonTrackIndex).trk.len;
+      }
+      else{
+        return -999.;
+      }
+    });
+    const Var RelaxedProtonTrackP([](const caf::SRSliceProxy* slc) -> double {
+      int protonTrackIndex = RelaxedProtonTrackIndex(slc);
+      if(protonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
+        bool Contained = fv_track.isContained(trk.end.x, trk.end.y, trk.end.z);
+        if(Contained){
+          if(isnan(trk.rangeP.p_proton)) return -999.;
+          return trk.rangeP.p_proton;
+        }
+        else{
+          if(isnan(trk.mcsP.fwdP_proton)) return -999.;
+          return trk.mcsP.fwdP_proton;
+        }
+
+      }
+      else{
+        return -999.;
+      }
+    });
+    const Var RelaxedProtonTrackNuMICosineTheta([](const caf::SRSliceProxy* slc) -> double {
+      int protonTrackIndex = RelaxedProtonTrackIndex(slc);
+      if(protonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
+        TVector3 v3_trk(trk.dir.x, trk.dir.y, trk.dir.z);
+        double angleNuMI = v3_trk.Angle(NuDirection_NuMI);
+        return TMath::Cos(angleNuMI);
       }
       else{
         return -999.;
@@ -876,6 +883,43 @@ namespace TwoTrack{
         return -999.;
       }
     });
+    const Var RelaxedProtonTrackTruthP([](const caf::SRSliceProxy* slc) -> double {
+      int protonTrackIndex = RelaxedProtonTrackIndex(slc);
+      if(protonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
+        if( isnan(trk.truth.p.genE) ) return -999.;
+        double P2 = trk.truth.p.genE*trk.truth.p.genE - M_PROTON*M_PROTON;
+        if(P2>0) return std::sqrt(P2);
+        else return -999.;
+      }
+      else{
+        return -999.;
+      }
+    });
+    const Var RelaxedProtonTrackTruthPResFrac([](const caf::SRSliceProxy* slc) -> double {
+      double Reco = RelaxedProtonTrackP(slc);
+      double True = RelaxedProtonTrackTruthP(slc);
+      if(Reco>0. && True>0.){
+        return (Reco-True)/True;
+      }
+      else{
+        return -999.;
+      }
+    });
+    const Var RelaxedProtonTrackTruthNuMICosineTheta([](const caf::SRSliceProxy* slc) -> double {
+      int protonTrackIndex = RelaxedProtonTrackIndex(slc);
+      if(protonTrackIndex>=0){
+        const auto& trk = slc->reco.pfp.at(protonTrackIndex).trk;
+        const auto& truth_p = trk.truth.p;
+        if( isnan(truth_p.genp.x) ) return -999.;
+        TVector3 v3_gen_p(truth_p.genp.x, truth_p.genp.y, truth_p.genp.z);
+        double angleNuMI = v3_gen_p.Angle(NuDirection_NuMI);
+        return TMath::Cos(angleNuMI);
+      }
+      else{
+        return -999.;
+      }
+    });
     const Var RelaxedProtonTrackTruthStartProcess([](const caf::SRSliceProxy* slc) -> double {
       int protonTrackIndex = RelaxedProtonTrackIndex(slc);
       if(protonTrackIndex>=0){
@@ -896,6 +940,56 @@ namespace TwoTrack{
         return -999.;
       }
     });
+
+    const Var RelaxedChargedPionTrackIndex([](const caf::SRSliceProxy* slc) -> double {
+      vector<double> primTrackIndices = ICARUSNumuXsec::PrimaryTrackIndices(slc);
+      if(primTrackIndices.size()==0){
+        return -999.;
+      }
+      else{
+
+        // Requiring good muon
+        int muonTrackIndex = MuonTrackIndex(slc);
+        int PTrackInd(-1);
+        if(muonTrackIndex>=0){
+
+          float Longest(0);
+          for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); i_pfp++){
+            const auto& pfp = slc->reco.pfp.at(i_pfp);
+            const auto& trk = pfp.trk;
+
+            if(i_pfp==(unsigned int )muonTrackIndex) continue;
+            if(trk.bestplane == -1) continue;
+            if(isnan(trk.start.x)) continue;
+            // First we calculate the distance of each track to the slice vertex.
+            const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
+                                           slc->vertex.y - trk.start.y,
+                                           slc->vertex.z - trk.start.z);
+
+            // We require that the distance of the track from the slice is less than
+            // 10 cm and that the parent of the track has been marked as the primary.
+            const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
+
+            const float Chi2Proton = trk.chi2pid[2].chi2_proton;
+            const float Chi2Muon = trk.chi2pid[2].chi2_muon;
+            const bool Contained = fv_track.isContained(trk.end.x, trk.end.y, trk.end.z);
+            const bool MaybeTrackExiting = ( !Contained && trk.len > 100);
+            const bool MaybeTrackContained = ( Contained && trk.calo[2].nhit!=0 && Chi2Proton > 60 && Chi2Muon < 30 && trk.len > 20 );
+
+            // check pion cand other than the good muon we found
+            if ( AtSlice && ( MaybeTrackExiting || MaybeTrackContained ) && trk.len > Longest ){
+              Longest = trk.len;
+              PTrackInd = i_pfp;
+            }
+          } // END pfp loop
+
+        } // END if muon track exist
+
+        return PTrackInd;
+
+      } // END if slice has primary tracks
+    });
+
 
   } // end namespace Aux
 
