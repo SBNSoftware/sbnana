@@ -11,20 +11,8 @@ namespace ICARUSNumuXsec{
   });
   // - Test
   const SpillVar spillvarTest([](const caf::SRSpillProxy *sr) ->int {
-    double ret = 0.;
-    for(std::size_t i(0); i < sr->slc.size(); ++i){
-      int nTrk=0, nShw=0;
-      const auto& slc = sr->slc.at(i);
-      std::cout << "[spillvarTest] Slice index = " << i << ", slc.reco.pfp.size() = " << slc.reco.pfp.size() << std::endl;
-      for(std::size_t ip(0); ip < slc.reco.pfp.size(); ++ip){
-        bool IsTrack = slc.reco.pfp.at(ip).trackScore > 0.5;
-        if(IsTrack) nTrk++;
-        else nShw++;
-      }
-      ret = (nTrk+nShw);
-      std::cout << "[spillvarTest] npfp = " << slc.reco.pfp.size() << ", (Trk, Shw) = (" << nTrk << ", " << nShw << ")" << std::endl;
-    }
-    return ret;
+    std::cout << "[spillvarTest] trigger_within_gate = " << sr->hdr.triggerinfo.trigger_within_gate << std::endl;
+    return 0.;
   });
   const SpillVar spillvarNTrack([](const caf::SRSpillProxy *sr) ->int {
     int nTrk=0;
