@@ -10,7 +10,7 @@ export PYTHONPATH=${PYTHONPATH}:${PostJobWD}/Libs/:${PostJobWD}/Configs/:${gridW
 
 
 
-export ANANAME=v09_64_01_CustomSRProxy
+export ANANAME=v09_69_01
 export gridJobDir=/pnfs/icarus/scratch/users/${USER}/NuMINumuXSec/GridJob/
 export gridBinDir=${gridWD}/bin/
 export gridLibDir=${gridWD}/lib/
@@ -20,3 +20,8 @@ export gridOutputDir=/pnfs/icarus/persistent/users/${USER}/NuMINumuXSec/
 
 
 export PATH=${gridBinDir}:${PYTHONDIR}:${PATH}
+
+echo "@@ Result:"
+echo "ANANAME: "${ANANAME}
+echo "gridLibDirPNFS: "${gridLibDirPNFS}
+
