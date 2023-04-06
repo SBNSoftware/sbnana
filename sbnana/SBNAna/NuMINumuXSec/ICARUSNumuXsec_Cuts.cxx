@@ -135,6 +135,84 @@ namespace ICARUSNumuXsec{
     return false;
 
   });
+  // - Spill with CC neutrino
+  const SpillCut spillcutHasCCNeutrino([](const caf::SRSpillProxy* sr){
+    if(sr->hdr.ismc){
+
+      bool HasNuCC = false;
+      for(const auto& _nu : sr->mc.nu){
+        if(_nu.iscc){
+          HasNuCC = true;
+          break;
+        }
+      }
+      return HasNuCC;
+
+    }
+    else{
+      return true;
+    }
+
+  });
+
+  const SpillCut spillcutVisECutGT200MeV([](const caf::SRSpillProxy* sr){
+    if(sr->hdr.ismc){
+
+      double visESum[2] = {0., 0.};
+      for(const auto& _nu : sr->mc.nu){
+        for(unsigned int i_cryo=0; i_cryo<2; i_cryo++){
+          visESum[i_cryo] += _nu.plane[i_cryo][2].visE;
+        }
+      }
+      return ( visESum[0]>=0.2 || visESum[1]>=0.2 );
+
+     
+
+    }
+    else{
+      return true;
+    }
+
+  });
+  const SpillCut spillcutVisECutGT400MeV([](const caf::SRSpillProxy* sr){
+    if(sr->hdr.ismc){
+
+      double visESum[2] = {0., 0.};
+      for(const auto& _nu : sr->mc.nu){
+        for(unsigned int i_cryo=0; i_cryo<2; i_cryo++){
+          visESum[i_cryo] += _nu.plane[i_cryo][2].visE;
+        }
+      }
+      return ( visESum[0]>=0.4 || visESum[1]>=0.4 );
+
+
+
+    }
+    else{
+      return true;
+    }
+
+  });
+  const SpillCut spillcutVisECutGT600MeV([](const caf::SRSpillProxy* sr){
+    if(sr->hdr.ismc){
+
+      double visESum[2] = {0., 0.};
+      for(const auto& _nu : sr->mc.nu){
+        for(unsigned int i_cryo=0; i_cryo<2; i_cryo++){
+          visESum[i_cryo] += _nu.plane[i_cryo][2].visE;
+        }
+      }
+      return ( visESum[0]>=0.6 || visESum[1]>=0.6 );
+  
+    
+  
+    }
+    else{
+      return true;
+    }
+
+  });
+
 
   // Cut (slice)
 

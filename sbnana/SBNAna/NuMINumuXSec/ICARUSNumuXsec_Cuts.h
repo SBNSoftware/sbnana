@@ -20,6 +20,11 @@ namespace ICARUSNumuXsec{
   // - Spill nu
   extern const SpillCut spillcutHasTrueMuContained;
   extern const SpillCut spillcutHasTrueMuExiting;
+  // - Spill with CC neutrino
+  extern const SpillCut spillcutHasCCNeutrino;
+  extern const SpillCut spillcutVisECutGT200MeV;
+  extern const SpillCut spillcutVisECutGT400MeV;
+  extern const SpillCut spillcutVisECutGT600MeV;
 
   // Cut (slice)
 
