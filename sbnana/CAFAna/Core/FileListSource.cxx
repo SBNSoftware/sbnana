@@ -100,9 +100,10 @@ namespace ana
     fFile = TFile::Open(loc.c_str()); // This pattern allows xrootd
     if(!fFile){
       std::cout << "[FileListSource::GetNextFile] File error : " << loc.c_str() << std::endl;
-      std::cout << "[FileListSource::GetNextFile] -> Skipping.." << std::endl;
+      std::cout << "[FileListSource::GetNextFile] -> Skipping this file and going next" << std::endl;
       ++fIt;
-      GetNextFile();
+      if(fIt == fFileNames.end()) return 0;
+      else GetNextFile();
     }
     assert(fFile);
 
