@@ -21,4 +21,5 @@ tar -zxvf xrootd-5.5.4.tar.gz
 rm xrootd-5.5.4.tar.gz
 cd xrootd-5.5.4/
 python setup.py install
+cd ..
 PATH=$OLDPATH
