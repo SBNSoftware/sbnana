@@ -16,10 +16,10 @@ OLDPATH=$PATH
 PATH=$PATH:$PWD
 ln -s /cvmfs/larsoft.opensciencegrid.org/products/cmake/v3_22_2/Linux64bit+3.10-2.17/bin/cmake cmake3
 which cmake3
-wget https://files.pythonhosted.org/packages/2c/91/c03d649236b3af7720b2ea5561abfbbf3baed3722da485cfea07e565cf57/xrootd-5.5.4.tar.gz
-tar -zxvf xrootd-5.5.4.tar.gz 
-rm xrootd-5.5.4.tar.gz
-cd xrootd-5.5.4/
+wget https://files.pythonhosted.org/packages/e6/fd/bb238713eaede197919e12c15264f597e16302301294088af028bdff991c/xrootd-5.5.1.tar.gz
+tar -zxvf xrootd-5.5.1.tar.gz 
+rm xrootd-5.5.1.tar.gz
+cd xrootd-5.5.1/
 python setup.py install
 cd ..
 PATH=$OLDPATH
