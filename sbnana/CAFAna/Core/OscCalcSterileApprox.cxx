@@ -2,6 +2,7 @@
 
 #include "sbnana/CAFAna/Core/MathUtil.h"
 
+#include "TMD5.h"
 #include "TMath.h"
 
 #include "Math/SpecFunc.h"
