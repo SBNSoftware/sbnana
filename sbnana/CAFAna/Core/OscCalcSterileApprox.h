@@ -24,6 +24,8 @@ namespace ana
 
     virtual OscCalcSterileApprox* Copy() const override;
 
+    virtual void Print(const std::string& prefix = "") const override;
+
     void SetDmsq(double d) {fDmsq = d;}
     double GetDmsq() const {return fDmsq;}
 

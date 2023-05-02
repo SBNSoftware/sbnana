@@ -269,6 +269,24 @@ namespace ana
   }
 
   //---------------------------------------------------------------------------
+  void OscCalcSterileApprox::Print(const std::string& prefix) const
+  {
+    std::cout << prefix << "sin^2(2 ThetaMuMu) = ";
+    if (fSinSq2ThetaMuMuSet) std::cout << fSinSq2ThetaMuMu;
+    else                     std::cout << "not set";
+
+    std::cout << '\n' << prefix << "sin^2(2 ThetaMuE) = ";
+    if (fSinSq2ThetaMuESet) std::cout << fSinSq2ThetaMuE;
+    else                    std::cout << "not set";
+
+    std::cout << '\n'  << prefix << "sin^2(2 ThetaEE) = ";
+    if (fSinSq2ThetaEESet) std::cout << fSinSq2ThetaEE;
+    else                   std::cout << "not set";
+
+    std::cout << '\n' << prefix << "L = " << fL << " km" << std::endl;
+  }
+
+  //---------------------------------------------------------------------------
   TMD5* OscCalcSterileApprox::GetParamsHash() const
   {
     TMD5* ret = new TMD5;
