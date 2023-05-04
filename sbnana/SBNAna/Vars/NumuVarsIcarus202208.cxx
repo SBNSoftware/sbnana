@@ -32,7 +32,7 @@ const Var kIcarus202208MuonIdx([](const caf::SRSliceProxy* slc) -> int {
   
         const bool Contained = ( !isnan(trk.end.x) &&
         (( trk.end.x < -61.94 - 5 && trk.end.x > -358.49 + 5 ) ||
-        ( trk.end.x < 61.94 + 5 && trk.end.x > +358.49 - 5 )) &&
+        ( trk.end.x > 61.94 + 5 && trk.end.x < +358.49 - 5 )) &&
         !isnan(trk.end.y) &&
         ( trk.end.y > -181.86 + 5 && trk.end.y < 134.96 - 5 ) &&
         !isnan(trk.end.z) &&
