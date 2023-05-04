@@ -31,12 +31,12 @@ const Var kIcarus202208MuonIdx([](const caf::SRSliceProxy* slc) -> int {
         const float Chi2Muon = trk.chi2pid[trk.bestplane].chi2_muon;
   
         const bool Contained = ( !isnan(trk.end.x) &&
-        (( trk.end.x < -71.1 - 5 && trk.end.x > -369.33 + 5 ) ||
-        ( trk.end.x < 71.1 + 5 && trk.end.x > +369.33 - 5 )) &&
+        (( trk.end.x < -61.94 - 5 && trk.end.x > -358.49 + 5 ) ||
+        ( trk.end.x < 61.94 + 5 && trk.end.x > +358.49 - 5 )) &&
         !isnan(trk.end.y) &&
-        ( trk.end.y > -181.7 + 5 && trk.end.y < 134.8 - 5 ) &&
+        ( trk.end.y > -181.86 + 5 && trk.end.y < 134.96 - 5 ) &&
         !isnan(trk.end.z) &&
-        ( trk.end.z > -895.95 + 5 && trk.end.z < 895.95 - 5 ) );
+        ( trk.end.z > -894.95 + 5 && trk.end.z < 894.95 - 5 ) );
         const bool MaybeMuonExiting = ( !Contained && trk.len > 100);
         const bool MaybeMuonContained = ( Contained && Chi2Proton > 60 && Chi2Muon < 30 && trk.len > 50 );
         if ( AtSlice && ( MaybeMuonExiting || MaybeMuonContained ) && trk.len > Longest ) {
