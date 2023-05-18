@@ -16,6 +16,12 @@ source setup.sh
 
 `python run.py -c configs/config.py -o /path/to/output/data.df -i /path/to/inputs/\*.list`
 
+## Test `run.py`
+For list - 
+`python run.py -i test/test.list -o test/test_list.df -c configs/testdf.py`
+For flat.root - 
+`python run.py -i test/test.flat.root -o test/test_flat.df -c configs/testdf.py`
+
 ## Run jupyter notebooks in nb/
 
 jupyter notebook --no-browser
