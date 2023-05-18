@@ -9,7 +9,7 @@ source setup.sh
 
 # Generate a HDF5 file from a .flat.caf.root file
 
-python run.py configs/.py /path/to/output/data.df /path/to/inputs/\*.flat.caf.root
+`python run.py -c configs/config.py -o /path/to/output/data.df -i /path/to/inputs/\*.flat.caf.root`
 
 # Run jupyter notebooks in nb/
 
