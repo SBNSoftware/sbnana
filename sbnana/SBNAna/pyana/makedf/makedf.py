@@ -23,15 +23,14 @@ def make_hdrdf(f,inds=hdrinds):
 
 def make_mcnudf(f,inds=None, include_weights=False):
     if inds:
-        print('here',inds)
         df = make_df(f, mcnubranches+inds,inds=inds)
     else:
         df = make_df(f, mcnubranches)
     mcdf = df.rec.mc.nu
-    print(mcdf)
-    # if include_weights:
-    #     wgtdf = pd.concat([numisyst.numisyst(mcdf.pdg, mcdf.E), geniesyst.geniesyst(f, mcdf.ind)], axis=1)
-    #     mcdf = pd.concat([mcdf, wgtdf], axis=1)
+    #----Not supported yet
+    if include_weights:
+        wgtdf = pd.concat([numisyst.numisyst(mcdf.pdg, mcdf.E), geniesyst.geniesyst(f, mcdf.ind)], axis=1)
+        mcdf = pd.concat([mcdf, wgtdf], axis=1)
     return mcdf
 
 def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False):
