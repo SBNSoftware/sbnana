@@ -1,17 +1,18 @@
 import uproot
 import numpy as np
 import pandas as pd
+from .ttree import *
 
 def geniesyst(f, nuind):
     if "globalTree" not in f:
         return pd.DataFrame(index=nuind.index)
-
+    treename = get_tree_name(f,'globalTree')
     nuidx = pd.MultiIndex.from_arrays([nuind.index.get_level_values(0), nuind])
 
-    globalTree = f["globalTree"]
-    geniewgt_names = [n for n in f["globalTree"]['global/wgts/wgts.name'].arrays(library="np")['wgts.name'][0]]
-    geniewgt_types = f["globalTree"]['global/wgts/wgts.type'].arrays(library="np")['wgts.type'][0]
-    nuniv = f["globalTree"]['global/wgts/wgts.nuniv'].arrays(library="pd").sum().values[0]
+    globalTree = f[treename]
+    geniewgt_names = [n for n in f[treename]['global/wgts/wgts.name'].arrays(library="np")['wgts.name'][0]]
+    geniewgt_types = f[treename]['global/wgts/wgts.type'].arrays(library="np")['wgts.type'][0]
+    nuniv = f[treename]['global/wgts/wgts.nuniv'].arrays(library="pd").sum().values[0]
 
     wgts = f["recTree"]['rec.mc.nu.wgt.univ'].arrays(library="pd")
     wgts["inu"] = wgts.index.get_level_values(1) // nuniv

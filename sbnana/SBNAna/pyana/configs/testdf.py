@@ -1,19 +1,25 @@
 INDS =[
       hdrinds,
+      hdrinds,
+      hdrinds,
       None,
-      #pfpinds,
-      #pfpinds, 
+      None,
+      None,
 ]
 
 DFS = [
+      make_hdrdf,
+       make_mcnudf,
+       make_pfpdf,
        make_hdrdf,
        make_mcnudf,
-       #make_trkdf,
-       #make_costrkdf,
+       make_pfpdf,
        ]
 NAMES = [
+  'hdr_inds',
+  'mcnu_inds',
+  'pfp_inds',
   'hdr',
   'mcnu',
-  #'trk',
-  #'costrk',
+  'pfp',
   ]

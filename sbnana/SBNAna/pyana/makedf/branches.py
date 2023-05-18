@@ -125,14 +125,15 @@ trkbranches = [
 for n in trueparticlenames: trkbranches.append(trkbranch + "truth.p." + n)
 for n in trueparticlenames: shwbranches.append(shwbranch + "truth.p." + n)
 
+pfpallbranches = pfpbranches+trkbranches+shwbranches
 trkbranches += pfpbranches
 shwbranches += pfpbranches
 
-pfpallbranches = pfpbranches+shwbranches+trkbranches
-pfpinds = hdrinds + [
-    pfpbranch + 'slcID',
-    pfpbranch + 'id'
-    ]
+#This causes a length mismatch
+# pfpinds = hdrinds + [
+#     pfpbranch + 'slcID',
+#     pfpbranch + 'id'
+#     ]
 
 pfp_daughter_branch = [
     pfpbranch + "daughters"
