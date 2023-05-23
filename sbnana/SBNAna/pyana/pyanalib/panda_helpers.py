@@ -31,6 +31,18 @@ def multicol_add(df, s):
 
     return df.join(s)
 
+def multicol_addkey(df,s,fill=np.nan):
+    #can't handle s larger then length of df
+    if isinstance(s,str):
+        s = [s]
+    nlevel = df.columns.nlevels
+    col = getcolumns(s,depth=nlevel)
+    data = np.full((len(df),len(s)),fill)
+    new = pd.MultiIndex.from_tuples(col)
+    return pd.concat([df, pd.DataFrame(data, index=df.index, columns=new)], axis=1)
+    
+    
+
 def multicol_merge(lhs, rhs, **panda_kwargs):
     # Fix the columns
     lhs_col = lhs.columns
@@ -67,12 +79,13 @@ def unreserve(s):
     return s
 def pad(b,depth):
     return tuple(b + [""]*(depth - len(b)))
-def getcolumns(branches):
+def getcolumns(branches,depth=None):
     # Setup branch names so df reflects structure of CAF file
     bsplit = [b.split(".") for b in branches]
     # Replace any reserved names
     bsplit = [[unreserve(s) for s in b] for b in bsplit]
-    depth = max([len(b) for b in bsplit])
+    if depth is None:
+        depth = max([len(b) for b in bsplit])
     return [pad(b,depth) for b in bsplit]
     
 

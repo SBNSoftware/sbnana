@@ -3,6 +3,23 @@ pfpbranch = slcbranch + "reco.pfp."
 trkbranch = pfpbranch + "trk."
 shwbranch = pfpbranch + "shw."
 hdrbranch = 'rec.hdr.'
+mcprimbranch = 'rec.mc.nu.prim.'
+
+mcprimbranches = [
+    mcprimbranch + 'plane.0.0.nhit',
+    mcprimbranch + 'plane.0.1.nhit',
+    mcprimbranch + 'plane.0.2.nhit',
+    mcprimbranch + 'plane.1.0.nhit',
+    mcprimbranch + 'plane.1.1.nhit',
+    mcprimbranch + 'plane.1.2.nhit',
+    mcprimbranch + 'plane.0.0.visE',
+    mcprimbranch + 'plane.0.1.visE',
+    mcprimbranch + 'plane.0.2.visE',
+    mcprimbranch + 'plane.1.0.visE',
+    mcprimbranch + 'plane.1.1.visE',
+    mcprimbranch + 'plane.1.2.visE',
+    
+]
 
 hdrinds = [
     hdrbranch + 'run',
@@ -33,7 +50,29 @@ trueparticlenames = [
     "G4ID",
     "cont_tpc",
     "genE",
-    "interaction_id"
+    "interaction_id",
+    #This causes length mismatch
+#     'plane.0.0.nhit',
+#    'plane.0.1.nhit',
+#    'plane.0.2.nhit',
+#    'plane.1.0.nhit',
+#    'plane.1.1.nhit',
+#    'plane.1.2.nhit',
+#    'plane.0.0.visE',
+#    'plane.0.1.visE',
+#    'plane.0.2.visE',
+#    'plane.1.0.visE',
+#    'plane.1.1.visE',
+#    'plane.1.2.visE',
+]
+
+bestmatchnames = [
+    'G4ID',
+    'energy',
+    'energy_completeness',
+    'energy_purity',
+    'hit_completeness',
+    'hit_purity',
 ]
 
 pfobranches = [
@@ -46,7 +85,7 @@ pfobranches = [
     pfpbranch + "pfochar.openanglediff",
     pfpbranch + "pfochar.pca2ratio",
     pfpbranch + "pfochar.pca3ratio", 
-    pfpbranch + "pfochar.vtxdist" 
+    pfpbranch + "pfochar.vtxdist",
 ]
 
 pfpbranches = [
@@ -125,6 +164,11 @@ trkbranches = [
 for n in trueparticlenames: trkbranches.append(trkbranch + "truth.p." + n)
 for n in trueparticlenames: shwbranches.append(shwbranch + "truth.p." + n)
 
+for n in bestmatchnames: trkbranches.append(trkbranch + "truth.bestmatch." + n)
+for n in bestmatchnames: shwbranches.append(shwbranch + "truth.bestmatch." + n)
+
+
+mcprimbranches += [mcprimbranch + b for b in trueparticlenames]
 pfpallbranches = pfpbranches+trkbranches+shwbranches
 trkbranches += pfpbranches
 shwbranches += pfpbranches

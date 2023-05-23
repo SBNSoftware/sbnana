@@ -32,6 +32,20 @@ def make_mcnudf(f,inds=hdrinds, include_weights=False):
         mcdf = pd.concat([mcdf, wgtdf], axis=1)
     return mcdf
 
+def make_mcprimdf(f,inds=hdrinds, include_weights=False):
+    if inds:
+        df = make_df(f, mcprimbranches+inds,inds=inds)
+    else:
+        df = make_df(f, mcprimbranches,inds=inds)
+    mcdf = df.rec.mc.nu.prim
+    #----Not supported yet
+    if include_weights:
+        wgtdf = pd.concat([numisyst.numisyst(mcdf.pdg, mcdf.E), geniesyst.geniesyst(f, mcdf.ind)], axis=1)
+        mcdf = pd.concat([mcdf, wgtdf], axis=1)
+    return mcdf
+
+#----Not supported yet
+
 def make_pfpdf(f, inds=None):
     if inds:
         df = make_df(f, pfpallbranches+inds,inds=inds)
