@@ -92,8 +92,6 @@ namespace ana
       fSystIdxs[pset.map[0].param.name] = i;
       // Save all the knob values
       fShiftVals[pset.map[0].param.name] = pset.map[0].vals;
-
-      //std::cout<<"Oracle: "<<pset.map[0].param.name<<std::endl;
     }
   }
 
