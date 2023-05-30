@@ -6,3 +6,4 @@ setup sbnana v09_37_02_01 -q e20:prof
 source env/bin/activate
 
 export PYTHONPATH=$PYTHONPATH:$PWD/..
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VIRTUAL_ENV/lib/python3.9/site-packages/pyxrootd/lib64

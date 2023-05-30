@@ -22,3 +22,4 @@ cd xrootd-5.5.1/
 python setup.py install
 cd ..
 PATH=$OLDPATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VIRTUAL_ENV/lib/python3.9/site-packages/pyxrootd/lib64
