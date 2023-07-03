@@ -7,6 +7,7 @@
 #include "sbnana/CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 #include "sbnana/CAFAna/Core/WildcardSource.h"
+#include "sbnana/CAFAna/Core/Tree.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
@@ -303,6 +304,48 @@ namespace ana
     fHistDefs[spillcut][shift][slicecut][wei][var].rwSpects.push_back(&spect);
 
     spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<Var>& vars,
+                                   const SpillCut& spillcut,
+                                   const Cut& cut,
+                                   const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fTreeDefs[spillcut][shift][cut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<MultiVar>& vars,
+                                   const SpillCut& spillcut,
+                                   const Cut& cut,
+                                   const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fTreeDefs[spillcut][shift][cut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
   }
 
   //----------------------------------------------------------------------

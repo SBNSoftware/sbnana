@@ -5,6 +5,7 @@
 #include "sbnana/CAFAna/Core/SAMProjectSource.h"
 #include "sbnana/CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Tree.h"
 
 #include "sbnana/CAFAna/Core/GenieWeightList.h"
 
@@ -320,6 +321,104 @@ namespace ana
         } // end for shiftdef
       } // end for slc
     } // end for spillcutdef
+
+    // Trees
+    unsigned int idxSpillCut = 0; // testing
+    for ( auto& [spillcut, shiftmap] : fTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+      // Cut failed, skip all the histograms that depend on it
+      if(!spillpass) continue;
+
+      unsigned int idxSlice = 0; // testing
+      for( caf::SRSliceProxy& slc: sr->slc ) {
+        // Some shifts only adjust the weight, so they're effectively nominal,
+        // but aren't grouped with the other nominal histograms. Keep track of
+        // the results for nominals in these caches to speed those systs up.
+        CutVarCache<bool, Cut, caf::SRSliceProxy> nomCutCache;
+        CutVarCache<double, Var, caf::SRSliceProxy> nomVarCache;
+
+        unsigned int idxShift = 0; // testing
+        for ( auto& [shift, cutmap] : shiftmap ) {
+          // Need to provide a clean slate for each new set of systematic
+          // shifts to work from. Copying the whole StandardRecord is pretty
+          // expensive, so modify it in place and revert it afterwards.
+          caf::SRProxySystController::BeginTransaction();
+
+          bool shifted = false;
+
+          double systWeight = 1;
+          // Can special-case nominal to not pay cost of Shift()
+          if(!shift.IsNominal()){
+            shift.Shift(&slc, systWeight);
+            // If there were only weighting systs applied then the cached
+            // nominal values are still valid.
+            shifted = caf::SRProxySystController::AnyShifted();
+          }
+
+          unsigned int idxCut = 0; // testing
+          for ( auto& [cut, treemap] : cutmap ) {
+            const bool pass = shifted ? cut(&slc) : nomCutCache.Get(cut, &slc);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            //for ( unsigned int idxTree = 0; idxTree < treemap.size(); ++idxTree ) {
+            unsigned int idxTree = 0;
+            for ( std::map<Tree*, std::map<VarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+              bool entriesFilled = false;
+
+              unsigned int idxVar = 0;
+              for ( auto& [varormulti, varname] : treemapIt->second ) {
+
+                std::cout << "SpillCut " << idxSpillCut << " Slice " << idxSlice << " Shift " << idxShift << " Cut " << idxCut << " Tree " << idxTree << " Var " << idxVar << std::endl;
+                if(varormulti.IsMulti()){
+                  auto const& vals = varormulti.GetMultiVar()(&slc);
+                  for(double val: vals){
+                    treemapIt->first->AddEntry( varname, val ); //fBranchEntries[ varname ].push_back( val );
+                  }
+                  if(!entriesFilled){
+                    treemapIt->first->UpdateNEntries( vals.size() ); //fNEntries += vals.size();
+                    entriesFilled=true;
+                  }
+                  continue;
+                }
+
+                const Var& var = varormulti.GetVar();
+                const double val = shifted ? var(&slc) : nomVarCache.Get(var, &slc);
+
+                std::cout << "    VAL = " << val << std::endl;
+
+                if(std::isnan(val) || std::isinf(val)){
+                  std::cerr << "Warning: Bad value: " << val
+                            << " returned from a Var. The input variable(s) could "
+                            << "be NaN in the CAF, or perhaps your "
+                            << "Var code computed 0/0?";
+                  std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
+                }
+
+                treemapIt->first->AddEntry( varname, val );
+                if(!entriesFilled){
+                  treemapIt->first->UpdateNEntries( 1 );
+                  entriesFilled=true;
+                }
+
+                idxVar+=1;
+              } // end for var/varname
+              idxTree+=1;
+            } // end for tree
+            idxCut+=1;
+          } // end for cut
+
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+          caf::SRProxySystController::Rollback();
+
+          idxShift+=1;
+        } // end for shift
+        idxSlice+=1;
+      } // end for slice
+      idxSpillCut+=1;
+    } // end for spillcut
+
   }
 
   //----------------------------------------------------------------------
@@ -362,6 +461,19 @@ namespace ana
         }
       }
     }
+
+    // Trees
+    for ( auto& [spillcut, shiftmap] : fTreeDefs ) {
+      for ( auto& [shift, cutmap] : shiftmap ) {
+        for ( auto& [cut, treemap] : cutmap ) {
+          for ( std::map<Tree*, std::map<VarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+            treemapIt->first->UpdatePOT(fPOT);
+            treemapIt->first->UpdateLivetime(fNReadouts);
+          }
+        }
+      }
+    }
+
 
   }
 } // namespace
