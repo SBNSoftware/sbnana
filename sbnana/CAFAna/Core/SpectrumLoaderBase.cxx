@@ -349,6 +349,44 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<SpillVar>& vars,
+                                   const SpillCut& spillcut)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fSpillTreeDefs[spillcut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<SpillMultiVar>& vars,
+                                   const SpillCut& spillcut)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fSpillTreeDefs[spillcut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::
   RemoveReweightableSpectrum(ReweightableSpectrum* spect)
   {
