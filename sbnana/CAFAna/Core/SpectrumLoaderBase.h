@@ -105,44 +105,23 @@ namespace ana
                          const Cut& cut,
                          const SystShifts& shift);
 
+    /// For use by the constructors of \ref Tree class
+    virtual void AddTree(Tree& tree,
+                         const std::vector<std::string>& labels,
+                         const std::vector<SpillVar>& vars,
+                         const SpillCut& spillcut);
+
+    /// For use by the constructors of \ref Tree class
+    virtual void AddTree(Tree& tree,
+                         const std::vector<std::string>& labels,
+                         const std::vector<SpillMultiVar>& vars,
+                         const SpillCut& spillcut);
+
     /// Load all the registered spectra
     virtual void Go() = 0;
 
     /// Indicate whether or not \ref Go has been called
     virtual bool Gone() const {return fGone;}
-
-    template<class T> class _VarOrMultiVar
-    {
-    public:
-      // v could easily be a temporary, have to make a copy
-      _VarOrMultiVar(const _Var<T>& v) : fVar(new _Var<T>(v)), fMultiVar(0) {}
-      _VarOrMultiVar(const _MultiVar<T>& v) : fVar(0), fMultiVar(new _MultiVar<T>(v)) {}
-      ~_VarOrMultiVar() {delete fVar; delete fMultiVar;}
-
-      _VarOrMultiVar(const _VarOrMultiVar& v)
-        : fVar(v.fVar ? new _Var<T>(*v.fVar) : 0),
-          fMultiVar(v.fMultiVar ? new _MultiVar<T>(*v.fMultiVar) : 0)
-      {
-      }
-
-      _VarOrMultiVar(_VarOrMultiVar&& v)
-      {
-        fVar = v.fVar;
-        fMultiVar = v.fMultiVar;
-        v.fVar = 0;
-        v.fMultiVar = 0;
-      }
-
-      bool IsMulti() const {return fMultiVar;}
-      const _Var<T>& GetVar() const {assert(fVar); return *fVar;}
-      const _MultiVar<T>& GetMultiVar() const {assert(fMultiVar); return *fMultiVar;}
-
-      int ID() const {return fVar ? fVar->ID() : fMultiVar->ID();}
-
-    protected:
-      const _Var<T>* fVar;
-      const _MultiVar<T>* fMultiVar;
-    };
 
   protected:
     /// Component of other constructors
@@ -224,8 +203,44 @@ namespace ana
       std::vector<std::pair<T, U>> fElems;
     };
 
+    template<class T> class _VarOrMultiVar
+    {
+    public:
+      // v could easily be a temporary, have to make a copy
+      _VarOrMultiVar(const _Var<T>& v) : fVar(new _Var<T>(v)), fMultiVar(0) {}
+      _VarOrMultiVar(const _MultiVar<T>& v) : fVar(0), fMultiVar(new _MultiVar<T>(v)) {}
+      ~_VarOrMultiVar() {delete fVar; delete fMultiVar;}
+
+      _VarOrMultiVar(const _VarOrMultiVar& v)
+        : fVar(v.fVar ? new _Var<T>(*v.fVar) : 0),
+          fMultiVar(v.fMultiVar ? new _MultiVar<T>(*v.fMultiVar) : 0)
+      {
+      }
+
+      _VarOrMultiVar(_VarOrMultiVar&& v)
+      {
+        fVar = v.fVar;
+        fMultiVar = v.fMultiVar;
+        v.fVar = 0;
+        v.fMultiVar = 0;
+      }
+
+      bool IsMulti() const {return fMultiVar;}
+      const _Var<T>& GetVar() const {assert(fVar); return *fVar;}
+      const _MultiVar<T>& GetMultiVar() const {assert(fMultiVar); return *fMultiVar;}
+
+      int ID() const {return fVar ? fVar->ID() : fMultiVar->ID();}
+
+    protected:
+      const _Var<T>* fVar;
+      const _MultiVar<T>* fMultiVar;
+    };
+
     typedef _VarOrMultiVar<caf::SRSliceProxy> VarOrMultiVar;
     typedef _VarOrMultiVar<caf::SRSpillProxy> SpillVarOrMultiVar;
+
+    template<class T>
+    friend bool operator<(const _VarOrMultiVar<T>& a, const _VarOrMultiVar<T>& b) noexcept;
 
     /// \brief All the spectra that need to be filled
     ///
@@ -238,10 +253,11 @@ namespace ana
     //       that works with Tree objects... In the meantime, let's use a standard
     //       map. But otherwise, let's keep it the same way...
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<Tree*, std::map<VarOrMultiVar, std::string>>>>> fTreeDefs;
+    std::map<SpillCut, std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>> fSpillTreeDefs;
   };
 
   // For map-making
-  template<class T> bool operator<(const SpectrumLoaderBase::_VarOrMultiVar<T>& a, const SpectrumLoaderBase::_VarOrMultiVar<T>& b) {return a.ID() < b.ID();}
+  template<class T> bool operator<(const SpectrumLoaderBase::_VarOrMultiVar<T>& a, const SpectrumLoaderBase::_VarOrMultiVar<T>& b) noexcept {return a.ID() < b.ID();}
 
   /// \brief Dummy loader that doesn't load any files
   ///
@@ -289,7 +305,6 @@ namespace ana
                                  const SystShifts& shift,
                                  const Var& wei) override {}
 
-    /// For use by the constructors of \ref Tree class
     void AddTree(Tree& tree,
                  const std::vector<std::string>& labels,
                  const std::vector<Var>& vars,
@@ -297,13 +312,22 @@ namespace ana
                  const Cut& cut,
                  const SystShifts& shift) override {}
 
-    /// For use by the constructors of \ref Tree class
     void AddTree(Tree& tree,
                  const std::vector<std::string>& labels,
                  const std::vector<MultiVar>& vars,
                  const SpillCut& spillcut,
                  const Cut& cut,
                  const SystShifts& shift) override {}
+
+    void AddTree(Tree& tree,
+                 const std::vector<std::string>& labels,
+                 const std::vector<SpillVar>& vars,
+                 const SpillCut& spillcut) override {}
+
+    void AddTree(Tree& tree,
+                 const std::vector<std::string>& labels,
+                 const std::vector<SpillMultiVar>& vars,
+                 const SpillCut& spillcut) override {}
   };
   /// \brief Dummy loader that doesn't load any files
   ///

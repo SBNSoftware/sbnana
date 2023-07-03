@@ -3,6 +3,7 @@
 #include "TDirectory.h"
 #include "TBranch.h"
 #include "TTree.h"
+#include "TH1D.h"
 
 #include <cassert>
 
@@ -49,7 +50,7 @@ namespace ana
   // Constructor for a set of SpillVars
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
-              const std::vector<Var>& vars, const SpillCut& spillcut)
+              const std::vector<SpillVar>& vars, const SpillCut& spillcut)
     : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0)
   {
     assert( labels.size() == vars.size() );
@@ -59,9 +60,26 @@ namespace ana
       fBranchEntries[labels.at(i)] = {};
     }
 
-    loader.AddTree( *this, labels, vars, spillcut, cut, shift );
+    loader.AddTree( *this, labels, vars, spillcut );
   }
 
+  //----------------------------------------------------------------------
+  // Constructor for a set of SpillMultiVars
+  Tree::Tree( const std::string name, const std::vector<std::string>& labels,
+              SpectrumLoaderBase& loader,
+              const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0)
+  {
+    assert( labels.size() == vars.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      fOrderedBranchNames.push_back( labels.at(i) );
+      fBranchEntries[labels.at(i)] = {};
+    }
+
+    loader.AddTree( *this, labels, vars, spillcut );
+  }
+  
   //----------------------------------------------------------------------
   // Add an entry to a branch
   void Tree::AddEntry( const std::string name, const double val )
@@ -91,6 +109,14 @@ namespace ana
 
     TDirectory *tmp = gDirectory;
     dir->cd();
+
+    TH1D thePOT("POT","POT",1,0,1);
+    thePOT.SetBinContent(1,fPOT);
+    thePOT.Write();
+
+    TH1D theLivetime("Livetime","Livetime",1,0,1);
+    theLivetime.SetBinContent(1,fLivetime);
+    theLivetime.Write();
 
     TTree theTree( fTreeName.c_str(), fTreeName.c_str() );
 

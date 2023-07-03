@@ -419,6 +419,48 @@ namespace ana
       idxSpillCut+=1;
     } // end for spillcut
 
+    // Spill Trees
+    for ( auto& [spillcut, treemap] : fSpillTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+      // Cut failed, skip all the histograms that depend on it
+      if(!spillpass) continue;
+
+      for ( std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+        bool entriesFilled = false;
+
+        for ( auto& [varormulti, varname] : treemapIt->second ) {
+
+          if(varormulti.IsMulti()){
+            auto const& vals = varormulti.GetMultiVar()(sr);
+            for(double val: vals){
+              treemapIt->first->AddEntry( varname, val ); //fBranchEntries[ varname ].push_back( val );
+            }
+            if(!entriesFilled){
+              treemapIt->first->UpdateNEntries( vals.size() ); //fNEntries += vals.size();
+              entriesFilled=true;
+            }
+            continue;
+          }
+
+          const double val = varormulti.GetVar()(sr);
+
+          if(std::isnan(val) || std::isinf(val)){
+            std::cerr << "Warning: Bad value: " << val
+                      << " returned from a Var. The input variable(s) could "
+                      << "be NaN in the CAF, or perhaps your "
+                      << "Var code computed 0/0?";
+            std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
+          }
+
+          treemapIt->first->AddEntry( varname, val );
+          if(!entriesFilled){
+            treemapIt->first->UpdateNEntries( 1 );
+            entriesFilled=true;
+          }
+        } // end for var/varname
+      } // end for tree
+    } // end for spillcut
+
   }
 
   //----------------------------------------------------------------------
@@ -474,6 +516,13 @@ namespace ana
       }
     }
 
+    // Spill Trees
+    for ( auto& [spillcut, treemap] : fSpillTreeDefs ) {
+      for ( std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+        treemapIt->first->UpdatePOT(fPOT);
+        treemapIt->first->UpdateLivetime(fNReadouts);
+      }
+    }
 
   }
 } // namespace
