@@ -40,10 +40,10 @@ namespace ana
           SpectrumLoaderBase& loader,
           const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut );
     // Add functionality to update the protected stuff from elsewhere
-    void AddEntry( const std::string name, const double val ); // DO NOT USE. ONLY FOR FILLING, so that it has access to protected members
-    void UpdateNEntries( const long long val ) { fNEntries+=val; } // DO NOT USE. ONLY FOR FILLING, so that it has access to protected members
-    void UpdatePOT( const double val ) { fPOT+=val; } // DO NOT USE. ONLY FOR FILLING, so that it has access to protected members
-    void UpdateLivetime( const double val ) { fLivetime+=val; } // DO NOT USE. ONLY FOR FILLING, so that it has access to protected members
+    /// Function to update protected members (the branches). DO NOT USE outside of the filling.
+    void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap );
+    /// Function to update protected members (the exposures). DO NOT USE outside of the filling.
+    void UpdateExposure ( const double pot, const double livetime );
     // Utilities
     double POT() const {return fPOT;} // as in Spectrum
     double Livetime() const {return fLivetime;} // as in Spectrum

@@ -323,13 +323,13 @@ namespace ana
     } // end for spillcutdef
 
     // Trees
-    unsigned int idxSpillCut = 0; // testing
+    //unsigned int idxSpillCut = 0; // testing
     for ( auto& [spillcut, shiftmap] : fTreeDefs ) {
       const bool spillpass = spillcut(sr);
       // Cut failed, skip all the histograms that depend on it
       if(!spillpass) continue;
 
-      unsigned int idxSlice = 0; // testing
+      //unsigned int idxSlice = 0; // testing
       for( caf::SRSliceProxy& slc: sr->slc ) {
         // Some shifts only adjust the weight, so they're effectively nominal,
         // but aren't grouped with the other nominal histograms. Keep track of
@@ -337,7 +337,7 @@ namespace ana
         CutVarCache<bool, Cut, caf::SRSliceProxy> nomCutCache;
         CutVarCache<double, Var, caf::SRSliceProxy> nomVarCache;
 
-        unsigned int idxShift = 0; // testing
+        //unsigned int idxShift = 0; // testing
         for ( auto& [shift, cutmap] : shiftmap ) {
           // Need to provide a clean slate for each new set of systematic
           // shifts to work from. Copying the whole StandardRecord is pretty
@@ -355,37 +355,28 @@ namespace ana
             shifted = caf::SRProxySystController::AnyShifted();
           }
 
-          unsigned int idxCut = 0; // testing
+          //unsigned int idxCut = 0; // testing
           for ( auto& [cut, treemap] : cutmap ) {
             const bool pass = shifted ? cut(&slc) : nomCutCache.Get(cut, &slc);
             // Cut failed, skip all the histograms that depended on it
             if(!pass) continue;
 
-            //for ( unsigned int idxTree = 0; idxTree < treemap.size(); ++idxTree ) {
-            unsigned int idxTree = 0;
+            //unsigned int idxTree = 0;
             for ( std::map<Tree*, std::map<VarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
-              bool entriesFilled = false;
-
-              unsigned int idxVar = 0;
+              //unsigned int idxVar = 0;
+              std::map<std::string, std::vector<double>> recordVals;
               for ( auto& [varormulti, varname] : treemapIt->second ) {
-
-                std::cout << "SpillCut " << idxSpillCut << " Slice " << idxSlice << " Shift " << idxShift << " Cut " << idxCut << " Tree " << idxTree << " Var " << idxVar << std::endl;
+                //std::cout << "SpillCut " << idxSpillCut << " Slice " << idxSlice << " Shift " << idxShift << " Cut " << idxCut << " Tree " << idxTree << " Var " << idxVar << std::endl;
                 if(varormulti.IsMulti()){
                   auto const& vals = varormulti.GetMultiVar()(&slc);
-                  for(double val: vals){
-                    treemapIt->first->AddEntry( varname, val ); //fBranchEntries[ varname ].push_back( val );
-                  }
-                  if(!entriesFilled){
-                    treemapIt->first->UpdateNEntries( vals.size() ); //fNEntries += vals.size();
-                    entriesFilled=true;
-                  }
+                  for(double val: vals) recordVals[varname].push_back(val);
                   continue;
                 }
 
                 const Var& var = varormulti.GetVar();
                 const double val = shifted ? var(&slc) : nomVarCache.Get(var, &slc);
 
-                std::cout << "    VAL = " << val << std::endl;
+                //std::cout << "    VAL = " << val << std::endl;
 
                 if(std::isnan(val) || std::isinf(val)){
                   std::cerr << "Warning: Bad value: " << val
@@ -395,28 +386,24 @@ namespace ana
                   std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
                 }
 
-                treemapIt->first->AddEntry( varname, val );
-                if(!entriesFilled){
-                  treemapIt->first->UpdateNEntries( 1 );
-                  entriesFilled=true;
-                }
-
-                idxVar+=1;
+                recordVals[varname].push_back(val);
+                //idxVar+=1;
               } // end for var/varname
-              idxTree+=1;
+              treemapIt->first->UpdateEntries(recordVals);
+              //idxTree+=1;
             } // end for tree
-            idxCut+=1;
+            //idxCut+=1;
           } // end for cut
 
           // Return StandardRecord to its unshifted form ready for the next
           // histogram.
           caf::SRProxySystController::Rollback();
 
-          idxShift+=1;
+          //idxShift+=1;
         } // end for shift
-        idxSlice+=1;
+        //idxSlice+=1;
       } // end for slice
-      idxSpillCut+=1;
+      //idxSpillCut+=1;
     } // end for spillcut
 
     // Spill Trees
@@ -426,19 +413,11 @@ namespace ana
       if(!spillpass) continue;
 
       for ( std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
-        bool entriesFilled = false;
-
+        std::map<std::string, std::vector<double>> recordVals;
         for ( auto& [varormulti, varname] : treemapIt->second ) {
-
           if(varormulti.IsMulti()){
             auto const& vals = varormulti.GetMultiVar()(sr);
-            for(double val: vals){
-              treemapIt->first->AddEntry( varname, val ); //fBranchEntries[ varname ].push_back( val );
-            }
-            if(!entriesFilled){
-              treemapIt->first->UpdateNEntries( vals.size() ); //fNEntries += vals.size();
-              entriesFilled=true;
-            }
+            for(double val: vals) recordVals[varname].push_back(val);
             continue;
           }
 
@@ -452,12 +431,9 @@ namespace ana
             std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
           }
 
-          treemapIt->first->AddEntry( varname, val );
-          if(!entriesFilled){
-            treemapIt->first->UpdateNEntries( 1 );
-            entriesFilled=true;
-          }
+        recordVals[varname].push_back(val);
         } // end for var/varname
+        treemapIt->first->UpdateEntries(recordVals);
       } // end for tree
     } // end for spillcut
 
@@ -509,8 +485,7 @@ namespace ana
       for ( auto& [shift, cutmap] : shiftmap ) {
         for ( auto& [cut, treemap] : cutmap ) {
           for ( std::map<Tree*, std::map<VarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
-            treemapIt->first->UpdatePOT(fPOT);
-            treemapIt->first->UpdateLivetime(fNReadouts);
+            treemapIt->first->UpdateExposure(fPOT,fNReadouts);
           }
         }
       }
@@ -519,8 +494,7 @@ namespace ana
     // Spill Trees
     for ( auto& [spillcut, treemap] : fSpillTreeDefs ) {
       for ( std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
-        treemapIt->first->UpdatePOT(fPOT);
-        treemapIt->first->UpdateLivetime(fNReadouts);
+        treemapIt->first->UpdateExposure(fPOT,fNReadouts);
       }
     }
 
