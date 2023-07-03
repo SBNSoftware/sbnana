@@ -6,6 +6,7 @@
 #include "TH1D.h"
 
 #include <cassert>
+#include <cmath>
 
 namespace ana
 {
@@ -79,14 +80,30 @@ namespace ana
 
     loader.AddTree( *this, labels, vars, spillcut );
   }
-  
+
   //----------------------------------------------------------------------
   // Add an entry to a branch
-  void Tree::AddEntry( const std::string name, const double val )
+  void Tree::UpdateEntries( const std::map<std::string, std::vector<double>> valsMap )
   {
-    assert ( fBranchEntries.find(name) != fBranchEntries.end() );
-  
-    fBranchEntries.at(name).push_back(val);
+    unsigned int idxBranch = 0;
+    unsigned int previousSize=0;
+    for ( auto const& [name, vals] : valsMap ) {
+      if ( idxBranch>0 ) assert(previousSize == vals.size());
+      assert ( fBranchEntries.find(name) != fBranchEntries.end() );
+
+      previousSize = vals.size();
+      fBranchEntries.at(name).insert(fBranchEntries.at(name).end(),vals.begin(),vals.end());
+      idxBranch+=1;
+    }
+    fNEntries+=(long long)previousSize;
+  }
+
+  //----------------------------------------------------------------------
+  // Add an entry to a branch
+  void Tree::UpdateExposure( const double pot, const double livetime )
+  {
+    fPOT+=pot;
+    fLivetime+=livetime;
   }
 
   //----------------------------------------------------------------------
@@ -107,6 +124,11 @@ namespace ana
                 << " has size " <<  fBranchEntries.at( fOrderedBranchNames.at(0) ).size() << std::endl;
     }
 
+    // Check (and assert) that the branches all have fNEntries
+    for ( auto const& [branch, values] : fBranchEntries ){
+      assert( (long long)values.size() == fNEntries );
+    }
+
     TDirectory *tmp = gDirectory;
     dir->cd();
 
@@ -121,17 +143,39 @@ namespace ana
     TTree theTree( fTreeName.c_str(), fTreeName.c_str() );
 
     const int NBranches = fOrderedBranchNames.size();
-    double entryVals[ NBranches ];
+
+    bool treatAsInt[ NBranches ];
+    double entryValsDouble[ NBranches ];
+    long long entryValsInt[ NBranches ];
 
     for ( unsigned int idxBranch=0; idxBranch<fOrderedBranchNames.size(); ++idxBranch ) {
-      theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryVals[idxBranch] );
+      if ( fOrderedBranchNames.at(idxBranch).find("/i")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/i")).c_str(),
+                        &entryValsInt[idxBranch] );
+        treatAsInt[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/I")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/I")).c_str(),
+                        &entryValsInt[idxBranch] );
+        treatAsInt[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/")!=std::string::npos ) {
+        std::cout << "WARNING!! A '/' was found in the variable name, possibly by mistake? Will treat this branch as a double..." << std::endl;
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
+        treatAsInt[idxBranch] = false;
+      }
+      else {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
+        treatAsInt[idxBranch] = false;
+      }
     }
 
     // Loop over entries
     for ( unsigned int idxEntry=0; idxEntry < fNEntries; ++idxEntry ) {
       // Fill up the vals
       for ( unsigned int idxBranch=0; idxBranch < fOrderedBranchNames.size(); ++idxBranch ) {
-        entryVals[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        if ( !treatAsInt[idxBranch] ) entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        else                          entryValsInt[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
       }
       theTree.Fill();
     }
