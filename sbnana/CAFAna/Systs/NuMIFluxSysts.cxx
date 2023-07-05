@@ -41,12 +41,12 @@ namespace ana
         abort();
       }
 
-      const std::string fname = std::string(sbndata)+"/beamData/NuMIdata/icarus_numi_flux_syst_ana.root";
-      TFile f(fname.c_str());
-      if(f.IsZombie()){
-        std::cout << "NuMIFluxSysts: Failed to open " << fname << std::endl;
-        abort();
-      }
+    const std::string fname = std::string(sbndata)+"/beamData/NuMIdata/2023-06-30_out_450.37_7991.98_79512.66_QEL11.root";
+    TFile f(fname.c_str());
+    if(f.IsZombie()){
+      std::cout << "NuMIFluxSysts: Failed to open " << fname << std::endl;
+      abort();
+    }
 
       for(int hcIdx: {0, 1}){
         for(int flavIdx: {0, 1}){
@@ -84,13 +84,15 @@ namespace ana
 
     if(bin == 0 || bin == h->GetNbinsX()+1) return;
 
-    weight *= 1 + sigma*h->GetBinContent(bin);
+    // BH -- attempt to not change any weight if the value is inf or nan, just continue with weight as-is...
+    if( std::isinf(h->GetBinContent(bin)) || std::isnan(h->GetBinContent(bin)) ) weight *= 1;
+    else weight *= 1 + sigma*h->GetBinContent(bin);
   }
 
   //----------------------------------------------------------------------
   const NuMIFluxSyst* GetNuMIFluxSyst(const std::string& dir,
-                                      const std::string& prefix,
-                                      const std::string& name)
+                                                              const std::string& prefix,
+                                                              const std::string& name)
   {
     // Make sure we always give the same one back
     static std::map<std::string, const NuMIFluxSyst*> cache;
@@ -106,20 +108,20 @@ namespace ana
   {
     const std::vector<std::string> syst_names =
       {
-        "pCpi",
-        "pCk",
-        "pCnu",
-        "nCpi",
+        "att",
         "mesinc",
-        "nua",
+        "nCpi",
         "nuAlFe",
-        "attenuation",
-        "others"
+        "nua",
+        "others",
+        "pCQEL",
+        "pCnu",
+        "pCpi"
       };
 
     std::vector<const ISyst*> ret;
     for(std::string name: syst_names)
-      ret.push_back(GetNuMIFluxSyst("fractional_uncertainties/hadron_production", "hfrac_", name));
+      ret.push_back(GetNuMIFluxSyst("fractional_uncertainties/hadron/"+name, "hfrac_hadron_", name));
     return ret;
   }
 
@@ -128,20 +130,20 @@ namespace ana
   {
     const std::vector<std::string> syst_names =
       {
-        "horn_current",
-        "horn1_position_xy",
-        "horn2_position_xy",
-        "beam_shift_xy",
-        "target_position_z",
-        "beam_spot_size",
-        "water_layer",
-        "B_field",
-        "beam_divergence"
+        "beam_div",
+        "beam_shift_minus_y",
+        "beam_shift_plus_y",
+        "beam_shift_x",
+        "beam_spot",
+        "horn1_x",
+        "horn1_y",
+        "horn_current_plus",
+        "water_layer"
       };
 
     std::vector<const ISyst*> ret;
     for(std::string name: syst_names)
-      ret.push_back(GetNuMIFluxSyst("fractional_uncertainties/beamline", "hfrac_", name));
+      ret.push_back(GetNuMIFluxSyst("fractional_uncertainties/beam/"+name, "hfrac_beam_", name));
     return ret;
   }
 
@@ -150,8 +152,8 @@ namespace ana
   {
     std::vector<const ISyst*> ret;
     for(unsigned int i = 0; i < Npcs; ++i){
-      ret.push_back(GetNuMIFluxSyst("principal_component_analysis",
-                                    "h", "pc"+std::to_string(i)));
+      ret.push_back(GetNuMIFluxSyst("pca/principal_components",
+                                                "h", "pc_"+std::to_string(i)));
     }
     return ret;
   }
