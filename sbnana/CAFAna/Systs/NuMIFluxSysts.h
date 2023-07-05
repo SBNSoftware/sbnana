@@ -18,12 +18,12 @@ namespace ana
 
   protected:
     friend const NuMIFluxSyst* GetNuMIFluxSyst(const std::string&,
-                                               const std::string&,
-                                               const std::string&);
+                                                                       const std::string&,
+                                                                       const std::string&);
 
     NuMIFluxSyst(const std::string& dir,
-                 const std::string& prefix,
-                 const std::string& name)
+                             const std::string& prefix,
+                             const std::string& name)
       : ISyst("numi_"+name, "NuMI flux: "+name),
         fHistName(dir+"/"+prefix+name), fName(name), fScale()
     {
@@ -35,8 +35,8 @@ namespace ana
   };
 
   const NuMIFluxSyst* GetNuMIFluxSyst(const std::string& dir,
-                                      const std::string& prefix,
-                                      const std::string& name);
+                                                              const std::string& prefix,
+                                                              const std::string& name);
 
   /// These are envelopes not real systs. TODO make clearer in naming
   std::vector<const ISyst*> GetNuMIHadronProductionFluxSysts();
