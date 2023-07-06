@@ -387,6 +387,27 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddNSigmasTree(NSigmasTree& tree,
+                                          const std::vector<std::string>& labels,
+                                          const std::vector<const ISyst*>& systsToStore,
+                                          const SpillCut& spillcut,
+                                          const Cut& cut,
+                                          const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add WeightsTree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fNSigmasTreeDefs[spillcut][shift][cut][&tree][ systsToStore.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::
   RemoveReweightableSpectrum(ReweightableSpectrum* spect)
   {
