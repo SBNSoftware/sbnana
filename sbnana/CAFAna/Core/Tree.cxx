@@ -16,14 +16,24 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<Var>& vars, const SpillCut& spillcut,
-              const Cut& cut, const SystShifts& shift )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0)
+              const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt)
   {
     assert( labels.size() == vars.size() );
 
     for ( unsigned int i=0; i<labels.size(); ++i ) {
       fOrderedBranchNames.push_back( labels.at(i) );
       fBranchEntries[labels.at(i)] = {};
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
     }
 
     loader.AddTree( *this, labels, vars, spillcut, cut, shift );
@@ -34,14 +44,24 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<MultiVar>& vars, const SpillCut& spillcut,
-              const Cut& cut, const SystShifts& shift )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0)
+              const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt)
   {
     assert( labels.size() == vars.size() );
 
     for ( unsigned int i=0; i<labels.size(); ++i ) {
       fOrderedBranchNames.push_back( labels.at(i) );
       fBranchEntries[labels.at(i)] = {};
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
     }
 
     loader.AddTree( *this, labels, vars, spillcut, cut, shift );
@@ -51,14 +71,24 @@ namespace ana
   // Constructor for a set of SpillVars
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
-              const std::vector<SpillVar>& vars, const SpillCut& spillcut)
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0)
+              const std::vector<SpillVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt)
   {
     assert( labels.size() == vars.size() );
 
     for ( unsigned int i=0; i<labels.size(); ++i ) {
       fOrderedBranchNames.push_back( labels.at(i) );
       fBranchEntries[labels.at(i)] = {};
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
     }
 
     loader.AddTree( *this, labels, vars, spillcut );
@@ -68,14 +98,24 @@ namespace ana
   // Constructor for a set of SpillMultiVars
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
-              const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut)
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0)
+              const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt)
   {
     assert( labels.size() == vars.size() );
 
     for ( unsigned int i=0; i<labels.size(); ++i ) {
       fOrderedBranchNames.push_back( labels.at(i) );
       fBranchEntries[labels.at(i)] = {};
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
     }
 
     loader.AddTree( *this, labels, vars, spillcut );
