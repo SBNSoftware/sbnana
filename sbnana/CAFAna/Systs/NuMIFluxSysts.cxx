@@ -41,12 +41,13 @@ namespace ana
         abort();
       }
 
-    const std::string fname = std::string(sbndata)+"/beamData/NuMIdata/2023-06-30_out_450.37_7991.98_79512.66_QEL11.root";
-    TFile f(fname.c_str());
-    if(f.IsZombie()){
-      std::cout << "NuMIFluxSysts: Failed to open " << fname << std::endl;
-      abort();
-    }
+      const std::string fname = std::string(sbndata) + "/beamData/NuMIdata/" + fluxFileName.data();
+
+      TFile f(fname.c_str());
+      if(f.IsZombie()){
+        std::cout << "NuMIFluxSysts: Failed to open " << fname << std::endl;
+        abort();
+      }
 
       for(int hcIdx: {0, 1}){
         for(int flavIdx: {0, 1}){
@@ -114,7 +115,6 @@ namespace ana
         "nuAlFe",
         "nua",
         "others",
-        "pCQEL",
         "pCnu",
         "pCpi"
       };
