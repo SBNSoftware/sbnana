@@ -25,6 +25,7 @@ namespace ana
   class Spectrum;
   class ReweightableSpectrum;
   class Tree;
+  class NSigmasTree;
 
   /// Is this data-file representing beam spills or cosmic spills?
   enum DataSource{
@@ -116,6 +117,14 @@ namespace ana
                          const std::vector<std::string>& labels,
                          const std::vector<SpillMultiVar>& vars,
                          const SpillCut& spillcut);
+
+    /// For use by the constructors of \ref NSigmasTree class
+    virtual void AddNSigmasTree(NSigmasTree& tree,
+                                const std::vector<std::string>& labels,
+                                const std::vector<const ISyst*>& systsToStore,
+                                const SpillCut& spillcut,
+                                const Cut& cut,
+                                const SystShifts& shift);
 
     /// Load all the registered spectra
     virtual void Go() = 0;
@@ -254,6 +263,8 @@ namespace ana
     //       map. But otherwise, let's keep it the same way...
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<Tree*, std::map<VarOrMultiVar, std::string>>>>> fTreeDefs;
     std::map<SpillCut, std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>> fSpillTreeDefs;
+    // And a version that saves up the syst weights used to make event-by-event splines
+    std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NSigmasTree*, std::map<const ISyst*, std::string>>>>> fNSigmasTreeDefs;
   };
 
   // For map-making
@@ -328,6 +339,13 @@ namespace ana
                  const std::vector<std::string>& labels,
                  const std::vector<SpillMultiVar>& vars,
                  const SpillCut& spillcut) override {}
+
+    void AddNSigmasTree(NSigmasTree& tree,
+                        const std::vector<std::string>& labels,
+                        const std::vector<const ISyst*>& systsToStore,
+                        const SpillCut& spillcut,
+                        const Cut& cut,
+                        const SystShifts& shift) override {}
   };
   /// \brief Dummy loader that doesn't load any files
   ///

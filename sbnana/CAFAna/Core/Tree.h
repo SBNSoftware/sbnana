@@ -64,4 +64,44 @@ namespace ana
     bool fSaveSliceNum;
   };
 
+  // Similar to Tree but for a vector of ISyst to store weights and make splines...
+  class NSigmasTree
+  {
+  public:
+    /// constructor with a vector of \ref ISyst
+    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                 SpectrumLoaderBase& loader,
+                 const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
+                 const Cut& cut, const SystShifts& shift = kNoShift, const unsigned int nSigma = 3, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    // Add functionality to update the protected stuff from elsewhere
+    /// Function to update protected members (the branches). DO NOT USE outside of the filling.
+    void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap, const std::map<std::string, std::vector<double>> weightMap );
+    /// Function to update protected members (the exposures). DO NOT USE outside of the filling.
+    void UpdateExposure ( const double pot, const double livetime );
+    // Utilities
+    double POT() const {return fPOT;} // as in Spectrum
+    double Livetime() const {return fLivetime;} // as in Spectrum
+    long long Entries() const {return fNEntries;}
+    int NSigma() const {return fNSigma;}
+    bool SaveRunSubEvent() const {return fSaveRunSubEvt;}
+    bool SaveSliceNum() const {return fSaveSliceNum;}
+    void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
+    void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
+    void SaveToSplines( TDirectory* dir ) const;
+    void SaveTo( TDirectory* dir ) const {SaveToSplines(dir);} // TODO: update this to save a Tree of std::vector<double> instead of splines if desired...
+
+  protected:
+    std::map< std::string, std::vector<double>> fBranchEntries;
+    std::map< std::string, std::vector<std::vector<double>>> fBranchWeightEntries;
+    std::string fTreeName;
+    std::vector<std::string> fOrderedBranchNames;
+    std::vector<std::string> fOrderedBranchWeightNames;
+    long long fNEntries;
+    double fPOT;
+    double fLivetime;
+    bool fSaveRunSubEvt;
+    bool fSaveSliceNum;
+    unsigned int fNSigma;
+  };
+
 }
