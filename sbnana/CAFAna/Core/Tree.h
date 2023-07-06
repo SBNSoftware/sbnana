@@ -25,12 +25,12 @@ namespace ana
     Tree( const std::string name, const std::vector<std::string>& labels,
           SpectrumLoaderBase& loader,
           const std::vector<Var>& vars, const SpillCut& spillcut,
-          const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false );
+          const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
     /// constructor with a vector of \ref MultiVar
     Tree( const std::string name, const std::vector<std::string>& labels,
           SpectrumLoaderBase& loader,
           const std::vector<MultiVar>& vars, const SpillCut& spillcut,
-          const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false );
+          const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
     /// constructor with a vector of \ref SpillVar
     Tree( const std::string name, const std::vector<std::string>& labels,
           SpectrumLoaderBase& loader,
@@ -49,6 +49,7 @@ namespace ana
     double Livetime() const {return fLivetime;} // as in Spectrum
     long long Entries() const {return fNEntries;}
     bool SaveRunSubEvent() const {return fSaveRunSubEvt;}
+    bool SaveSliceNum() const {return fSaveSliceNum;}
     void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     void SaveTo( TDirectory* dir ) const;
@@ -60,6 +61,7 @@ namespace ana
     double fPOT;
     double fLivetime;
     bool fSaveRunSubEvt;
+    bool fSaveSliceNum;
   };
 
 }
