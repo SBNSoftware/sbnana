@@ -5,6 +5,9 @@
 
 #include "sbnana/CAFAna/Core/Var.h"
 
+#include <string_view>
+
+
 class TH1;
 
 namespace ana
@@ -12,6 +15,8 @@ namespace ana
 
   class NuMIPpfxFluxWeight
   {
+    static constexpr std::string_view fluxFileName = "2023-07-06_out_450.37_7991.98_79512.66_QEL11.root";
+
   public:
     NuMIPpfxFluxWeight();
     mutable TH1* fWeight[2][2][2]; // [fhc/rhc][nue/numu][nu/nubar]
