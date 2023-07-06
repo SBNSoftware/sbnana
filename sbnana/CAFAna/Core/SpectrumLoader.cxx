@@ -329,7 +329,7 @@ namespace ana
       // Cut failed, skip all the histograms that depend on it
       if(!spillpass) continue;
 
-      //unsigned int idxSlice = 0; // testing
+      unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
       for( caf::SRSliceProxy& slc: sr->slc ) {
         // Some shifts only adjust the weight, so they're effectively nominal,
         // but aren't grouped with the other nominal histograms. Keep track of
@@ -393,11 +393,16 @@ namespace ana
                 //idxVar+=1;
               } // end for var/varname
               // If fSaveRunSubrunEvt then fill these entries...
-              if ( treemapIt->first->SaveRunSubEvent() ) {
+              if ( treemapIt->first->SaveRunSubEvent() || treemapIt->first->SaveSliceNum() ) {
                 for ( unsigned int idxRun=0; idxRun<numEntries; ++idxRun ) {
-                  recordVals["Run/i"].push_back( sr->hdr.run );
-                  recordVals["Subrun/i"].push_back( sr->hdr.subrun );
-                  recordVals["Evt/i"].push_back( sr->hdr.evt );
+                  if ( treemapIt->first->SaveRunSubEvent() ) {
+                    recordVals["Run/i"].push_back( sr->hdr.run );
+                    recordVals["Subrun/i"].push_back( sr->hdr.subrun );
+                    recordVals["Evt/i"].push_back( sr->hdr.evt );
+                  }
+                  if ( treemapIt->first->SaveSliceNum() ) {
+                    recordVals["Slice/i"].push_back( idxSlice );
+                  }
                 }
               }
               treemapIt->first->UpdateEntries(recordVals);
@@ -412,7 +417,7 @@ namespace ana
 
           //idxShift+=1;
         } // end for shift
-        //idxSlice+=1;
+        idxSlice+=1;
       } // end for slice
       //idxSpillCut+=1;
     } // end for spillcut

@@ -16,8 +16,8 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<Var>& vars, const SpillCut& spillcut,
-              const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt)
+              const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
   {
     assert( labels.size() == vars.size() );
 
@@ -34,6 +34,10 @@ namespace ana
       fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
       fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
       fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
+    }
+    if ( saveSliceNum ) {
+      assert( fBranchEntries.find("Slice/i") == fBranchEntries.end() );
+      fOrderedBranchNames.push_back( "Slice/i" ); fBranchEntries["Slice/i"] = {};
     }
 
     loader.AddTree( *this, labels, vars, spillcut, cut, shift );
@@ -44,8 +48,8 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<MultiVar>& vars, const SpillCut& spillcut,
-              const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt)
+              const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
   {
     assert( labels.size() == vars.size() );
 
@@ -63,6 +67,10 @@ namespace ana
       fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
       fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
     }
+    if ( saveSliceNum ) {
+      assert( fBranchEntries.find("Slice/i") == fBranchEntries.end() );
+      fOrderedBranchNames.push_back( "Slice/i" ); fBranchEntries["Slice/i"] = {};
+    }
 
     loader.AddTree( *this, labels, vars, spillcut, cut, shift );
   }
@@ -72,7 +80,7 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<SpillVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
   {
     assert( labels.size() == vars.size() );
 
@@ -99,7 +107,7 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
   {
     assert( labels.size() == vars.size() );
 
@@ -139,7 +147,7 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  // Add an entry to a branch
+  // Update branch exposure
   void Tree::UpdateExposure( const double pot, const double livetime )
   {
     fPOT+=pot;
