@@ -365,11 +365,13 @@ namespace ana
             for ( std::map<Tree*, std::map<VarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
               //unsigned int idxVar = 0;
               std::map<std::string, std::vector<double>> recordVals;
+              unsigned int numEntries=0;
               for ( auto& [varormulti, varname] : treemapIt->second ) {
                 //std::cout << "SpillCut " << idxSpillCut << " Slice " << idxSlice << " Shift " << idxShift << " Cut " << idxCut << " Tree " << idxTree << " Var " << idxVar << std::endl;
                 if(varormulti.IsMulti()){
                   auto const& vals = varormulti.GetMultiVar()(&slc);
                   for(double val: vals) recordVals[varname].push_back(val);
+                  if (numEntries==0)    numEntries = vals.size();
                   continue;
                 }
 
@@ -387,8 +389,17 @@ namespace ana
                 }
 
                 recordVals[varname].push_back(val);
+                if( numEntries==0 ) numEntries = 1;
                 //idxVar+=1;
               } // end for var/varname
+              // If fSaveRunSubrunEvt then fill these entries...
+              if ( treemapIt->first->SaveRunSubEvent() ) {
+                for ( unsigned int idxRun=0; idxRun<numEntries; ++idxRun ) {
+                  recordVals["Run/i"].push_back( sr->hdr.run );
+                  recordVals["Subrun/i"].push_back( sr->hdr.subrun );
+                  recordVals["Evt/i"].push_back( sr->hdr.evt );
+                }
+              }
               treemapIt->first->UpdateEntries(recordVals);
               //idxTree+=1;
             } // end for tree
@@ -414,10 +425,12 @@ namespace ana
 
       for ( std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
         std::map<std::string, std::vector<double>> recordVals;
+        unsigned int numEntries = 0;
         for ( auto& [varormulti, varname] : treemapIt->second ) {
           if(varormulti.IsMulti()){
             auto const& vals = varormulti.GetMultiVar()(sr);
             for(double val: vals) recordVals[varname].push_back(val);
+            if ( numEntries==0 )  numEntries = vals.size();
             continue;
           }
 
@@ -431,8 +444,16 @@ namespace ana
             std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
           }
 
-        recordVals[varname].push_back(val);
+          recordVals[varname].push_back(val);
+          if ( numEntries==0 ) numEntries=1;
         } // end for var/varname
+        if ( treemapIt->first->SaveRunSubEvent() ) {
+          for ( unsigned int idxRun=0; idxRun<numEntries; ++idxRun ) {
+            recordVals["Run/i"].push_back( sr->hdr.run );
+            recordVals["Subrun/i"].push_back( sr->hdr.subrun );
+            recordVals["Evt/i"].push_back( sr->hdr.evt );
+          }
+        }
         treemapIt->first->UpdateEntries(recordVals);
       } // end for tree
     } // end for spillcut
