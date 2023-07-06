@@ -18,13 +18,14 @@ namespace ana
 
   NuMIPpfxFluxWeight::NuMIPpfxFluxWeight()
   {
-    const char* sbndata = std::getenv("SBNDATA_DIR");
+    const char* sbndata = getenv("SBNDATA_DIR");
     if(!sbndata){
-      std::cout << "NuMIPpfxFluxWeight: $SBNDATA_DIR environment variable not set. Please setup the sbndata product." << std::endl;
-      std::abort();
+      std::cout << "NuMIFluxSysts: $SBNDATA_DIR environment variable not set. Please setup the sbndata product." << std::endl;
+      abort();
     }
 
-    const std::string fname = std::string(sbndata)+"/beamData/NuMIdata/2023-06-30_out_450.37_7991.98_79512.66_QEL11.root";
+    const std::string fname = std::string(sbndata) + "/beamData/NuMIdata/" + fluxFileName.data();
+
     TFile f(fname.c_str());
     if(f.IsZombie()){
       std::cout << "NuMIPpfxFluxWeight: Failed to open " << fname << std::endl;
