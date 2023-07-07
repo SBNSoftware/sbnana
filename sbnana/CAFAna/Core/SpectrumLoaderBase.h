@@ -25,6 +25,7 @@ namespace ana
   class Spectrum;
   class ReweightableSpectrum;
   class Tree;
+  class WeightsTree;
   class NSigmasTree;
 
   /// Is this data-file representing beam spills or cosmic spills?

@@ -64,16 +64,12 @@ namespace ana
     bool fSaveSliceNum;
   };
 
-  // Similar to Tree but for a vector of ISyst to store weights and make splines...
-  class NSigmasTree
+  // Similar to Tree but for event weights e.g. to make splines...
+  class WeightsTree
   {
   public:
-    /// constructor with a vector of \ref ISyst
-    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
-                 SpectrumLoaderBase& loader,
-                 const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
-                 const Cut& cut, const SystShifts& shift = kNoShift, const unsigned int nSigma = 3, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
-    // Add functionality to update the protected stuff from elsewhere
+    WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                 const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum, const unsigned int nWeightsExpected );
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
     void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap, const std::map<std::string, std::vector<double>> weightMap );
     /// Function to update protected members (the exposures). DO NOT USE outside of the filling.
@@ -82,14 +78,13 @@ namespace ana
     double POT() const {return fPOT;} // as in Spectrum
     double Livetime() const {return fLivetime;} // as in Spectrum
     long long Entries() const {return fNEntries;}
-    int NSigma() const {return fNSigma;}
+    int NSigma() const {return fNSigma;} // return as an int, then -NSigma to NSigma means something
     bool SaveRunSubEvent() const {return fSaveRunSubEvt;}
     bool SaveSliceNum() const {return fSaveSliceNum;}
     void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
-    void SaveToSplines( TDirectory* dir ) const;
-    void SaveTo( TDirectory* dir ) const {SaveToSplines(dir);} // TODO: update this to save a Tree of std::vector<double> instead of splines if desired...
-
+    virtual void SaveToSplines( TDirectory* dir ) const = 0;
+    virtual void SaveTo( TDirectory* dir ) const = 0;
   protected:
     std::map< std::string, std::vector<double>> fBranchEntries;
     std::map< std::string, std::vector<std::vector<double>>> fBranchWeightEntries;
@@ -102,6 +97,19 @@ namespace ana
     bool fSaveRunSubEvt;
     bool fSaveSliceNum;
     unsigned int fNSigma;
+    unsigned int fNWeightsExpected;
+  };
+
+  class NSigmasTree : public WeightsTree
+  {
+  public:
+    /// constructor with a vector of \ref ISyst
+    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                 SpectrumLoaderBase& loader,
+                 const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
+                 const Cut& cut, const SystShifts& shift = kNoShift, const unsigned int nSigma = 3, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    void SaveToSplines( TDirectory* dir ) const override;
+    void SaveTo( TDirectory* dir ) const override {SaveToSplines(dir);} // TODO: update this to save a Tree of std::vector<double> instead of splines if desired...
   };
 
 }

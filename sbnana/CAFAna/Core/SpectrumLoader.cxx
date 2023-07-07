@@ -464,6 +464,7 @@ namespace ana
     } // end for spillcut
 
     // Weights trees
+    // Sigma knobs
     for ( auto& [spillcut, shiftmap] : fNSigmasTreeDefs ) {
       const bool spillpass = spillcut(sr);
       // Cut failed, skip all the histograms that depend on it
