@@ -395,7 +395,7 @@ namespace ana
                                           const SystShifts& shift)
   {
     if(fGone){
-      std::cerr << "Error: can't add WeightsTree after the call to Go()" << std::endl;
+      std::cerr << "Error: can't add NSigmasTree after the call to Go()" << std::endl;
       abort();
     }
 
