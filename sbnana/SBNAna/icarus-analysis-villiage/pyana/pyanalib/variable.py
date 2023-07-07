@@ -40,9 +40,23 @@ class Variable(object):
             return Variable(lambda x: self.f(x) >= othr.f(x))
         else:
             return Variable(lambda x: self.f(x) >= othr)
+    def __eq__(self, othr):
+        if isinstance(othr, Variable):
+            return Variable(lambda x: self.f(x) == othr.f(x))
+        else:
+            return Variable(lambda x: self.f(x) == othr)
 
     def __getattr__(self, idx):
         return Variable(lambda x: self.f(x).__getattr__(idx))
+
+    def __sub__(self, othr):
+        return Variable(lambda x: self.f(x) - othr.f(x))
+    def __add__(self, othr):
+        return Variable(lambda x: self.f(x) + othr.f(x))
+    def __mul__(self, othr):
+        return Variable(lambda x: self.f(x) * othr.f(x))
+    def __div__(self, othr):
+        return Variable(lambda x: self.f(x) / othr.f(x))
 
 def VAR(f):
     return Variable(f)
