@@ -256,7 +256,7 @@ ifdhc		v2_6_20		-
 osclib		v00.22		-
 sbnanaobj	v09_21_03	-
 sbndata		v01_04		-
-cetmodules	v3_21_02	-	only_for_build
+cetmodules	v3_21_01	-	only_for_build
 end_product_list
 ####################################
 
