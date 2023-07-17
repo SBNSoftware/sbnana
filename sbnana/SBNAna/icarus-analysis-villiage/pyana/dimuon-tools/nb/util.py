@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def InFV(df, inzback, inx=10, iny=10, inzfront=10):
     xmin_C0 = -358.49
@@ -32,3 +33,19 @@ def TrkInFV(df):
 
 def SlcInFV(df):
     return InFV(df, 100.)
+
+def mag(x, y, z):
+    return np.sqrt(x**2 + y**2 + z**2)
+
+def magdf(df):
+    return mag(df.x, df.y, df.z)
+
+def dmagdf(df1, df2):
+    return mag(df1.x - df2.x, df1.y - df2.y, df1.z - df2.z)
+
+def dotdf(df1, df2):
+    return df1.x*df2.x + df1.y*df2.y + df1.z*df2.z 
+
+def unitdf(df):
+    return df / magdf(df)
+
