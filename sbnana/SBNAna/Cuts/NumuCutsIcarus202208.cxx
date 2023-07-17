@@ -8,10 +8,10 @@ namespace ana {
 
 static bool Icarus202208contained(const caf::SRTrackProxy& trk)
 {
-  return ((trk.end.x < -71.1 - 5 && trk.end.x > -369.33 + 5)
-             || (trk.end.x > 71.1 + 5 && trk.end.x < 369.33 - 5))
-           && trk.end.y > -181.7 + 5 && trk.end.y < 134.8 - 5
-           && trk.end.z > -895.95 + 5 && trk.end.z < 895.95 - 5;
+  return ((trk.end.x < -61.94 - 5 && trk.end.x > -358.49 + 5)
+             || (trk.end.x > 61.94 + 5 && trk.end.x < 358.49 - 5))
+           && trk.end.y > -181.86 + 5 && trk.end.y < 134.96 - 5
+           && trk.end.z > -894.95 + 5 && trk.end.z < 894.95 - 5;
 }
 
 const Cut kIcarus202208FMTimeCut = kFMTimeVar > 0 && kFMTimeVar < 1.8;
@@ -20,12 +20,12 @@ const Cut kIcarus202208LongTrackDirCut = kCRLongestTrackDirY > -0.91;
 const Cut kIcarus202208FoundMuon = kIcarus202208MuonIdx >= 0;
 const Cut kIcarus202208RecoFiducial([](const caf::SRSliceProxy* slc) {
       return ( !isnan(slc->vertex.x) &&
-	       ( ( slc->vertex.x < -71.1 - 25 && slc->vertex.x > -369.33 + 25 ) ||
-		 ( slc->vertex.x > 71.1 + 25 && slc->vertex.x < 369.33 - 25 ) ) &&
+	       ( ( slc->vertex.x < -61.94 - 25 && slc->vertex.x > -358.49 + 25 ) ||
+		 ( slc->vertex.x > 61.94 + 25 && slc->vertex.x < 358.49 - 25 ) ) &&
 	       !isnan(slc->vertex.y) &&
-	       ( slc->vertex.y > -181.7 + 25 && slc->vertex.y < 134.8 - 25 ) &&
+	       ( slc->vertex.y > -181.86 + 25 && slc->vertex.y < 134.96 - 25 ) &&
 	       !isnan(slc->vertex.z) &&
-	       ( slc->vertex.z > -895.95 + 30 && slc->vertex.z < 895.95 - 50 ) );
+	       ( slc->vertex.z > -894.95 + 30 && slc->vertex.z < 894.95 - 50 ) );
     });
 
 const Cut kIcarus202208NumuSelection = kIcarus202208RecoFiducial && kIcarus202208FMScoreCut && kIcarus202208FMTimeCut && kIcarus202208LongTrackDirCut && kIcarus202208FoundMuon;

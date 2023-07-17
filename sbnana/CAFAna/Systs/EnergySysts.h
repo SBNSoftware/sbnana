@@ -45,6 +45,21 @@ namespace ana
     double uncertainty;
   };
 
+  class RecoEnergyScaleSyst: public ISyst
+  {
+  public:
+    RecoEnergyScaleSyst(EnergyScaleSystTerm _term, EnergyScaleSystParticle _part, EnergyScaleSystDetector _detector, double _uncertainty, const std::string& name, const std::string& latexName) : 
+      ISyst(name, latexName), term(_term), part(_part), detector(_detector), uncertainty(_uncertainty) {}
+
+    void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
+
+  private:
+    EnergyScaleSystTerm term;
+    EnergyScaleSystParticle part;
+    EnergyScaleSystDetector detector;
+    double uncertainty;
+  };
+
   extern const EnergyScaleSyst kEnergyScaleMuon;
   extern const EnergyScaleSyst kEnergyScaleMuonSqrt;
   extern const EnergyScaleSyst kEnergyScaleMuonInvSqrt;
@@ -109,7 +124,41 @@ namespace ana
   extern const EnergyScaleSyst kEnergyScaleHadronSqrtFDBig;
   extern const EnergyScaleSyst kEnergyScaleHadronInvSqrtFDBig;
 
-std::vector<const ISyst*> GetEnergySysts();
-std::vector<const ISyst*> GetBigEnergySysts();
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuon;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrt;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrt;
+
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonND;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtND;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtND;
+
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonUB;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtUB;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtUB;
+
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonFD;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtFD;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtFD;
+
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadron;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrt;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrt;
+
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronND;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtND;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtND;
+
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronUB;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtUB;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtUB;
+
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronFD;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtFD;
+  extern const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtFD;
+
+  std::vector<const ISyst*> GetEnergySysts();
+  std::vector<const ISyst*> GetBigEnergySysts();
+
+  std::vector<const ISyst*> GetRecoEnergySysts();
 
 }
