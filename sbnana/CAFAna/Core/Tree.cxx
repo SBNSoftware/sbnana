@@ -235,19 +235,11 @@ namespace ana
     tmp->cd();
   }
 
-  // ----------------------------------
-  // Now for NSigmasTree
-
   //----------------------------------------------------------------------
-  // Constructor for a set of Vars, typical usage for a Selected Tree
-  NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
-                            SpectrumLoaderBase& loader,
-                            const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
-                            const Cut& cut, const SystShifts& shift, const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fNSigma(nSigma)
+  WeightsTree::WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                            const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum, const unsigned int nWeightsExpected )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fNSigma(nSigma), fNWeightsExpected(nWeightsExpected)
   {
-    assert( labels.size() == systsToStore.size() );
-
     for ( unsigned int i=0; i<labels.size(); ++i ) {
       fOrderedBranchWeightNames.push_back( labels.at(i) );
       fBranchWeightEntries[labels.at(i)] = {};
@@ -266,13 +258,10 @@ namespace ana
       assert( fBranchEntries.find("Slice/i") == fBranchEntries.end() );
       fOrderedBranchNames.push_back( "Slice/i" ); fBranchEntries["Slice/i"] = {};
     }
-
-    loader.AddNSigmasTree( *this, labels, systsToStore, spillcut, cut, shift );
   }
 
   //----------------------------------------------------------------------
-  // Add an entry to a branch
-  void NSigmasTree::UpdateEntries( const std::map<std::string, std::vector<double>> valsMap, const std::map<std::string, std::vector<double>> weightMap )
+  void WeightsTree::UpdateEntries( const std::map<std::string, std::vector<double>> valsMap, const std::map<std::string, std::vector<double>> weightMap )
   {
     // First the basic entries (i.e. Run, Subrun, Event or nothing in this case...)
     unsigned int idxBranch = 0;
@@ -290,24 +279,34 @@ namespace ana
     // Now the fNSigma number of weights, stored as a vector per record.
     for ( auto const& [name, weights] : weightMap ) {
       assert ( fBranchWeightEntries.find(name) != fBranchWeightEntries.end() );
-      assert ( weights.size() == (unsigned int)(2*fNSigma+1) );
+      assert ( weights.size() == fNWeightsExpected );
 
       fBranchWeightEntries.at(name).push_back(weights);
     }
 
-    fNEntries+=1; // we only send 1 record to this at a time in NSigmasTree
+    fNEntries+=1; // we only send 1 record to this at a time in WeightsTree
   }
 
   //----------------------------------------------------------------------
-  // Update branch exposure
-  void NSigmasTree::UpdateExposure( const double pot, const double livetime )
+  void WeightsTree::UpdateExposure( const double pot, const double livetime )
   {
     fPOT+=pot;
     fLivetime+=livetime;
   }
 
   //----------------------------------------------------------------------
-  // Save to a ROOT Tree as splines
+  NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                            SpectrumLoaderBase& loader,
+                            const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
+                            const Cut& cut, const SystShifts& shift, const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum )
+    : WeightsTree(name,labels,nSigma,saveRunSubEvt,saveSliceNum,2*nSigma+1)
+  {
+    assert( labels.size() == systsToStore.size() );
+
+    loader.AddNSigmasTree( *this, labels, systsToStore, spillcut, cut, shift );
+  }
+
+  //----------------------------------------------------------------------
   void NSigmasTree::SaveToSplines( TDirectory* dir ) const
   {
     std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;
