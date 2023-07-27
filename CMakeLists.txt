@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 
 find_package(cetmodules )
-project(sbnana VERSION 09.73.03 LANGUAGES CXX)
+project(sbnana VERSION 09.75.03 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 
