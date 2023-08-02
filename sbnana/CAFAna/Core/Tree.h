@@ -41,7 +41,7 @@ namespace ana
           const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt = false );
     // Add functionality to update the protected stuff from elsewhere
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
-    void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap );
+    virtual void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap );
     /// Function to update protected members (the exposures). DO NOT USE outside of the filling.
     void UpdateExposure ( const double pot, const double livetime );
     // Utilities
@@ -52,7 +52,7 @@ namespace ana
     bool SaveSliceNum() const {return fSaveSliceNum;}
     void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
-    void SaveTo( TDirectory* dir ) const;
+    virtual void SaveTo( TDirectory* dir ) const;
   protected:
     std::map< std::string, std::vector<double>> fBranchEntries;
     std::string fTreeName;
@@ -83,7 +83,6 @@ namespace ana
     bool SaveSliceNum() const {return fSaveSliceNum;}
     void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
-    virtual void SaveToSplines( TDirectory* dir ) const = 0;
     virtual void SaveTo( TDirectory* dir ) const = 0;
   protected:
     std::map< std::string, std::vector<double>> fBranchEntries;
@@ -108,8 +107,21 @@ namespace ana
                  SpectrumLoaderBase& loader,
                  const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
                  const Cut& cut, const SystShifts& shift = kNoShift, const unsigned int nSigma = 3, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
-    void SaveToSplines( TDirectory* dir ) const override;
-    void SaveTo( TDirectory* dir ) const override {SaveToSplines(dir);} // TODO: update this to save a Tree of std::vector<double> instead of splines if desired...
+    void SaveTo( TDirectory* dir ) const override;
+    void SaveToSplines( TDirectory* dir ) const;
+  };
+
+  class NUniversesTree : public WeightsTree
+  {
+  public:
+    /// constructor with a vector of vectors of \ref Var corresponding to a number of universes for which we want to extract weights
+    NUniversesTree( const std::string name, const std::vector<std::string>& labels,
+                    SpectrumLoaderBase& loader,
+                    const std::vector<std::vector<Var>>& univsKnobs, const unsigned int nUniverses,
+                    const SpillCut& spillcut,
+                    const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    void SaveTo( TDirectory* dir ) const override;
+    unsigned int NUniverses() const {return fNSigma;}
   };
 
 }

@@ -408,6 +408,29 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddNUniversesTree(NUniversesTree& tree,
+                                             const std::vector<std::string>& labels,
+                                             const std::vector<std::vector<Var>>& univKnobs,
+                                             const SpillCut& spillcut,
+                                             const Cut& cut,
+                                             const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add NUniversesTree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      std::vector<VarOrMultiVar> vecVarOrMultiVar;
+      for ( unsigned int idxUniv=0; idxUniv<univKnobs.at(idx).size(); ++idxUniv ) vecVarOrMultiVar.push_back( univKnobs.at(idx).at(idxUniv) );
+      fNUniversesTreeDefs[spillcut][shift][cut][&tree][ vecVarOrMultiVar ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::
   RemoveReweightableSpectrum(ReweightableSpectrum* spect)
   {
