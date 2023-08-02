@@ -526,6 +526,72 @@ namespace ana
       } // end for slice
     } // end for spillcut
 
+    // Universe knobs
+    for ( auto& [spillcut, shiftmap] : fNUniversesTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+      // Cut failed, skip all the histograms that depend on it
+      if(!spillpass) continue;
+
+      unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
+      for( caf::SRSliceProxy& slc: sr->slc ) {
+        // Some shifts only adjust the weight, so they're effectively nominal,
+        // but aren't grouped with the other nominal histograms. Keep track of
+        // the results for nominals in these caches to speed those systs up.
+        CutVarCache<bool, Cut, caf::SRSliceProxy> nomCutCache;
+
+        for ( auto& [shift, cutmap] : shiftmap ) {
+          // Need to provide a clean slate for each new set of systematic
+          // shifts to work from. Copying the whole StandardRecord is pretty
+          // expensive, so modify it in place and revert it afterwards.
+          caf::SRProxySystController::BeginTransaction();
+
+          bool shifted = false;
+
+          double systWeight = 1;
+          // Can special-case nominal to not pay cost of Shift()
+          if(!shift.IsNominal()){
+            shift.Shift(&slc, systWeight);
+            // If there were only weighting systs applied then the cached
+            // nominal values are still valid.
+            shifted = caf::SRProxySystController::AnyShifted();
+          }
+
+          for ( auto& [cut, treemap] : cutmap ) {
+            const bool pass = shifted ? cut(&slc) : nomCutCache.Get(cut, &slc);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            for ( std::map<NUniversesTree*, std::map<std::vector<VarOrMultiVar>, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+              std::map<std::string, std::vector<double>> headerVals;
+              std::map<std::string, std::vector<double>> recordVals;
+              for ( auto& [universes, systname] : treemapIt->second ) {
+                for ( auto const& var : universes ) {
+                  double val = var.GetVar()(&slc);
+                  recordVals[systname].push_back(val);
+                }
+              }
+              // If fSaveRunSubrunEvt then fill these entries...
+              if ( treemapIt->first->SaveRunSubEvent() ) {
+                headerVals["Run/i"].push_back( sr->hdr.run );
+                headerVals["Subrun/i"].push_back( sr->hdr.subrun );
+                headerVals["Evt/i"].push_back( sr->hdr.evt );
+              }
+              if ( treemapIt->first->SaveSliceNum() ) {
+                headerVals["Slice/i"].push_back( idxSlice );
+              }
+
+              treemapIt->first->UpdateEntries(headerVals,recordVals);
+            } // end for tree
+          } // end for cut
+
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+          caf::SRProxySystController::Rollback();
+        } // end for shift
+        idxSlice+=1;
+      } // end for slice
+    } // end for spillcut
+
   }
 
   //----------------------------------------------------------------------
@@ -592,6 +658,17 @@ namespace ana
       for ( auto& [shift, cutmap] : shiftmap ) {
         for ( auto& [cut, treemap] : cutmap ) {
           for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+            treemapIt->first->UpdateExposure(fPOT,fNReadouts);
+          }
+        }
+      }
+    }
+
+    // NUniversesTrees
+    for ( auto& [spillcut, shiftmap] : fNUniversesTreeDefs ) {
+      for ( auto& [shift, cutmap] : shiftmap ) {
+        for ( auto& [cut, treemap] : cutmap ) {
+          for ( std::map<NUniversesTree*, std::map<std::vector<VarOrMultiVar>, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
             treemapIt->first->UpdateExposure(fPOT,fNReadouts);
           }
         }

@@ -405,4 +405,213 @@ namespace ana
     tmp->cd();
   }
 
+  //----------------------------------------------------------------------
+  void NSigmasTree::SaveTo( TDirectory* dir ) const
+  {
+    std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;
+    std::cout << "  " << fNEntries << " Entries" << std::endl;
+    std::cout << "  For " << fPOT << " POT and " << fLivetime << " Livetime" << std::endl;
+    std::cout << "  Containing " << fOrderedBranchWeightNames.size() << " splines per entry..." << std::endl;
+
+    // Check (and assert) that the branches all have fNEntries
+    for ( auto const& [branch, values] : fBranchEntries ){
+      assert( (long long)values.size() == fNEntries );
+    }
+    for ( auto const& [branch, weightVecs] : fBranchWeightEntries ){
+      assert( (long long)weightVecs.size() == fNEntries );
+    }
+
+    TDirectory *tmp = gDirectory;
+    dir->cd();
+
+    TH1D thePOT("POT","POT",1,0,1);
+    thePOT.SetBinContent(1,fPOT);
+    thePOT.Write();
+
+    TH1D theLivetime("Livetime","Livetime",1,0,1);
+    theLivetime.SetBinContent(1,fLivetime);
+    theLivetime.Write();
+
+    TTree theTree( fTreeName.c_str(), fTreeName.c_str() );
+
+    const int NBranches = fOrderedBranchNames.size();
+
+    bool treatAsInt[ NBranches ];
+    double entryValsDouble[ NBranches ];
+    long long entryValsInt[ NBranches ];
+
+    for ( unsigned int idxBranch=0; idxBranch<fOrderedBranchNames.size(); ++idxBranch ) {
+      if ( fOrderedBranchNames.at(idxBranch).find("/i")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/i")).c_str(),
+                        &entryValsInt[idxBranch] );
+        treatAsInt[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/I")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/I")).c_str(),
+                        &entryValsInt[idxBranch] );
+        treatAsInt[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/")!=std::string::npos ) {
+        std::cout << "WARNING!! A '/' was found in the variable name, possibly by mistake? Will treat this branch as a double..." << std::endl;
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
+        treatAsInt[idxBranch] = false;
+      }
+      else {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
+        treatAsInt[idxBranch] = false;
+      }
+    }
+
+    const unsigned int NSigmas = 2*fNSigma+1;
+
+    std::map< std::string, std::vector<double> > weights;
+
+    // set up map
+    for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+      weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ] = {};
+    }
+    // set up branches
+    for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+      theTree.Branch( fOrderedBranchWeightNames.at(idxBranchWeight).c_str(), &weights[fOrderedBranchWeightNames.at(idxBranchWeight)] );
+    }
+
+    // Loop over entries
+    for ( unsigned int idxEntry=0; idxEntry < fNEntries; ++idxEntry ) {
+      // Fill up the vals for the standard value branches
+      for ( unsigned int idxBranch=0; idxBranch < fOrderedBranchNames.size(); ++idxBranch ) {
+        if ( !treatAsInt[idxBranch] ) entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        else                          entryValsInt[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+      }
+      // Save the weights
+      for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        for ( unsigned int idxWt = 0; idxWt < NSigmas; ++idxWt ) {
+          weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxEntry).at(idxWt));
+        }
+      }
+
+      theTree.Fill();
+
+      // clear eights vec:
+      for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].clear();
+      }
+    }
+
+    theTree.Write();
+
+    tmp->cd();
+  }
+
+  //----------------------------------------------------------------------
+  NUniversesTree::NUniversesTree( const std::string name, const std::vector<std::string>& labels,
+                            SpectrumLoaderBase& loader,
+                            const std::vector<std::vector<Var>>& univsKnobs, const unsigned int nUniverses,
+                            const SpillCut& spillcut,
+                            const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
+    : WeightsTree(name,labels,nUniverses,saveRunSubEvt,saveSliceNum,nUniverses)
+  {
+    assert( labels.size() == univsKnobs.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      assert( univsKnobs.at(i).size() == fNSigma );
+    }
+
+    loader.AddNUniversesTree( *this, labels, univsKnobs, spillcut, cut, shift );
+  }
+
+  //----------------------------------------------------------------------
+  void NUniversesTree::SaveTo( TDirectory* dir ) const
+  {
+    std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;
+    std::cout << "  " << fNEntries << " Entries" << std::endl;
+    std::cout << "  For " << fPOT << " POT and " << fLivetime << " Livetime" << std::endl;
+    std::cout << "  Containing " << fOrderedBranchWeightNames.size() << " splines per entry..." << std::endl;
+
+    // Check (and assert) that the branches all have fNEntries
+    for ( auto const& [branch, values] : fBranchEntries ){
+      assert( (long long)values.size() == fNEntries );
+    }
+    for ( auto const& [branch, weightVecs] : fBranchWeightEntries ){
+      assert( (long long)weightVecs.size() == fNEntries );
+    }
+
+    TDirectory *tmp = gDirectory;
+    dir->cd();
+
+    TH1D thePOT("POT","POT",1,0,1);
+    thePOT.SetBinContent(1,fPOT);
+    thePOT.Write();
+
+    TH1D theLivetime("Livetime","Livetime",1,0,1);
+    theLivetime.SetBinContent(1,fLivetime);
+    theLivetime.Write();
+
+    TTree theTree( fTreeName.c_str(), fTreeName.c_str() );
+
+    const int NBranches = fOrderedBranchNames.size();
+
+    bool treatAsInt[ NBranches ];
+    double entryValsDouble[ NBranches ];
+    long long entryValsInt[ NBranches ];
+
+    for ( unsigned int idxBranch=0; idxBranch<fOrderedBranchNames.size(); ++idxBranch ) {
+      if ( fOrderedBranchNames.at(idxBranch).find("/i")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/i")).c_str(),
+                        &entryValsInt[idxBranch] );
+        treatAsInt[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/I")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/I")).c_str(),
+                        &entryValsInt[idxBranch] );
+        treatAsInt[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/")!=std::string::npos ) {
+        std::cout << "WARNING!! A '/' was found in the variable name, possibly by mistake? Will treat this branch as a double..." << std::endl;
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
+        treatAsInt[idxBranch] = false;
+      }
+      else {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
+        treatAsInt[idxBranch] = false;
+      }
+    }
+
+    std::map< std::string, std::vector<double> > weights;
+
+    // set up map
+    for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+      weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ] = {};
+    }
+    // set up branches
+    for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+      theTree.Branch( fOrderedBranchWeightNames.at(idxBranchWeight).c_str(), &weights[fOrderedBranchWeightNames.at(idxBranchWeight)] );
+    }
+
+    // Loop over entries
+    for ( unsigned int idxEntry=0; idxEntry < fNEntries; ++idxEntry ) {
+      // Fill up the vals for the standard value branches
+      for ( unsigned int idxBranch=0; idxBranch < fOrderedBranchNames.size(); ++idxBranch ) {
+        if ( !treatAsInt[idxBranch] ) entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        else                          entryValsInt[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+      }
+      // Save the weights
+      for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        for ( unsigned int idxWt = 0; idxWt < fNSigma; ++idxWt ) {
+          weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxEntry).at(idxWt));
+        }
+      }
+
+      theTree.Fill();
+
+      // clear eights vec:
+      for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].clear();
+      }
+    }
+
+    theTree.Write();
+
+    tmp->cd();
+  }
+
 }
