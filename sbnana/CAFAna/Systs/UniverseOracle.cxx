@@ -89,9 +89,9 @@ namespace ana
       if(pset.map.size() != 1) continue;
 
       // Save which position in the vector this was
-      fSystIdxs[pset.map[0].param.name] = i;
+      fSystIdxs[pset.name] = i;
       // Save all the knob values
-      fShiftVals[pset.map[0].param.name] = pset.map[0].vals;
+      fShiftVals[pset.name] = pset.map[0].vals;
     }
   }
 
