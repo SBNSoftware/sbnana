@@ -137,13 +137,10 @@ namespace ana {
   // MultiVar for the proton candidate index
   const MultiVar kNuMIPhotonCandidateIdxs([](const caf::SRSliceProxy* slc) -> std::vector<double> {
 
-    vector<double> rets;
+    std::vector<double> rets;
 
     int primaryInd = kNuMIMuonCandidateIdx(slc);
-    if ( primaryInd < 0 ) return rets;
-
     int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
-    if ( primaryProtonInd < 0 ) return rets;
 
     for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); ++i_pfp){
 
