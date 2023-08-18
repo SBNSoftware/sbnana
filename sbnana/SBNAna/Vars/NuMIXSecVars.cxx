@@ -135,7 +135,7 @@ namespace ana {
   });
 
   // MultiVar for the proton candidate index
-  const MultiVar kNuMIPhotonCandidateIdxs([](const caf::SRSliceProxy* slc) -> vector<double> {
+  const MultiVar kNuMIPhotonCandidateIdxs([](const caf::SRSliceProxy* slc) -> std::vector<double> {
 
     vector<double> rets;
 
