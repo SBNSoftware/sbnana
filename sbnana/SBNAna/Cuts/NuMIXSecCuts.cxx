@@ -117,7 +117,7 @@ namespace ana {
     int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
     if ( primaryProtonInd < 0 ) return false;
 
-    vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
     if(photon_indices.size()==0) return true;
     else return false;
 
