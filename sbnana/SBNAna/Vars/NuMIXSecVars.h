@@ -26,6 +26,9 @@ namespace ana
   /// \ref Var for the proton candidate index
   extern const Var kNuMIProtonCandidateIdx;
 
+  /// \ref MultiVar for the proton candidate indices
+  extern const MultiVar kNuMIPhotonCandidateIdxs;
+
   /// kinematic/output variables
   extern const Var kNuMIMuonCandidateRecoP;
   extern const Var kNuMIMuonTrueP;

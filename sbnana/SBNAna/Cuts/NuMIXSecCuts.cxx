@@ -110,45 +110,17 @@ namespace ana {
 
   // Cut on showers aiming at rejecting pi0
   const Cut kNuMICutPhotons([](const caf::SRSliceProxy* slc) {
+
     int primaryInd = kNuMIMuonCandidateIdx(slc);
     if ( primaryInd < 0 ) return false;
 
     int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
     if ( primaryProtonInd < 0 ) return false;
 
-    unsigned int idxTrk = 0;
-    while ( IsValidTrkIdx(slc, idxTrk) ) {
-      int thisIdxInt = idxTrk;
-      if ( thisIdxInt == primaryInd || thisIdxInt == primaryProtonInd ) {
-        idxTrk+=1;
-        continue; // skip the particle which is the muon or leading proton candidate!
-      }
-      if ( !IsShowerlike(slc, idxTrk) ) { 
-        idxTrk+=1;
-        continue; // skip things with track score > 0.45
-      }
-      auto const& shw = slc->reco.pfp.at(idxTrk).shw;
-      idxTrk+=1;
+    vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if(photon_indices.size()==0) return true;
+    else return false;
 
-      // Check if shower fit even seems kind-of valid:
-      if ( std::isnan(shw.start.x) || (shw.start.x > -5.5 && shw.start.x < -4.5) ||
-           std::isnan(shw.len) || shw.len <= 0. ) continue;
-
-      // if it meets this then we're not going to cut on it...
-      if ( std::isnan(shw.plane[2].energy) || std::isinf(shw.plane[2].energy) || shw.plane[2].energy <= 0.04 ) continue;
-
-      // and... if it meets then then we're not going to cut on it...
-      if ( std::isnan(shw.conversion_gap) || std::isinf(shw.conversion_gap) || shw.conversion_gap <= 5. ) continue;
-
-      // if we got here, then it should be the case that the fit seems valid and:
-      // shwE > 0.040 GeV
-      // trackScore < 0.45 (technically <= 0.45)
-      // conversionGap > 5. cm
-      return false;
-    }
-
-    // guess we're not cutting anything
-    return true;
   });
 
   // Full selection: 1muNp0pi without caring about containment
