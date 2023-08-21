@@ -38,6 +38,10 @@ namespace ana
   /// \ref Cut aimed at reconstruction quality (e.g. split tracks)
   extern const Cut kNuMIRejectSplitMuons;
 
+  /// \ref Cut pion sideband
+  extern const Cut kNuMIChargedPionSideBand;
+  extern const Cut kNuMINeutralPionSideBand;
+
   /// Signal definitions: Neutrino Neutral Current
   extern const Cut kNuMI_IsSliceNuNC;
   extern const Cut kNuMI_IsSlcNotNu;

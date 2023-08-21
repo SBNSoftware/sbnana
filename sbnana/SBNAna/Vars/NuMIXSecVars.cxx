@@ -134,7 +134,43 @@ namespace ana {
     return PTrackInd;
   });
 
-  // MultiVar for the proton candidate index
+  // MultiVar for the charged pion candidate indices
+  const MultiVar kNuMIChargedPionCandidateIdxs([](const caf::SRSliceProxy* slc) -> std::vector<double> {
+
+    std::vector<double> rets;
+
+    int primaryInd = kNuMIMuonCandidateIdx(slc);
+
+    for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); ++i_pfp){
+
+      if ( i_pfp == (unsigned int)primaryInd ) {
+        continue; // skip the particle which is the muon candidate!
+      }
+
+      auto const& trk = slc->reco.pfp.at(i_pfp).trk;
+
+      if ( std::isnan(trk.start.x) || std::isnan(trk.len) || trk.len <= 0. ) continue;
+      if ( std::isnan(slc->vertex.x) || std::isnan(slc->vertex.y) || std::isnan(slc->vertex.z) ) continue;
+      const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
+                                     slc->vertex.y - trk.start.y,
+                                     slc->vertex.z - trk.start.z);
+      const bool isPrimCandidate = (Atslc < 10. && IsPrimaryPFP(slc,i_pfp));
+
+      if ( !isPrimCandidate || trk.calo[2].nhit < 5 ) continue;
+
+      const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
+      const float Chi2Proton = trk.chi2pid[2].chi2_proton;
+      const float Chi2Muon = trk.chi2pid[2].chi2_muon;
+      if ( Contained && Chi2Proton > 60. && Chi2Muon < 30. ){
+        rets.push_back( i_pfp );
+      }
+    }
+
+    return rets;
+
+  });
+
+  // MultiVar for the proton candidate indices
   const MultiVar kNuMIPhotonCandidateIdxs([](const caf::SRSliceProxy* slc) -> std::vector<double> {
 
     std::vector<double> rets;

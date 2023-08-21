@@ -81,31 +81,10 @@ namespace ana {
     int primaryInd = kNuMIMuonCandidateIdx(slc);
     if ( primaryInd < 0 ) return false;
 
-    unsigned int idxTrk = 0;
-    while ( IsValidTrkIdx(slc, idxTrk) ) {
-      int thisIdxInt = idxTrk;
-      if ( thisIdxInt == primaryInd ) {
-        idxTrk+=1;
-        continue; // skip the particle which is the muon candidate!
-      }
-      auto const& trk = slc->reco.pfp.at(idxTrk).trk;
-      unsigned int thisIdx = idxTrk;
-      idxTrk+=1;
+    std::vector<double> chargedpion_indices = kNuMIChargedPionCandidateIdxs(slc);
+    if(chargedpion_indices.size()==0) return true;
+    else return false;
 
-      if ( std::isnan(trk.start.x) || std::isnan(trk.len) || trk.len <= 0. ) continue;
-      if ( std::isnan(slc->vertex.x) || std::isnan(slc->vertex.y) || std::isnan(slc->vertex.z) ) return false;
-      const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
-                                     slc->vertex.y - trk.start.y,
-                                     slc->vertex.z - trk.start.z);
-      const bool isPrimCandidate = (Atslc < 10. && IsPrimaryPFP(slc,thisIdx));
-
-      if ( !isPrimCandidate || trk.calo[2].nhit < 5 ) continue;
-      const float Chi2Proton = trk.chi2pid[2].chi2_proton;
-      const float Chi2Muon = trk.chi2pid[2].chi2_muon;
-      if ( Chi2Proton > 60. && Chi2Muon < 30. ) return false;
-    }
-
-    return true;
   });
 
   // Cut on showers aiming at rejecting pi0
@@ -175,6 +154,19 @@ namespace ana {
 
     return true;
   });
+
+  /// Pion sideband
+  const Cut kNuMIChargedPionSideBand = kNuMIVertexInFV && kNuMINotClearCosmic &&                                                /*Preselection*/
+                                       kNuMIHasMuonCandidate && kNuMIHasProtonCandidate && kNuMIProtonCandidateRecoPTreshold && /*Mu, P candidates*/
+                                       kNuMIAllPrimaryHadronsContained && /*Hadron contained*/
+                                       !kNuMINoSecondPrimaryMuonlikeTracks && /*Charged pion*/
+                                       kNuMICutPhotons; /*Esp. pi0 rejection*/
+
+  const Cut kNuMINeutralPionSideBand = kNuMIVertexInFV && kNuMINotClearCosmic &&                                                /*Preselection*/
+                                       kNuMIHasMuonCandidate && kNuMIHasProtonCandidate && kNuMIProtonCandidateRecoPTreshold && /*Mu, P candidates*/
+                                       kNuMIAllPrimaryHadronsContained && /*Hadron contained*/
+                                       kNuMINoSecondPrimaryMuonlikeTracks && /*Esp. chg pi rejection*/
+                                       !kNuMICutPhotons; /*Neutral pion*/
 
   // Signal definitions:
   // Neutrino NC
