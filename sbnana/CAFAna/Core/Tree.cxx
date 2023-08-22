@@ -195,28 +195,47 @@ namespace ana
     const int NBranches = fOrderedBranchNames.size();
 
     bool treatAsInt[ NBranches ];
+    bool treatAsLong[ NBranches ];
+
     double entryValsDouble[ NBranches ];
-    long long entryValsInt[ NBranches ];
+    int entryValsInt[ NBranches ];
+    long long entryValsLong[ NBranches ];
 
     for ( unsigned int idxBranch=0; idxBranch<fOrderedBranchNames.size(); ++idxBranch ) {
       if ( fOrderedBranchNames.at(idxBranch).find("/i")!=std::string::npos ) {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/i")).c_str(),
                         &entryValsInt[idxBranch] );
         treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
       }
       else if ( fOrderedBranchNames.at(idxBranch).find("/I")!=std::string::npos ) {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/I")).c_str(),
                         &entryValsInt[idxBranch] );
         treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/l")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/l")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/L")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/L")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
       }
       else if ( fOrderedBranchNames.at(idxBranch).find("/")!=std::string::npos ) {
         std::cout << "WARNING!! A '/' was found in the variable name, possibly by mistake? Will treat this branch as a double..." << std::endl;
         theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
         treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
       }
       else {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
         treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
       }
     }
 
@@ -224,8 +243,12 @@ namespace ana
     for ( unsigned int idxEntry=0; idxEntry < fNEntries; ++idxEntry ) {
       // Fill up the vals
       for ( unsigned int idxBranch=0; idxBranch < fOrderedBranchNames.size(); ++idxBranch ) {
-        if ( !treatAsInt[idxBranch] ) entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
-        else                          entryValsInt[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        if ( !treatAsInt[idxBranch] && !treatAsLong[idxBranch] )     entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        else if ( treatAsInt[idxBranch] && !treatAsLong[idxBranch] ) entryValsInt[idxBranch] = (int)lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else if ( treatAsLong[idxBranch] && !treatAsInt[idxBranch] ) entryValsLong[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else {
+          if ( idxEntry==0 ) std::cout << "ERROR!! Branch " << fOrderedBranchNames.at(idxBranch) << " wants to fill as int and long..." << std::endl;
+        }
       }
       theTree.Fill();
     }
@@ -338,28 +361,47 @@ namespace ana
     const int NBranches = fOrderedBranchNames.size();
 
     bool treatAsInt[ NBranches ];
+    bool treatAsLong[ NBranches ];
+
     double entryValsDouble[ NBranches ];
-    long long entryValsInt[ NBranches ];
+    int entryValsInt[ NBranches ];
+    long long entryValsLong[ NBranches ];
 
     for ( unsigned int idxBranch=0; idxBranch<fOrderedBranchNames.size(); ++idxBranch ) {
       if ( fOrderedBranchNames.at(idxBranch).find("/i")!=std::string::npos ) {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/i")).c_str(),
                         &entryValsInt[idxBranch] );
         treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
       }
       else if ( fOrderedBranchNames.at(idxBranch).find("/I")!=std::string::npos ) {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/I")).c_str(),
                         &entryValsInt[idxBranch] );
         treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/l")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/l")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/L")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/L")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
       }
       else if ( fOrderedBranchNames.at(idxBranch).find("/")!=std::string::npos ) {
         std::cout << "WARNING!! A '/' was found in the variable name, possibly by mistake? Will treat this branch as a double..." << std::endl;
         theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
         treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
       }
       else {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
         treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
       }
     }
 
@@ -381,8 +423,12 @@ namespace ana
     for ( unsigned int idxEntry=0; idxEntry < fNEntries; ++idxEntry ) {
       // Fill up the vals for the standard value branches
       for ( unsigned int idxBranch=0; idxBranch < fOrderedBranchNames.size(); ++idxBranch ) {
-        if ( !treatAsInt[idxBranch] ) entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
-        else                          entryValsInt[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        if ( !treatAsInt[idxBranch] && !treatAsLong[idxBranch] )     entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        else if ( treatAsInt[idxBranch] && !treatAsLong[idxBranch] ) entryValsInt[idxBranch] = (int)lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else if ( treatAsLong[idxBranch] && !treatAsInt[idxBranch] ) entryValsLong[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else {
+          if ( idxEntry==0 ) std::cout << "ERROR!! Branch " << fOrderedBranchNames.at(idxBranch) << " wants to fill as int and long..." << std::endl;
+        }
       }
       // Make the splines
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
@@ -437,28 +483,47 @@ namespace ana
     const int NBranches = fOrderedBranchNames.size();
 
     bool treatAsInt[ NBranches ];
+    bool treatAsLong[ NBranches ];
+
     double entryValsDouble[ NBranches ];
-    long long entryValsInt[ NBranches ];
+    int entryValsInt[ NBranches ];
+    long long entryValsLong[ NBranches ];
 
     for ( unsigned int idxBranch=0; idxBranch<fOrderedBranchNames.size(); ++idxBranch ) {
       if ( fOrderedBranchNames.at(idxBranch).find("/i")!=std::string::npos ) {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/i")).c_str(),
                         &entryValsInt[idxBranch] );
         treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
       }
       else if ( fOrderedBranchNames.at(idxBranch).find("/I")!=std::string::npos ) {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/I")).c_str(),
                         &entryValsInt[idxBranch] );
         treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/l")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/l")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/L")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/L")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
       }
       else if ( fOrderedBranchNames.at(idxBranch).find("/")!=std::string::npos ) {
         std::cout << "WARNING!! A '/' was found in the variable name, possibly by mistake? Will treat this branch as a double..." << std::endl;
         theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
         treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
       }
       else {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
         treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
       }
     }
 
@@ -479,8 +544,12 @@ namespace ana
     for ( unsigned int idxEntry=0; idxEntry < fNEntries; ++idxEntry ) {
       // Fill up the vals for the standard value branches
       for ( unsigned int idxBranch=0; idxBranch < fOrderedBranchNames.size(); ++idxBranch ) {
-        if ( !treatAsInt[idxBranch] ) entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
-        else                          entryValsInt[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        if ( !treatAsInt[idxBranch] && !treatAsLong[idxBranch] )     entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        else if ( treatAsInt[idxBranch] && !treatAsLong[idxBranch] ) entryValsInt[idxBranch] = (int)lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else if ( treatAsLong[idxBranch] && !treatAsInt[idxBranch] ) entryValsLong[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else {
+          if ( idxEntry==0 ) std::cout << "ERROR!! Branch " << fOrderedBranchNames.at(idxBranch) << " wants to fill as int and long..." << std::endl;
+        }
       }
       // Save the weights
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
@@ -551,28 +620,47 @@ namespace ana
     const int NBranches = fOrderedBranchNames.size();
 
     bool treatAsInt[ NBranches ];
+    bool treatAsLong[ NBranches ];
+
     double entryValsDouble[ NBranches ];
-    long long entryValsInt[ NBranches ];
+    int entryValsInt[ NBranches ];
+    long long entryValsLong[ NBranches ];
 
     for ( unsigned int idxBranch=0; idxBranch<fOrderedBranchNames.size(); ++idxBranch ) {
       if ( fOrderedBranchNames.at(idxBranch).find("/i")!=std::string::npos ) {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/i")).c_str(),
                         &entryValsInt[idxBranch] );
         treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
       }
       else if ( fOrderedBranchNames.at(idxBranch).find("/I")!=std::string::npos ) {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/I")).c_str(),
                         &entryValsInt[idxBranch] );
         treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/l")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/l")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/L")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/L")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
       }
       else if ( fOrderedBranchNames.at(idxBranch).find("/")!=std::string::npos ) {
         std::cout << "WARNING!! A '/' was found in the variable name, possibly by mistake? Will treat this branch as a double..." << std::endl;
         theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
         treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
       }
       else {
         theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
         treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
       }
     }
 
@@ -591,8 +679,12 @@ namespace ana
     for ( unsigned int idxEntry=0; idxEntry < fNEntries; ++idxEntry ) {
       // Fill up the vals for the standard value branches
       for ( unsigned int idxBranch=0; idxBranch < fOrderedBranchNames.size(); ++idxBranch ) {
-        if ( !treatAsInt[idxBranch] ) entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
-        else                          entryValsInt[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        if ( !treatAsInt[idxBranch] && !treatAsLong[idxBranch] )     entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        else if ( treatAsInt[idxBranch] && !treatAsLong[idxBranch] ) entryValsInt[idxBranch] = (int)lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else if ( treatAsLong[idxBranch] && !treatAsInt[idxBranch] ) entryValsLong[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else {
+          if ( idxEntry==0 ) std::cout << "ERROR!! Branch " << fOrderedBranchNames.at(idxBranch) << " wants to fill as int and long..." << std::endl;
+        }
       }
       // Save the weights
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
