@@ -42,9 +42,12 @@ namespace ana
   extern const Cut kNuMIChargedPionSideBand;
   extern const Cut kNuMINeutralPionSideBand;
 
-  /// Signal definitions: Neutrino Neutral Current
+  /// \ref Signal definitions: Neutrino Neutral Current
   extern const Cut kNuMI_IsSliceNuNC;
+  /// \ref Not nu matched: i.e. cosmic, or noise, or not well-matched to an interaction
   extern const Cut kNuMI_IsSlcNotNu;
+  /// \ref Check 1muNp0pi using vector of primaries
+  bool Is1muNp0pi(const caf::Proxy<std::vector<caf::SRTrueParticle>>& prim);
   extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment;
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment;
   extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold;
