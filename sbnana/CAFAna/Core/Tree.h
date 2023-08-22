@@ -109,6 +109,7 @@ namespace ana
                  const Cut& cut, const SystShifts& shift = kNoShift, const unsigned int nSigma = 3, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
     void SaveTo( TDirectory* dir ) const override;
     void SaveToSplines( TDirectory* dir ) const;
+    void SaveToGraphs( TDirectory* dir ) const;
   };
 
   class NUniversesTree : public WeightsTree
