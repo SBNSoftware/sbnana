@@ -44,4 +44,11 @@ namespace ana
   extern const Var kNuMIRecoCosThMuP;
   extern const Var kNuMITrueCosThMuP;
 
+  extern const Var kNuMIRecodeltaPT;
+  extern const Var kNuMITruedeltaPT;
+  extern const Var kNuMIRecodeltaPTx;
+  extern const Var kNuMITruedeltaPTx;
+  extern const Var kNuMIRecodeltaPTy;
+  extern const Var kNuMITruedeltaPTy;
+
 }

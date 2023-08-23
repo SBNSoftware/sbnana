@@ -76,9 +76,26 @@ namespace TrueEvent{
 
   // Muon+Proton
 
-  const SpillMultiVar kTrueCosThMuonProtonPVectorPerSignalNu(
+  const SpillMultiVar kTrueCosThMuonProtonVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
       return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::CosThMuonProton);
+    }
+  );
+
+  // TKI
+  const SpillMultiVar kTruedeltaPTVectorPerSignalNu(
+    [](const caf::SRSpillProxy *sr) -> vector<double> {
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaPT);
+    }
+  );
+  const SpillMultiVar kTruedeltaPTxVectorPerSignalNu(
+    [](const caf::SRSpillProxy *sr) -> vector<double> {
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaPTx);
+    }
+  );
+  const SpillMultiVar kTruedeltaPTyVectorPerSignalNu(
+    [](const caf::SRSpillProxy *sr) -> vector<double> {
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaPTy);
     }
   );
 

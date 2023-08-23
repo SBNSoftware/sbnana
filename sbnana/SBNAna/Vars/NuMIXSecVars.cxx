@@ -304,4 +304,116 @@ namespace ana {
     return ana::PrimaryUtil::CosThMuonProton(slc->truth);
   });
 
+  const Var kNuMIRecodeltaPT([](const caf::SRSliceProxy* slc) -> float {
+    int MuonTrackIndex = kNuMIMuonCandidateIdx(slc);
+    int ProtonTrackIndex = kNuMIProtonCandidateIdx(slc);
+    if ( MuonTrackIndex >= 0 && ProtonTrackIndex >= 0 ) {
+
+      auto const& mu_trk = slc->reco.pfp.at(MuonTrackIndex).trk;
+      double mu_trk_p = kNuMIMuonCandidateRecoP(slc);
+      TVector3 vec_p_mu(mu_trk.dir.x, mu_trk.dir.y, mu_trk.dir.z);
+      vec_p_mu *= mu_trk_p;
+
+      auto const& pro_trk = slc->reco.pfp.at(ProtonTrackIndex).trk;
+      double pro_trk_p = kNuMIProtonCandidateRecoP(slc);
+      TVector3 vec_p_pro(pro_trk.dir.x, pro_trk.dir.y, pro_trk.dir.z);
+      vec_p_pro *= pro_trk_p;
+
+      const auto& vtx = slc->vertex;
+      // ICARUSZero-to-vertex
+      TVector3 vec_vtx_icarus(vtx.x, vtx.y, vtx.z);
+      // NuMI-to-ICARUSZero
+      TVector3 vec_NuMI_to_ICARUS(315.120380, 33.644912, 733.632532);
+      vec_NuMI_to_ICARUS *= 100.; // meter to centimeter
+      // NuMI-to-vertex = NuMI-to-ICARUSZero + ICARUSZero-to-vertex
+      TVector3 unit_numi_to_vtx = (vec_NuMI_to_ICARUS+vec_vtx_icarus).Unit();
+
+      return ana::PrimaryUtil::CalcTKI_deltaPT(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
+
+    }
+    else{
+      return -99999; // TODO use something like "kInvalid"
+    }
+  });
+
+  const Var kNuMITruedeltaPT([](const caf::SRSliceProxy* slc) -> float {
+    if ( slc->truth.index < 0 ) return -5.f;
+    return ana::PrimaryUtil::deltaPT(slc->truth);
+  });
+
+  const Var kNuMIRecodeltaPTx([](const caf::SRSliceProxy* slc) -> float {
+    int MuonTrackIndex = kNuMIMuonCandidateIdx(slc);
+    int ProtonTrackIndex = kNuMIProtonCandidateIdx(slc);
+    if ( MuonTrackIndex >= 0 && ProtonTrackIndex >= 0 ) {
+
+      auto const& mu_trk = slc->reco.pfp.at(MuonTrackIndex).trk;
+      double mu_trk_p = kNuMIMuonCandidateRecoP(slc);
+      TVector3 vec_p_mu(mu_trk.dir.x, mu_trk.dir.y, mu_trk.dir.z);
+      vec_p_mu *= mu_trk_p;
+
+      auto const& pro_trk = slc->reco.pfp.at(ProtonTrackIndex).trk;
+      double pro_trk_p = kNuMIProtonCandidateRecoP(slc);
+      TVector3 vec_p_pro(pro_trk.dir.x, pro_trk.dir.y, pro_trk.dir.z);
+      vec_p_pro *= pro_trk_p;
+
+      const auto& vtx = slc->vertex;
+      // ICARUSZero-to-vertex
+      TVector3 vec_vtx_icarus(vtx.x, vtx.y, vtx.z);
+      // NuMI-to-ICARUSZero
+      TVector3 vec_NuMI_to_ICARUS(315.120380, 33.644912, 733.632532);
+      vec_NuMI_to_ICARUS *= 100.; // meter to centimeter
+      // NuMI-to-vertex = NuMI-to-ICARUSZero + ICARUSZero-to-vertex
+      TVector3 unit_numi_to_vtx = (vec_NuMI_to_ICARUS+vec_vtx_icarus).Unit();
+
+      return ana::PrimaryUtil::CalcTKI_deltaPTx(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
+
+    }
+    else{
+      return -99999; // TODO use something like "kInvalid"
+    }
+  });
+
+  const Var kNuMITruedeltaPTx([](const caf::SRSliceProxy* slc) -> float {
+    if ( slc->truth.index < 0 ) return -5.f;
+    return ana::PrimaryUtil::deltaPTx(slc->truth);
+  });
+
+  const Var kNuMIRecodeltaPTy([](const caf::SRSliceProxy* slc) -> float {
+    int MuonTrackIndex = kNuMIMuonCandidateIdx(slc);
+    int ProtonTrackIndex = kNuMIProtonCandidateIdx(slc);
+    if ( MuonTrackIndex >= 0 && ProtonTrackIndex >= 0 ) {
+
+      auto const& mu_trk = slc->reco.pfp.at(MuonTrackIndex).trk;
+      double mu_trk_p = kNuMIMuonCandidateRecoP(slc);
+      TVector3 vec_p_mu(mu_trk.dir.x, mu_trk.dir.y, mu_trk.dir.z);
+      vec_p_mu *= mu_trk_p;
+
+      auto const& pro_trk = slc->reco.pfp.at(ProtonTrackIndex).trk;
+      double pro_trk_p = kNuMIProtonCandidateRecoP(slc);
+      TVector3 vec_p_pro(pro_trk.dir.x, pro_trk.dir.y, pro_trk.dir.z);
+      vec_p_pro *= pro_trk_p;
+
+      const auto& vtx = slc->vertex;
+      // ICARUSZero-to-vertex
+      TVector3 vec_vtx_icarus(vtx.x, vtx.y, vtx.z);
+      // NuMI-to-ICARUSZero
+      TVector3 vec_NuMI_to_ICARUS(315.120380, 33.644912, 733.632532);
+      vec_NuMI_to_ICARUS *= 100.; // meter to centimeter
+      // NuMI-to-vertex = NuMI-to-ICARUSZero + ICARUSZero-to-vertex
+      TVector3 unit_numi_to_vtx = (vec_NuMI_to_ICARUS+vec_vtx_icarus).Unit();
+
+      return ana::PrimaryUtil::CalcTKI_deltaPTy(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
+
+    }
+    else{
+      return -99999; // TODO use something like "kInvalid"
+    }
+  });
+
+  const Var kNuMITruedeltaPTy([](const caf::SRSliceProxy* slc) -> float {
+    if ( slc->truth.index < 0 ) return -5.f;
+    return ana::PrimaryUtil::deltaPTy(slc->truth);
+  });
+
+
 }

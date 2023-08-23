@@ -42,6 +42,18 @@ namespace PrimaryUtil{
   // Muon+Proton
   double CosThMuonProton(const TrueInteraction& true_int);
 
+  // TKI
+  // https://arxiv.org/abs/1910.08658
+
+  double CalcTKI_deltaPT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu);
+  double CalcTKI_deltaPTx(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu);
+  double CalcTKI_deltaPTy(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu);
+
+  double deltaPT(const TrueInteraction& true_int);
+  double deltaPTx(const TrueInteraction& true_int);
+  double deltaPTy(const TrueInteraction& true_int);
+
+
 } // end namespace PrimaryUtil
 
 } // end namespace ana

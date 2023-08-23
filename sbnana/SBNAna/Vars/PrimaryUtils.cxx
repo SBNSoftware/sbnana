@@ -78,11 +78,11 @@ namespace PrimaryUtil{
       const auto& p_nu = true_int.momentum;
 
       TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
-      TVector3 vec_dir_nu(p_nu.x, p_nu.y, p_nu.z);
-      vec_dir_nu = vec_dir_nu.Unit();
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+      vec_p_nu = vec_p_nu.Unit(); // make unit vector
 
-      double p_l = vec_p_mu.Dot(vec_dir_nu);
-      TVector3 vec_p_l_mu = vec_p_mu - p_l*vec_dir_nu;
+      double p_l = vec_p_mu.Dot(vec_p_nu);
+      TVector3 vec_p_l_mu = vec_p_mu - p_l*vec_p_nu;
 
       return vec_p_l_mu.Mag();
 
@@ -166,11 +166,11 @@ namespace PrimaryUtil{
       const auto& p_nu = true_int.momentum;
 
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
-      TVector3 vec_dir_nu(p_nu.x, p_nu.y, p_nu.z);
-      vec_dir_nu = vec_dir_nu.Unit();
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+      vec_p_nu = vec_p_nu.Unit();
 
-      double p_l = vec_p_pro.Dot(vec_dir_nu);
-      TVector3 vec_p_l_pro = vec_p_pro - p_l*vec_dir_nu;
+      double p_l = vec_p_pro.Dot(vec_p_nu);
+      TVector3 vec_p_l_pro = vec_p_pro - p_l*vec_p_nu;
 
       return vec_p_l_pro.Mag();
 
@@ -193,6 +193,114 @@ namespace PrimaryUtil{
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
 
       return vec_p_mu.Unit().Dot( vec_p_pro.Unit() );
+
+    }
+    else{
+      return -999.;
+    }
+  }
+
+  // TKI
+  // https://arxiv.org/abs/1910.08658
+
+  double CalcTKI_deltaPT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    return vec_deltaPT.Mag();
+
+  }
+  double CalcTKI_deltaPTx(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    double deltaPT_x = ( unit_vec_p_nu.Cross(pt_mu.Unit()) ).Dot(vec_deltaPT);
+
+    return deltaPT_x;
+
+  }
+  double CalcTKI_deltaPTy(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    double deltaPT_y = -1.*(pt_mu.Unit().Dot(vec_deltaPT));
+
+    return deltaPT_y;
+
+  }
+
+  double deltaPT(const TrueInteraction& true_int){
+    int truth_mu_idx = MuonIndex(true_int);
+    int truth_pro_idx = ProtonIndex(true_int);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
+      const auto& p_pro = true_int.prim.at(truth_pro_idx).genp;
+      const auto& p_nu = true_int.momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      return CalcTKI_deltaPT(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+    else{
+      return -999.;
+    }
+  }
+  double deltaPTx(const TrueInteraction& true_int){
+    int truth_mu_idx = MuonIndex(true_int);
+    int truth_pro_idx = ProtonIndex(true_int);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
+      const auto& p_pro = true_int.prim.at(truth_pro_idx).genp;
+      const auto& p_nu = true_int.momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      return CalcTKI_deltaPTx(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+    else{
+      return -999.;
+    }
+  }
+  double deltaPTy(const TrueInteraction& true_int){
+    int truth_mu_idx = MuonIndex(true_int);
+    int truth_pro_idx = ProtonIndex(true_int);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
+      const auto& p_pro = true_int.prim.at(truth_pro_idx).genp;
+      const auto& p_nu = true_int.momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      return CalcTKI_deltaPTy(vec_p_mu, vec_p_pro, vec_p_n);
 
     }
     else{
