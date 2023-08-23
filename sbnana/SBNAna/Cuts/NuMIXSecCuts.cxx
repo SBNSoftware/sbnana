@@ -168,6 +168,17 @@ namespace ana {
                                        kNuMINoSecondPrimaryMuonlikeTracks && /*Esp. chg pi rejection*/
                                        !kNuMICutPhotons; /*Neutral pion*/
 
+
+  // Var that returns which selection passed
+  const Var kNuMICutType([](const caf::SRSliceProxy* slc) -> double {
+
+    if( kNuMISelection_1muNp0pi(slc) ) return 1; // Signal
+    else if( kNuMIChargedPionSideBand(slc) ) return 2; // Sideband
+    else if( kNuMINeutralPionSideBand(slc) ) return 3; // Sideband
+    else return 0; // other
+
+  });
+
   // Signal definitions:
   // Neutrino NC
   const Cut kNuMI_IsSliceNuNC([](const caf::SRSliceProxy* slc) {

@@ -11,6 +11,15 @@ namespace PrimaryUtil{
   double NeutrinoE(const TrueInteraction& true_int){
     return true_int.E;
   }
+  double NeutrinoPDG(const TrueInteraction& true_int){
+    return true_int.pdg;
+  }
+  double NeutrinoMode(const TrueInteraction& true_int){
+    return true_int.genie_mode;
+  }
+  double Target(const TrueInteraction& true_int){
+    return true_int.targetPDG;
+  }
 
   // Muon
 

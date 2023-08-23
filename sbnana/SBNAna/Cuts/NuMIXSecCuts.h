@@ -42,6 +42,9 @@ namespace ana
   extern const Cut kNuMIChargedPionSideBand;
   extern const Cut kNuMINeutralPionSideBand;
 
+  /// \ref Var that returns which selection passed
+  extern const Var kNuMICutType;
+
   /// \ref Signal definitions: Neutrino Neutral Current
   extern const Cut kNuMI_IsSliceNuNC;
   /// \ref Not nu matched: i.e. cosmic, or noise, or not well-matched to an interaction
