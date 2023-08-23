@@ -102,6 +102,12 @@ namespace ana {
 
   });
 
+  // Base selection: The signal cut and sidebands all contain these
+  const Cut kNuMISelection_Base = kNuMIVertexInFV && kNuMINotClearCosmic &&
+                                  kNuMIHasMuonCandidate && kNuMIHasProtonCandidate &&
+                                  kNuMIProtonCandidateRecoPTreshold &&
+                                  kNuMIAllPrimaryHadronsContained;
+
   // Full selection: 1muNp0pi without caring about containment
   const Cut kNuMISelection_1muNp0pi = kNuMIVertexInFV && kNuMINotClearCosmic &&                                                /*Preselection*/
                                       kNuMIHasMuonCandidate && kNuMIHasProtonCandidate && kNuMIProtonCandidateRecoPTreshold && /*Mu, P candidates*/

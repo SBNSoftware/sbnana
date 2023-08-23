@@ -54,6 +54,7 @@ namespace ana
     void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     virtual void SaveTo( TDirectory* dir ) const;
   protected:
+    friend class WeightsTree;
     std::map< std::string, std::vector<double>> fBranchEntries;
     std::string fTreeName;
     std::vector<std::string> fOrderedBranchNames;
@@ -70,6 +71,8 @@ namespace ana
   public:
     WeightsTree( const std::string name, const std::vector<std::string>& labels,
                  const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum, const unsigned int nWeightsExpected );
+    /// Function to merge the WeightsTree with a Tree, assuming both have fSaveRunSubEvt and fSaveSliceNum set to true
+    void MergeTree( const Tree& inTree );
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
     void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap, const std::map<std::string, std::vector<double>> weightMap );
     /// Function to update protected members (the exposures). DO NOT USE outside of the filling.
