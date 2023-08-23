@@ -246,6 +246,35 @@ namespace PrimaryUtil{
     return deltaPT_y;
 
   }
+  double CalcTKI_deltaalphaT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    double CosdeltaalphaT = -1. * pt_mu.Unit().Dot( vec_deltaPT.Unit() );
+    double deltaalphaT = TMath::ACos( CosdeltaalphaT );
+    return deltaalphaT;
+
+  }
+  double CalcTKI_deltaphiT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    double CosdeltaphiT = -1. * pt_mu.Unit().Dot( pt_pro.Unit() );
+    double deltaphiT = TMath::ACos( CosdeltaphiT );
+    return deltaphiT;
+  }
 
   double deltaPT(const TrueInteraction& true_int){
     int truth_mu_idx = MuonIndex(true_int);
@@ -301,6 +330,46 @@ namespace PrimaryUtil{
       TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
 
       return CalcTKI_deltaPTy(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+    else{
+      return -999.;
+    }
+  }
+  double deltaalphaT(const TrueInteraction& true_int){
+    int truth_mu_idx = MuonIndex(true_int);
+    int truth_pro_idx = ProtonIndex(true_int);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
+      const auto& p_pro = true_int.prim.at(truth_pro_idx).genp;
+      const auto& p_nu = true_int.momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      return CalcTKI_deltaalphaT(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+    else{
+      return -999.;
+    }
+  }
+  double deltaphiT(const TrueInteraction& true_int){
+    int truth_mu_idx = MuonIndex(true_int);
+    int truth_pro_idx = ProtonIndex(true_int);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
+      const auto& p_pro = true_int.prim.at(truth_pro_idx).genp;
+      const auto& p_nu = true_int.momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      return CalcTKI_deltaphiT(vec_p_mu, vec_p_pro, vec_p_n);
 
     }
     else{

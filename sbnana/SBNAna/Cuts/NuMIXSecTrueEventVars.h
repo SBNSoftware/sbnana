@@ -98,6 +98,16 @@ namespace TrueEvent{
       return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaPTy);
     }
   );
+  const SpillMultiVar kTruedeltaalphaTVectorPerSignalNu(
+    [](const caf::SRSpillProxy *sr) -> vector<double> {
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaalphaT);
+    }
+  );
+  const SpillMultiVar kTruedeltaphiTVectorPerSignalNu(
+    [](const caf::SRSpillProxy *sr) -> vector<double> {
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaphiT);
+    }
+  );
 
   // Weight
 

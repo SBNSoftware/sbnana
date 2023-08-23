@@ -50,5 +50,9 @@ namespace ana
   extern const Var kNuMITruedeltaPTx;
   extern const Var kNuMIRecodeltaPTy;
   extern const Var kNuMITruedeltaPTy;
+  extern const Var kNuMIRecodeltaalphaT;
+  extern const Var kNuMITruedeltaalphaT;
+  extern const Var kNuMIRecodeltaphiT;
+  extern const Var kNuMITruedeltaphiT;
 
 }
