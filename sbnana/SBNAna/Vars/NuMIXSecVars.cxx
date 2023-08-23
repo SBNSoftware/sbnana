@@ -231,15 +231,8 @@ namespace ana {
     float p(-5.f);
     if ( slc->truth.index < 0 ) return p;
 
-    for ( auto const& prim : slc->truth.prim ) {
-      if ( prim.start_process != 0 ) continue; // to handle fact that primaries now include more particles.
-      double momentum = sqrt( (prim.startp.x*prim.startp.x) + (prim.startp.y*prim.startp.y) + (prim.startp.z*prim.startp.z) );
-      if ( abs(prim.pdg) == 13 && momentum > p ) {
-        p = momentum;
-      }
-    }
+    return ana::PrimaryUtil::MuonP(slc->truth);
 
-    return p;
   });
 
   // Reco proton momentum
@@ -256,18 +249,8 @@ namespace ana {
 
   // True proton momentum
   const Var kNuMIProtonTrueP([](const caf::SRSliceProxy* slc) -> float {
-    float p(-5.f);
-    if ( slc->truth.index < 0 ) return p;
-
-    for ( auto const& prim : slc->truth.prim ) {
-      if ( prim.start_process != 0 ) continue; // to handle fact that primaries now include more particles.
-      double momentum = sqrt( (prim.startp.x*prim.startp.x) + (prim.startp.y*prim.startp.y) + (prim.startp.z*prim.startp.z) );
-      if ( abs(prim.pdg) == 2212 && prim.contained && momentum > p ) {
-        p = momentum;
-      }
-    }
-
-    return p;
+    if ( slc->truth.index < 0 ) return -5.f;
+    return ana::PrimaryUtil::ProtonP(slc->truth);
   });
 
   // Reco CosTh(numi)
@@ -291,26 +274,8 @@ namespace ana {
 
   // True CosTh(numi)
   const Var kNuMITrueCosThBeam([](const caf::SRSliceProxy* slc) -> float {
-    float p(-5.f);
-    float cosThNuMI(-5.f);
-    if ( slc->truth.index < 0 ) return cosThNuMI;
-
-      double magNuMI = sqrt(315.120380*315.120380 + 33.644912*33.644912 + 733.632532*733.632532);
-      TVector3 rFromNuMI(315.120380/magNuMI, 33.644912/magNuMI, 733.632532/magNuMI);
-
-    for ( auto const& prim : slc->truth.prim ) {
-      if ( prim.start_process != 0 ) continue; // to handle fact that primaries now include more particles.
-      double momentum = sqrt( (prim.startp.x*prim.startp.x) + (prim.startp.y*prim.startp.y) + (prim.startp.z*prim.startp.z) );
-      if ( abs(prim.pdg) == 13 && momentum > p ) {
-        p = momentum;
-
-        TVector3 muDir(prim.end.x - prim.start.x, prim.end.y - prim.start.y, prim.end.z - prim.start.z);
-        muDir = muDir.Unit();
-        cosThNuMI = TMath::Cos( muDir.Angle(rFromNuMI) );
-      }
-    }
-
-    return cosThNuMI;
+    if ( slc->truth.index < 0 ) return -5.f;
+    return ana::PrimaryUtil::MuonCosThBeam(slc->truth);
   });
 
   // Reco CosTh(mu,p)
@@ -334,44 +299,9 @@ namespace ana {
 
   // True CosTh(mu,p)
   const Var kNuMITrueCosThMuP([](const caf::SRSliceProxy* slc) -> float {
-    float pM(-5.f);
-    float pP(-5.f);
-    float pX(0.f);
-    float pY(0.f);
-    float pZ(0.f);
-    float mX(0.f);
-    float mY(0.f);
-    float mZ(0.f);
+
     if ( slc->truth.index < 0 ) return -5.f;
-
-    for ( auto const& prim : slc->truth.prim ) {
-      if ( prim.start_process != 0 ) continue; // to handle fact that primaries now include more particles.
-      double momentum = sqrt( (prim.startp.x*prim.startp.x) + (prim.startp.y*prim.startp.y) + (prim.startp.z*prim.startp.z) );
-      if ( abs(prim.pdg) == 13 && momentum > pM ) {
-        pM = momentum;
-
-        TVector3 muDir(prim.end.x - prim.start.x, prim.end.y - prim.start.y, prim.end.z - prim.start.z);
-        muDir = muDir.Unit();
-        mX = muDir.X();
-        mY = muDir.Y();
-        mZ = muDir.Z();
-      }
-      if ( abs(prim.pdg) == 2212 && prim.contained && momentum > pP ) {
-        pP = momentum;
-
-        TVector3 pDir(prim.end.x - prim.start.x, prim.end.y - prim.start.y, prim.end.z - prim.start.z);
-        pDir = pDir.Unit();
-        pX = pDir.X();
-        pY = pDir.Y();
-        pZ = pDir.Z();
-      }
-    }
-
-    TVector3 muonDir(mX, mY, mZ);
-    muonDir = muonDir.Unit();
-    TVector3 protonDir(pX, pY, pZ);
-    protonDir = protonDir.Unit();
-    return TMath::Cos( muonDir.Angle(protonDir) );
+    return ana::PrimaryUtil::CosThMuonProton(slc->truth);
   });
 
 }

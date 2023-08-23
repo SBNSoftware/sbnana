@@ -184,9 +184,18 @@ namespace ana {
     return ( slc->truth.index < 0 );
   });
   /// \ref Check 1muNp0pi using vector of primaries
-  bool Is1muNp0pi(const caf::Proxy<std::vector<caf::SRTrueParticle>>& prim, bool ApplyProtonPCut){
+  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyProtonPCut){
+
+    if ( true_int.index < 0 ) return false;
+
+    if ( abs(true_int.pdg) != 14 ||
+         !true_int.iscc ||
+         std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z) ||
+         !isInFV(true_int.position.x, true_int.position.y, true_int.position.z) )
+      return false; // not signal
+
     unsigned int nMu(0), nP(0), nPi(0);
-    for ( auto const& prim : prim ) {
+    for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
@@ -199,20 +208,12 @@ namespace ana {
     if ( nMu!=1 || nP==0 || nPi > 0 ) return false;
 
     return true;
+
   }
 
   // CC signal: No kinematic threshold on proton
   const Cut kNuMI_1muNp0piStudy_Signal_NoContainment([](const caf::SRSliceProxy* slc) {
-    if ( slc->truth.index < 0 ) return false;
-
-    if ( abs(slc->truth.pdg) != 14 ||
-				 !slc->truth.iscc ||
-				 std::isnan(slc->truth.position.x) || std::isnan(slc->truth.position.y) || std::isnan(slc->truth.position.z) ||
-				 !isInFV(slc->truth.position.x,slc->truth.position.y,slc->truth.position.z) )
-      return false; // not signal
-
-    return Is1muNp0pi(slc->truth.prim, false);
-
+    return Is1muNp0pi(slc->truth, false);
   });
 
   // CC but not signal: No kinematic threshold on proton
@@ -226,16 +227,7 @@ namespace ana {
 
   // CC signal: With kinematic threshold of 400MeV/c to 1 GeV/c on proton
   const Cut kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold([](const caf::SRSliceProxy* slc) {
-    if ( slc->truth.index < 0 ) return false;
-
-    if ( abs(slc->truth.pdg) != 14 ||
-				 !slc->truth.iscc ||
-				 std::isnan(slc->truth.position.x) || std::isnan(slc->truth.position.y) || std::isnan(slc->truth.position.z) ||
-				 !isInFV(slc->truth.position.x,slc->truth.position.y,slc->truth.position.z) )
-      return false; // not signal
-
-    return Is1muNp0pi(slc->truth.prim, true);
-
+    return Is1muNp0pi(slc->truth, true);
   });
 
   // CC but not signal: With kinematic threshold of 400MeV/c to 1 GeV/c on proton
