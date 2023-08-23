@@ -2,20 +2,19 @@ import numpy as np
 import pandas as pd
 
 class Histogram(object):
-    def __init__(self, dataset, var, cut=None, bins=None, weights=None):
-        cut = cut(dataset.df) if cut else True
-        v = var(dataset.df)[cut]
-        weights = weights[cut] if weights is not None else None
-        N, bins = np.histogram(v, bins=bins, weights=weights)
+    def __init__(self, var, POT, livetime, cut=None, bins=None, weights=None):
+        var = var[cut] if cut is not None else var
+        weights = weights[cut] if weights is not None and cut is not None else weights
+        N, bins = np.histogram(var, bins=bins, weights=weights)
         self.N = N
         self.bins = bins
         self.centers = (bins[1:] + bins[:-1]) / 2.
 
-        Nvar, _ = np.histogram(v, bins=bins, weights=(weights**2 if weights is not None else None))
+        Nvar, _ = np.histogram(var, bins=bins, weights=(weights**2 if weights is not None else None))
         self.Nerr = np.sqrt(Nvar)
 
-        self.POT = dataset.POT
-        self.livetime = dataset.livetime
+        self.POT = POT
+        self.livetime = livetime
 
     def to_area(self):
         w = 1. / (np.sum(self.N)*(self.bins[1] - self.bins[0]))

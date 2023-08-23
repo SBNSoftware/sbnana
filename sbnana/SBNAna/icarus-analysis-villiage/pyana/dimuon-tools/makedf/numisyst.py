@@ -2,8 +2,8 @@ import uproot
 import numpy as np
 import pandas as pd
 
-FSYST = "/cvmfs/sbn.opensciencegrid.org/products/sbn/sbndata/v01_04/beamData/NuMIdata/icarus_numi_flux_syst_ana.root"
-# FSYST = "/icarus/data/users/gputnam/icarus_numi_flux_syst_ana.root"
+# FSYST = "/cvmfs/sbn.opensciencegrid.org/products/sbn/sbndata/v01_04/beamData/NuMIdata/icarus_numi_flux_syst_ana.root"
+FSYST = "/icarus/data/users/gputnam/icarus_numi_flux_syst_ana_v2.root"
 
 beam_uncertainties = [
     "beam_div",
@@ -40,7 +40,8 @@ def getallpdg_histdf(d, prefix):
 def numisyst(nupdg, nuE, fsyst=FSYST):
     flux_f = uproot.open(fsyst)
 
-    cv = getallpdg_histdf(flux_f["ppfx_output"]["fhc"]["nom"], "hcv_") / getallpdg_histdf(flux_f["ppfx_output"]["fhc"]["nom"], "hnom_")
+    # cv = getallpdg_histdf(flux_f["ppfx_output"]["fhc"]["nom"], "hcv_") / getallpdg_histdf(flux_f["ppfx_output"]["fhc"]["nom"], "hnom_")
+    cv = getallpdg_histdf(flux_f["ppfx_flux_weights"], "hweights_fhc_")
     cv.name = ("ppfx", "cv")
 
     beam_syst_wgts = []
@@ -53,14 +54,14 @@ def numisyst(nupdg, nuE, fsyst=FSYST):
         beam_syst_wgts.append(wgtdf_p)
         beam_syst_wgts.append(wgtdf_m)
     
-    # for i in pca_components:
-    #     uncdf = getallpdg_histdf(flux_f["pca"]["principal_components"], "hpc_%i_fhc_" % i)
-    #     wgtdf_p = 1 + uncdf
-    #     wgtdf_m = 1 - uncdf
-    #     wgtdf_p.name = (("pca%i" % i), "ps")
-    #     wgtdf_m.name = (("pca%i" % i), "ms")
-    #     beam_syst_wgts.append(wgtdf_p)
-    #     beam_syst_wgts.append(wgtdf_m)
+    for i in pca_components:
+        uncdf = getallpdg_histdf(flux_f["pca"]["principal_components"], "hpc_%i_fhc_" % i)
+        wgtdf_p = 1 + uncdf
+        wgtdf_m = 1 - uncdf
+        wgtdf_p.name = (("pca%i" % i), "ps")
+        wgtdf_m.name = (("pca%i" % i), "ms")
+        beam_syst_wgts.append(wgtdf_p)
+        beam_syst_wgts.append(wgtdf_m)
 
     wgts = pd.DataFrame([cv] + beam_syst_wgts).T
     nuind = pd.MultiIndex.from_arrays([nupdg, nuE])

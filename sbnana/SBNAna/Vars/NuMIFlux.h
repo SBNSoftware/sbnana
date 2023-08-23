@@ -18,6 +18,7 @@ namespace ana
     NuMIPpfxFluxWeight();
     ~NuMIPpfxFluxWeight();
     mutable TH1* fWeight[2][2][2]; // [fhc/rhc][nue/numu][nu/nubar]
+    double GetNuWeight(const caf::Proxy<caf::SRTrueInteraction>& true_int) const;
 
   protected:
     std::string fFluxFilePath;
