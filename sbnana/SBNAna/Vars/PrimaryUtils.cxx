@@ -1,26 +1,23 @@
 #include "sbnana/SBNAna/Vars/PrimaryUtils.h"
 
-using namespace std;
-using namespace caf;
-
 namespace ana{
 
 namespace PrimaryUtil{
 
   // Interaction
-  double NeutrinoE(const SRTrueInteractionProxy& true_int){
+  double NeutrinoE(const caf::SRTrueInteractionProxy& true_int){
     return true_int.E;
   }
-  int NeutrinoPDG(const SRTrueInteractionProxy& true_int){
+  int NeutrinoPDG(const caf::SRTrueInteractionProxy& true_int){
     return true_int.pdg;
   }
-  int NeutrinoMode(const SRTrueInteractionProxy& true_int){
+  int NeutrinoMode(const caf::SRTrueInteractionProxy& true_int){
     return true_int.genie_mode;
   }
-  int Target(const SRTrueInteractionProxy& true_int){
+  int Target(const caf::SRTrueInteractionProxy& true_int){
     return true_int.targetPDG;
   }
-  int Npip(const SRTrueInteractionProxy& true_int){
+  int Npip(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -28,7 +25,7 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
-  int Npim(const SRTrueInteractionProxy& true_int){
+  int Npim(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -36,7 +33,7 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
-  int Npi0(const SRTrueInteractionProxy& true_int){
+  int Npi0(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -47,7 +44,7 @@ namespace PrimaryUtil{
 
   // Muon
 
-  int MuonIndex(const SRTrueInteractionProxy& true_int){
+  int MuonIndex(const caf::SRTrueInteractionProxy& true_int){
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < true_int.prim.size(); ++i){
@@ -68,7 +65,7 @@ namespace PrimaryUtil{
     return truth_idx;
   }
 
-  double MuonNuCosineTheta(const SRTrueInteractionProxy& true_int){
+  double MuonNuCosineTheta(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -87,7 +84,7 @@ namespace PrimaryUtil{
 
     return ret;
   }
-  double MuonP(const SRTrueInteractionProxy& true_int){
+  double MuonP(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -100,7 +97,7 @@ namespace PrimaryUtil{
     return ret;
 
   }
-  double MuonPt(const SRTrueInteractionProxy& true_int){
+  double MuonPt(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -123,7 +120,7 @@ namespace PrimaryUtil{
     return ret;
 
   }
-  double MuonCosThBeam(const SRTrueInteractionProxy& true_int){
+  double MuonCosThBeam(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -145,7 +142,7 @@ namespace PrimaryUtil{
 
   // Proton
 
-  int ProtonIndex(const SRTrueInteractionProxy& true_int){
+  int ProtonIndex(const caf::SRTrueInteractionProxy& true_int){
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < true_int.prim.size(); ++i){
@@ -166,7 +163,7 @@ namespace PrimaryUtil{
     return truth_idx;
   }
 
-  double ProtonNuCosineTheta(const SRTrueInteractionProxy& true_int){
+  double ProtonNuCosineTheta(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -185,7 +182,7 @@ namespace PrimaryUtil{
 
     return ret;
   }
-  double ProtonP(const SRTrueInteractionProxy& true_int){
+  double ProtonP(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -197,7 +194,7 @@ namespace PrimaryUtil{
 
     return ret;
   }
-  double ProtonPt(const SRTrueInteractionProxy& true_int){
+  double ProtonPt(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -221,7 +218,7 @@ namespace PrimaryUtil{
   }
 
   // Muon+Proton
-  double CosThMuonProton(const SRTrueInteractionProxy& true_int){
+  double CosThMuonProton(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -318,7 +315,7 @@ namespace PrimaryUtil{
     return deltaphiT;
   }
 
-  double deltaPT(const SRTrueInteractionProxy& true_int){
+  double deltaPT(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
 
@@ -340,7 +337,7 @@ namespace PrimaryUtil{
 
     return ret;
   }
-  double deltaPTx(const SRTrueInteractionProxy& true_int){
+  double deltaPTx(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-99999); // TODO deltaPTx is a signed variable.. for now just making it very very largly negative
 
@@ -362,7 +359,7 @@ namespace PrimaryUtil{
 
     return ret;
   }
-  double deltaPTy(const SRTrueInteractionProxy& true_int){
+  double deltaPTy(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-99999); // TODO deltaPTy is a signed variable.. for now just making it very very largly negative
 
@@ -384,7 +381,7 @@ namespace PrimaryUtil{
 
     return ret;
   }
-  double deltaalphaT(const SRTrueInteractionProxy& true_int){
+  double deltaalphaT(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f); // acos is in the interval of [0,pi]
 
@@ -406,7 +403,7 @@ namespace PrimaryUtil{
 
     return ret;
   }
-  double deltaphiT(const SRTrueInteractionProxy& true_int){
+  double deltaphiT(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f); // acos is in the interval of [0,pi]
 
