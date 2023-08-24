@@ -28,46 +28,46 @@ namespace ana{
   );
   const SpillMultiVar kTruePDGVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::NeutrinoPDG);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, NeutrinoPDG);
     }
   );
   const SpillMultiVar kTrueModeVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::NeutrinoMode);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, NeutrinoMode);
     }
   );
   const SpillMultiVar kTrueTargetVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::Target);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, Target);
     }
   );
   const SpillMultiVar kTrueEVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::NeutrinoE);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, NeutrinoE);
     }
   );
 
   // Muon
   const SpillMultiVar kTrueMuonPVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::MuonP);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, MuonP);
     }
   );
   const SpillMultiVar kTrueMuonNuCosineThetaVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::MuonNuCosineTheta);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, MuonNuCosineTheta);
     }
   );
 
   // Proton
   const SpillMultiVar kTrueProtonPVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::ProtonP);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ProtonP);
     }
   );
   const SpillMultiVar kTrueProtonNuCosineThetaVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::ProtonNuCosineTheta);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ProtonNuCosineTheta);
     }
   );
 
@@ -75,34 +75,34 @@ namespace ana{
 
   const SpillMultiVar kTrueCosThMuonProtonVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::CosThMuonProton);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, CosThMuonProton);
     }
   );
 
   // TKI
   const SpillMultiVar kTruedeltaPTVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaPT);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, deltaPT);
     }
   );
   const SpillMultiVar kTruedeltaPTxVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaPTx);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, deltaPTx);
     }
   );
   const SpillMultiVar kTruedeltaPTyVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaPTy);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, deltaPTy);
     }
   );
   const SpillMultiVar kTruedeltaalphaTVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaalphaT);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, deltaalphaT);
     }
   );
   const SpillMultiVar kTruedeltaphiTVectorPerSignalNu(
     [](const caf::SRSpillProxy *sr) -> vector<double> {
-      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, ana::PrimaryUtil::deltaphiT);
+      return GetTrueVarVectorPerNu(sr, Is1muNp0piWithProtonPcut, deltaphiT);
     }
   );
 

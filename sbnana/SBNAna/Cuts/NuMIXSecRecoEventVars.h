@@ -12,17 +12,17 @@ namespace ana{
   /// \ref Neutrino pdg
   const Var kNuMITruePDG([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return 0;
-    return ana::PrimaryUtil::NeutrinoPDG(slc->truth);
+    return NeutrinoPDG(slc->truth);
   });
   /// \ref Target pdg
   const Var kNuMITrueTarget([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return 0;
-    return ana::PrimaryUtil::Target(slc->truth);
+    return Target(slc->truth);
   });
   /// \ref GENIE interaction code (https://internal.dunescience.org/doxygen/namespacesimb.html#a2cce734d1b71408bbc7d98d148ac4360)
   const Var kNuMITrueMode([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
-    return ana::PrimaryUtil::NeutrinoMode(slc->truth);
+    return NeutrinoMode(slc->truth);
   });
   /// \ref IsCC (0:NC, 1:CC, -1:Not neutrino)
   const Var kNuMITrueIsCC([](const caf::SRSliceProxy* slc) -> int {
@@ -33,22 +33,22 @@ namespace ana{
   /// \ref Number of primary pi+
   const Var kNuMITrueNpip([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
-    return ana::PrimaryUtil::Npip(slc->truth);
+    return Npip(slc->truth);
   });
   /// \ref Number of primary pi-
   const Var kNuMITrueNpim([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
-    return ana::PrimaryUtil::Npim(slc->truth);
+    return Npim(slc->truth);
   });
   /// \ref Number of primary pi0
   const Var kNuMITrueNpi0([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
-    return ana::PrimaryUtil::Npi0(slc->truth);
+    return Npi0(slc->truth);
   });
   /// \ref Neutrino energy
   const Var kNuMITrueNuE([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
-    return ana::PrimaryUtil::NeutrinoE(slc->truth);
+    return NeutrinoE(slc->truth);
   });
 
   /// \ref 0: not signal, 1: signal
