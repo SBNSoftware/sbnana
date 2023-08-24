@@ -10,17 +10,17 @@ namespace ana{
   /// \ref Neutrino pdg
   const Var kNuMITruePDG([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return 0;
-    return PrimaryUtil::NeutrinoPDG(slc->truth);
+    return PrimaryUtil::NeutrinoPDG_True(slc->truth);
   });
   /// \ref Target pdg
   const Var kNuMITrueTarget([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return 0;
-    return PrimaryUtil::Target(slc->truth);
+    return PrimaryUtil::Target_True(slc->truth);
   });
   /// \ref GENIE interaction code (https://internal.dunescience.org/doxygen/namespacesimb.html#a2cce734d1b71408bbc7d98d148ac4360)
   const Var kNuMITrueMode([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
-    return PrimaryUtil::NeutrinoMode(slc->truth);
+    return PrimaryUtil::NeutrinoMode_True(slc->truth);
   });
   /// \ref IsCC (0:NC, 1:CC, -1:Not neutrino)
   const Var kNuMITrueIsCC([](const caf::SRSliceProxy* slc) -> int {
@@ -31,22 +31,22 @@ namespace ana{
   /// \ref Number of primary pi+
   const Var kNuMITrueNpip([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
-    return PrimaryUtil::Npip(slc->truth);
+    return PrimaryUtil::Npip_True(slc->truth);
   });
   /// \ref Number of primary pi-
   const Var kNuMITrueNpim([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
-    return PrimaryUtil::Npim(slc->truth);
+    return PrimaryUtil::Npim_True(slc->truth);
   });
   /// \ref Number of primary pi0
   const Var kNuMITrueNpi0([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
-    return PrimaryUtil::Npi0(slc->truth);
+    return PrimaryUtil::Npi0_True(slc->truth);
   });
   /// \ref Neutrino energy
   const Var kNuMITrueNuE([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
-    return PrimaryUtil::NeutrinoE(slc->truth);
+    return PrimaryUtil::NeutrinoE_True(slc->truth);
   });
 
   /// \ref 0: not signal, 1: signal
