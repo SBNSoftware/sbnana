@@ -1,13 +1,14 @@
 #include "sbnana/SBNAna/Cuts/NuMIXSecTrueEventVars.h"
 
 using namespace ana::PrimaryUtil;
+using namespace caf;
 
 namespace ana{
 
   std::vector<double> GetTrueVarVectorPerNu(
     const caf::SRSpillProxy* sr,
-    std::function<bool(const TrueInteraction&)> isSignal,
-    std::function<double(const TrueInteraction&) > trueth_var
+    std::function<bool(const SRTrueInteractionProxy&)> isSignal,
+    std::function<double(const SRTrueInteractionProxy&) > trueth_var
   ){
 
     std::vector<double> vals;
@@ -23,7 +24,7 @@ namespace ana{
 
   std::vector<double> GetCutTypeVectorPerNu(
     const caf::SRSpillProxy* sr,
-    std::function<bool(const TrueInteraction&)> isSignal
+    std::function<bool(const SRTrueInteractionProxy&)> isSignal
   ){
 
     vector<double> vals;
@@ -58,7 +59,7 @@ namespace ana{
 
   std::vector<double> GetNuMIPPFXWeightVectorPerNu(
     const caf::SRSpillProxy* sr,
-    std::function<bool(const TrueInteraction&)> isSignal
+    std::function<bool(const SRTrueInteractionProxy&)> isSignal
   ){
 
     vector<double> vals;

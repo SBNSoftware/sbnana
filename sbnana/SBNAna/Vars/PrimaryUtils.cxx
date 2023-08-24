@@ -1,25 +1,26 @@
 #include "sbnana/SBNAna/Vars/PrimaryUtils.h"
 
 using namespace std;
+using namespace caf;
 
 namespace ana{
 
 namespace PrimaryUtil{
 
   // Interaction
-  double NeutrinoE(const TrueInteraction& true_int){
+  double NeutrinoE(const SRTrueInteractionProxy& true_int){
     return true_int.E;
   }
-  int NeutrinoPDG(const TrueInteraction& true_int){
+  int NeutrinoPDG(const SRTrueInteractionProxy& true_int){
     return true_int.pdg;
   }
-  int NeutrinoMode(const TrueInteraction& true_int){
+  int NeutrinoMode(const SRTrueInteractionProxy& true_int){
     return true_int.genie_mode;
   }
-  int Target(const TrueInteraction& true_int){
+  int Target(const SRTrueInteractionProxy& true_int){
     return true_int.targetPDG;
   }
-  int Npip(const TrueInteraction& true_int){
+  int Npip(const SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -27,7 +28,7 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
-  int Npim(const TrueInteraction& true_int){
+  int Npim(const SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -35,7 +36,7 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
-  int Npi0(const TrueInteraction& true_int){
+  int Npi0(const SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -46,7 +47,7 @@ namespace PrimaryUtil{
 
   // Muon
 
-  int MuonIndex(const TrueInteraction& true_int){
+  int MuonIndex(const SRTrueInteractionProxy& true_int){
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < true_int.prim.size(); ++i){
@@ -67,7 +68,7 @@ namespace PrimaryUtil{
     return truth_idx;
   }
 
-  double MuonNuCosineTheta(const TrueInteraction& true_int){
+  double MuonNuCosineTheta(const SRTrueInteractionProxy& true_int){
     int truth_idx = MuonIndex(true_int);
     if(truth_idx>=0){
 
@@ -84,7 +85,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double MuonP(const TrueInteraction& true_int){
+  double MuonP(const SRTrueInteractionProxy& true_int){
     int truth_idx = MuonIndex(true_int);
     if(truth_idx>=0){
       const auto& mu_p = true_int.prim.at(truth_idx).genp;
@@ -94,7 +95,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double MuonPt(const TrueInteraction& true_int){
+  double MuonPt(const SRTrueInteractionProxy& true_int){
     int truth_idx = MuonIndex(true_int);
     if(truth_idx>=0){
       const auto& p_mu = true_int.prim.at(truth_idx).genp;
@@ -114,7 +115,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double MuonCosThBeam(const TrueInteraction& true_int){
+  double MuonCosThBeam(const SRTrueInteractionProxy& true_int){
     int truth_idx = MuonIndex(true_int);
     if(truth_idx>=0){
 
@@ -134,7 +135,7 @@ namespace PrimaryUtil{
 
   // Proton
 
-  int ProtonIndex(const TrueInteraction& true_int){
+  int ProtonIndex(const SRTrueInteractionProxy& true_int){
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < true_int.prim.size(); ++i){
@@ -155,7 +156,7 @@ namespace PrimaryUtil{
     return truth_idx;
   }
 
-  double ProtonNuCosineTheta(const TrueInteraction& true_int){
+  double ProtonNuCosineTheta(const SRTrueInteractionProxy& true_int){
     int truth_idx = ProtonIndex(true_int);
     if(truth_idx>=0){
 
@@ -172,7 +173,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double ProtonP(const TrueInteraction& true_int){
+  double ProtonP(const SRTrueInteractionProxy& true_int){
     int truth_idx = ProtonIndex(true_int);
     if(truth_idx>=0){
       const auto& pro_p = true_int.prim.at(truth_idx).genp;
@@ -182,7 +183,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double ProtonPt(const TrueInteraction& true_int){
+  double ProtonPt(const SRTrueInteractionProxy& true_int){
     int truth_idx = ProtonIndex(true_int);
     if(truth_idx>=0){
       const auto& p_pro = true_int.prim.at(truth_idx).genp;
@@ -204,7 +205,7 @@ namespace PrimaryUtil{
   }
 
   // Muon+Proton
-  double CosThMuonProton(const TrueInteraction& true_int){
+  double CosThMuonProton(const SRTrueInteractionProxy& true_int){
     int truth_mu_idx = MuonIndex(true_int);
     int truth_pro_idx = ProtonIndex(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
@@ -299,7 +300,7 @@ namespace PrimaryUtil{
     return deltaphiT;
   }
 
-  double deltaPT(const TrueInteraction& true_int){
+  double deltaPT(const SRTrueInteractionProxy& true_int){
     int truth_mu_idx = MuonIndex(true_int);
     int truth_pro_idx = ProtonIndex(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
@@ -319,7 +320,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double deltaPTx(const TrueInteraction& true_int){
+  double deltaPTx(const SRTrueInteractionProxy& true_int){
     int truth_mu_idx = MuonIndex(true_int);
     int truth_pro_idx = ProtonIndex(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
@@ -339,7 +340,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double deltaPTy(const TrueInteraction& true_int){
+  double deltaPTy(const SRTrueInteractionProxy& true_int){
     int truth_mu_idx = MuonIndex(true_int);
     int truth_pro_idx = ProtonIndex(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
@@ -359,7 +360,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double deltaalphaT(const TrueInteraction& true_int){
+  double deltaalphaT(const SRTrueInteractionProxy& true_int){
     int truth_mu_idx = MuonIndex(true_int);
     int truth_pro_idx = ProtonIndex(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
@@ -379,7 +380,7 @@ namespace PrimaryUtil{
       return -999.;
     }
   }
-  double deltaphiT(const TrueInteraction& true_int){
+  double deltaphiT(const SRTrueInteractionProxy& true_int){
     int truth_mu_idx = MuonIndex(true_int);
     int truth_pro_idx = ProtonIndex(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
