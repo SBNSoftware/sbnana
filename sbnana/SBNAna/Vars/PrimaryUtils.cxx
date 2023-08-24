@@ -1,7 +1,6 @@
 #include "sbnana/SBNAna/Vars/PrimaryUtils.h"
 
 using namespace std;
-using namespace ana;
 
 namespace ana{
 

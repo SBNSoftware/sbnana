@@ -1,6 +1,5 @@
 #include "sbnana/SBNAna/Cuts/NuMIXSecTrueEventVars.h"
 
-using namespace ana;
 using namespace ana::PrimaryUtil;
 
 namespace ana{

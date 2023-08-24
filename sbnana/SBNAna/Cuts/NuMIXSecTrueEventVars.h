@@ -5,7 +5,6 @@
 #include "sbnana/SBNAna/Vars/PrimaryUtils.h"
 #include "sbnana/SBNAna/Vars/NuMIFlux.h"
 
-using namespace ana;
 using namespace ana::PrimaryUtil;
 
 namespace ana{

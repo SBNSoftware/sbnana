@@ -11,7 +11,6 @@ Loop over SRTrueParticle vectors and return variables
 #include <iostream>
 
 using namespace std;
-using namespace ana;
 
 namespace ana{
 
