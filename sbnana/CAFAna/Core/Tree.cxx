@@ -260,12 +260,18 @@ namespace ana
 
   //----------------------------------------------------------------------
   WeightsTree::WeightsTree( const std::string name, const std::vector<std::string>& labels,
-                            const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum, const unsigned int nWeightsExpected )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fNSigma(nSigma), fNWeightsExpected(nWeightsExpected)
+                            const std::vector<unsigned int>& nWeights, const bool saveRunSubEvt, const bool saveSliceNum )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
   {
+    assert( nWeights.size()==labels.size() );
+
     for ( unsigned int i=0; i<labels.size(); ++i ) {
       fOrderedBranchWeightNames.push_back( labels.at(i) );
       fBranchWeightEntries[labels.at(i)] = {};
+
+      fNSigmasLo[labels.at(i)] = 0;
+      fNSigmasHi[labels.at(i)] = nWeights.at(i);
+      fNWeightsExpected[labels.at(i)] = nWeights.at(i);
     }
 
     if ( saveRunSubEvt ) {
@@ -284,6 +290,73 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  WeightsTree::WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                            const std::vector<std::pair<int,int>>& nSigma, const bool saveRunSubEvt, const bool saveSliceNum )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+  {
+    assert( nSigma.size()==labels.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      fOrderedBranchWeightNames.push_back( labels.at(i) );
+      fBranchWeightEntries[labels.at(i)] = {};
+
+      assert( nSigma.at(i).second > nSigma.at(i).first );
+
+      fNSigmasLo[labels.at(i)] = nSigma.at(i).first;
+      fNSigmasHi[labels.at(i)] = nSigma.at(i).second;
+      fNWeightsExpected[labels.at(i)] = (unsigned int)((nSigma.at(i).second-nSigma.at(i).first) + 1);
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
+    }
+    if ( saveSliceNum ) {
+      assert( fBranchEntries.find("Slice/i") == fBranchEntries.end() );
+      fOrderedBranchNames.push_back( "Slice/i" ); fBranchEntries["Slice/i"] = {};
+    }
+  }
+
+  //----------------------------------------------------------------------
+  void WeightsTree::MergeTree( const Tree& inTree )
+  {
+    assert( this->fSaveRunSubEvt && this->fSaveSliceNum && inTree.fSaveRunSubEvt && inTree.fSaveSliceNum );
+
+    // This requires the branches to agree and be in the same order...
+    // Someone could write a more complicated version but right now this is the foreseen use.
+    assert( this->fNEntries == inTree.fNEntries ); // must have the same N Entries
+    for ( unsigned int idx = 0; idx < this->fNEntries; ++idx )  {
+      // Entries must be the same
+      assert( this->fBranchEntries.at("Run/i").at(idx) == inTree.fBranchEntries.at("Run/i").at(idx) &&
+              this->fBranchEntries.at("Subrun/i").at(idx) == inTree.fBranchEntries.at("Subrun/i").at(idx) &&
+              this->fBranchEntries.at("Evt/i").at(idx) == inTree.fBranchEntries.at("Evt/i").at(idx) &&
+              this->fBranchEntries.at("Slice/i").at(idx) == inTree.fBranchEntries.at("Slice/i").at(idx) );
+    }
+
+    std::vector<std::string> branchesToFill;
+    for ( auto const& branch : inTree.fOrderedBranchNames ) {
+      if ( this->fBranchEntries.find( branch ) == this->fBranchEntries.end() ) {
+        this->fOrderedBranchNames.push_back( branch );
+        this->fBranchEntries[ branch ] = {};
+        branchesToFill.push_back( branch );
+      }
+    }
+
+    // Now do the merge
+    for ( unsigned int idx = 0; idx < this->fNEntries; ++idx )  {
+      for ( auto const& branch : branchesToFill ) {
+        this->fBranchEntries.at(branch).push_back( inTree.fBranchEntries.at(branch).at(idx) );
+      }
+    }
+
+  }
+
+  //----------------------------------------------------------------------
   void WeightsTree::UpdateEntries( const std::map<std::string, std::vector<double>> valsMap, const std::map<std::string, std::vector<double>> weightMap )
   {
     // First the basic entries (i.e. Run, Subrun, Event or nothing in this case...)
@@ -299,10 +372,10 @@ namespace ana
       idxBranch+=1;
     }
 
-    // Now the fNSigma number of weights, stored as a vector per record.
+    // Now the fNWeightsExpected number of weights, stored as a vector per record.
     for ( auto const& [name, weights] : weightMap ) {
       assert ( fBranchWeightEntries.find(name) != fBranchWeightEntries.end() );
-      assert ( weights.size() == fNWeightsExpected );
+      assert ( weights.size() == fNWeightsExpected.at(name) );
 
       fBranchWeightEntries.at(name).push_back(weights);
     }
@@ -320,11 +393,13 @@ namespace ana
   //----------------------------------------------------------------------
   NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
                             SpectrumLoaderBase& loader,
-                            const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
-                            const Cut& cut, const SystShifts& shift, const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum )
-    : WeightsTree(name,labels,nSigma,saveRunSubEvt,saveSliceNum,2*nSigma+1)
+                            const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
+                            const SpillCut& spillcut,
+                            const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
+  : WeightsTree(name,labels,nSigma,saveRunSubEvt,saveSliceNum)
   {
     assert( labels.size() == systsToStore.size() );
+    assert( nSigma.size() == labels.size() );
 
     loader.AddNSigmasTree( *this, labels, systsToStore, spillcut, cut, shift );
   }
@@ -406,12 +481,6 @@ namespace ana
     }
 
     const int NBranchesWeights = fOrderedBranchWeightNames.size();
-    const int NSigmas = 2*fNSigma+1;
-
-    double sigmasArr[NSigmas];
-    for ( unsigned int idxSigma=0; idxSigma<2*fNSigma+1; ++idxSigma ) {
-      sigmasArr[idxSigma] = double((-1*int(fNSigma))+int(idxSigma));
-    }
 
     TSpline3 *splinesArr[NBranchesWeights];
     for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
@@ -432,6 +501,12 @@ namespace ana
       }
       // Make the splines
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        double sigmasArr[NSigmas];
+        for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
+          sigmasArr[idxSigma] = double((-1*NSigmas)+int(idxSigma));
+        }
+
         double weightsArr[NSigmas];
         unsigned int idxVal = 0;
         for ( auto const& val : fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at( idxEntry ) ) {
@@ -528,12 +603,6 @@ namespace ana
     }
 
     const int NBranchesWeights = fOrderedBranchWeightNames.size();
-    const int NSigmas = 2*fNSigma+1;
-
-    double sigmasArr[NSigmas];
-    for ( unsigned int idxSigma=0; idxSigma<2*fNSigma+1; ++idxSigma ) {
-      sigmasArr[idxSigma] = double((-1*int(fNSigma))+int(idxSigma));
-    }
 
     TGraph *graphsArr[NBranchesWeights];
     for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
@@ -554,6 +623,12 @@ namespace ana
       }
       // Make the graphs
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        double sigmasArr[NSigmas];
+        for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
+          sigmasArr[idxSigma] = double((-1*NSigmas)+int(idxSigma));
+        }
+
         double weightsArr[NSigmas];
         unsigned int idxVal = 0;
         for ( auto const& val : fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at( idxEntry ) ) {
@@ -647,8 +722,6 @@ namespace ana
       }
     }
 
-    const unsigned int NSigmas = 2*fNSigma+1;
-
     std::map< std::string, std::vector<double> > weights;
 
     // set up map
@@ -673,7 +746,8 @@ namespace ana
       }
       // Save the weights
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
-        for ( unsigned int idxWt = 0; idxWt < NSigmas; ++idxWt ) {
+        const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        for ( unsigned int idxWt = 0; idxWt < (unsigned int)NSigmas; ++idxWt ) {
           weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxEntry).at(idxWt));
         }
       }
@@ -694,15 +768,15 @@ namespace ana
   //----------------------------------------------------------------------
   NUniversesTree::NUniversesTree( const std::string name, const std::vector<std::string>& labels,
                             SpectrumLoaderBase& loader,
-                            const std::vector<std::vector<Var>>& univsKnobs, const unsigned int nUniverses,
+                            const std::vector<std::vector<Var>>& univsKnobs, const std::vector<unsigned int>& nUniverses,
                             const SpillCut& spillcut,
                             const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
-    : WeightsTree(name,labels,nUniverses,saveRunSubEvt,saveSliceNum,nUniverses)
+  : WeightsTree(name,labels,nUniverses,saveRunSubEvt,saveSliceNum)
   {
     assert( labels.size() == univsKnobs.size() );
 
     for ( unsigned int i=0; i<labels.size(); ++i ) {
-      assert( univsKnobs.at(i).size() == fNSigma );
+      assert( univsKnobs.at(i).size() == nUniverses.at(i) );
     }
 
     loader.AddNUniversesTree( *this, labels, univsKnobs, spillcut, cut, shift );
@@ -808,7 +882,7 @@ namespace ana
       }
       // Save the weights
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
-        for ( unsigned int idxWt = 0; idxWt < fNSigma; ++idxWt ) {
+        for ( unsigned int idxWt = 0; idxWt < fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) ); ++idxWt ) {
           weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxEntry).at(idxWt));
         }
       }
