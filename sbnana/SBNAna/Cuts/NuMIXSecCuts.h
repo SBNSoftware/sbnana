@@ -42,7 +42,7 @@ namespace ana
   extern const Cut kNuMIChargedPionSideBand;
   extern const Cut kNuMINeutralPionSideBand;
 
-  /// \ref Var that returns which selection passed
+  /// \ref CutType; 1=Signal, 2=pi+- sideband, 3=pi0 sideband (0=other)
   extern const Var kNuMICutType;
 
   /// \ref Signal definitions: Neutrino Neutral Current

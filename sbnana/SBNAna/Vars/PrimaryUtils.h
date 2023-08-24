@@ -22,9 +22,12 @@ namespace PrimaryUtil{
 
   // Interaction
   double NeutrinoE(const TrueInteraction& true_int);
-  double NeutrinoPDG(const TrueInteraction& true_int);
-  double NeutrinoMode(const TrueInteraction& true_int);
-  double Target(const TrueInteraction& true_int);
+  int NeutrinoPDG(const TrueInteraction& true_int);
+  int NeutrinoMode(const TrueInteraction& true_int);
+  int Target(const TrueInteraction& true_int);
+  int Npip(const TrueInteraction& true_int);
+  int Npim(const TrueInteraction& true_int);
+  int Npi0(const TrueInteraction& true_int);
 
   // Muon
   int MuonIndex(const TrueInteraction& true_int);

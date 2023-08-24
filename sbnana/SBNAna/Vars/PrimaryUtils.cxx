@@ -11,14 +11,38 @@ namespace PrimaryUtil{
   double NeutrinoE(const TrueInteraction& true_int){
     return true_int.E;
   }
-  double NeutrinoPDG(const TrueInteraction& true_int){
+  int NeutrinoPDG(const TrueInteraction& true_int){
     return true_int.pdg;
   }
-  double NeutrinoMode(const TrueInteraction& true_int){
+  int NeutrinoMode(const TrueInteraction& true_int){
     return true_int.genie_mode;
   }
-  double Target(const TrueInteraction& true_int){
+  int Target(const TrueInteraction& true_int){
     return true_int.targetPDG;
+  }
+  int Npip(const TrueInteraction& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == 211 ) NPtl++;
+    }
+    return NPtl;
+  }
+  int Npim(const TrueInteraction& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == -211 ) NPtl++;
+    }
+    return NPtl;
+  }
+  int Npi0(const TrueInteraction& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( abs(prim.pdg) == 111 ) NPtl++;
+    }
+    return NPtl;
   }
 
   // Muon

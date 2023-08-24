@@ -10,8 +10,6 @@ using namespace ana::PrimaryUtil;
 
 namespace ana{
 
-namespace TrueEvent{
-
   std::vector<double> GetTrueVarVectorPerNu(
     const caf::SRSpillProxy* sr,
     std::function<bool(const TrueInteraction&)> isSignal,
@@ -121,7 +119,5 @@ namespace TrueEvent{
       return GetNuMIPPFXWeightVectorPerNu(sr, Is1muNp0piWithProtonPcut);
     }
   );
-
-}
 
 }

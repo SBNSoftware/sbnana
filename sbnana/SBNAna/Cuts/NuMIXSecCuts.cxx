@@ -169,13 +169,13 @@ namespace ana {
                                        !kNuMICutPhotons; /*Neutral pion*/
 
 
-  // Var that returns which selection passed
+  /// CutType; 1=Signal, 2=pi+- sideband, 3=pi0 sideband, 0=other
   const Var kNuMICutType([](const caf::SRSliceProxy* slc) -> double {
 
-    if( kNuMISelection_1muNp0pi(slc) ) return 1; // Signal
-    else if( kNuMIChargedPionSideBand(slc) ) return 2; // Sideband
-    else if( kNuMINeutralPionSideBand(slc) ) return 3; // Sideband
-    else return 0; // other
+    if( kNuMISelection_1muNp0pi(slc) ) return 1;
+    else if( kNuMIChargedPionSideBand(slc) ) return 2;
+    else if( kNuMINeutralPionSideBand(slc) ) return 3;
+    else return 0;
 
   });
 
