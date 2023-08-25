@@ -5,17 +5,28 @@ namespace ana{
   std::vector<double> GetTrueVarVectorPerNu(
     const caf::SRSpillProxy* sr,
     std::function<bool(const caf::SRTrueInteractionProxy&)> isSignal,
-    std::function<double(const caf::SRTrueInteractionProxy&) > trueth_var
+    std::function<double(const caf::SRTrueInteractionProxy&) > TrueVar
   ){
 
     std::vector<double> vals;
 
     for ( auto const& nu : sr->mc.nu ) {
       if(!isSignal(nu)) continue; // 1muNp0pi
-      vals.push_back( trueth_var(nu) );
+      vals.push_back( TrueVar(nu) );
     }
 
     return vals;
+
+  }
+
+  SpillMultiVar GetTrueSpillMultiVarPerSignalNu(
+    std::function<bool(const caf::SRTrueInteractionProxy&)> isSignal,
+    std::function<double(const caf::SRTrueInteractionProxy&) > TrueVar
+  ){
+
+    return SpillMultiVar( [=](const caf::SRSpillProxy *sr) -> std::vector<double> {
+      return GetTrueVarVectorPerNu(sr, isSignal, TrueVar);
+    });
 
   }
 
