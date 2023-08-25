@@ -17,6 +17,22 @@ namespace PrimaryUtil{
   int Target_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.targetPDG;
   }
+  int NProton_True(const caf::SRTrueInteractionProxy& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == 2212 ) NPtl++;
+    }
+    return NPtl;
+  }
+  int NNeutron_True(const caf::SRTrueInteractionProxy& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == 2112 ) NPtl++;
+    }
+    return NPtl;
+  }
   int Npip_True(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
@@ -40,6 +56,18 @@ namespace PrimaryUtil{
       if ( abs(prim.pdg) == 111 ) NPtl++;
     }
     return NPtl;
+  }
+  double Q2_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.Q2;
+  }
+  double q0_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.q0_lab;
+  }
+  double q3_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.modq_lab;
+  }
+  double w_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.w;
   }
 
   // Muon
@@ -84,6 +112,25 @@ namespace PrimaryUtil{
 
     return ret;
   }
+  double MuonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = MuonIndex_True(true_int);
+    if(truth_idx>=0){
+
+      TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
+
+      const auto& p_mu = true_int.prim.at(truth_idx).genp;
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+
+      double angle = rFromNuMI.Angle(vec_p_mu);
+
+      ret = TMath::Cos( angle );
+    }
+
+    return ret;
+  }
   double MuonP_True(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
@@ -118,25 +165,15 @@ namespace PrimaryUtil{
     }
 
     return ret;
-
   }
-  double MuonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int){
-
+  double MuonKE_True(const caf::SRTrueInteractionProxy& true_int){
     double ret(-5.f);
-
+    
     int truth_idx = MuonIndex_True(true_int);
     if(truth_idx>=0){
-
-      TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
-
-      const auto& p_mu = true_int.prim.at(truth_idx).genp;
-      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
-
-      double angle = rFromNuMI.Angle(vec_p_mu);
-
-      ret = TMath::Cos( angle );
+      ret = true_int.prim.at(truth_idx).genE - M_MUON;
     }
-
+    
     return ret;
   }
 
@@ -182,6 +219,25 @@ namespace PrimaryUtil{
 
     return ret;
   }
+  double ProtonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = ProtonIndex_True(true_int);
+    if(truth_idx>=0){
+
+      TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
+
+      const auto& p_pro = true_int.prim.at(truth_idx).genp;
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+
+      double angle = rFromNuMI.Angle(vec_p_pro);
+
+      ret = TMath::Cos( angle );
+    }
+
+    return ret;
+  }
   double ProtonP_True(const caf::SRTrueInteractionProxy& true_int){
 
     double ret(-5.f);
@@ -212,6 +268,16 @@ namespace PrimaryUtil{
 
       ret = vec_p_l_pro.Mag();
 
+    }
+
+    return ret;
+  }
+  double ProtonKE_True(const caf::SRTrueInteractionProxy& true_int){
+    double ret(-5.f);
+
+    int truth_idx = ProtonIndex_True(true_int);
+    if(truth_idx>=0){
+      ret = true_int.prim.at(truth_idx).genE - M_PROTON;
     }
 
     return ret;

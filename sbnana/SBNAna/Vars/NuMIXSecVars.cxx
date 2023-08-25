@@ -81,7 +81,7 @@ namespace ana {
         const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
         const float Chi2Proton = trk.chi2pid[2].chi2_proton;
         const float Chi2Muon = trk.chi2pid[2].chi2_muon;
-        if ( (!Contained && trk.len > 100.) || (Contained && trk.len > 50. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
+        if ( (!Contained && trk.len > 50.) || (Contained && trk.len > 50. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
           if ( trk.len <= Longest ) continue;
           Longest = trk.len;
           PTrackInd = thisIdx;
@@ -234,6 +234,38 @@ namespace ana {
     return p;
   });
 
+  // Reco muon transverse momentum
+  const Var kNuMIRecoMuonPt([](const caf::SRSliceProxy* slc) -> int {
+    float ret(-5.f);
+    int candIdx = kNuMIMuonCandidateIdx(slc);
+    if( candIdx >= 0 ){
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+      double momentum = kNuMIMuonCandidateRecoP(slc);
+      TVector3 vec_momentum(trk.dir.x, trk.dir.y, trk.dir.z);
+      vec_momentum *= momentum;
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      TVector3 vec_pt = vec_momentum - (vec_momentum.Dot(vec_numi_to_vtx)) * vec_numi_to_vtx;
+
+      ret = vec_pt.Mag();
+
+    }
+
+     return ret;
+  });
+  // True muon transverse momentum
+  const Var kNuMITrueMuonPt([](const caf::SRSliceProxy* slc) -> double {
+    float ret(-5.f);
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::MuonPt_True(slc->truth);
+
+    return ret;
+  });
+
   // Reco proton momentum
   const Var kNuMIProtonCandidateRecoP([](const caf::SRSliceProxy* slc) -> float {
     float p(-5.f);
@@ -251,6 +283,38 @@ namespace ana {
     if ( slc->truth.index >= 0 ) p = PrimaryUtil::ProtonP_True(slc->truth);
 
     return p;
+  });
+
+  // Reco proton transverse momentum
+  const Var kNuMIRecoProtonPt([](const caf::SRSliceProxy* slc) -> int {
+    float ret(-5.f);
+    int candIdx = kNuMIProtonCandidateIdx(slc);
+    if( candIdx >= 0 ){
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+      double momentum = kNuMIProtonCandidateRecoP(slc);
+      TVector3 vec_momentum(trk.dir.x, trk.dir.y, trk.dir.z);
+      vec_momentum *= momentum;
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      TVector3 vec_pt = vec_momentum - (vec_momentum.Dot(vec_numi_to_vtx)) * vec_numi_to_vtx;
+
+      ret = vec_pt.Mag();
+
+    }
+
+     return ret;
+  });
+  // True proton transverse momentum
+  const Var kNuMITrueProtonPt([](const caf::SRSliceProxy* slc) -> double {
+    float ret(-5.f);
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::ProtonPt_True(slc->truth);
+
+    return ret;
   });
 
   // Reco CosTh(numi)
@@ -279,6 +343,89 @@ namespace ana {
 
     return costh;
   });
+
+  // Reco Muon angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kNuMIRecoCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    int candIdx = kNuMIMuonCandidateIdx(slc);
+    if ( candIdx>=0 ) {
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+      TVector3 vec_trk(trk.dir.x, trk.dir.y, trk.dir.z);
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      double angle = vec_trk.Angle(vec_numi_to_vtx);
+      costh = TMath::Cos(angle);
+    }
+
+    return costh;
+  });
+  // Reco Muon angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kNuMITrueCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::MuonNuCosineTheta_True(slc->truth);
+
+    return costh;
+  });
+
+  // Reco Proton angle w.r.t. beam
+  const Var kNuMIProtonRecoCosThBeam([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    int candIdx = kNuMIProtonCandidateIdx(slc);
+    if ( candIdx >= 0 ) {
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+
+      double magNuMI = sqrt(315.120380*315.120380 + 33.644912*33.644912 + 733.632532*733.632532);
+      TVector3 rFromNuMI(315.120380/magNuMI, 33.644912/magNuMI, 733.632532/magNuMI);
+
+      TVector3 trkDir(trk.dir.x, trk.dir.y, trk.dir.z);
+      trkDir = trkDir.Unit();
+
+      costh = TMath::Cos( trkDir.Angle(rFromNuMI) );
+    }
+
+    return costh;
+  });
+  // True Proton angle w.r.t. beam
+  const Var kNuMIProtonTrueCosThBeam([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::ProtonCosThBeam_True(slc->truth);
+
+    return costh;
+  });
+
+  // Reco Proton angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kNuMIProtonRecoCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    int candIdx = kNuMIProtonCandidateIdx(slc);
+    if ( candIdx>=0 ) {
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+      TVector3 vec_trk(trk.dir.x, trk.dir.y, trk.dir.z);
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      double angle = vec_trk.Angle(vec_numi_to_vtx);
+      costh = TMath::Cos(angle);
+    }
+
+    return costh;
+  });
+  // Reco Proton angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kNuMIProtonTrueCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::ProtonNuCosineTheta_True(slc->truth);
+
+    return costh;
+  });
+
 
   // Reco CosTh(mu,p)
   const Var kNuMIRecoCosThMuP([](const caf::SRSliceProxy* slc) -> float {

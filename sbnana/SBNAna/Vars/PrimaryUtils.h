@@ -10,6 +10,15 @@ Loop over SRTrueParticle vectors and return variables
 #include "TVector3.h"
 #include <iostream>
 
+#define M_MUON 0.1057
+#define M_CHARGEDPION 0.13957039
+#define M_NEUTRALPION 0.1349768
+#define M_PIZERO 0.1349768
+#define M_PROTON 0.938272
+#define M_NEUTRON 0.939565
+#define M_ELECTRON 0.00051
+#define E_EffNuclB 0.040
+
 namespace ana{
 
 namespace PrimaryUtil{
@@ -19,22 +28,31 @@ namespace PrimaryUtil{
   int NeutrinoPDG_True(const caf::SRTrueInteractionProxy& true_int);
   int NeutrinoMode_True(const caf::SRTrueInteractionProxy& true_int);
   int Target_True(const caf::SRTrueInteractionProxy& true_int);
+  int NProton_True(const caf::SRTrueInteractionProxy& true_int);
+  int NNeutron_True(const caf::SRTrueInteractionProxy& true_int);
   int Npip_True(const caf::SRTrueInteractionProxy& true_int);
   int Npim_True(const caf::SRTrueInteractionProxy& true_int);
   int Npi0_True(const caf::SRTrueInteractionProxy& true_int);
+  double Q2_True(const caf::SRTrueInteractionProxy& true_int);
+  double q0_True(const caf::SRTrueInteractionProxy& true_int);
+  double q3_True(const caf::SRTrueInteractionProxy& true_int);
+  double w_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Muon
   int MuonIndex_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonNuCosineTheta_True(const caf::SRTrueInteractionProxy& true_int);
+  double MuonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonP_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonPt_True(const caf::SRTrueInteractionProxy& true_int);
-  double MuonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int);
+  double MuonKE_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Proton
   int ProtonIndex_True(const caf::SRTrueInteractionProxy& true_int);
   double ProtonNuCosineTheta_True(const caf::SRTrueInteractionProxy& true_int);
+  double ProtonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int);
   double ProtonP_True(const caf::SRTrueInteractionProxy& true_int);
   double ProtonPt_True(const caf::SRTrueInteractionProxy& true_int);
+  double ProtonKE_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Muon+Proton
   double CosThMuonProton_True(const caf::SRTrueInteractionProxy& true_int);
