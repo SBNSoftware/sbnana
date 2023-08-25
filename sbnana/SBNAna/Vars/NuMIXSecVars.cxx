@@ -140,11 +140,12 @@ namespace ana {
     std::vector<double> rets;
 
     int primaryInd = kNuMIMuonCandidateIdx(slc);
+    int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
 
     for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); ++i_pfp){
 
-      if ( i_pfp == (unsigned int)primaryInd ) {
-        continue; // skip the particle which is the muon candidate!
+      if ( i_pfp == (unsigned int)primaryInd || i_pfp == (unsigned int)primaryProtonInd ) {
+        continue; // skip the particle which is the muon or leading proton candidate!
       }
 
       auto const& trk = slc->reco.pfp.at(i_pfp).trk;
