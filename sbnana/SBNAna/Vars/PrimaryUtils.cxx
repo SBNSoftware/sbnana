@@ -158,9 +158,9 @@ namespace PrimaryUtil{
       vec_p_nu = vec_p_nu.Unit(); // make unit vector
 
       double p_l = vec_p_mu.Dot(vec_p_nu);
-      TVector3 vec_p_l_mu = vec_p_mu - p_l*vec_p_nu;
+      TVector3 vec_p_t_mu = vec_p_mu - p_l*vec_p_nu;
 
-      ret = vec_p_l_mu.Mag();
+      ret = vec_p_t_mu.Mag();
 
     }
 
@@ -264,9 +264,9 @@ namespace PrimaryUtil{
       vec_p_nu = vec_p_nu.Unit();
 
       double p_l = vec_p_pro.Dot(vec_p_nu);
-      TVector3 vec_p_l_pro = vec_p_pro - p_l*vec_p_nu;
+      TVector3 vec_p_t_pro = vec_p_pro - p_l*vec_p_nu;
 
-      ret = vec_p_l_pro.Mag();
+      ret = vec_p_t_pro.Mag();
 
     }
 
