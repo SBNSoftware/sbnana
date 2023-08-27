@@ -29,6 +29,9 @@ namespace ana
   /// \ref Cut aimed at pi0 rejection
   extern const Cut kNuMICutPhotons;
 
+  /// Base selection \ref Cut for 1muNp0pi analysis: the signal and sidebands have this as a base
+  extern const Cut kNuMISelection_Base;
+
   /// Combined selection \ref Cut for 1muNp0pi with contained+exiting muons
   extern const Cut kNuMISelection_1muNp0pi;
 

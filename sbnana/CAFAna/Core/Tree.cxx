@@ -284,6 +284,40 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void WeightsTree::MergeTree( const Tree& inTree )
+  {
+    assert( this->fSaveRunSubEvt && this->fSaveSliceNum && inTree.fSaveRunSubEvt && inTree.fSaveSliceNum );
+
+    // This requires the branches to agree and be in the same order...
+    // Someone could write a more complicated version but right now this is the foreseen use.
+    assert( this->fNEntries == inTree.fNEntries ); // must have the same N Entries
+    for ( unsigned int idx = 0; idx < this->fNEntries; ++idx )  {
+      // Entries must be the same
+      assert( this->fBranchEntries.at("Run/i").at(idx) == inTree.fBranchEntries.at("Run/i").at(idx) &&
+              this->fBranchEntries.at("Subrun/i").at(idx) == inTree.fBranchEntries.at("Subrun/i").at(idx) &&
+              this->fBranchEntries.at("Evt/i").at(idx) == inTree.fBranchEntries.at("Evt/i").at(idx) &&
+              this->fBranchEntries.at("Slice/i").at(idx) == inTree.fBranchEntries.at("Slice/i").at(idx) );
+    }
+
+    std::vector<std::string> branchesToFill;
+    for ( auto const& branch : inTree.fOrderedBranchNames ) {
+      if ( this->fBranchEntries.find( branch ) == this->fBranchEntries.end() ) {
+        this->fOrderedBranchNames.push_back( branch );
+        this->fBranchEntries[ branch ] = {};
+        branchesToFill.push_back( branch );
+      }
+    }
+
+    // Now do the merge
+    for ( unsigned int idx = 0; idx < this->fNEntries; ++idx )  {
+      for ( auto const& branch : branchesToFill ) {
+        this->fBranchEntries.at(branch).push_back( inTree.fBranchEntries.at(branch).at(idx) );
+      }
+    }
+
+  }
+
+  //----------------------------------------------------------------------
   void WeightsTree::UpdateEntries( const std::map<std::string, std::vector<double>> valsMap, const std::map<std::string, std::vector<double>> weightMap )
   {
     // First the basic entries (i.e. Run, Subrun, Event or nothing in this case...)
