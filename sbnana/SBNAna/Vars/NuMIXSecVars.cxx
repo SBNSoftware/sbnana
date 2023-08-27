@@ -236,7 +236,7 @@ namespace ana {
   });
 
   // Reco muon transverse momentum
-  const Var kNuMIRecoMuonPt([](const caf::SRSliceProxy* slc) -> int {
+  const Var kNuMIRecoMuonPt([](const caf::SRSliceProxy* slc) -> double {
     float ret(-5.f);
     int candIdx = kNuMIMuonCandidateIdx(slc);
     if( candIdx >= 0 ){
@@ -287,7 +287,7 @@ namespace ana {
   });
 
   // Reco proton transverse momentum
-  const Var kNuMIRecoProtonPt([](const caf::SRSliceProxy* slc) -> int {
+  const Var kNuMIRecoProtonPt([](const caf::SRSliceProxy* slc) -> double {
     float ret(-5.f);
     int candIdx = kNuMIProtonCandidateIdx(slc);
     if( candIdx >= 0 ){
