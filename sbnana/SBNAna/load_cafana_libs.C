@@ -73,13 +73,13 @@ void load_cafana_libs()
       "CAFAnaUnfold",
       "CAFAnaVars",
       "CAFAnaCuts",
-      "SBNAnaVars",
-      "SBNAnaCuts",
       "CAFAnaSysts",
       "CAFAnaExtrap",
       "CAFAnaPrediction",
       "CAFAnaExperiment",
       "CAFAnaAnalysis",
+      "SBNAnaVars",
+      "SBNAnaCuts",
     };
 
   // Actually load the libraries
