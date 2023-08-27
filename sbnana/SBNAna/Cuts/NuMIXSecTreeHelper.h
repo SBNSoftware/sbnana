@@ -1,3 +1,5 @@
+#pragma once
+
 #include "sbnana/CAFAna/Core/Tree.h"
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "sbnana/SBNAna/Cuts/NuMIXSecRecoEventVars.h"

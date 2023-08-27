@@ -67,7 +67,8 @@ namespace ana{
       "CutType/i",
       // Intercation
       "TruePDG/i", "TrueMode/i", "TrueTarget/i", "TrueIsCC/i",
-      // Number of primary pions
+      // Number of primary particles
+      "TrueNProton/i", "TrueNNeutron/i",
       "TrueNpip/i", "TrueNpim/i", "TrueNpi0/i",
       // Is Signal
       "IsSignal/i",
@@ -79,11 +80,15 @@ namespace ana{
       "MuonTrackType/i",
       // Muon momentum
       "RecoMuonP", "TrueMuonP",
+      "RecoMuonPt", "TrueMuonPt",
       // Muon angle
       "RecoMuonCos", "TrueMuonCos",
       // Proton momentum
       "RecoProtonP", "TrueProtonP",
+      "RecoProtonPt", "TrueProtonPt",
       // Proton angle
+      "RecoProtonCos", "TrueProtonCos",
+      // Muon,Proton angle
       "RecoMuonProtonCos", "TrueMuonProtonCos",
       // TKI
       "RecodeltaPT", "TruedeltaPT",
@@ -101,7 +106,8 @@ namespace ana{
       kNuMICutType,
       // Intercation
       kNuMITruePDG, kNuMITrueMode, kNuMITrueTarget, kNuMITrueIsCC,
-      // Number of primary pions
+      // Number of primary particles
+      kNuMITrueNProton, kNuMITrueNNeutron,
       kNuMITrueNpip, kNuMITrueNpim, kNuMITrueNpi0,
       // Is Signal
       kNuMIIsSignal,
@@ -113,11 +119,15 @@ namespace ana{
       kNuMIRecoMuonContained,
       // Muon momentum
       kNuMIMuonCandidateRecoP, kNuMIMuonTrueP,
+      kNuMIRecoMuonPt, kNuMITrueMuonPt,
       // Muon angle
-      kNuMIRecoCosThBeam, kNuMITrueCosThBeam,
+      kNuMIRecoCosThVtx, kNuMITrueCosThVtx,
       // Proton momentum
       kNuMIProtonCandidateRecoP, kNuMIProtonTrueP,
+      kNuMIRecoProtonPt, kNuMITrueProtonPt,
       // Proton angle
+      kNuMIProtonRecoCosThVtx, kNuMIProtonTrueCosThVtx,
+      // Muon,Proton angle
       kNuMIRecoCosThMuP, kNuMITrueCosThMuP,
       // TKI
       kNuMIRecodeltaPT, kNuMITruedeltaPT,
