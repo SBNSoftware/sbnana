@@ -10,40 +10,52 @@ Loop over SRTrueParticle vectors and return variables
 #include "TVector3.h"
 #include <iostream>
 
-using namespace std;
-using namespace ana;
+#define M_MUON 0.1057
+#define M_CHARGEDPION 0.13957039
+#define M_NEUTRALPION 0.1349768
+#define M_PIZERO 0.1349768
+#define M_PROTON 0.938272
+#define M_NEUTRON 0.939565
+#define M_ELECTRON 0.00051
+#define E_EffNuclB 0.040
 
 namespace ana{
 
 namespace PrimaryUtil{
 
-  using Primary = caf::Proxy<std::vector<caf::SRTrueParticle>>;
-  using TrueInteraction = caf::Proxy<caf::SRTrueInteraction>;
-
   // Interaction
-  double NeutrinoE(const TrueInteraction& true_int);
-  int NeutrinoPDG(const TrueInteraction& true_int);
-  int NeutrinoMode(const TrueInteraction& true_int);
-  int Target(const TrueInteraction& true_int);
-  int Npip(const TrueInteraction& true_int);
-  int Npim(const TrueInteraction& true_int);
-  int Npi0(const TrueInteraction& true_int);
+  double NeutrinoE_True(const caf::SRTrueInteractionProxy& true_int);
+  int NeutrinoPDG_True(const caf::SRTrueInteractionProxy& true_int);
+  int NeutrinoMode_True(const caf::SRTrueInteractionProxy& true_int);
+  int Target_True(const caf::SRTrueInteractionProxy& true_int);
+  int NProton_True(const caf::SRTrueInteractionProxy& true_int);
+  int NNeutron_True(const caf::SRTrueInteractionProxy& true_int);
+  int Npip_True(const caf::SRTrueInteractionProxy& true_int);
+  int Npim_True(const caf::SRTrueInteractionProxy& true_int);
+  int Npi0_True(const caf::SRTrueInteractionProxy& true_int);
+  double Q2_True(const caf::SRTrueInteractionProxy& true_int);
+  double q0_True(const caf::SRTrueInteractionProxy& true_int);
+  double q3_True(const caf::SRTrueInteractionProxy& true_int);
+  double w_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Muon
-  int MuonIndex(const TrueInteraction& true_int);
-  double MuonNuCosineTheta(const TrueInteraction& true_int);
-  double MuonP(const TrueInteraction& true_int);
-  double MuonPt(const TrueInteraction& true_int);
-  double MuonCosThBeam(const TrueInteraction& true_int);
+  int MuonIndex_True(const caf::SRTrueInteractionProxy& true_int);
+  double MuonNuCosineTheta_True(const caf::SRTrueInteractionProxy& true_int);
+  double MuonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int);
+  double MuonP_True(const caf::SRTrueInteractionProxy& true_int);
+  double MuonPt_True(const caf::SRTrueInteractionProxy& true_int);
+  double MuonKE_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Proton
-  int ProtonIndex(const TrueInteraction& true_int);
-  double ProtonNuCosineTheta(const TrueInteraction& true_int);
-  double ProtonP(const TrueInteraction& true_int);
-  double ProtonPt(const TrueInteraction& true_int);
+  int ProtonIndex_True(const caf::SRTrueInteractionProxy& true_int);
+  double ProtonNuCosineTheta_True(const caf::SRTrueInteractionProxy& true_int);
+  double ProtonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int);
+  double ProtonP_True(const caf::SRTrueInteractionProxy& true_int);
+  double ProtonPt_True(const caf::SRTrueInteractionProxy& true_int);
+  double ProtonKE_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Muon+Proton
-  double CosThMuonProton(const TrueInteraction& true_int);
+  double CosThMuonProton_True(const caf::SRTrueInteractionProxy& true_int);
 
   // TKI
   // https://arxiv.org/abs/1910.08658
@@ -54,11 +66,11 @@ namespace PrimaryUtil{
   double CalcTKI_deltaalphaT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu);
   double CalcTKI_deltaphiT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu);
 
-  double deltaPT(const TrueInteraction& true_int);
-  double deltaPTx(const TrueInteraction& true_int);
-  double deltaPTy(const TrueInteraction& true_int);
-  double deltaalphaT(const TrueInteraction& true_int);
-  double deltaphiT(const TrueInteraction& true_int);
+  double deltaPT_True(const caf::SRTrueInteractionProxy& true_int);
+  double deltaPTx_True(const caf::SRTrueInteractionProxy& true_int);
+  double deltaPTy_True(const caf::SRTrueInteractionProxy& true_int);
+  double deltaalphaT_True(const caf::SRTrueInteractionProxy& true_int);
+  double deltaphiT_True(const caf::SRTrueInteractionProxy& true_int);
 
 
 } // end namespace PrimaryUtil

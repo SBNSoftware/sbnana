@@ -1,26 +1,39 @@
 #include "sbnana/SBNAna/Vars/PrimaryUtils.h"
 
-using namespace std;
-using namespace ana;
-
 namespace ana{
 
 namespace PrimaryUtil{
 
   // Interaction
-  double NeutrinoE(const TrueInteraction& true_int){
+  double NeutrinoE_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.E;
   }
-  int NeutrinoPDG(const TrueInteraction& true_int){
+  int NeutrinoPDG_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.pdg;
   }
-  int NeutrinoMode(const TrueInteraction& true_int){
+  int NeutrinoMode_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.genie_mode;
   }
-  int Target(const TrueInteraction& true_int){
+  int Target_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.targetPDG;
   }
-  int Npip(const TrueInteraction& true_int){
+  int NProton_True(const caf::SRTrueInteractionProxy& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == 2212 ) NPtl++;
+    }
+    return NPtl;
+  }
+  int NNeutron_True(const caf::SRTrueInteractionProxy& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == 2112 ) NPtl++;
+    }
+    return NPtl;
+  }
+  int Npip_True(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -28,7 +41,7 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
-  int Npim(const TrueInteraction& true_int){
+  int Npim_True(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -36,7 +49,7 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
-  int Npi0(const TrueInteraction& true_int){
+  int Npi0_True(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -44,10 +57,22 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
+  double Q2_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.Q2;
+  }
+  double q0_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.q0_lab;
+  }
+  double q3_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.modq_lab;
+  }
+  double w_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.w;
+  }
 
   // Muon
 
-  int MuonIndex(const TrueInteraction& true_int){
+  int MuonIndex_True(const caf::SRTrueInteractionProxy& true_int){
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < true_int.prim.size(); ++i){
@@ -68,8 +93,11 @@ namespace PrimaryUtil{
     return truth_idx;
   }
 
-  double MuonNuCosineTheta(const TrueInteraction& true_int){
-    int truth_idx = MuonIndex(true_int);
+  double MuonNuCosineTheta_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = MuonIndex_True(true_int);
     if(truth_idx>=0){
 
       const auto& p_mu = true_int.prim.at(truth_idx).genp;
@@ -78,45 +106,17 @@ namespace PrimaryUtil{
       TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
       TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
 
-      return vec_p_mu.Unit().Dot( vec_p_nu.Unit() );
+      ret = vec_p_mu.Unit().Dot( vec_p_nu.Unit() );
 
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
-  double MuonP(const TrueInteraction& true_int){
-    int truth_idx = MuonIndex(true_int);
-    if(truth_idx>=0){
-      const auto& mu_p = true_int.prim.at(truth_idx).genp;
-      return sqrt(mu_p.x*mu_p.x + mu_p.y*mu_p.y + mu_p.z*mu_p.z);
-    }
-    else{
-      return -999.;
-    }
-  }
-  double MuonPt(const TrueInteraction& true_int){
-    int truth_idx = MuonIndex(true_int);
-    if(truth_idx>=0){
-      const auto& p_mu = true_int.prim.at(truth_idx).genp;
-      const auto& p_nu = true_int.momentum;
+  double MuonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int){
 
-      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
-      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
-      vec_p_nu = vec_p_nu.Unit(); // make unit vector
+    double ret(-5.f);
 
-      double p_l = vec_p_mu.Dot(vec_p_nu);
-      TVector3 vec_p_l_mu = vec_p_mu - p_l*vec_p_nu;
-
-      return vec_p_l_mu.Mag();
-
-    }
-    else{
-      return -999.;
-    }
-  }
-  double MuonCosThBeam(const TrueInteraction& true_int){
-    int truth_idx = MuonIndex(true_int);
+    int truth_idx = MuonIndex_True(true_int);
     if(truth_idx>=0){
 
       TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
@@ -126,16 +126,60 @@ namespace PrimaryUtil{
 
       double angle = rFromNuMI.Angle(vec_p_mu);
 
-      return TMath::Cos( angle );
+      ret = TMath::Cos( angle );
     }
-    else{
-      return -999.;
+
+    return ret;
+  }
+  double MuonP_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = MuonIndex_True(true_int);
+    if(truth_idx>=0){
+      const auto& mu_p = true_int.prim.at(truth_idx).genp;
+      ret = sqrt(mu_p.x*mu_p.x + mu_p.y*mu_p.y + mu_p.z*mu_p.z);
     }
+
+    return ret;
+
+  }
+  double MuonPt_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = MuonIndex_True(true_int);
+    if(truth_idx>=0){
+      const auto& p_mu = true_int.prim.at(truth_idx).genp;
+      const auto& p_nu = true_int.momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+      vec_p_nu = vec_p_nu.Unit(); // make unit vector
+
+      double p_l = vec_p_mu.Dot(vec_p_nu);
+      TVector3 vec_p_t_mu = vec_p_mu - p_l*vec_p_nu;
+
+      ret = vec_p_t_mu.Mag();
+
+    }
+
+    return ret;
+  }
+  double MuonKE_True(const caf::SRTrueInteractionProxy& true_int){
+    double ret(-5.f);
+    
+    int truth_idx = MuonIndex_True(true_int);
+    if(truth_idx>=0){
+      ret = true_int.prim.at(truth_idx).genE - M_MUON;
+    }
+    
+    return ret;
   }
 
   // Proton
 
-  int ProtonIndex(const TrueInteraction& true_int){
+  int ProtonIndex_True(const caf::SRTrueInteractionProxy& true_int){
     double max_E(-999);
     int truth_idx(-1);
     for(std::size_t i(0); i < true_int.prim.size(); ++i){
@@ -156,8 +200,11 @@ namespace PrimaryUtil{
     return truth_idx;
   }
 
-  double ProtonNuCosineTheta(const TrueInteraction& true_int){
-    int truth_idx = ProtonIndex(true_int);
+  double ProtonNuCosineTheta_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = ProtonIndex_True(true_int);
     if(truth_idx>=0){
 
       const auto& p_pro = true_int.prim.at(truth_idx).genp;
@@ -166,25 +213,48 @@ namespace PrimaryUtil{
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
       TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
 
-      return vec_p_pro.Unit().Dot( vec_p_nu.Unit() );
+      ret = vec_p_pro.Unit().Dot( vec_p_nu.Unit() );
 
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
-  double ProtonP(const TrueInteraction& true_int){
-    int truth_idx = ProtonIndex(true_int);
+  double ProtonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = ProtonIndex_True(true_int);
+    if(truth_idx>=0){
+
+      TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
+
+      const auto& p_pro = true_int.prim.at(truth_idx).genp;
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+
+      double angle = rFromNuMI.Angle(vec_p_pro);
+
+      ret = TMath::Cos( angle );
+    }
+
+    return ret;
+  }
+  double ProtonP_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = ProtonIndex_True(true_int);
     if(truth_idx>=0){
       const auto& pro_p = true_int.prim.at(truth_idx).genp;
-      return sqrt(pro_p.x*pro_p.x + pro_p.y*pro_p.y + pro_p.z*pro_p.z);
+      ret = sqrt(pro_p.x*pro_p.x + pro_p.y*pro_p.y + pro_p.z*pro_p.z);
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
-  double ProtonPt(const TrueInteraction& true_int){
-    int truth_idx = ProtonIndex(true_int);
+  double ProtonPt_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_idx = ProtonIndex_True(true_int);
     if(truth_idx>=0){
       const auto& p_pro = true_int.prim.at(truth_idx).genp;
       const auto& p_nu = true_int.momentum;
@@ -194,20 +264,32 @@ namespace PrimaryUtil{
       vec_p_nu = vec_p_nu.Unit();
 
       double p_l = vec_p_pro.Dot(vec_p_nu);
-      TVector3 vec_p_l_pro = vec_p_pro - p_l*vec_p_nu;
+      TVector3 vec_p_t_pro = vec_p_pro - p_l*vec_p_nu;
 
-      return vec_p_l_pro.Mag();
+      ret = vec_p_t_pro.Mag();
 
     }
-    else{
-      return -999.;
+
+    return ret;
+  }
+  double ProtonKE_True(const caf::SRTrueInteractionProxy& true_int){
+    double ret(-5.f);
+
+    int truth_idx = ProtonIndex_True(true_int);
+    if(truth_idx>=0){
+      ret = true_int.prim.at(truth_idx).genE - M_PROTON;
     }
+
+    return ret;
   }
 
   // Muon+Proton
-  double CosThMuonProton(const TrueInteraction& true_int){
-    int truth_mu_idx = MuonIndex(true_int);
-    int truth_pro_idx = ProtonIndex(true_int);
+  double CosThMuonProton_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_mu_idx = MuonIndex_True(true_int);
+    int truth_pro_idx = ProtonIndex_True(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
 
       const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
@@ -216,12 +298,11 @@ namespace PrimaryUtil{
       TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
 
-      return vec_p_mu.Unit().Dot( vec_p_pro.Unit() );
+      ret = vec_p_mu.Unit().Dot( vec_p_pro.Unit() );
 
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
 
   // TKI
@@ -300,9 +381,12 @@ namespace PrimaryUtil{
     return deltaphiT;
   }
 
-  double deltaPT(const TrueInteraction& true_int){
-    int truth_mu_idx = MuonIndex(true_int);
-    int truth_pro_idx = ProtonIndex(true_int);
+  double deltaPT_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f);
+
+    int truth_mu_idx = MuonIndex_True(true_int);
+    int truth_pro_idx = ProtonIndex_True(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
 
       const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
@@ -313,16 +397,18 @@ namespace PrimaryUtil{
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
       TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
 
-      return CalcTKI_deltaPT(vec_p_mu, vec_p_pro, vec_p_n);
+      ret =  CalcTKI_deltaPT(vec_p_mu, vec_p_pro, vec_p_n);
 
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
-  double deltaPTx(const TrueInteraction& true_int){
-    int truth_mu_idx = MuonIndex(true_int);
-    int truth_pro_idx = ProtonIndex(true_int);
+  double deltaPTx_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-99999); // TODO deltaPTx is a signed variable.. for now just making it very very largly negative
+
+    int truth_mu_idx = MuonIndex_True(true_int);
+    int truth_pro_idx = ProtonIndex_True(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
 
       const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
@@ -333,16 +419,18 @@ namespace PrimaryUtil{
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
       TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
 
-      return CalcTKI_deltaPTx(vec_p_mu, vec_p_pro, vec_p_n);
+      ret = CalcTKI_deltaPTx(vec_p_mu, vec_p_pro, vec_p_n);
 
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
-  double deltaPTy(const TrueInteraction& true_int){
-    int truth_mu_idx = MuonIndex(true_int);
-    int truth_pro_idx = ProtonIndex(true_int);
+  double deltaPTy_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-99999); // TODO deltaPTy is a signed variable.. for now just making it very very largly negative
+
+    int truth_mu_idx = MuonIndex_True(true_int);
+    int truth_pro_idx = ProtonIndex_True(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
 
       const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
@@ -353,16 +441,18 @@ namespace PrimaryUtil{
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
       TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
 
-      return CalcTKI_deltaPTy(vec_p_mu, vec_p_pro, vec_p_n);
+      ret = CalcTKI_deltaPTy(vec_p_mu, vec_p_pro, vec_p_n);
 
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
-  double deltaalphaT(const TrueInteraction& true_int){
-    int truth_mu_idx = MuonIndex(true_int);
-    int truth_pro_idx = ProtonIndex(true_int);
+  double deltaalphaT_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f); // acos is in the interval of [0,pi]
+
+    int truth_mu_idx = MuonIndex_True(true_int);
+    int truth_pro_idx = ProtonIndex_True(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
 
       const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
@@ -373,16 +463,18 @@ namespace PrimaryUtil{
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
       TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
 
-      return CalcTKI_deltaalphaT(vec_p_mu, vec_p_pro, vec_p_n);
+      ret = CalcTKI_deltaalphaT(vec_p_mu, vec_p_pro, vec_p_n);
 
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
-  double deltaphiT(const TrueInteraction& true_int){
-    int truth_mu_idx = MuonIndex(true_int);
-    int truth_pro_idx = ProtonIndex(true_int);
+  double deltaphiT_True(const caf::SRTrueInteractionProxy& true_int){
+
+    double ret(-5.f); // acos is in the interval of [0,pi]
+
+    int truth_mu_idx = MuonIndex_True(true_int);
+    int truth_pro_idx = ProtonIndex_True(true_int);
     if(truth_mu_idx>=0 && truth_pro_idx>=0){
 
       const auto& p_mu = true_int.prim.at(truth_mu_idx).genp;
@@ -393,12 +485,11 @@ namespace PrimaryUtil{
       TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
       TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
 
-      return CalcTKI_deltaphiT(vec_p_mu, vec_p_pro, vec_p_n);
+      ret = CalcTKI_deltaphiT(vec_p_mu, vec_p_pro, vec_p_n);
 
     }
-    else{
-      return -999.;
-    }
+
+    return ret;
   }
 
 } // END namespace PrimaryUtil

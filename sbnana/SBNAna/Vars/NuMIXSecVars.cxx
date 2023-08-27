@@ -81,7 +81,7 @@ namespace ana {
         const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
         const float Chi2Proton = trk.chi2pid[2].chi2_proton;
         const float Chi2Muon = trk.chi2pid[2].chi2_muon;
-        if ( (!Contained && trk.len > 100.) || (Contained && trk.len > 50. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
+        if ( (!Contained && trk.len > 50.) || (Contained && trk.len > 50. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
           if ( trk.len <= Longest ) continue;
           Longest = trk.len;
           PTrackInd = thisIdx;
@@ -140,11 +140,12 @@ namespace ana {
     std::vector<double> rets;
 
     int primaryInd = kNuMIMuonCandidateIdx(slc);
+    int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
 
     for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); ++i_pfp){
 
-      if ( i_pfp == (unsigned int)primaryInd ) {
-        continue; // skip the particle which is the muon candidate!
+      if ( i_pfp == (unsigned int)primaryInd || i_pfp == (unsigned int)primaryProtonInd ) {
+        continue; // skip the particle which is the muon or leading proton candidate!
       }
 
       auto const& trk = slc->reco.pfp.at(i_pfp).trk;
@@ -229,16 +230,46 @@ namespace ana {
   // True muon momentum
   const Var kNuMIMuonTrueP([](const caf::SRSliceProxy* slc) -> float {
     float p(-5.f);
-    if ( slc->truth.index < 0 ) return p;
+    if ( slc->truth.index >= 0 ) p = PrimaryUtil::MuonP_True(slc->truth);
 
-    return ana::PrimaryUtil::MuonP(slc->truth);
+    return p;
+  });
 
+  // Reco muon transverse momentum
+  const Var kNuMIRecoMuonPt([](const caf::SRSliceProxy* slc) -> double {
+    float ret(-5.f);
+    int candIdx = kNuMIMuonCandidateIdx(slc);
+    if( candIdx >= 0 ){
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+      double momentum = kNuMIMuonCandidateRecoP(slc);
+      TVector3 vec_momentum(trk.dir.x, trk.dir.y, trk.dir.z);
+      vec_momentum *= momentum;
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      TVector3 vec_pt = vec_momentum - (vec_momentum.Dot(vec_numi_to_vtx)) * vec_numi_to_vtx;
+
+      ret = vec_pt.Mag();
+
+    }
+
+     return ret;
+  });
+  // True muon transverse momentum
+  const Var kNuMITrueMuonPt([](const caf::SRSliceProxy* slc) -> double {
+    float ret(-5.f);
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::MuonPt_True(slc->truth);
+
+    return ret;
   });
 
   // Reco proton momentum
   const Var kNuMIProtonCandidateRecoP([](const caf::SRSliceProxy* slc) -> float {
     float p(-5.f);
-
     if ( kNuMIProtonCandidateIdx(slc) >= 0 )
     {
       auto const& trk = slc->reco.pfp.at(kNuMIProtonCandidateIdx(slc)).trk;
@@ -249,8 +280,42 @@ namespace ana {
 
   // True proton momentum
   const Var kNuMIProtonTrueP([](const caf::SRSliceProxy* slc) -> float {
-    if ( slc->truth.index < 0 ) return -5.f;
-    return ana::PrimaryUtil::ProtonP(slc->truth);
+    float p(-5.f);
+    if ( slc->truth.index >= 0 ) p = PrimaryUtil::ProtonP_True(slc->truth);
+
+    return p;
+  });
+
+  // Reco proton transverse momentum
+  const Var kNuMIRecoProtonPt([](const caf::SRSliceProxy* slc) -> double {
+    float ret(-5.f);
+    int candIdx = kNuMIProtonCandidateIdx(slc);
+    if( candIdx >= 0 ){
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+      double momentum = kNuMIProtonCandidateRecoP(slc);
+      TVector3 vec_momentum(trk.dir.x, trk.dir.y, trk.dir.z);
+      vec_momentum *= momentum;
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      TVector3 vec_pt = vec_momentum - (vec_momentum.Dot(vec_numi_to_vtx)) * vec_numi_to_vtx;
+
+      ret = vec_pt.Mag();
+
+    }
+
+     return ret;
+  });
+  // True proton transverse momentum
+  const Var kNuMITrueProtonPt([](const caf::SRSliceProxy* slc) -> double {
+    float ret(-5.f);
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::ProtonPt_True(slc->truth);
+
+    return ret;
   });
 
   // Reco CosTh(numi)
@@ -274,9 +339,94 @@ namespace ana {
 
   // True CosTh(numi)
   const Var kNuMITrueCosThBeam([](const caf::SRSliceProxy* slc) -> float {
-    if ( slc->truth.index < 0 ) return -5.f;
-    return ana::PrimaryUtil::MuonCosThBeam(slc->truth);
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::MuonCosThBeam_True(slc->truth);
+
+    return costh;
   });
+
+  // Reco Muon angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kNuMIRecoCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    int candIdx = kNuMIMuonCandidateIdx(slc);
+    if ( candIdx>=0 ) {
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+      TVector3 vec_trk(trk.dir.x, trk.dir.y, trk.dir.z);
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      double angle = vec_trk.Angle(vec_numi_to_vtx);
+      costh = TMath::Cos(angle);
+    }
+
+    return costh;
+  });
+  // Reco Muon angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kNuMITrueCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::MuonNuCosineTheta_True(slc->truth);
+
+    return costh;
+  });
+
+  // Reco Proton angle w.r.t. beam
+  const Var kNuMIProtonRecoCosThBeam([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    int candIdx = kNuMIProtonCandidateIdx(slc);
+    if ( candIdx >= 0 ) {
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+
+      double magNuMI = sqrt(315.120380*315.120380 + 33.644912*33.644912 + 733.632532*733.632532);
+      TVector3 rFromNuMI(315.120380/magNuMI, 33.644912/magNuMI, 733.632532/magNuMI);
+
+      TVector3 trkDir(trk.dir.x, trk.dir.y, trk.dir.z);
+      trkDir = trkDir.Unit();
+
+      costh = TMath::Cos( trkDir.Angle(rFromNuMI) );
+    }
+
+    return costh;
+  });
+  // True Proton angle w.r.t. beam
+  const Var kNuMIProtonTrueCosThBeam([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::ProtonCosThBeam_True(slc->truth);
+
+    return costh;
+  });
+
+  // Reco Proton angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kNuMIProtonRecoCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    int candIdx = kNuMIProtonCandidateIdx(slc);
+    if ( candIdx>=0 ) {
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+      TVector3 vec_trk(trk.dir.x, trk.dir.y, trk.dir.z);
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      double angle = vec_trk.Angle(vec_numi_to_vtx);
+      costh = TMath::Cos(angle);
+    }
+
+    return costh;
+  });
+  // Reco Proton angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kNuMIProtonTrueCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::ProtonNuCosineTheta_True(slc->truth);
+
+    return costh;
+  });
+
 
   // Reco CosTh(mu,p)
   const Var kNuMIRecoCosThMuP([](const caf::SRSliceProxy* slc) -> float {
@@ -299,12 +449,15 @@ namespace ana {
 
   // True CosTh(mu,p)
   const Var kNuMITrueCosThMuP([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::CosThMuonProton_True(slc->truth);
 
-    if ( slc->truth.index < 0 ) return -5.f;
-    return ana::PrimaryUtil::CosThMuonProton(slc->truth);
+    return costh;
   });
 
   const Var kNuMIRecodeltaPT([](const caf::SRSliceProxy* slc) -> float {
+    float ret(-5.f);
+
     int MuonTrackIndex = kNuMIMuonCandidateIdx(slc);
     int ProtonTrackIndex = kNuMIProtonCandidateIdx(slc);
     if ( MuonTrackIndex >= 0 && ProtonTrackIndex >= 0 ) {
@@ -328,20 +481,24 @@ namespace ana {
       // NuMI-to-vertex = NuMI-to-ICARUSZero + ICARUSZero-to-vertex
       TVector3 unit_numi_to_vtx = (vec_NuMI_to_ICARUS+vec_vtx_icarus).Unit();
 
-      return ana::PrimaryUtil::CalcTKI_deltaPT(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
+      ret = PrimaryUtil::CalcTKI_deltaPT(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
 
     }
-    else{
-      return -99999; // TODO use something like "kInvalid"
-    }
+
+    return ret;
+
   });
 
   const Var kNuMITruedeltaPT([](const caf::SRSliceProxy* slc) -> float {
-    if ( slc->truth.index < 0 ) return -5.f;
-    return ana::PrimaryUtil::deltaPT(slc->truth);
+    float ret(-5.f);
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::deltaPT_True(slc->truth);
+
+    return ret;
   });
 
   const Var kNuMIRecodeltaPTx([](const caf::SRSliceProxy* slc) -> float {
+    float ret(-99999); // TODO deltaPTx is a signed variable.. for now just making it very very largly negative
+
     int MuonTrackIndex = kNuMIMuonCandidateIdx(slc);
     int ProtonTrackIndex = kNuMIProtonCandidateIdx(slc);
     if ( MuonTrackIndex >= 0 && ProtonTrackIndex >= 0 ) {
@@ -365,20 +522,24 @@ namespace ana {
       // NuMI-to-vertex = NuMI-to-ICARUSZero + ICARUSZero-to-vertex
       TVector3 unit_numi_to_vtx = (vec_NuMI_to_ICARUS+vec_vtx_icarus).Unit();
 
-      return ana::PrimaryUtil::CalcTKI_deltaPTx(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
+      ret =  PrimaryUtil::CalcTKI_deltaPTx(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
 
     }
-    else{
-      return -99999; // TODO use something like "kInvalid"
-    }
+
+    return ret;
+
   });
 
   const Var kNuMITruedeltaPTx([](const caf::SRSliceProxy* slc) -> float {
-    if ( slc->truth.index < 0 ) return -5.f;
-    return ana::PrimaryUtil::deltaPTx(slc->truth);
+    float ret(-99999); // TODO deltaPTx is a signed variable.. for now just making it very very largly negative
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::deltaPTx_True(slc->truth);
+
+    return ret;
   });
 
   const Var kNuMIRecodeltaPTy([](const caf::SRSliceProxy* slc) -> float {
+    float ret(-99999); // TODO deltaPTy is a signed variable.. for now just making it very very largly negative
+
     int MuonTrackIndex = kNuMIMuonCandidateIdx(slc);
     int ProtonTrackIndex = kNuMIProtonCandidateIdx(slc);
     if ( MuonTrackIndex >= 0 && ProtonTrackIndex >= 0 ) {
@@ -402,20 +563,23 @@ namespace ana {
       // NuMI-to-vertex = NuMI-to-ICARUSZero + ICARUSZero-to-vertex
       TVector3 unit_numi_to_vtx = (vec_NuMI_to_ICARUS+vec_vtx_icarus).Unit();
 
-      return ana::PrimaryUtil::CalcTKI_deltaPTy(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
+      ret = PrimaryUtil::CalcTKI_deltaPTy(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
 
     }
-    else{
-      return -99999; // TODO use something like "kInvalid"
-    }
+
+    return ret;
   });
 
   const Var kNuMITruedeltaPTy([](const caf::SRSliceProxy* slc) -> float {
-    if ( slc->truth.index < 0 ) return -5.f;
-    return ana::PrimaryUtil::deltaPTy(slc->truth);
+    float ret(-99999); // TODO deltaPTy is a signed variable.. for now just making it very very largly negative
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::deltaPTy_True(slc->truth);
+
+    return ret;
   });
 
   const Var kNuMIRecodeltaalphaT([](const caf::SRSliceProxy* slc) -> float {
+    float ret(-5.f); // acos is in the interval of [0,pi]
+
     int MuonTrackIndex = kNuMIMuonCandidateIdx(slc);
     int ProtonTrackIndex = kNuMIProtonCandidateIdx(slc);
     if ( MuonTrackIndex >= 0 && ProtonTrackIndex >= 0 ) {
@@ -439,20 +603,23 @@ namespace ana {
       // NuMI-to-vertex = NuMI-to-ICARUSZero + ICARUSZero-to-vertex
       TVector3 unit_numi_to_vtx = (vec_NuMI_to_ICARUS+vec_vtx_icarus).Unit();
 
-      return ana::PrimaryUtil::CalcTKI_deltaalphaT(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
+      ret = PrimaryUtil::CalcTKI_deltaalphaT(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
 
     }
-    else{
-      return -99999; // TODO use something like "kInvalid"
-    }
+
+    return ret;
   });
 
   const Var kNuMITruedeltaalphaT([](const caf::SRSliceProxy* slc) -> float {
-    if ( slc->truth.index < 0 ) return -5.f;
-    return ana::PrimaryUtil::deltaalphaT(slc->truth);
+    float ret(-5.f); // acos is in the interval of [0,pi]
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::deltaalphaT_True(slc->truth);
+
+    return ret;
   });
 
   const Var kNuMIRecodeltaphiT([](const caf::SRSliceProxy* slc) -> float {
+    float ret(-5.f); // acos is in the interval of [0,pi]
+
     int MuonTrackIndex = kNuMIMuonCandidateIdx(slc);
     int ProtonTrackIndex = kNuMIProtonCandidateIdx(slc);
     if ( MuonTrackIndex >= 0 && ProtonTrackIndex >= 0 ) {
@@ -476,17 +643,18 @@ namespace ana {
       // NuMI-to-vertex = NuMI-to-ICARUSZero + ICARUSZero-to-vertex
       TVector3 unit_numi_to_vtx = (vec_NuMI_to_ICARUS+vec_vtx_icarus).Unit();
 
-      return ana::PrimaryUtil::CalcTKI_deltaphiT(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
+      ret = PrimaryUtil::CalcTKI_deltaphiT(vec_p_mu, vec_p_pro, unit_numi_to_vtx);
 
     }
-    else{
-      return -99999; // TODO use something like "kInvalid"
-    }
+
+    return ret;
   });
 
   const Var kNuMITruedeltaphiT([](const caf::SRSliceProxy* slc) -> float {
-    if ( slc->truth.index < 0 ) return -5.f;
-    return ana::PrimaryUtil::deltaphiT(slc->truth);
+    float ret(-5.f); // acos is in the interval of [0,pi]
+    if ( slc->truth.index >= 0 ) ret = PrimaryUtil::deltaphiT_True(slc->truth);
+
+    return ret;
   });
 
 
