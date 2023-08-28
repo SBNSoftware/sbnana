@@ -55,7 +55,7 @@ namespace ana{
       kTrueProtonNuCosineThetaVectorPerSignalNu,
       kTrueProtonLengthVectorPerSignalNu,
       // Muon+Proton
-      kTrueProtonNuCosineThetaVectorPerSignalNu,
+      kTrueCosThMuonProtonVectorPerSignalNu,
       // TKI
       kTruedeltaPTVectorPerSignalNu,
       kTruedeltaPTxVectorPerSignalNu,
