@@ -47,11 +47,13 @@ namespace ana{
 
   // Muon
   const SpillMultiVar kTrueMuonPVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonP_True);
+  const SpillMultiVar kTrueMuonPtVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonPt_True);
   const SpillMultiVar kTrueMuonNuCosineThetaVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonNuCosineTheta_True);
   const SpillMultiVar kTrueMuonLengthVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonLength_True);
 
   // Proton
   const SpillMultiVar kTrueProtonPVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::ProtonP_True);
+  const SpillMultiVar kTrueProtonPtVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::ProtonPt_True);
   const SpillMultiVar kTrueProtonNuCosineThetaVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::ProtonNuCosineTheta_True);
   const SpillMultiVar kTrueProtonLengthVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::ProtonLength_True);
 
