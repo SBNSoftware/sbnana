@@ -11,7 +11,7 @@ namespace ana{
       // CutType
       "CutType/i",
       // Interaction
-      "TruePDG/i", "TrueMode/i", "TrueTarget/i",
+      "TruePDG/i", "TrueMode/i", "TrueTarget/i", "TrueIsCC/i",
       // Weight
       "FluxWeight",
       // Nu E
@@ -43,7 +43,7 @@ namespace ana{
       // CutType
       kCutTypeVectorPerSignalNu,
       // Interaction
-      kTruePDGVectorPerSignalNu, kTrueModeVectorPerSignalNu, kTrueTargetVectorPerSignalNu,
+      kTruePDGVectorPerSignalNu, kTrueModeVectorPerSignalNu, kTrueTargetVectorPerSignalNu, kTrueIsCCVectorPerSignalNu,
       // Weight
       kNuMIPPFXWeightVectorPerSignalNu,
       // Nu E
