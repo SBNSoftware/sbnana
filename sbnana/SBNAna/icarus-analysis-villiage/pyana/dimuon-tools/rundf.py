@@ -2,6 +2,11 @@ import sys
 from pyanalib.ntuple_glob import NTupleGlob
 from makedf.makedf import *
 import pandas as pd
+import warnings
+from tables import NaturalNameWarning
+
+warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
+warnings.simplefilter(action='ignore', category=NaturalNameWarning)
 
 def main(output, inputs):
     ntuples = NTupleGlob(inputs, None)

@@ -68,9 +68,19 @@ trkbranches = [
     trkbranch + "crthit.distance",
     trkbranch + "crthit.hit.time",
     trkbranch + "crthit.hit.pe",
+    trkbranch + "chi2pid.2.pid_ndof",
     trkbranch + "chi2pid.2.chi2_muon",
     trkbranch + "chi2pid.2.chi2_proton",
+    trkbranch + "chi2pid.2.pida",
 ] + pfpbranches
+
+shwbranches = [
+  shwbranch + "len"
+]
+
+trkhitadcbranches = [
+  trkbranch + "calo.2.points.adcs"
+]
 
 trkhitbranches = [
     trkbranch + "calo.2.points.dedx",
@@ -80,17 +90,20 @@ trkhitbranches = [
     trkbranch + "calo.2.points.rr",
     trkbranch + "calo.2.points.wire",
     trkbranch + "calo.2.points.tpc",
-    trkbranch + "calo.2.points.width",
     trkbranch + "calo.2.points.sumadc",
-    trkbranch + "calo.2.points.mult",
     trkbranch + "calo.2.points.t",
     trkbranch + "calo.2.points.x",
     trkbranch + "calo.2.points.y",
     trkbranch + "calo.2.points.z",
-    trkbranch + "calo.2.points.truth.e",
-    trkbranch + "calo.2.points.truth.nelec",
-    trkbranch + "calo.2.points.truth.pitch",
-    trkbranch + "calo.2.points.truth.rr",
+
+    #trkbranch + "calo.2.points.width",
+    #trkbranch + "calo.2.points.mult",
+    #trkbranch + "calo.2.points.tdc0",
+
+    #trkbranch + "calo.2.points.truth.h_e",
+    #trkbranch + "calo.2.points.truth.h_nelec",
+    #trkbranch + "calo.2.points.truth.pitch",
+    #trkbranch + "calo.2.points.truth.rr",
 ]
 
 for n in trueparticlenames: trkbranches.append(trkbranch + "truth.p." + n)
@@ -106,7 +119,7 @@ slcbranches = [
     "rec.slc.nuid.crlongtrkdiry"
 ]
 
-mcnubranches = [
+mcbranches = [
     "rec.mc.nu.E",
     "rec.mc.nu.position.x",
     "rec.mc.nu.position.y",
@@ -114,6 +127,48 @@ mcnubranches = [
     "rec.mc.nu.pdg",
     "rec.mc.nu.iscc",
     "rec.mc.nu.genie_mode"
+]
+
+mcprimbranches = [
+    "rec.mc.nu.prim.genE",
+    "rec.mc.nu.prim.pdg",
+    "rec.mc.nu.prim.genp.x",
+    "rec.mc.nu.prim.genp.y",
+    "rec.mc.nu.prim.genp.z",
+]
+
+slc_mcbranches = ["rec.slc.truth." + ".".join(s.split(".")[3:]) for s in mcbranches]
+slc_mcprimbranches = ["rec.slc.truth." + ".".join(s.split(".")[3:]) for s in mcprimbranches]
+
+stubbranches = [
+    "rec.slc.reco.stub.vtx.x",
+    "rec.slc.reco.stub.vtx.y",
+    "rec.slc.reco.stub.vtx.z",
+    "rec.slc.reco.stub.end.x",
+    "rec.slc.reco.stub.end.y",
+    "rec.slc.reco.stub.end.z",
+
+    "rec.slc.reco.stub.efield_vtx",
+    "rec.slc.reco.stub.efield_end",
+
+
+    "rec.slc.reco.stub.truth.p.pdg",
+    "rec.slc.reco.stub.truth.p.genE",
+    "rec.slc.reco.stub.truth.p.interaction_id",
+]
+
+stubplanebranches = [
+    "rec.slc.reco.stub.planes.p",
+    "rec.slc.reco.stub.planes.hit_w",
+    "rec.slc.reco.stub.planes.vtx_w",
+    "rec.slc.reco.stub.planes.pitch",
+    "rec.slc.reco.stub.planes.trkpitch",
+]
+
+stubhitbranches = [
+    "rec.slc.reco.stub.planes.hits.charge",
+    "rec.slc.reco.stub.planes.hits.ontrack",
+    "rec.slc.reco.stub.planes.hits.wire",
 ]
 
 
