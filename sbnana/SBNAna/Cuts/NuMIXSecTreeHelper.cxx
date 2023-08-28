@@ -19,8 +19,11 @@ namespace ana{
       // Muon
       "TrueMuonP",
       "TrueMuonCos",
+      "TrueMuonLength",
       // Proton
       "TrueProtonP",
+      "TrueProtonCos",
+      "TrueProtonLength",
       // Muon+Proton
       "TrueMuonProtonCos",
       // TKI
@@ -46,8 +49,11 @@ namespace ana{
       // Muon
       kTrueMuonPVectorPerSignalNu,
       kTrueMuonNuCosineThetaVectorPerSignalNu,
+      kTrueMuonLengthVectorPerSignalNu,
       // Proton
       kTrueProtonPVectorPerSignalNu,
+      kTrueProtonNuCosineThetaVectorPerSignalNu,
+      kTrueProtonLengthVectorPerSignalNu,
       // Muon+Proton
       kTrueProtonNuCosineThetaVectorPerSignalNu,
       // TKI
@@ -81,11 +87,15 @@ namespace ana{
       // Muon momentum
       "RecoMuonP", "TrueMuonP",
       "RecoMuonPt", "TrueMuonPt",
+      // Muon length
+      "RecoMuonLength", "TrueMuonLength",
       // Muon angle
       "RecoMuonCos", "TrueMuonCos",
       // Proton momentum
       "RecoProtonP", "TrueProtonP",
       "RecoProtonPt", "TrueProtonPt",
+      // Proton length
+      "RecoProtonLength", "TrueProtonLength",
       // Proton angle
       "RecoProtonCos", "TrueProtonCos",
       // Muon,Proton angle
@@ -120,11 +130,15 @@ namespace ana{
       // Muon momentum
       kNuMIMuonCandidateRecoP, kNuMIMuonTrueP,
       kNuMIRecoMuonPt, kNuMITrueMuonPt,
+      // Muon length
+      kNuMIRecoMuonLength, kNuMITrueMuonLength,
       // Muon angle
       kNuMIRecoCosThVtx, kNuMITrueCosThVtx,
       // Proton momentum
       kNuMIProtonCandidateRecoP, kNuMIProtonTrueP,
       kNuMIRecoProtonPt, kNuMITrueProtonPt,
+      // Proton legnth
+      kNuMIRecoProtonLength, kNuMITrueProtonLength,
       // Proton angle
       kNuMIProtonRecoCosThVtx, kNuMIProtonTrueCosThVtx,
       // Muon,Proton angle
