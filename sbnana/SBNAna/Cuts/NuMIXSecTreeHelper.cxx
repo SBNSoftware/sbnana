@@ -18,10 +18,12 @@ namespace ana{
       "TrueE",
       // Muon
       "TrueMuonP",
+      "TrueMuonPt",
       "TrueMuonCos",
       "TrueMuonLength",
       // Proton
       "TrueProtonP",
+      "TrueProtonPt",
       "TrueProtonCos",
       "TrueProtonLength",
       // Muon+Proton
@@ -48,10 +50,12 @@ namespace ana{
       kTrueEVectorPerSignalNu,
       // Muon
       kTrueMuonPVectorPerSignalNu,
+      kTrueMuonPtVectorPerSignalNu,
       kTrueMuonNuCosineThetaVectorPerSignalNu,
       kTrueMuonLengthVectorPerSignalNu,
       // Proton
       kTrueProtonPVectorPerSignalNu,
+      kTrueProtonPtVectorPerSignalNu,
       kTrueProtonNuCosineThetaVectorPerSignalNu,
       kTrueProtonLengthVectorPerSignalNu,
       // Muon+Proton
