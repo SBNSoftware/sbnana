@@ -14,6 +14,9 @@ namespace PrimaryUtil{
   int NeutrinoMode_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.genie_mode;
   }
+  int IsCC_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.iscc;
+  }
   int Target_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.targetPDG;
   }
