@@ -27,6 +27,7 @@ namespace PrimaryUtil{
   double NeutrinoE_True(const caf::SRTrueInteractionProxy& true_int);
   int NeutrinoPDG_True(const caf::SRTrueInteractionProxy& true_int);
   int NeutrinoMode_True(const caf::SRTrueInteractionProxy& true_int);
+  int IsCC_True(const caf::SRTrueInteractionProxy& true_int);
   int Target_True(const caf::SRTrueInteractionProxy& true_int);
   int NProton_True(const caf::SRTrueInteractionProxy& true_int);
   int NNeutron_True(const caf::SRTrueInteractionProxy& true_int);
