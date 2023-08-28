@@ -45,6 +45,7 @@ namespace PrimaryUtil{
   double MuonP_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonPt_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonKE_True(const caf::SRTrueInteractionProxy& true_int);
+  double MuonLength_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Proton
   int ProtonIndex_True(const caf::SRTrueInteractionProxy& true_int);
@@ -53,6 +54,7 @@ namespace PrimaryUtil{
   double ProtonP_True(const caf::SRTrueInteractionProxy& true_int);
   double ProtonPt_True(const caf::SRTrueInteractionProxy& true_int);
   double ProtonKE_True(const caf::SRTrueInteractionProxy& true_int);
+  double ProtonLength_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Muon+Proton
   double CosThMuonProton_True(const caf::SRTrueInteractionProxy& true_int);

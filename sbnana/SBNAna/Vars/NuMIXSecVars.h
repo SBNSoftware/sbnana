@@ -38,6 +38,9 @@ namespace ana
   // Muon momentum
   extern const Var kNuMIMuonCandidateRecoP;
   extern const Var kNuMIMuonTrueP;
+  // Muon length
+  extern const Var kNuMIRecoMuonLength;
+  extern const Var kNuMITrueMuonLength;
   // Muon transverse momentum
   extern const Var kNuMIRecoMuonPt;
   extern const Var kNuMITrueMuonPt;
@@ -47,6 +50,9 @@ namespace ana
   // Proton transverse momentum
   extern const Var kNuMIRecoProtonPt;
   extern const Var kNuMITrueProtonPt;
+  // Proton legnth
+  extern const Var kNuMIRecoProtonLength;
+  extern const Var kNuMITrueProtonLength;
   // Muon angle w.r.t. beam
   extern const Var kNuMIRecoCosThBeam;
   extern const Var kNuMITrueCosThBeam;

@@ -235,6 +235,26 @@ namespace ana {
     return p;
   });
 
+  // Reco muon track length
+  const Var kNuMIRecoMuonLength([](const caf::SRSliceProxy* slc) -> double {
+    float ret(-5.f);
+    int candIdx = kNuMIMuonCandidateIdx(slc);
+    if( candIdx >= 0 ){
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+
+      ret = trk.len;
+    }
+
+     return ret;
+  });
+  // True muon length
+  const Var kNuMITrueMuonLength([](const caf::SRSliceProxy* slc) -> float {
+    float p(-5.f);
+    if ( slc->truth.index >= 0 ) p = PrimaryUtil::MuonLength_True(slc->truth);
+
+    return p;
+  });
+
   // Reco muon transverse momentum
   const Var kNuMIRecoMuonPt([](const caf::SRSliceProxy* slc) -> double {
     float ret(-5.f);
@@ -316,6 +336,26 @@ namespace ana {
     if ( slc->truth.index >= 0 ) ret = PrimaryUtil::ProtonPt_True(slc->truth);
 
     return ret;
+  });
+
+  // Reco proton track length
+  const Var kNuMIRecoProtonLength([](const caf::SRSliceProxy* slc) -> double {
+    float ret(-5.f);
+    int candIdx = kNuMIProtonCandidateIdx(slc);
+    if( candIdx >= 0 ){
+      auto const& trk = slc->reco.pfp.at(candIdx).trk;
+
+      ret = trk.len;
+    }
+
+     return ret;
+  });
+  // True proton length
+  const Var kNuMITrueProtonLength([](const caf::SRSliceProxy* slc) -> float {
+    float p(-5.f);
+    if ( slc->truth.index >= 0 ) p = PrimaryUtil::ProtonLength_True(slc->truth);
+
+    return p;
   });
 
   // Reco CosTh(numi)

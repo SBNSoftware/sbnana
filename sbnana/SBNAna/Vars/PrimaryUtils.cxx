@@ -176,6 +176,16 @@ namespace PrimaryUtil{
     
     return ret;
   }
+  double MuonLength_True(const caf::SRTrueInteractionProxy& true_int){
+    double ret(-5.f);
+
+    int truth_idx = MuonIndex_True(true_int);
+    if(truth_idx>=0){
+      ret = true_int.prim.at(truth_idx).length;
+    }
+
+    return ret;
+  }
 
   // Proton
 
@@ -278,6 +288,16 @@ namespace PrimaryUtil{
     int truth_idx = ProtonIndex_True(true_int);
     if(truth_idx>=0){
       ret = true_int.prim.at(truth_idx).genE - M_PROTON;
+    }
+
+    return ret;
+  }
+  double ProtonLength_True(const caf::SRTrueInteractionProxy& true_int){
+    double ret(-5.f);
+
+    int truth_idx = ProtonIndex_True(true_int);
+    if(truth_idx>=0){
+      ret = true_int.prim.at(truth_idx).length;
     }
 
     return ret;
