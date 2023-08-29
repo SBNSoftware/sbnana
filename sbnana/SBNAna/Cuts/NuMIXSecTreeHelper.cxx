@@ -20,6 +20,7 @@ namespace ana{
       "TrueMuonP",
       "TrueMuonPt",
       "TrueMuonCos",
+      "TrueMuonCosBeam",
       "TrueMuonLength",
       // Proton
       "TrueProtonP",
@@ -52,6 +53,7 @@ namespace ana{
       kTrueMuonPVectorPerSignalNu,
       kTrueMuonPtVectorPerSignalNu,
       kTrueMuonNuCosineThetaVectorPerSignalNu,
+      kTrueMuonCosThBeamVectorPerSignalNu,
       kTrueMuonLengthVectorPerSignalNu,
       // Proton
       kTrueProtonPVectorPerSignalNu,
@@ -80,6 +82,9 @@ namespace ana{
       // Number of primary particles
       "TrueNProton/i", "TrueNNeutron/i",
       "TrueNpip/i", "TrueNpim/i", "TrueNpi0/i",
+      "TrueNpipAll/i", "TrueNpimAll/i", "TrueNpi0All/i",
+      // True muon
+      "TrueMuonContained/i",
       // Is Signal
       "IsSignal/i",
       // Weight
@@ -123,8 +128,11 @@ namespace ana{
       // Number of primary particles
       kNuMITrueNProton, kNuMITrueNNeutron,
       kNuMITrueNpip, kNuMITrueNpim, kNuMITrueNpi0,
+      kNuMITrueNpip_All, kNuMITrueNpim_All, kNuMITrueNpi0_All,
+      // True muon kNuMIMuonTrueContained
+      kNuMIMuonTrueContained,
       // Is Signal
-      kNuMIIsSignal,
+      kNuMISliceSignalType,
       // Weight
       kGetNuMIFluxWeight,
       // NuE
