@@ -76,6 +76,7 @@ namespace ana{
   const SpillMultiVar kTrueMuonPVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonP_True);
   const SpillMultiVar kTrueMuonPtVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonPt_True);
   const SpillMultiVar kTrueMuonNuCosineThetaVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonNuCosineTheta_True);
+  const SpillMultiVar kTrueMuonCosThBeamVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonCosThBeam_True);
   const SpillMultiVar kTrueMuonLengthVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::MuonLength_True);
 
   // Proton

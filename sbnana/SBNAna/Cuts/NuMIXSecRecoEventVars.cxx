@@ -38,10 +38,20 @@ namespace ana{
     if ( slc->truth.index < 0 ) return -1;
     return PrimaryUtil::Npip_True(slc->truth);
   });
+  // Number of ANY pi+ (not just primary)
+  const Var kNuMITrueNpip_All([](const caf::SRSliceProxy* slc) -> int {
+    if ( slc->truth.index < 0 ) return -1;
+    return PrimaryUtil::Npip_True_Any(slc->truth);
+  });
   // Number of primary pi-
   const Var kNuMITrueNpim([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
     return PrimaryUtil::Npim_True(slc->truth);
+  });
+  // Number of ANY pi- (not just primary)
+  const Var kNuMITrueNpim_All([](const caf::SRSliceProxy* slc) -> int {
+    if ( slc->truth.index < 0 ) return -1;
+    return PrimaryUtil::Npim_True_Any(slc->truth);
   });
   // Number of primary pi0
   const Var kNuMITrueNpi0([](const caf::SRSliceProxy* slc) -> int {
@@ -89,6 +99,11 @@ namespace ana{
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
     return PrimaryUtil::MuonNuCosineTheta_True(slc->truth);
   });
+  // True muon contain?: 1: contained, 0: not contained (-1: muon not found)
+  const Var kNuMIMuonTrueContained([](const caf::SRSliceProxy* slc) -> int {
+    if ( slc->truth.index < 0 ) return -1; //TODO Define better dummy value
+    return PrimaryUtil::MuonContained_True(slc->truth);
+  });
   // True proton kinetic energy
   const Var kNuMIProtonTrueKE([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
@@ -99,13 +114,6 @@ namespace ana{
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
     return PrimaryUtil::ProtonNuCosineTheta_True(slc->truth);
   });
-
-  // 0: not signal, 1: signal
-  const Var kNuMIIsSignal([](const caf::SRSliceProxy* slc) -> int {
-    if( kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold(slc) ) return 1;
-    else return 0;
-  });
-
 
   // 0: Muon candidate track exiting, 1: Muon candidate track contained (-1: no muon candidate)
   const Var kNuMIRecoMuonContained([](const caf::SRSliceProxy* slc) -> int {

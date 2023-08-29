@@ -32,7 +32,9 @@ namespace PrimaryUtil{
   int NProton_True(const caf::SRTrueInteractionProxy& true_int);
   int NNeutron_True(const caf::SRTrueInteractionProxy& true_int);
   int Npip_True(const caf::SRTrueInteractionProxy& true_int);
+  int Npip_True_Any(const caf::SRTrueInteractionProxy& true_int);
   int Npim_True(const caf::SRTrueInteractionProxy& true_int);
+  int Npim_True_Any(const caf::SRTrueInteractionProxy& true_int);
   int Npi0_True(const caf::SRTrueInteractionProxy& true_int);
   int Npi0_True_Any(const caf::SRTrueInteractionProxy& true_int);
   double Q2_True(const caf::SRTrueInteractionProxy& true_int);
@@ -48,6 +50,7 @@ namespace PrimaryUtil{
   double MuonPt_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonKE_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonLength_True(const caf::SRTrueInteractionProxy& true_int);
+  int MuonContained_True(const caf::SRTrueInteractionProxy& true_int); // 1: contained, 0: not contained (-1: muon not found)
 
   // Proton
   int ProtonIndex_True(const caf::SRTrueInteractionProxy& true_int);

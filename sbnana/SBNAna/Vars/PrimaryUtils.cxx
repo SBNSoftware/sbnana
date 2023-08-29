@@ -44,10 +44,24 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
+  int Npip_True_Any(const caf::SRTrueInteractionProxy& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( prim.pdg == 211 ) NPtl++;
+    }
+    return NPtl;
+  }
   int Npim_True(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == -211 ) NPtl++;
+    }
+    return NPtl;
+  }
+  int Npim_True_Any(const caf::SRTrueInteractionProxy& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
       if ( prim.pdg == -211 ) NPtl++;
     }
     return NPtl;
@@ -192,6 +206,17 @@ namespace PrimaryUtil{
     int truth_idx = MuonIndex_True(true_int);
     if(truth_idx>=0){
       ret = true_int.prim.at(truth_idx).length;
+    }
+
+    return ret;
+  }
+  int MuonContained_True(const caf::SRTrueInteractionProxy& true_int){
+    int ret = -1;
+
+    int truth_idx = MuonIndex_True(true_int);
+    if(truth_idx>=0){
+      if(true_int.prim.at(truth_idx).contained) ret = 1;
+      else ret = 0;
     }
 
     return ret;

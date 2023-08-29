@@ -16,7 +16,9 @@ namespace ana{
   extern const Var kNuMITrueNProton; //!< Number of primary proton
   extern const Var kNuMITrueNNeutron; //!< Number of primary neutron
   extern const Var kNuMITrueNpip; //!< Number of primary pi+
+  extern const Var kNuMITrueNpip_All; //!< Number of ALL pi+ (not just primary)
   extern const Var kNuMITrueNpim; //!< Number of primary pi-
+  extern const Var kNuMITrueNpim_All; //!< Number of ALL pi- (not just primary)
   extern const Var kNuMITrueNpi0; //!< Number of primary pi0
   extern const Var kNuMITrueNpi0_All; //!< Number of ALL pi0 (not just primary)
   extern const Var kNuMITrueNuE; //!< Neutrino energy
@@ -27,11 +29,10 @@ namespace ana{
   // - Muon
   extern const Var kNuMIMuonTrueKE; //!< True muon kinetic energy
   extern const Var kNuMIMuonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino
+  extern const Var kNuMIMuonTrueContained; //!< 1: contained, 0: not contained (-1: muon not found)
   // - Proton
   extern const Var kNuMIProtonTrueKE; //!< True proton kinetic energy
   extern const Var kNuMIProtonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino
-  // - Signal def
-  extern const Var kNuMIIsSignal; //!< 0: not signal, 1: signal
 
   // Reco
   // - Muon
