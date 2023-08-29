@@ -81,7 +81,7 @@ namespace ana {
         const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
         const float Chi2Proton = trk.chi2pid[2].chi2_proton;
         const float Chi2Muon = trk.chi2pid[2].chi2_muon;
-        if ( (!Contained && trk.len > 100.) || (Contained && trk.len > 50. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
+        if ( (!Contained && trk.len > 50.) || (Contained && trk.len > 50. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
           if ( trk.len <= Longest ) continue;
           Longest = trk.len;
           PTrackInd = thisIdx;
@@ -697,5 +697,99 @@ namespace ana {
     return ret;
   });
 
+  const Var kNuMILeadingPhotonCandidateE([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if(photon_indices.size()==0) return -5.f;
+
+    // Find 2 most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    unsigned int idxScdy = 0;
+    float scdy = -5.;
+    for ( auto const& photon_idx : photon_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(photon_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxScdy = idxMaxE;
+        scdy = maxE;
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
+        idxScdy = idxI;
+        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
+
+    return maxE;
+  });
+
+  const Var kNuMISecondaryPhotonCandidateE([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if(photon_indices.size()<=1) return -5.f;
+
+    // Find 2 most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    unsigned int idxScdy = 0;
+    float scdy = -5.;
+    for ( auto const& photon_idx : photon_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(photon_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxScdy = idxMaxE;
+        scdy = maxE;
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
+        idxScdy = idxI;
+        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
+
+    return scdy;
+  });
+
+  const Var kNuMIPhotonCandidatesOpeningAngle([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if(photon_indices.size()<=1) return -5.f;
+
+    // Find 2 most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    unsigned int idxScdy = 0;
+    float scdy = -5.;
+    for ( auto const& photon_idx : photon_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(photon_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxScdy = idxMaxE;
+        scdy = maxE;
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
+        idxScdy = idxI;
+        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( idxMaxE == idxScdy ) return -5.f;
+    if ( maxE < 0. || scdy < 0. ) return -5.f;
+
+    // Now get the quantities we want from this, following results of Jamie's w.r.t. the opening angle:
+    // Uses vertex to shower:
+    auto const& shw1 = slc->reco.pfp[idxMaxE].shw;
+    TVector3 vecShw1(shw1.start.x - slc->vertex.x, shw1.start.y - slc->vertex.y, shw1.start.z - slc->vertex.z);
+    auto const& shw2 = slc->reco.pfp[idxScdy].shw;
+    TVector3 vecShw2(shw2.start.x - slc->vertex.x, shw2.start.y - slc->vertex.y, shw2.start.z - slc->vertex.z);
+    float openAngle = vecShw1.Angle(vecShw2);
+
+    if (std::isinf(openAngle) || std::isnan(openAngle)) return -5.f;
+
+    return openAngle;
+  });
 
 }

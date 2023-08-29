@@ -60,6 +60,13 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
+  int Npi0_True_Any(const caf::SRTrueInteractionProxy& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( abs(prim.pdg) == 111 ) NPtl++;
+    }
+    return NPtl;
+  }
   double Q2_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.Q2;
   }

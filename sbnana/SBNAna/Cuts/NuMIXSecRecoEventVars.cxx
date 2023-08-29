@@ -48,6 +48,11 @@ namespace ana{
     if ( slc->truth.index < 0 ) return -1;
     return PrimaryUtil::Npi0_True(slc->truth);
   });
+  // Number of ANY pi0 (not just primary)
+  const Var kNuMITrueNpi0_All([](const caf::SRSliceProxy* slc) -> int {
+    if ( slc->truth.index < 0 ) return -1;
+    return PrimaryUtil::Npi0_True_Any(slc->truth);
+  });
   // Neutrino energy
   const Var kNuMITrueNuE([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
