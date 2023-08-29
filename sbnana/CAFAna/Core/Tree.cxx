@@ -4,6 +4,7 @@
 #include "TBranch.h"
 #include "TTree.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TGraph.h"
 #include "TSpline.h"
 
@@ -259,13 +260,402 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  WeightsTree::WeightsTree( const std::string name, const std::vector<std::string>& labels,
-                            const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum, const unsigned int nWeightsExpected )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fNSigma(nSigma), fNWeightsExpected(nWeightsExpected)
+  CovarianceMatrixTree::CovarianceMatrixTree( const std::string name, const std::vector<std::string>& labels, const std::string weightLabel,
+                                              const std::vector< std::vector<std::pair<std::string,std::pair<double,double>>> >& binning,
+                                              SpectrumLoaderBase& loader, const std::vector<SpillMultiVar>& vars, const unsigned int nUniverses,
+                                              const SpillCut& spillcut )
+    : Tree(name,labels,loader,vars,spillcut,false),fWeightLabel(weightLabel),fNUniverses(nUniverses)
   {
+    assert( labels.size() == vars.size() );
+    fWeights = {};
+
+    // Reconstruct a binning map from the passed vector:
+    unsigned int idxBin = 1;
+    for ( auto const& binCuts : binning ) {
+      fBinning[idxBin] = binCuts;
+      idxBin+=1;
+    }
+
+    // Check that the cuts make sense:
+    // Logic: any cut that appears in the first bin must appear in the rest, and
+    //        nothing can appear in a latter bin that isn't in the first
+    // TODO: we DO NOT check that no two bins have the same cuts...
+    // TODO: also we DO NOT check, but assume later, that if it's a one-value bin
+    //       in the first case then it's always this way...
+    std::set<std::string> tmpCuts;
+
+    for ( auto const& [bin, cuts] : fBinning ) {
+      if ( tmpCuts.size()==0 ) {
+        for ( auto const& cut : cuts ) {
+          assert(tmpCuts.find(cut.first)==tmpCuts.end());
+          tmpCuts.emplace( cut.first );
+        }
+      }
+      else {
+        assert(cuts.size()==tmpCuts.size());
+        for ( auto const& cut : cuts ) {
+          assert(tmpCuts.find(cut.first)!=tmpCuts.end());
+        }
+      }
+    }
+    assert(tmpCuts.size()!=0);
+  }
+
+  //----------------------------------------------------------------------
+  void CovarianceMatrixTree::UpdateEntries( const std::map<std::string, std::vector<double>> valsMap )
+  {
+    unsigned int idxBranch = 0;
+    unsigned int previousSize=0;
+    for ( auto const& [name, vals] : valsMap ) {
+      if ( idxBranch>0 && name.compare(fWeightLabel)!=0 ) assert(previousSize == vals.size());
+      else if ( idxBranch>0 && name.compare(fWeightLabel)==0 ) assert(previousSize == vals.size()/fNUniverses);
+
+      if ( name.compare(fWeightLabel)!=0 ) {
+        assert ( fBranchEntries.find(name) != fBranchEntries.end() );
+        previousSize = vals.size();
+        fBranchEntries.at(name).insert(fBranchEntries.at(name).end(),vals.begin(),vals.end());
+        idxBranch+=1;
+      }
+      else {
+        previousSize = vals.size()/fNUniverses;
+        std::vector<double> thisWts;        
+        for ( unsigned int idxWt=0; idxWt < vals.size(); ++idxWt ) {
+          thisWts.push_back( vals.at(idxWt) );
+          if ( thisWts.size() == fNUniverses ) {
+            fWeights.push_back(thisWts);
+            thisWts.clear();
+          }
+        }
+        // Still fill the main branch
+        fBranchEntries.at(name).insert(fBranchEntries.at(name).end(),vals.begin(),vals.end());
+      }
+    }
+
+    fNEntries+=(long long)previousSize;
+  }
+
+  //----------------------------------------------------------------------
+  void CovarianceMatrixTree::SaveTo( TDirectory* dir ) const
+  {
+    assert(fOrderedBranchNames.size() >= 2); // need at least a weight label and a key for the binning...
+
+    // Pick a random key and double check the sizes make sense
+    std::string key = fOrderedBranchNames.at(0);
+    if ( key.compare(fWeightLabel)==0 ) key = fOrderedBranchNames.at(1);
+    assert( fNEntries==(long long)fWeights.size() && fBranchEntries.at(key).size()==fWeights.size() );
+
+    std::cout << "SAVING a covariance matrix for the variable labeled " << fWeightLabel << " with binning:" << std::endl;
+    PrintBinning();
+
+    TDirectory *tmp = gDirectory;
+    dir->cd();
+
+    TH1D thePOT("POT","POT",1,0,1);
+    thePOT.SetBinContent(1,fPOT);
+    thePOT.Write();
+
+    TH1D theLivetime("Livetime","Livetime",1,0,1);
+    theLivetime.SetBinContent(1,fLivetime);
+    theLivetime.Write();
+
+    // Make the covariance matrix
+    const unsigned int nBins = fBinning.size();
+
+    // construct the bins to sum weights
+    std::vector<std::vector<double>> binCts;
+    for ( unsigned int idxU = 0; idxU < fNUniverses; ++idxU ) {
+      std::vector<double> binCtsU;
+      for ( unsigned int idxB = 0; idxB < nBins; ++idxB ) {
+        binCtsU.push_back(0.);
+      }
+      binCts.push_back( binCtsU );
+    }
+
+    // fill them 
+    for ( unsigned int idxEntry = 0; idxEntry < fNEntries; ++idxEntry ) {
+      // determine bin:
+      int theBin = 0;
+      for ( auto const& [bin, cuts] : fBinning ) {
+        bool failedCut = false;
+        for ( auto const& cut : cuts ) {
+          if ( failedCut ) continue;
+          assert( fBranchEntries.find(cut.first)!=fBranchEntries.end() );
+          const double loVal = cut.second.first;
+          const double hiVal = cut.second.second;
+          // Treat as long ints if needed
+          if ( cut.first.find("/i")!=std::string::npos ||
+               cut.first.find("/I")!=std::string::npos ) {
+            const int loValI = std::lround(loVal);
+            const int hiValI = std::lround(hiVal);
+            const int thisVal = std::lround( fBranchEntries.at(cut.first).at(idxEntry) );
+            if ( loValI==hiValI ) {
+              if ( thisVal!=loValI ) {
+                failedCut = true;
+              }
+            }
+            else if ( thisVal <= loValI || thisVal > hiValI ){
+              failedCut = true;
+            }
+          }
+          else if ( cut.first.find("/l")!=std::string::npos ||
+                    cut.first.find("/L")!=std::string::npos ) {
+            const long long loValI = std::lround(loVal);
+            const long long hiValI = std::lround(hiVal);
+            const long long thisVal = std::lround( fBranchEntries.at(cut.first).at(idxEntry) );
+            if ( loValI==hiValI ) {
+              if ( thisVal!=loValI ) {
+                failedCut = true;
+              }
+            }
+            else if ( thisVal <= loValI || thisVal > hiValI ){
+              failedCut = true;
+            }
+          }
+          // double check if the lo and hi are the same
+          else if ( fabs(hiVal-loVal) < std::numeric_limits<double>::epsilon() ) {
+            std::cout << "WARNING!!! You may have been expecting " << cut.first << " to be an integer but it's being treated like a double!" << std::endl;
+            const double thisVal = fBranchEntries.at(cut.first).at(idxEntry);
+            if ( fabs(thisVal-loVal) > std::numeric_limits<double>::epsilon() ) failedCut = true;
+          }
+          // else check the range, inclusive on high edge
+          else {
+            const double thisVal = fBranchEntries.at(cut.first).at(idxEntry);
+            if ( thisVal <= loVal || thisVal > hiVal ){
+              failedCut = true;
+            }
+          }
+        }
+        // if got to the end of cuts and we pass, then this is our bin
+        if( !failedCut ){
+          theBin = bin;
+          break;
+        }
+      }
+      // if under- or over-flow then skip this event
+      if ( theBin == 0 ) continue;
+
+      // fill for each universe:
+      for ( unsigned int idxU = 0; idxU < fNUniverses; ++idxU ) {
+        //if ( idxEntry < 10 ) std::cout << "idxEntry " << idxEntry << ": filling bin " << theBin << " with value " << (fWeights.at(idxEntry).at(idxU)-1.) << " for universe " << idxU << std::endl;
+        binCts.at(idxU).at(theBin-1)+=(fWeights.at(idxEntry).at(idxU)); // Was thinking to subtract 1 to make it relative contributions but it's all relative to the mean so I think I don't want to do that...
+      }
+    }
+
+    // Make the vector of means
+    std::vector<double> means;
+    for ( unsigned int idxB = 0; idxB < nBins; ++idxB ) {
+      double sum = 0.;
+      for ( unsigned int idxU = 0; idxU < fNUniverses; ++idxU ){
+        sum+=binCts.at(idxU).at(idxB);
+      }
+
+      means.push_back( sum / fNUniverses );
+    }
+
+    // To make the correlation matrix we also want standard deviations
+    std::vector<double> sigmas;
+    for ( unsigned int idxB = 0; idxB < nBins; ++idxB ) {
+      double sum = 0.;
+      for ( unsigned int idxU = 0; idxU < fNUniverses; ++idxU ){
+        sum+=std::pow(binCts.at(idxU).at(idxB)-means.at(idxB),2);
+      }
+
+      sigmas.push_back( std::sqrt(sum / (fNUniverses-1)) );
+    }
+
+    //std::cout << "Means and sigmas per bin:" << std::endl;
+    //for ( unsigned int idxB = 0; idxB < nBins; ++idxB ) {
+    //  std::cout << "Bin " << idxB+1 << ", mean: " << means.at(idxB) << ", sigma: " << sigmas.at(idxB) << std::endl;
+    //}
+
+    // Now make a TH2D to write the covariance (using formula as in Forumula 10 of sbn-doc-27384):
+    TH2D *h_cov_mtx = new TH2D( TString::Format("hCovMtx_%s",fWeightLabel.c_str()), ";bins;bins", nBins, 1, nBins+1, nBins, 1, nBins+1 );
+
+    for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
+      for ( unsigned int yBin=1; yBin<=nBins; ++yBin ) {
+        double cov = 0.;
+        for ( unsigned int idxU = 0; idxU < fNUniverses; ++idxU ) {
+          //if ( xBin < 3 ) std::cout << "xBin " << xBin << ", yBin " << yBin << ": Adding to covariance " << ((binCts.at(idxU).at(xBin-1)-means.at(xBin-1))*(binCts.at(idxU).at(yBin-1)-means.at(yBin-1))) << " for universe " << idxU << std::endl;
+          cov+=((binCts.at(idxU).at(xBin-1)-means.at(xBin-1))*(binCts.at(idxU).at(yBin-1)-means.at(yBin-1)));
+        }
+        cov/=(fNUniverses-1);
+
+        h_cov_mtx->SetBinContent(xBin,yBin,cov);
+      }
+    }
+
+    h_cov_mtx->Write();
+
+    // and using the documentation in https://root.cern/doc/master/group__Matrix.html
+    // Let's also save this as a TMatrixD
+    // TODO: do I need to save overflow/underflow?
+    TArrayD tarray(nBins*nBins);
+
+    for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
+      const unsigned int row = xBin-1;
+      for ( unsigned int yBin=1; yBin<=nBins; ++yBin ) {
+        const unsigned int column = yBin-1;
+        const double val = h_cov_mtx->GetBinContent(xBin,yBin);
+        tarray[nBins*row+column] = val;
+      }
+    }
+
+    TMatrixD cov_mtx(nBins,nBins);
+    cov_mtx.SetMatrixArray(tarray.GetArray());
+
+    cov_mtx.Write( TString::Format("hCovMtx_%s",fWeightLabel.c_str()) );
+
+    // And correlation matrix, by way of Corr(X,Y) = Cov(X,Y)/Sigma(X)Sigma(Y)
+    // See e.g. PDG 2018, Chapter 39 Page 25, or https://en.wikipedia.org/wiki/Correlation#Correlation_matrices
+    TH2D *h_corr_mtx = new TH2D( TString::Format("hCorrMtx_%s",fWeightLabel.c_str()), ";bins;bins", nBins, 1, nBins+1, nBins, 1, nBins+1 );
+
+    for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
+      for ( unsigned int yBin=1; yBin<=nBins; ++yBin ) {
+        double corr = h_cov_mtx->GetBinContent(xBin,yBin) / (sigmas[xBin-1]*sigmas[yBin-1]);
+
+        h_corr_mtx->SetBinContent(xBin,yBin,corr);
+      }
+    }
+
+    h_corr_mtx->Write();
+
+    TArrayD tarray_corr(nBins*nBins);
+    for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
+      const unsigned int row = xBin-1;
+      for ( unsigned int yBin=1; yBin<=nBins; ++yBin ) {
+        const unsigned int column = yBin-1;
+        const double val = h_corr_mtx->GetBinContent(xBin,yBin);
+        tarray_corr[nBins*row+column] = val;
+      }
+    }
+    TMatrixD corr_mtx(nBins,nBins);
+    corr_mtx.SetMatrixArray(tarray_corr.GetArray());
+
+    corr_mtx.Write( TString::Format("hCorrMtx_%s",fWeightLabel.c_str()) );
+
+    tmp->cd();
+  }
+
+  //----------------------------------------------------------------------
+  void CovarianceMatrixTree::PrintBinning() const
+  {
+    std::vector<std::string> cutNames;
+    std::vector<bool> treatAsInt;
+    std::vector<bool> treatAsLong;
+    std::vector<bool> treatOnlyLo;
+
+    for ( auto const& [bin, cuts] : fBinning ) {
+      if ( cutNames.size()==0 ) {
+        std::string HdrString = "variables: ";
+        for ( auto const& cut : cuts ) {
+          cutNames.push_back( cut.first );
+
+          if ( cut.first.find("/i")!=std::string::npos ||
+               cut.first.find("/I")!=std::string::npos ) {
+            treatAsInt.push_back(true);
+            treatAsLong.push_back(false);
+            int checkLo = std::lround(cut.second.first);
+            int checkHi = std::lround(cut.second.second);
+            if ( checkLo==checkHi ) treatOnlyLo.push_back(true);
+            else treatOnlyLo.push_back(false);
+
+            HdrString+=(cut.first+" ");
+          }
+          else if ( cut.first.find("/l")!=std::string::npos ||
+                    cut.first.find("/L")!=std::string::npos ) {
+            treatAsInt.push_back(false);
+            treatAsLong.push_back(true);
+            long long checkLo = std::lround(cut.second.first);
+            long long checkHi = std::lround(cut.second.second);
+            if ( checkLo==checkHi ) treatOnlyLo.push_back(true);
+            else treatOnlyLo.push_back(false);
+
+            HdrString+=(cut.first+" ");
+          }
+          else {
+            treatAsInt.push_back(false);
+            treatAsLong.push_back(false);
+            treatOnlyLo.push_back(false);
+            HdrString+=(cut.first+" "+cut.first+" ");
+          }
+        }
+        std::cout << HdrString << std::endl;
+      }
+
+      std::string BinString;
+      for ( unsigned int idxCut = 0; idxCut<cutNames.size(); ++idxCut ) {
+        auto const& cut = fBinning.at(bin).at(idxCut);
+        const double loVal = cut.second.first;
+        const double hiVal = cut.second.second;
+
+        if ( treatAsInt[idxCut] ) { 
+          const int loValI = std::lround(loVal);
+          const int hiValI = std::lround(hiVal);
+
+          if ( treatOnlyLo[idxCut] ) BinString+=(std::to_string(loValI)+" ");
+          else BinString+=(std::to_string(loValI)+" "+std::to_string(hiValI)+" ");
+        }
+        else if ( treatAsLong[idxCut] ) { 
+          const long long loValI = std::lround(loVal);
+          const long long hiValI = std::lround(hiVal);
+
+          if ( treatOnlyLo[idxCut] ) BinString+=(std::to_string(loValI)+" ");
+          else BinString+=(std::to_string(loValI)+" "+std::to_string(hiValI)+" ");
+        }
+        else BinString+=(std::to_string(loVal)+" "+std::to_string(hiVal)+" ");
+      }
+      std::cout << BinString << std::endl;
+
+    }
+  }
+
+  //----------------------------------------------------------------------
+  WeightsTree::WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                            const std::vector<unsigned int>& nWeights, const bool saveRunSubEvt, const bool saveSliceNum )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+  {
+    assert( nWeights.size()==labels.size() );
+
     for ( unsigned int i=0; i<labels.size(); ++i ) {
       fOrderedBranchWeightNames.push_back( labels.at(i) );
       fBranchWeightEntries[labels.at(i)] = {};
+
+      fNSigmasLo[labels.at(i)] = 0;
+      fNSigmasHi[labels.at(i)] = nWeights.at(i);
+      fNWeightsExpected[labels.at(i)] = nWeights.at(i);
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
+    }
+    if ( saveSliceNum ) {
+      assert( fBranchEntries.find("Slice/i") == fBranchEntries.end() );
+      fOrderedBranchNames.push_back( "Slice/i" ); fBranchEntries["Slice/i"] = {};
+    }
+  }
+
+  //----------------------------------------------------------------------
+  WeightsTree::WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                            const std::vector<std::pair<int,int>>& nSigma, const bool saveRunSubEvt, const bool saveSliceNum )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+  {
+    assert( nSigma.size()==labels.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      fOrderedBranchWeightNames.push_back( labels.at(i) );
+      fBranchWeightEntries[labels.at(i)] = {};
+
+      assert( nSigma.at(i).second > nSigma.at(i).first );
+
+      fNSigmasLo[labels.at(i)] = nSigma.at(i).first;
+      fNSigmasHi[labels.at(i)] = nSigma.at(i).second;
+      fNWeightsExpected[labels.at(i)] = (unsigned int)((nSigma.at(i).second-nSigma.at(i).first) + 1);
     }
 
     if ( saveRunSubEvt ) {
@@ -333,10 +723,10 @@ namespace ana
       idxBranch+=1;
     }
 
-    // Now the fNSigma number of weights, stored as a vector per record.
+    // Now the fNWeightsExpected number of weights, stored as a vector per record.
     for ( auto const& [name, weights] : weightMap ) {
       assert ( fBranchWeightEntries.find(name) != fBranchWeightEntries.end() );
-      assert ( weights.size() == fNWeightsExpected );
+      assert ( weights.size() == fNWeightsExpected.at(name) );
 
       fBranchWeightEntries.at(name).push_back(weights);
     }
@@ -354,11 +744,13 @@ namespace ana
   //----------------------------------------------------------------------
   NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
                             SpectrumLoaderBase& loader,
-                            const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
-                            const Cut& cut, const SystShifts& shift, const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum )
-    : WeightsTree(name,labels,nSigma,saveRunSubEvt,saveSliceNum,2*nSigma+1)
+                            const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
+                            const SpillCut& spillcut,
+                            const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
+  : WeightsTree(name,labels,nSigma,saveRunSubEvt,saveSliceNum)
   {
     assert( labels.size() == systsToStore.size() );
+    assert( nSigma.size() == labels.size() );
 
     loader.AddNSigmasTree( *this, labels, systsToStore, spillcut, cut, shift );
   }
@@ -440,12 +832,6 @@ namespace ana
     }
 
     const int NBranchesWeights = fOrderedBranchWeightNames.size();
-    const int NSigmas = 2*fNSigma+1;
-
-    double sigmasArr[NSigmas];
-    for ( unsigned int idxSigma=0; idxSigma<2*fNSigma+1; ++idxSigma ) {
-      sigmasArr[idxSigma] = double((-1*int(fNSigma))+int(idxSigma));
-    }
 
     TSpline3 *splinesArr[NBranchesWeights];
     for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
@@ -466,6 +852,12 @@ namespace ana
       }
       // Make the splines
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        double sigmasArr[NSigmas];
+        for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
+          sigmasArr[idxSigma] = double((-1*NSigmas)+int(idxSigma));
+        }
+
         double weightsArr[NSigmas];
         unsigned int idxVal = 0;
         for ( auto const& val : fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at( idxEntry ) ) {
@@ -562,12 +954,6 @@ namespace ana
     }
 
     const int NBranchesWeights = fOrderedBranchWeightNames.size();
-    const int NSigmas = 2*fNSigma+1;
-
-    double sigmasArr[NSigmas];
-    for ( unsigned int idxSigma=0; idxSigma<2*fNSigma+1; ++idxSigma ) {
-      sigmasArr[idxSigma] = double((-1*int(fNSigma))+int(idxSigma));
-    }
 
     TGraph *graphsArr[NBranchesWeights];
     for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
@@ -588,6 +974,12 @@ namespace ana
       }
       // Make the graphs
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        double sigmasArr[NSigmas];
+        for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
+          sigmasArr[idxSigma] = double((-1*NSigmas)+int(idxSigma));
+        }
+
         double weightsArr[NSigmas];
         unsigned int idxVal = 0;
         for ( auto const& val : fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at( idxEntry ) ) {
@@ -681,8 +1073,6 @@ namespace ana
       }
     }
 
-    const unsigned int NSigmas = 2*fNSigma+1;
-
     std::map< std::string, std::vector<double> > weights;
 
     // set up map
@@ -707,7 +1097,8 @@ namespace ana
       }
       // Save the weights
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
-        for ( unsigned int idxWt = 0; idxWt < NSigmas; ++idxWt ) {
+        const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        for ( unsigned int idxWt = 0; idxWt < (unsigned int)NSigmas; ++idxWt ) {
           weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxEntry).at(idxWt));
         }
       }
@@ -728,15 +1119,15 @@ namespace ana
   //----------------------------------------------------------------------
   NUniversesTree::NUniversesTree( const std::string name, const std::vector<std::string>& labels,
                             SpectrumLoaderBase& loader,
-                            const std::vector<std::vector<Var>>& univsKnobs, const unsigned int nUniverses,
+                            const std::vector<std::vector<Var>>& univsKnobs, const std::vector<unsigned int>& nUniverses,
                             const SpillCut& spillcut,
                             const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
-    : WeightsTree(name,labels,nUniverses,saveRunSubEvt,saveSliceNum,nUniverses)
+  : WeightsTree(name,labels,nUniverses,saveRunSubEvt,saveSliceNum)
   {
     assert( labels.size() == univsKnobs.size() );
 
     for ( unsigned int i=0; i<labels.size(); ++i ) {
-      assert( univsKnobs.at(i).size() == fNSigma );
+      assert( univsKnobs.at(i).size() == nUniverses.at(i) );
     }
 
     loader.AddNUniversesTree( *this, labels, univsKnobs, spillcut, cut, shift );
@@ -842,7 +1233,7 @@ namespace ana
       }
       // Save the weights
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
-        for ( unsigned int idxWt = 0; idxWt < fNSigma; ++idxWt ) {
+        for ( unsigned int idxWt = 0; idxWt < fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) ); ++idxWt ) {
           weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxEntry).at(idxWt));
         }
       }

@@ -86,4 +86,8 @@ namespace ana
   extern const Var kNuMIRecodeltaphiT;
   extern const Var kNuMITruedeltaphiT;
 
+  // Sideband vars: pi0
+  extern const Var kNuMILeadingPhotonCandidateE;
+  extern const Var kNuMISecondaryPhotonCandidateE;
+  extern const Var kNuMIPhotonCandidatesOpeningAngle;
 }

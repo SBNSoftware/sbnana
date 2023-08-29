@@ -65,12 +65,34 @@ namespace ana
     bool fSaveSliceNum;
   };
 
+  /// Allows to make covariance matrices using \ref Tree objects cleverly
+  class CovarianceMatrixTree : public Tree
+  {
+  public:
+    /// constructor with a vector \ref SpillMultiVar corresponding to the items to be used in binning decision and the weights
+    CovarianceMatrixTree( const std::string name, const std::vector<std::string>& labels, const std::string weightLabel,
+                          const std::vector< std::vector<std::pair<std::string,std::pair<double,double>>> >& binning,
+                          SpectrumLoaderBase& loader, const std::vector<SpillMultiVar>& vars, const unsigned int nUniverses,
+                          const SpillCut& spillcut );
+    /// Function to update protected members (the branches). DO NOT USE outside of the filling.
+    void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap ) override;
+    void SaveTo( TDirectory* dir ) const override;
+    void PrintBinning() const;
+  private:
+    std::map< unsigned int, std::vector< std::pair<std::string,std::pair<double,double>> >> fBinning;
+    std::vector<std::vector<double>> fWeights;
+    std::string fWeightLabel;
+    unsigned int fNUniverses;
+  };
+
   // Similar to Tree but for event weights e.g. to make splines...
   class WeightsTree
   {
   public:
     WeightsTree( const std::string name, const std::vector<std::string>& labels,
-                 const unsigned int nSigma, const bool saveRunSubEvt, const bool saveSliceNum, const unsigned int nWeightsExpected );
+                 const std::vector<unsigned int>& nWeights, const bool saveRunSubEvt, const bool saveSliceNum );
+    WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                 const std::vector<std::pair<int,int>>& nSigma, const bool saveRunSubEvt, const bool saveSliceNum );
     /// Function to merge the WeightsTree with a Tree, assuming both have fSaveRunSubEvt and fSaveSliceNum set to true
     void MergeTree( const Tree& inTree );
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
@@ -81,7 +103,9 @@ namespace ana
     double POT() const {return fPOT;} // as in Spectrum
     double Livetime() const {return fLivetime;} // as in Spectrum
     long long Entries() const {return fNEntries;}
-    int NSigma() const {return fNSigma;} // return as an int, then -NSigma to NSigma means something
+    int NSigmaLo(const std::string& systToNSigma) const {return fNSigmasLo.at(systToNSigma);}
+    int NSigmaHi(const std::string& systToNSigma) const {return fNSigmasHi.at(systToNSigma);}
+    unsigned int NWeights(const std::string& systToNWts) const {return fNWeightsExpected.at(systToNWts);}
     bool SaveRunSubEvent() const {return fSaveRunSubEvt;}
     bool SaveSliceNum() const {return fSaveSliceNum;}
     void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
@@ -90,6 +114,10 @@ namespace ana
   protected:
     std::map< std::string, std::vector<double>> fBranchEntries;
     std::map< std::string, std::vector<std::vector<double>>> fBranchWeightEntries;
+    std::map< std::string, unsigned int> fNSigmasLo;
+    std::map< std::string, unsigned int> fNSigmasHi;
+    std::map< std::string, unsigned int> fNWeightsExpected;
+    //std::map< std::string, std::vector<double>> fNWeightsThrows; // stores the expected ordering of NSigmas per knob or universe throws per knob.
     std::string fTreeName;
     std::vector<std::string> fOrderedBranchNames;
     std::vector<std::string> fOrderedBranchWeightNames;
@@ -98,8 +126,6 @@ namespace ana
     double fLivetime;
     bool fSaveRunSubEvt;
     bool fSaveSliceNum;
-    unsigned int fNSigma;
-    unsigned int fNWeightsExpected;
   };
 
   class NSigmasTree : public WeightsTree
@@ -108,8 +134,9 @@ namespace ana
     /// constructor with a vector of \ref ISyst
     NSigmasTree( const std::string name, const std::vector<std::string>& labels,
                  SpectrumLoaderBase& loader,
-                 const std::vector<const ISyst*>& systsToStore, const SpillCut& spillcut,
-                 const Cut& cut, const SystShifts& shift = kNoShift, const unsigned int nSigma = 3, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+                 const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
+                 const SpillCut& spillcut,
+                 const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
     void SaveTo( TDirectory* dir ) const override;
     void SaveToSplines( TDirectory* dir ) const;
     void SaveToGraphs( TDirectory* dir ) const;
@@ -121,11 +148,10 @@ namespace ana
     /// constructor with a vector of vectors of \ref Var corresponding to a number of universes for which we want to extract weights
     NUniversesTree( const std::string name, const std::vector<std::string>& labels,
                     SpectrumLoaderBase& loader,
-                    const std::vector<std::vector<Var>>& univsKnobs, const unsigned int nUniverses,
+                    const std::vector<std::vector<Var>>& univsKnobs, const std::vector<unsigned int>& nUniverses,
                     const SpillCut& spillcut,
                     const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
     void SaveTo( TDirectory* dir ) const override;
-    unsigned int NUniverses() const {return fNSigma;}
   };
 
 }

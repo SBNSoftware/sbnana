@@ -102,11 +102,17 @@ namespace ana {
 
   });
 
-  // Base selection: The signal cut and sidebands all contain these
-  const Cut kNuMISelection_Base = kNuMIVertexInFV && kNuMINotClearCosmic &&
-                                  kNuMIHasMuonCandidate && kNuMIHasProtonCandidate &&
-                                  kNuMIProtonCandidateRecoPTreshold &&
-                                  kNuMIAllPrimaryHadronsContained;
+  // Base selection common to side-bands (cuts back on number of entries one needs to carry):
+  // For now the sidebands revolve around chg pi and pi0
+  const Cut kNuMISelection_1muNp_Base = kNuMIVertexInFV && kNuMINotClearCosmic &&
+                                        kNuMIHasMuonCandidate && kNuMIHasProtonCandidate &&
+                                        kNuMIProtonCandidateRecoPTreshold &&
+                                        kNuMIAllPrimaryHadronsContained;
+
+  // Full selection: 1muNp0pi without caring about containment
+  const Cut kNuMISelection_1muNp0pi_WithoutShowerCut = kNuMIVertexInFV && kNuMINotClearCosmic &&                                                /*Preselection*/
+                                                       kNuMIHasMuonCandidate && kNuMIHasProtonCandidate && kNuMIProtonCandidateRecoPTreshold && /*Mu, P candidates*/
+                                                       kNuMIAllPrimaryHadronsContained && kNuMINoSecondPrimaryMuonlikeTracks;                   /*Esp. chg pi rejection*/
 
   // Full selection: 1muNp0pi without caring about containment
   const Cut kNuMISelection_1muNp0pi = kNuMIVertexInFV && kNuMINotClearCosmic &&                                                /*Preselection*/
@@ -161,6 +167,20 @@ namespace ana {
     return true;
   });
 
+  const Cut kNuMIHasTwoPhotons([](const caf::SRSliceProxy* slc) {
+
+    int primaryInd = kNuMIMuonCandidateIdx(slc);
+    if ( primaryInd < 0 ) return false;
+
+    int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
+    if ( primaryProtonInd < 0 ) return false;
+
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if(photon_indices.size()>=2) return true;
+    else return false;
+
+  });
+
   /// Pion sideband
   const Cut kNuMIChargedPionSideBand = kNuMIVertexInFV && kNuMINotClearCosmic &&                                                /*Preselection*/
                                        kNuMIHasMuonCandidate && kNuMIHasProtonCandidate && kNuMIProtonCandidateRecoPTreshold && /*Mu, P candidates*/
@@ -174,13 +194,31 @@ namespace ana {
                                        kNuMINoSecondPrimaryMuonlikeTracks && /*Esp. chg pi rejection*/
                                        !kNuMICutPhotons; /*Neutral pion*/
 
+  /// Sideband with the 2ph cut --> this is a subset of the NeutralPionSideband
+  const Cut kNuMINeutralPion2phSideBand = kNuMIVertexInFV && kNuMINotClearCosmic &&                                                /*Preselection*/
+                                          kNuMIHasMuonCandidate && kNuMIHasProtonCandidate && kNuMIProtonCandidateRecoPTreshold && /*Mu, P candidates*/
+                                          kNuMIAllPrimaryHadronsContained && /*Hadron contained*/
+                                          kNuMINoSecondPrimaryMuonlikeTracks && /*Esp. chg pi rejection*/
+                                          kNuMIHasTwoPhotons; /*Neutral pion*/
 
   /// CutType; 1=Signal, 2=pi+- sideband, 3=pi0 sideband, 0=other
   const Var kNuMICutType([](const caf::SRSliceProxy* slc) -> double {
 
     if( kNuMISelection_1muNp0pi(slc) ) return 1;
     else if( kNuMIChargedPionSideBand(slc) ) return 2;
-    else if( kNuMINeutralPionSideBand(slc) ) return 3;
+    else if( kNuMINeutralPion2phSideBand(slc) ) return 3; // this should be a subset of 4! so if you want 4, use "3 || 4"
+    else if( kNuMINeutralPionSideBand(slc) ) return 4;
+    else return 0;
+
+  });
+
+  /// CutType without the showers cut in signal selection; 1=Signal, 2=pi+- sideband, 3=pi0 sideband, 0=other
+  const Var kNuMICutTypeWithoutShowerCut([](const caf::SRSliceProxy* slc) -> double {
+
+    if( kNuMISelection_1muNp0pi_WithoutShowerCut(slc) ) return 1;
+    else if( kNuMIChargedPionSideBand(slc) ) return 2;
+    else if( kNuMINeutralPion2phSideBand(slc) ) return 3; // this should be a subset of 4! so if you want 4, use "3 || 4"
+    else if( kNuMINeutralPionSideBand(slc) ) return 4;
     else return 0;
 
   });
@@ -216,7 +254,7 @@ namespace ana {
       if ( prim.start_process != 0 ) continue;
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
-      if ( abs(prim.pdg) == 13 && momentum > 0.226 ) nMu+=1;
+      if ( abs(prim.pdg) == 13 && prim.length > 50. ) nMu+=1;
 
       bool PassProtonPCut = (momentum > 0.4 && momentum < 1.);
       if ( abs(prim.pdg) == 2212 && isContainedVol(prim.end.x,prim.end.y,prim.end.z) && (ApplyProtonPCut ? PassProtonPCut : true)  ) nP+=1;
@@ -254,6 +292,16 @@ namespace ana {
 
     if ( kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold(slc) ) return false; // covered by signal
     return true;
+  });
+
+  /// CutType; 1=Signal, 2=OtherCC, 3=NuNC, 4=NotNu
+  /// can be expanded further
+  const Var kNuMISliceSignalType([](const caf::SRSliceProxy* slc) -> int {
+    if ( kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold(slc) ) return 1;
+    else if ( kNuMI_1muNp0piStudy_OtherNuCC_NoContainment_ProtonThreshold(slc) ) return 2;
+    else if ( kNuMI_IsSliceNuNC(slc) ) return 3;
+    else if ( kNuMI_IsSlcNotNu(slc) ) return 4;
+    else return 0;
   });
 
 }

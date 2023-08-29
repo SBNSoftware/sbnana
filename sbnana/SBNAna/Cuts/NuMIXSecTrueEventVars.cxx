@@ -65,6 +65,62 @@ namespace ana{
 
   }
 
+  std::vector<double> GetSpillCutTypeVectorPerNu(
+    const caf::SRSpillProxy* sr,
+    std::function<bool(const caf::SRTrueInteractionProxy&)> isSignal
+  ){
+
+    std::vector<double> vals;
+
+    bool ThisSpillPass = kNuMIValidTrigger(sr);
+
+    for ( auto const& nu : sr->mc.nu ) {
+      if(!isSignal(nu)) continue; // 1muNp0pi
+
+      if(ThisSpillPass) vals.push_back( 1 );
+      else vals.push_back( 0 );
+
+    }
+
+    return vals;
+
+  }
+
+  std::vector<double> GetCutTypeWithoutShowerCutVectorPerNu(
+    const caf::SRSpillProxy* sr,
+    std::function<bool(const caf::SRTrueInteractionProxy&)> isSignal
+  ){
+
+    std::vector<double> vals;
+
+    for ( auto const& nu : sr->mc.nu ) {
+      if(!isSignal(nu)) continue; // 1muNp0pi
+
+      int this_nu_index = nu.index;
+
+      bool ThisNuPassSignal = false;
+
+      // Loop over reco slice
+      for ( auto const& slc : sr->slc ) {
+        if ( slc.truth.index < 0 ) continue;
+        else if ( slc.truth.index != this_nu_index ) continue;
+
+        int this_slice_cuttpye = kNuMICutTypeWithoutShowerCut(&slc);
+        if(this_slice_cuttpye==1){
+          ThisNuPassSignal = true;
+          break;
+        }
+      }
+
+      if(ThisNuPassSignal) vals.push_back( 1 );
+      else vals.push_back( 0 );
+
+    }
+
+    return vals;
+
+  }
+
   std::vector<double> GetNuMIPPFXWeightVectorPerNu(
     const caf::SRSpillProxy* sr,
     std::function<bool(const caf::SRTrueInteractionProxy&)> isSignal

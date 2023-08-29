@@ -35,6 +35,32 @@ namespace ana{
     }
   );
 
+  // Similar but checks against the SpillCut
+  std::vector<double> GetSpillCutTypeVectorPerNu(
+    const caf::SRSpillProxy* sr,
+    std::function<bool(const caf::SRTrueInteractionProxy&)> isSignal
+  );
+  // Use GetSpillCutTypeVectorPerNu and create a SpillMultiVar
+  const SpillMultiVar kSpillCutTypeVectorPerSignalNu(
+    [](const caf::SRSpillProxy *sr) -> std::vector<double> {
+      return GetSpillCutTypeVectorPerNu(sr, Is1muNp0piWithProtonPcut);
+    }
+  );
+
+  // For each true signal neutrino,
+  // return 1 if it is matched to a reco slice that pass signal selection (WITHOUT THE SHOWER CUT)
+  // return 0 if it is NOT matched dto any reco slice that pass signal selection
+  std::vector<double> GetCutTypeWithoutShowerCutVectorPerNu(
+    const caf::SRSpillProxy* sr,
+    std::function<bool(const caf::SRTrueInteractionProxy&)> isSignal
+  );
+  // Use GetCutTypeVectorPerNu and create a SpillMultiVar
+  const SpillMultiVar kCutTypeWithoutShowerCutVectorPerSignalNu(
+    [](const caf::SRSpillProxy *sr) -> std::vector<double> {
+      return GetCutTypeWithoutShowerCutVectorPerNu(sr, Is1muNp0piWithProtonPcut);
+    }
+  );
+
   // Interaction
   const SpillMultiVar kTruePDGVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::NeutrinoPDG_True);
   const SpillMultiVar kTrueModeVectorPerSignalNu = GetTrueSpillMultiVarPerSignalNu(Is1muNp0piWithProtonPcut, PrimaryUtil::NeutrinoMode_True);

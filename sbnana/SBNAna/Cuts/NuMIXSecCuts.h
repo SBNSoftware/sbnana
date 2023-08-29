@@ -29,8 +29,11 @@ namespace ana
   /// \ref Cut aimed at pi0 rejection
   extern const Cut kNuMICutPhotons;
 
-  /// Base selection \ref Cut for 1muNp0pi analysis: the signal and sidebands have this as a base
-  extern const Cut kNuMISelection_Base;
+  /// Base selection of 1muNp from which the main selection and current sidebands branch
+  extern const Cut kNuMISelection_1muNp_Base;
+
+  /// Combined selection \ref Cut for 1muNp0pi with contained+exiting muons, without additional shower cut being used
+  extern const Cut kNuMISelection_1muNp0pi_WithoutShowerCut;
 
   /// Combined selection \ref Cut for 1muNp0pi with contained+exiting muons
   extern const Cut kNuMISelection_1muNp0pi;
@@ -41,12 +44,17 @@ namespace ana
   /// \ref Cut aimed at reconstruction quality (e.g. split tracks)
   extern const Cut kNuMIRejectSplitMuons;
 
+  /// \ref Cut aimed at having TWO photons for better pi0 selection
+  extern const Cut kNuMIHasTwoPhotons;
+
   /// \ref Cut pion sideband
   extern const Cut kNuMIChargedPionSideBand;
   extern const Cut kNuMINeutralPionSideBand;
+  extern const Cut kNuMINeutralPion2phSideBand;
 
   /// \ref CutType; 1=Signal, 2=pi+- sideband, 3=pi0 sideband (0=other)
   extern const Var kNuMICutType;
+  extern const Var kNuMICutTypeWithoutShowerCut;
 
   /// \ref Signal definitions: Neutrino Neutral Current
   extern const Cut kNuMI_IsSliceNuNC;
@@ -59,4 +67,7 @@ namespace ana
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment;
   extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold;
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment_ProtonThreshold;
+
+  /// \ref Var for slice type (signal, other NuCC, NuNC, NotNu)
+  extern const Var kNuMISliceSignalType;
 }

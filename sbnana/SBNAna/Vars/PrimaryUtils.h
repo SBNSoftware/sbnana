@@ -34,6 +34,7 @@ namespace PrimaryUtil{
   int Npip_True(const caf::SRTrueInteractionProxy& true_int);
   int Npim_True(const caf::SRTrueInteractionProxy& true_int);
   int Npi0_True(const caf::SRTrueInteractionProxy& true_int);
+  int Npi0_True_Any(const caf::SRTrueInteractionProxy& true_int);
   double Q2_True(const caf::SRTrueInteractionProxy& true_int);
   double q0_True(const caf::SRTrueInteractionProxy& true_int);
   double q3_True(const caf::SRTrueInteractionProxy& true_int);

@@ -18,6 +18,7 @@ namespace ana{
   extern const Var kNuMITrueNpip; //!< Number of primary pi+
   extern const Var kNuMITrueNpim; //!< Number of primary pi-
   extern const Var kNuMITrueNpi0; //!< Number of primary pi0
+  extern const Var kNuMITrueNpi0_All; //!< Number of ALL pi0 (not just primary)
   extern const Var kNuMITrueNuE; //!< Neutrino energy
   extern const Var kNuMITrueQ2; //!< Q2
   extern const Var kNuMITrueq0; //!< q0; energy transfer
