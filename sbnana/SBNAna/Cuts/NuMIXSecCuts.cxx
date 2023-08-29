@@ -254,10 +254,10 @@ namespace ana {
       if ( prim.start_process != 0 ) continue;
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
-      if ( abs(prim.pdg) == 13 && prim.length > 50. ) nMu+=1;
+      if ( abs(prim.pdg) == 13 && momentum > 0.226 ) nMu+=1;
 
       bool PassProtonPCut = (momentum > 0.4 && momentum < 1.);
-      if ( abs(prim.pdg) == 2212 && isContainedVol(prim.end.x,prim.end.y,prim.end.z) && (ApplyProtonPCut ? PassProtonPCut : true)  ) nP+=1;
+      if ( abs(prim.pdg) == 2212 && (ApplyProtonPCut ? PassProtonPCut : true)  ) nP+=1;
       if ( abs(prim.pdg) == 111 || abs(prim.pdg) == 211 ) nPi+=1;
     }
     if ( nMu!=1 || nP==0 || nPi > 0 ) return false;
