@@ -63,7 +63,7 @@ namespace ana
 
   /// \ref Check 1muNp0pi using vector of primaries; optionally apply phase space cut
   bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyPhaseSpcaeCut);
-  inline bool Is1muNp0piWithPhaseSpaceCut{ return Is1muNp0pi(true_int, true); }
+  inline bool Is1muNp0piWithPhaseSpaceCut(const caf::Proxy<caf::SRTrueInteraction>& true_int){ return Is1muNp0pi(true_int, true); }
   /// \ref Signal without phase space cut
   extern const Cut kNuMI_1muNp0piStudy_Signal_WithoutPhaseSpaceCut;
   /// \ref Signal with phase space cut = "Signal"
