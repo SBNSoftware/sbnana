@@ -19,6 +19,9 @@ namespace ana
   bool IsShowerlike( const caf::SRSliceProxy* slice, const unsigned int idxShw );
   bool IsPrimaryPFP( const caf::SRSliceProxy* slice, const unsigned int idxTrk );
 
+  //// Utilities for chi2
+  double GetChi2MIP(const caf::Proxy<caf::SRTrackCalo>& calo);
+
   /// \ref SpillVar for trigger time (check if the implementation is only comaptible for emulated trigger and fix if so...)
   extern const SpillVar kNuMISpillTriggerTime;
 
@@ -90,4 +93,14 @@ namespace ana
   extern const Var kNuMILeadingPhotonCandidateE;
   extern const Var kNuMISecondaryPhotonCandidateE;
   extern const Var kNuMIPhotonCandidatesOpeningAngle;
+
+  // Sideband vars: pi+-
+  extern const Var kNuMILeadingChargedPionCandidateInd;
+  extern const Var kNuMILeadingChargedPionCandidateLength;
+  extern const Var kNuMILeadingChargedPionCandidateNDaughter;
+  extern const Var kNuMILeadingChargedPionCandidateMatchedPDG;
+  extern const Var kNuMILeadingChargedPionCandidateNCollectionHit;
+  extern const Var kNuMILeadingChargedPionCandidateMIPChi2;
+
+
 }

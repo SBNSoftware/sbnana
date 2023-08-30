@@ -24,6 +24,7 @@ namespace ana{
       "TrueMuonCos",
       "TrueMuonCosBeam",
       "TrueMuonLength",
+      "TrueMuonContained",
       // Proton
       "TrueProtonP",
       "TrueProtonPt",
@@ -59,6 +60,7 @@ namespace ana{
       kTrueMuonNuCosineThetaVectorPerSignalNu,
       kTrueMuonCosThBeamVectorPerSignalNu,
       kTrueMuonLengthVectorPerSignalNu,
+      kTrueMuonContainedVectorPerSignalNu,
       // Proton
       kTrueProtonPVectorPerSignalNu,
       kTrueProtonPtVectorPerSignalNu,
@@ -104,6 +106,7 @@ namespace ana{
       "RecoMuonLength", "TrueMuonLength",
       // Muon angle
       "RecoMuonCos", "TrueMuonCos",
+      "RecoMuonCosBeam", "TrueMuonCosBeam",
       // Proton momentum
       "RecoProtonP", "TrueProtonP",
       "RecoProtonPt", "TrueProtonPt",
@@ -119,6 +122,20 @@ namespace ana{
       "RecodeltaPTy", "TruedeltaPTy",
       "RecodeltaalphaT", "TruedeltaalphaT",
       "RecodeltaphiT", "TruedeltaphiT",
+      // SideBand
+      // pi+-
+      // - True,
+      "TrueChargedPionKE",
+      // - Reco
+      "LeadingChargedPionCandidateLength",
+      "LeadingChargedPionCandidateNDaughter/i",
+      "LeadingChargedPionCandidateMatchedPDG/i",
+      "LeadingChargedPionCandidateNCollectionHit/i",
+      "LeadingChargedPionCandidateMIPChi2",
+      // pi0
+      "LeadingPhotonCandidateE",
+      "SecondaryPhotonCandidateE",
+      "PhotonCandidatesOpeningAngle",
     };
 
   }
@@ -150,6 +167,7 @@ namespace ana{
       kNuMIRecoMuonLength, kNuMITrueMuonLength,
       // Muon angle
       kNuMIRecoCosThVtx, kNuMITrueCosThVtx,
+      kNuMIRecoCosThBeam, kNuMITrueCosThBeam,
       // Proton momentum
       kNuMIProtonCandidateRecoP, kNuMIProtonTrueP,
       kNuMIRecoProtonPt, kNuMITrueProtonPt,
@@ -165,6 +183,20 @@ namespace ana{
       kNuMIRecodeltaPTy, kNuMITruedeltaPTy,
       kNuMIRecodeltaalphaT, kNuMITruedeltaalphaT,
       kNuMIRecodeltaphiT, kNuMITruedeltaphiT,
+      // SideBand
+      // pi+-
+      // - True
+      kNuMIChargedPionTrueKE,
+      // - Reco
+      kNuMILeadingChargedPionCandidateLength,
+      kNuMILeadingChargedPionCandidateNDaughter,
+      kNuMILeadingChargedPionCandidateMatchedPDG,
+      kNuMILeadingChargedPionCandidateNCollectionHit,
+      kNuMILeadingChargedPionCandidateMIPChi2,
+      // pi0
+      kNuMILeadingPhotonCandidateE,
+      kNuMISecondaryPhotonCandidateE,
+      kNuMIPhotonCandidatesOpeningAngle,
     };
 
   }

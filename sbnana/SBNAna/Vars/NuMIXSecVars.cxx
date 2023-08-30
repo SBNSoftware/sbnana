@@ -42,6 +42,40 @@ namespace ana {
     return slice->reco.pfp.at(idxTrk).parent_is_primary;
   }
 
+  //// Utilities for chi2
+  double GetChi2MIP(const caf::Proxy<caf::SRTrackCalo>& calo){
+
+    int npt = 0;
+    double chi2 = -5.f;
+    for(unsigned i = 0; i < calo.points.size(); ++i) { //hits
+      const auto& pt = calo.points[i];
+      if (i == 0 || i == calo.points.size() - 1) continue;
+
+      if( pt.rr>=26. ) continue;
+      //if( pt.rr<=3. ) continue;
+
+      static double dedx = 1.8814277274698800;
+      static double dedx_err = 0.3903743442373010;
+
+      bool UseThisPoint = (dedx>0.5) && (dedx_err>0);
+      //bool UseThisPoint = (dedx>0.) && (dedx_err>0);
+
+      if(UseThisPoint){
+        double errdedx = 0.04231 + 0.0001783 * pt.dedx * pt.dedx; //resolution on dE/dx
+        errdedx *= pt.dedx;
+        chi2 += pow( (pt.dedx-dedx)/std::sqrt( pow(dedx_err, 2) + pow(errdedx, 2) ), 2);
+        npt++;
+      }
+
+    }
+    if(npt){
+      chi2 /= npt;
+    }
+
+    return chi2;
+
+  }
+
   // Emulated trigger time
   const SpillVar kNuMISpillTriggerTime ( [](const caf::SRSpillProxy *sr) -> double {
     double triggerTime = 0.;
@@ -790,6 +824,63 @@ namespace ana {
     if (std::isinf(openAngle) || std::isnan(openAngle)) return -5.f;
 
     return openAngle;
+  });
+
+  // Sideband vars: pi+-
+  const Var kNuMILeadingChargedPionCandidateInd([](const caf::SRSliceProxy* slc) -> int {
+    std::vector<double> chargedpion_indices = kNuMIChargedPionCandidateIdxs(slc);
+    if(chargedpion_indices.size()<0) return -5.f;
+
+    // Find leading (=longest)
+    double maxl = -5.f;
+    int idx = -1;
+    for ( auto const& chargedpion_ind : chargedpion_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(chargedpion_ind);
+      if( slc->reco.pfp[idxI].trk.len > maxl ){
+        maxl = slc->reco.pfp[idxI].trk.len;
+        idx = chargedpion_ind;
+      }
+    }
+
+    return idx;
+
+  });
+  const Var kNuMILeadingChargedPionCandidateLength([](const caf::SRSliceProxy* slc) -> double {
+    int chargedpion_index = kNuMILeadingChargedPionCandidateInd(slc);
+    double ret = -5.f;
+    if(chargedpion_index>=0) ret = slc->reco.pfp[chargedpion_index].trk.len;
+
+    return ret;
+  });
+  const Var kNuMILeadingChargedPionCandidateNDaughter([](const caf::SRSliceProxy* slc) -> int {
+    int chargedpion_index = kNuMILeadingChargedPionCandidateInd(slc);
+    int ret = -5;
+    if(chargedpion_index>=0) ret = slc->reco.pfp[chargedpion_index].daughters.size();
+
+    return ret;
+  });
+  const Var kNuMILeadingChargedPionCandidateMatchedPDG([](const caf::SRSliceProxy* slc) -> int {
+    int chargedpion_index = kNuMILeadingChargedPionCandidateInd(slc);
+    int ret = -999999; // PDG can be negative using this instead of -5
+    if(chargedpion_index>=0) ret = slc->reco.pfp[chargedpion_index].trk.truth.p.pdg;
+
+    return ret;
+  });
+  const Var kNuMILeadingChargedPionCandidateNCollectionHit([](const caf::SRSliceProxy* slc) -> int {
+    int chargedpion_index = kNuMILeadingChargedPionCandidateInd(slc);
+    int ret = -5;
+    if(chargedpion_index>=0) ret = slc->reco.pfp[chargedpion_index].trk.calo[2].nhit;
+
+    return ret;
+  });
+  const Var kNuMILeadingChargedPionCandidateMIPChi2([](const caf::SRSliceProxy* slc) -> double {
+    int chargedpion_index = kNuMILeadingChargedPionCandidateInd(slc);
+    double ret = -5.f;
+    if(chargedpion_index>=0){
+      ret = GetChi2MIP(slc->reco.pfp[chargedpion_index].trk.calo[2]);
+    }
+
+    return ret;
   });
 
 }

@@ -52,7 +52,7 @@ namespace PrimaryUtil{
   double MuonLength_True(const caf::SRTrueInteractionProxy& true_int);
   int MuonContained_True(const caf::SRTrueInteractionProxy& true_int); // 1: contained, 0: not contained (-1: muon not found)
 
-  // Proton
+  // (Leading) Proton
   int ProtonIndex_True(const caf::SRTrueInteractionProxy& true_int);
   double ProtonNuCosineTheta_True(const caf::SRTrueInteractionProxy& true_int);
   double ProtonCosThBeam_True(const caf::SRTrueInteractionProxy& true_int);
@@ -78,6 +78,10 @@ namespace PrimaryUtil{
   double deltaPTy_True(const caf::SRTrueInteractionProxy& true_int);
   double deltaalphaT_True(const caf::SRTrueInteractionProxy& true_int);
   double deltaphiT_True(const caf::SRTrueInteractionProxy& true_int);
+
+  // (Leading) Charged pion
+  int ChargedPionIndex_True(const caf::SRTrueInteractionProxy& true_int);
+  double ChargedPionKE_True(const caf::SRTrueInteractionProxy& true_int);
 
 
 } // end namespace PrimaryUtil

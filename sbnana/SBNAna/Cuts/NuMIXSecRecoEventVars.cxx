@@ -115,6 +115,12 @@ namespace ana{
     return PrimaryUtil::ProtonNuCosineTheta_True(slc->truth);
   });
 
+  // True Charged pion kinetic energy
+  const Var kNuMIChargedPionTrueKE([](const caf::SRSliceProxy* slc) -> double {
+    if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
+    return PrimaryUtil::ChargedPionKE_True(slc->truth);
+  });
+
   // 0: Muon candidate track exiting, 1: Muon candidate track contained (-1: no muon candidate)
   const Var kNuMIRecoMuonContained([](const caf::SRSliceProxy* slc) -> int {
     if( kNuMIMuonCandidateIdx(slc) >= 0 ){

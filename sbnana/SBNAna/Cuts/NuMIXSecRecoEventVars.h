@@ -33,6 +33,8 @@ namespace ana{
   // - Proton
   extern const Var kNuMIProtonTrueKE; //!< True proton kinetic energy
   extern const Var kNuMIProtonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino
+  // - Charged pion
+  extern const Var kNuMIChargedPionTrueKE; //!< True pi+- kinetic energy
 
   // Reco
   // - Muon

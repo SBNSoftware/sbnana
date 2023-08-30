@@ -547,6 +547,38 @@ namespace PrimaryUtil{
     return ret;
   }
 
+  // (Leading) Charged pion
+  int ChargedPionIndex_True(const caf::SRTrueInteractionProxy& true_int){
+    double max_E(-999);
+    int truth_idx(-1);
+    for(std::size_t i(0); i < true_int.prim.size(); ++i){
+      // primary
+      if( true_int.prim.at(i).start_process!=0 ) continue;
+      // pi+-
+      if( abs(true_int.prim.at(i).pdg)!=211 ) continue;
+      // non-nan genE
+      if(isnan(true_int.prim.at(i).genE)) continue;
+
+      double this_E = true_int.prim.at(i).genE;
+      // if larger E, update
+      if(this_E>max_E){
+        max_E = this_E;
+        truth_idx = i;
+      }
+    }
+    return truth_idx;
+  }
+  double ChargedPionKE_True(const caf::SRTrueInteractionProxy& true_int){
+    double ret(-5.f);
+
+    int truth_idx = ChargedPionIndex_True(true_int);
+    if(truth_idx>=0){
+      ret = true_int.prim.at(truth_idx).genE - M_CHARGEDPION;
+    }
+
+    return ret;
+  }
+
 } // END namespace PrimaryUtil
 
 } // ENd namespace ana
