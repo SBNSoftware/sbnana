@@ -73,6 +73,6 @@ namespace ana
   /// \ref CC but NOT "Signal" or "OOPS"
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC;
 
-  /// \ref Var for slice type (signal, other NuCC, NuNC, NotNu)
+  /// \ref Var for slice type (CutType; 1=Signal, 2=OOPS, 3=OtherCC, 4=NuNC, 5=NotNu)
   extern const Var kNuMISliceSignalType;
 }
