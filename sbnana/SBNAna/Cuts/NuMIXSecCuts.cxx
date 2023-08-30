@@ -239,7 +239,7 @@ namespace ana {
     return ( slc->truth.index < 0 );
   });
   /// \ref Check 1muNp0pi using vector of primaries
-  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyProtonPCut){
+  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyPhaseSpcaeCut){
 
     if ( true_int.index < 0 ) return false;
 
@@ -254,10 +254,13 @@ namespace ana {
       if ( prim.start_process != 0 ) continue;
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
-      if ( abs(prim.pdg) == 13 && momentum > 0.226 ) nMu+=1;
+
+      bool PassMuonPCut = (momentum > 0.226);
+      if ( abs(prim.pdg) == 13 && (ApplyPhaseSpcaeCut ? PassMuonPCut : true) ) nMu+=1;
 
       bool PassProtonPCut = (momentum > 0.4 && momentum < 1.);
-      if ( abs(prim.pdg) == 2212 && (ApplyProtonPCut ? PassProtonPCut : true)  ) nP+=1;
+      if ( abs(prim.pdg) == 2212 && (ApplyPhaseSpcaeCut ? PassProtonPCut : true)  ) nP+=1;
+
       if ( abs(prim.pdg) == 111 || abs(prim.pdg) == 211 ) nPi+=1;
     }
     if ( nMu!=1 || nP==0 || nPi > 0 ) return false;
@@ -265,40 +268,31 @@ namespace ana {
     return true;
 
   }
-
-  // CC signal: No kinematic threshold on proton
-  const Cut kNuMI_1muNp0piStudy_Signal_NoContainment([](const caf::SRSliceProxy* slc) {
+  /// \ref Signal without phase space cut
+  const Cut kNuMI_1muNp0piStudy_Signal_WithoutPhaseSpaceCut([](const caf::SRSliceProxy* slc) {
     return Is1muNp0pi(slc->truth, false);
   });
-
-  // CC but not signal: No kinematic threshold on proton
-  const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment([](const caf::SRSliceProxy* slc) {
-    if ( slc->truth.index < 0 ) return false; // not Nu
-    if ( !slc->truth.iscc ) return false; // not CC
-
-    if ( kNuMI_1muNp0piStudy_Signal_NoContainment(slc) ) return false; // covered by signal
-    return true;
-  });
-
-  // CC signal: With kinematic threshold of 400MeV/c to 1 GeV/c on proton
-  const Cut kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold([](const caf::SRSliceProxy* slc) {
+  /// \ref Signal with phase space cut = "Signal"
+  const Cut kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut([](const caf::SRSliceProxy* slc) {
     return Is1muNp0pi(slc->truth, true);
   });
-
-  // CC but not signal: With kinematic threshold of 400MeV/c to 1 GeV/c on proton
-  const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment_ProtonThreshold([](const caf::SRSliceProxy* slc) {
+  /// \ref Signal but fails phase space cut = "out of phase space" (OOPS)
+  const Cut kNuMI_1muNp0piStudy_Signal_FailPhaseSpaceCut = kNuMI_1muNp0piStudy_Signal_WithoutPhaseSpaceCut && // signal,
+                                                           !kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut; // but fail phase cut
+  /// \ref CC but NOT "Signal" or "OOPS"
+  const Cut kNuMI_1muNp0piStudy_OtherNuCC([](const caf::SRSliceProxy* slc) {
     if ( slc->truth.index < 0 ) return false; // not Nu
     if ( !slc->truth.iscc ) return false; // not CC
 
-    if ( kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold(slc) ) return false; // covered by signal
+    if ( kNuMI_1muNp0piStudy_Signal_WithoutPhaseSpaceCut(slc) ) return false; // covered by signal without phase space cut
     return true;
   });
 
   /// CutType; 1=Signal, 2=OtherCC, 3=NuNC, 4=NotNu
   /// can be expanded further
   const Var kNuMISliceSignalType([](const caf::SRSliceProxy* slc) -> int {
-    if ( kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold(slc) ) return 1;
-    else if ( kNuMI_1muNp0piStudy_OtherNuCC_NoContainment_ProtonThreshold(slc) ) return 2;
+    if ( kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut(slc) ) return 1;
+    else if ( kNuMI_1muNp0piStudy_Signal_FailPhaseSpaceCut(slc) ) return 2;
     else if ( kNuMI_IsSliceNuNC(slc) ) return 3;
     else if ( kNuMI_IsSlcNotNu(slc) ) return 4;
     else return 0;

@@ -60,13 +60,17 @@ namespace ana
   extern const Cut kNuMI_IsSliceNuNC;
   /// \ref Not nu matched: i.e. cosmic, or noise, or not well-matched to an interaction
   extern const Cut kNuMI_IsSlcNotNu;
-  /// \ref Check 1muNp0pi using vector of primaries
-  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyProtonPCut);
-  inline bool Is1muNp0piWithProtonPcut(const caf::Proxy<caf::SRTrueInteraction>& true_int){ return Is1muNp0pi(true_int, true); }
-  extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment;
-  extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment;
-  extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold;
-  extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment_ProtonThreshold;
+
+  /// \ref Check 1muNp0pi using vector of primaries; optionally apply phase space cut
+  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyPhaseSpcaeCut);
+  /// \ref Signal without phase space cut
+  extern const Cut kNuMI_1muNp0piStudy_Signal_WithoutPhaseSpaceCut;
+  /// \ref Signal with phase space cut = "Signal"
+  extern const Cut kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut;
+  /// \ref Signal but fails phase space cut = "out of phase space" (OOPS)
+  extern const Cut kNuMI_1muNp0piStudy_Signal_FailPhaseSpaceCut;
+  /// \ref CC but NOT "Signal" or "OOPS"
+  extern const Cut kNuMI_1muNp0piStudy_OtherNuCC;
 
   /// \ref Var for slice type (signal, other NuCC, NuNC, NotNu)
   extern const Var kNuMISliceSignalType;
