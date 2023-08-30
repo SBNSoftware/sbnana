@@ -288,13 +288,14 @@ namespace ana {
     return true;
   });
 
-  /// CutType; 1=Signal, 2=OtherCC, 3=NuNC, 4=NotNu
+  /// CutType; 1=Signal, 2=OOPS, 3=OtherCC, 4=NuNC, 5=NotNu
   /// can be expanded further
   const Var kNuMISliceSignalType([](const caf::SRSliceProxy* slc) -> int {
-    if ( kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut(slc) ) return 1;
-    else if ( kNuMI_1muNp0piStudy_Signal_FailPhaseSpaceCut(slc) ) return 2;
-    else if ( kNuMI_IsSliceNuNC(slc) ) return 3;
-    else if ( kNuMI_IsSlcNotNu(slc) ) return 4;
+    if ( kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut(slc) ) return 1; // Signal (with phase space cut)
+    else if ( kNuMI_1muNp0piStudy_Signal_FailPhaseSpaceCut(slc) ) return 2; // Signal but out of phase space cut (OOPS)
+    else if ( kNuMI_1muNp0piStudy_OtherNuCC(slc) ) return 3; // CC but not (signal without phase space cut)
+    else if ( kNuMI_IsSliceNuNC(slc) ) return 4; // NC
+    else if ( kNuMI_IsSlcNotNu(slc) ) return 5; // Not nu-slice Cosmic
     else return 0;
   });
 
