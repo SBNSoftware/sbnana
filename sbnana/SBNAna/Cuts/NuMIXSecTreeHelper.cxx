@@ -10,6 +10,8 @@ namespace ana{
     return {
       // CutType
       "CutType/i",
+      // SpillCutType
+      "SpillCutType/i",
       // Interaction
       "TruePDG/i", "TrueMode/i", "TrueTarget/i", "TrueIsCC/i",
       // Weight
@@ -43,6 +45,8 @@ namespace ana{
     return {
       // CutType
       kCutTypeVectorPerSignalNu,
+      // SpillCutType
+      kSpillCutTypeVectorPerSignalNu,
       // Interaction
       kTruePDGVectorPerSignalNu, kTrueModeVectorPerSignalNu, kTrueTargetVectorPerSignalNu, kTrueIsCCVectorPerSignalNu,
       // Weight
