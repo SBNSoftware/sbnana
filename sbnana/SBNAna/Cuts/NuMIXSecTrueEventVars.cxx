@@ -193,7 +193,7 @@ namespace ana{
     double shift // in sigma
   ){
     return SpillMultiVar( [=](const caf::SRSpillProxy *sr) -> std::vector<double> {
-      return GetSigmaWeightVectorPerNu(sr, Is1muNp0piWithProtonPcut, psetName, shift);
+      return GetSigmaWeightVectorPerNu(sr, Is1muNp0piWithPhaseSpaceCut, psetName, shift);
     });
   }
 
@@ -229,7 +229,7 @@ namespace ana{
     int univIdx
   ){
     return SpillMultiVar( [=](const caf::SRSpillProxy *sr) -> std::vector<double> {
-      return GetUniverseWeightVectorPerNu(sr, Is1muNp0piWithProtonPcut, psetName, univIdx);
+      return GetUniverseWeightVectorPerNu(sr, Is1muNp0piWithPhaseSpaceCut, psetName, univIdx);
     });
   }
 
