@@ -110,6 +110,10 @@ namespace ana
 
     fHistDefs.RemoveLoader(this);
     fHistDefs.Clear();
+
+    fSpillHistDefs.RemoveLoader(this);
+    fSpillHistDefs.Clear();
+
   }
 
   //----------------------------------------------------------------------
