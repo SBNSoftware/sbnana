@@ -65,8 +65,26 @@ namespace ana
              const TruthVar& var,
              const TruthCut& truthcut,
              const SpillCut& spillcut,
+             const TruthVar& wei = kTruthUnweighted);
+    Spectrum(const std::string& label, const Binning& bins,
+             SpectrumLoaderBase& loader,
+             const TruthMultiVar& var,
+             const TruthCut& truthcut,
+             const SpillCut& spillcut,
+             const TruthVar& wei = kTruthUnweighted);
+    Spectrum(const std::string& label, const Binning& bins,
+             SpectrumLoaderBase& loader,
+             const TruthVar& var,
+             const TruthCut& truthcut,
+             const SpillCut& spillcut,
              const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
-             const SystShifts& shift = kNoShift,
+             const TruthVar& wei = kTruthUnweighted);
+    Spectrum(const std::string& label, const Binning& bins,
+             SpectrumLoaderBase& loader,
+             const TruthMultiVar& var,
+             const TruthCut& truthcut,
+             const SpillCut& spillcut,
+             const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
              const TruthVar& wei = kTruthUnweighted);
 
     /// The only \ref MultiVar variant available
