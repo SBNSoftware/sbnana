@@ -545,4 +545,8 @@ namespace ana
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<Var, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::VarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
 
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SpillVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::SpillVarOrMultiVar, SpectrumLoaderBase::SpectList>>>;
+
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>;
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
+
 } // namespace
