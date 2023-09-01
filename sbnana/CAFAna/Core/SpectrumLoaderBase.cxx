@@ -265,6 +265,44 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                                       const TruthVar& wei)
+  { 
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistDefs[spillcut][cut][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+    
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthMultiVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                                       const TruthVar& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistDefs[spillcut][cut][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::RemoveSpectrum(Spectrum* spect)
   {
     fHistDefs.Erase(spect);

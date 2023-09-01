@@ -72,6 +72,22 @@ namespace ana
                              const SpillCut& cut,
                              const SpillVar& wei = kSpillUnweighted);
 
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const TruthVar& var,
+                             const TruthCut truthcut,
+                             const SpillCut& spillcut,
+                             const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                             const TruthVar& wei = kTruthUnweighted);
+
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const TruthMultiVar& var,
+                             const TruthCut truthcut,
+                             const SpillCut& spillcut,
+                             const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                             const TruthVar& wei = kTruthUnweighted);
+
     /// For use by the constructors of \ref ReweightableSpectrum subclasses
     virtual void AddReweightableSpectrum(ReweightableSpectrum& spect,
                                          const Var& var,
@@ -208,6 +224,7 @@ namespace ana
 
     typedef _VarOrMultiVar<caf::SRSliceProxy> VarOrMultiVar;
     typedef _VarOrMultiVar<caf::SRSpillProxy> SpillVarOrMultiVar;
+    typedef _VarOrMultiVar<caf::SRTrueInteractionProxy> TruthVarOrMultiVar;
 
     /// \brief All the spectra that need to be filled
     ///
@@ -215,6 +232,9 @@ namespace ana
     IDMap<SpillCut, IDMap<SystShifts, IDMap<Cut, IDMap<Var, IDMap<VarOrMultiVar, SpectList>>>>> fHistDefs;
     /// [spillcut][spillwei][spillvar]
     IDMap<SpillCut, IDMap<SpillVar, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
+    /// [spillcut][cut][truthcut][truthweight][truthvar]
+    IDMap<SpillCut, IDMap<Cut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>> fTruthHistDefs;
+
   };
 
   /// \brief Dummy loader that doesn't load any files
@@ -249,6 +269,22 @@ namespace ana
                      const SpillMultiVar& var,
                      const SpillCut& cut,
                      const SpillVar& wei = kSpillUnweighted) override {}
+
+    void AddSpectrum(Spectrum& spect,
+                     const TruthVar& var,
+                     const TruthCut truthcut,
+                     const SpillCut& spillcut,
+                     const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const TruthVar& wei = kTruthUnweighted) override {}
+
+    void AddSpectrum(Spectrum& spect,
+                     const TruthMultiVar& var,
+                     const TruthCut truthcut,
+                     const SpillCut& spillcut,
+                     const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const TruthVar& wei = kTruthUnweighted) override {}
+
+
 
     void AddReweightableSpectrum(ReweightableSpectrum& spect,
                                  const Var& var,
