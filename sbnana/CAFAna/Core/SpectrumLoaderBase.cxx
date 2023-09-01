@@ -151,6 +151,8 @@ namespace ana
   {
     fHistDefs.RemoveLoader(this);
     fSpillHistDefs.RemoveLoader(this);
+    fTruthHistDefs.RemoveLoader(this);
+    fTruthHistWithCutDefs.RemoveLoader(this);
   }
 
   //----------------------------------------------------------------------
@@ -345,6 +347,8 @@ namespace ana
   {
     fHistDefs.Erase(spect);
     fSpillHistDefs.Erase(spect);
+    fTruthHistDefs.Erase(spect);
+    fTruthHistWithCutDefs.Erase(spect);
   }
 
   //----------------------------------------------------------------------
@@ -512,6 +516,8 @@ namespace ana
   {
     fHistDefs.Erase(spect);
     fSpillHistDefs.Erase(spect);
+    fTruthHistDefs.Erase(spect);
+    fTruthHistWithCutDefs.Erase(spect);
   }
 
   //----------------------------------------------------------------------
