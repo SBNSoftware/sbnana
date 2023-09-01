@@ -511,6 +511,7 @@ namespace ana
   RemoveReweightableSpectrum(ReweightableSpectrum* spect)
   {
     fHistDefs.Erase(spect);
+    fSpillHistDefs.Erase(spect);
   }
 
   //----------------------------------------------------------------------
