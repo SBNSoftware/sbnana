@@ -115,6 +115,12 @@ namespace ana
     fSpillHistDefs.RemoveLoader(this);
     fSpillHistDefs.Clear();
 
+    fTruthHistDefs.RemoveLoader(this);
+    fTruthHistDefs.Clear();
+
+    fTruthHistWithCutDefs.RemoveLoader(this);
+    fTruthHistWithCutDefs.Clear();
+
   }
 
   //----------------------------------------------------------------------
