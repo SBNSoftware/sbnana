@@ -99,6 +99,16 @@ namespace ana
   template TruthCut operator||<caf::SRTrueInteractionProxy>(const TruthCut& a, const TruthCut& b);
 
   //----------------------------------------------------------------------
+  template<class T> bool operator<(const _Cut<T>& a, const _Cut<T>& b)
+  {
+    return a.ID() < b.ID();
+  }
+
+  // Make sure all versions get generated
+  template bool operator< <caf::SRSliceProxy>(const Cut& a, const Cut& b);
+  template bool operator< <caf::SRSpillProxy>(const SpillCut& a, const SpillCut& b);
+
+  //----------------------------------------------------------------------
   template<class T> _Cut<T> operator!(const _Cut<T>& a)
   {
     static std::map<int, int> ids;
