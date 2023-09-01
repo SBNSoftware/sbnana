@@ -150,6 +150,7 @@ namespace ana
   SpectrumLoaderBase::~SpectrumLoaderBase()
   {
     fHistDefs.RemoveLoader(this);
+    fSpillHistDefs.RemoveLoader(this);
   }
 
   //----------------------------------------------------------------------
@@ -343,6 +344,7 @@ namespace ana
   void SpectrumLoaderBase::RemoveSpectrum(Spectrum* spect)
   {
     fHistDefs.Erase(spect);
+    fSpillHistDefs.Erase(spect);
   }
 
   //----------------------------------------------------------------------
