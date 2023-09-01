@@ -82,9 +82,20 @@ namespace ana
                              const TruthVar& var,
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
+                             const TruthVar& wei = kTruthUnweighted);
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const TruthMultiVar& var,
+                             const TruthCut truthcut,
+                             const SpillCut& spillcut,
+                             const TruthVar& wei = kTruthUnweighted);
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const TruthVar& var,
+                             const TruthCut truthcut,
+                             const SpillCut& spillcut,
                              const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
                              const TruthVar& wei = kTruthUnweighted);
-
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
                              const TruthMultiVar& var,
@@ -284,8 +295,11 @@ namespace ana
     IDMap<SpillCut, IDMap<SystShifts, IDMap<Cut, IDMap<Var, IDMap<VarOrMultiVar, SpectList>>>>> fHistDefs;
     /// [spillcut][spillwei][spillvar]
     IDMap<SpillCut, IDMap<SpillVar, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
+
+    /// [spillcut][truthcut][truthweight][truthvar]
+    IDMap<SpillCut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>> fTruthHistDefs;
     /// [spillcut][cut][truthcut][truthweight][truthvar]
-    IDMap<SpillCut, IDMap<Cut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>> fTruthHistDefs;
+    IDMap<SpillCut, IDMap<Cut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>> fTruthHistWithCutDefs;
 
     // TODO: Probably someone can make a more efficient version of SpectList
     //       that works with Tree objects... In the meantime, let's use a standard
