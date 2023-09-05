@@ -17,6 +17,7 @@ namespace ana
     UniverseWeight(const std::string& psetName, int univIdx);
 
     double operator()(const caf::SRSliceProxy* sr) const;
+    double operator()(const caf::SRTrueInteractionProxy* nu) const;
 
   protected:
     std::string fPSetName;
@@ -29,6 +30,11 @@ namespace ana
     return Var(UniverseWeight(psetName, univIdx));
   }
 
+  TruthVar GetTruthUniverseWeight(const std::string& psetName, int univIdx)
+  {
+    return TruthVar(UniverseWeight(psetName, univIdx));
+  }
+
 
   class SBNWeightSyst: public ISyst
   {
@@ -36,6 +42,7 @@ namespace ana
     SBNWeightSyst(const std::string& systName);
 
     void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
+    void Shift(double x, caf::SRTrueInteractionProxy* sr, double& weight) const override;
 
   protected:
     mutable int fIdx;

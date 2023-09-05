@@ -82,12 +82,14 @@ namespace ana
                              const TruthVar& var,
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
+                             const SystShifts& shift,
                              const TruthVar& wei = kTruthUnweighted);
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
                              const TruthMultiVar& var,
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
+                             const SystShifts& shift,
                              const TruthVar& wei = kTruthUnweighted);
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
@@ -95,6 +97,7 @@ namespace ana
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
                              const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                             const SystShifts& shift,
                              const TruthVar& wei = kTruthUnweighted);
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
@@ -102,6 +105,7 @@ namespace ana
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
                              const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                             const SystShifts& shift,
                              const TruthVar& wei = kTruthUnweighted);
 
     /// For use by the constructors of \ref ReweightableSpectrum subclasses
@@ -146,6 +150,14 @@ namespace ana
                          const std::vector<std::string>& labels,
                          const std::vector<SpillMultiVar>& vars,
                          const SpillCut& spillcut);
+
+    /// For use by the constructors of \ref Tree class
+    virtual void AddTree(Tree& tree,
+                         const std::vector<std::string>& labels,
+                         const std::vector<TruthVar>& vars,
+                         const SpillCut& spillcut,
+                         const TruthCut& truthcut,
+                         const SystShifts& shift);
 
     /// For use by the constructors of \ref NSigmasTree class
     virtual void AddNSigmasTree(NSigmasTree& tree,
@@ -296,16 +308,17 @@ namespace ana
     /// [spillcut][spillwei][spillvar]
     IDMap<SpillCut, IDMap<SpillVar, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
 
-    /// [spillcut][truthcut][truthweight][truthvar]
-    IDMap<SpillCut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>> fTruthHistDefs;
-    /// [spillcut][cut][truthcut][truthweight][truthvar]
-    IDMap<SpillCut, IDMap<Cut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>> fTruthHistWithCutDefs;
+    /// [spillcut][shift][truthcut][truthweight][truthvar]
+    IDMap<SpillCut, IDMap<SystShifts, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>> fTruthHistDefs;
+    /// [spillcut][cut][shift][truthcut][truthweight][truthvar]
+    IDMap<SpillCut, IDMap<Cut, IDMap<SystShifts, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>>> fTruthHistWithCutDefs;
 
     // TODO: Probably someone can make a more efficient version of SpectList
     //       that works with Tree objects... In the meantime, let's use a standard
     //       map. But otherwise, let's keep it the same way...
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<Tree*, std::map<VarOrMultiVar, std::string>>>>> fTreeDefs;
     std::map<SpillCut, std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>> fSpillTreeDefs;
+    std::map<SpillCut, std::map<SystShifts, std::map<TruthCut, std::map<Tree*, std::map<TruthVarOrMultiVar, std::string>>>>> fTruthTreeDefs;
     // And a version that saves up the syst weights used to make event-by-event splines
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NSigmasTree*, std::map<const ISyst*, std::string>>>>> fNSigmasTreeDefs;
     // And a version that saves up universe-based systematic weights to make event-by-event weight lists
@@ -353,12 +366,14 @@ namespace ana
                      const TruthVar& var,
                      const TruthCut truthcut,
                      const SpillCut& spillcut,
+                     const SystShifts& shift,
                      const TruthVar& wei = kTruthUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
                      const TruthMultiVar& var,
                      const TruthCut truthcut,
                      const SpillCut& spillcut,
+                     const SystShifts& shift,
                      const TruthVar& wei = kTruthUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
@@ -366,6 +381,7 @@ namespace ana
                      const TruthCut truthcut,
                      const SpillCut& spillcut,
                      const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const SystShifts& shift,
                      const TruthVar& wei = kTruthUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
@@ -373,6 +389,7 @@ namespace ana
                      const TruthCut truthcut,
                      const SpillCut& spillcut,
                      const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const SystShifts& shift,
                      const TruthVar& wei = kTruthUnweighted) override {}
 
 
@@ -413,6 +430,13 @@ namespace ana
                  const std::vector<std::string>& labels,
                  const std::vector<SpillMultiVar>& vars,
                  const SpillCut& spillcut) override {}
+
+    void AddTree(Tree& tree,
+                 const std::vector<std::string>& labels,
+                 const std::vector<TruthVar>& vars,
+                 const SpillCut& spillcut,
+                 const TruthCut& truthcut,
+                 const SystShifts& shift) override {}
 
     void AddNSigmasTree(NSigmasTree& tree,
                         const std::vector<std::string>& labels,

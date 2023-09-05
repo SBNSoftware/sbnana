@@ -107,6 +107,7 @@ namespace ana
   // Make sure all versions get generated
   template bool operator< <caf::SRSliceProxy>(const Cut& a, const Cut& b);
   template bool operator< <caf::SRSpillProxy>(const SpillCut& a, const SpillCut& b);
+  template bool operator< <caf::SRTrueInteractionProxy>(const TruthCut& a, const TruthCut& b);
 
   //----------------------------------------------------------------------
   template<class T> _Cut<T> operator!(const _Cut<T>& a)
