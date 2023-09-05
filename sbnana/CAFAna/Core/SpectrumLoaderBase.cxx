@@ -273,6 +273,7 @@ namespace ana
                                        const TruthVar& var,
                                        const TruthCut truthcut,
                                        const SpillCut& spillcut,
+                                       const SystShifts& shift,
                                        const TruthVar& wei)
   {
     if(fGone){
@@ -280,7 +281,7 @@ namespace ana
       abort();
     }
 
-    fTruthHistDefs[spillcut][truthcut][wei][var].spects.push_back(&spect);
+    fTruthHistDefs[spillcut][shift][truthcut][wei][var].spects.push_back(&spect);
 
     spect.AddLoader(this); // Remember we have a Go() pending
 
@@ -291,6 +292,7 @@ namespace ana
                                        const TruthMultiVar& var,
                                        const TruthCut truthcut,
                                        const SpillCut& spillcut,
+                                       const SystShifts& shift,
                                        const TruthVar& wei)
   {
     if(fGone){
@@ -298,7 +300,7 @@ namespace ana
       abort();
     }
 
-    fTruthHistDefs[spillcut][truthcut][wei][var].spects.push_back(&spect);
+    fTruthHistDefs[spillcut][shift][truthcut][wei][var].spects.push_back(&spect);
 
     spect.AddLoader(this); // Remember we have a Go() pending
 
@@ -310,6 +312,7 @@ namespace ana
                                        const TruthCut truthcut,
                                        const SpillCut& spillcut,
                                        const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                                       const SystShifts& shift,
                                        const TruthVar& wei)
   { 
     if(fGone){
@@ -317,7 +320,7 @@ namespace ana
       abort();
     }
 
-    fTruthHistWithCutDefs[spillcut][cut][truthcut][wei][var].spects.push_back(&spect);
+    fTruthHistWithCutDefs[spillcut][cut][shift][truthcut][wei][var].spects.push_back(&spect);
 
     spect.AddLoader(this); // Remember we have a Go() pending
     
@@ -329,6 +332,7 @@ namespace ana
                                        const TruthCut truthcut,
                                        const SpillCut& spillcut,
                                        const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                                       const SystShifts& shift,
                                        const TruthVar& wei)
   {
     if(fGone){
@@ -336,7 +340,7 @@ namespace ana
       abort();
     }
 
-    fTruthHistWithCutDefs[spillcut][cut][truthcut][wei][var].spects.push_back(&spect);
+    fTruthHistWithCutDefs[spillcut][cut][shift][truthcut][wei][var].spects.push_back(&spect);
 
     spect.AddLoader(this); // Remember we have a Go() pending
 
@@ -555,7 +559,7 @@ namespace ana
 
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SpillVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::SpillVarOrMultiVar, SpectrumLoaderBase::SpectList>>>;
 
-  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>;
-  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>>;
 
 } // namespace

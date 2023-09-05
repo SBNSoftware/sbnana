@@ -69,10 +69,11 @@ namespace ana
                      const TruthVar& var,
                      const TruthCut& truthcut,
                      const SpillCut& spillcut,
+                     const SystShifts& shift,
                      const TruthVar& wei)
     : Spectrum(label, bins)
   {
-    loader.AddSpectrum(*this, var, truthcut, spillcut, wei);
+    loader.AddSpectrum(*this, var, truthcut, spillcut, shift, wei);
   }
   //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& label, const Binning& bins,
@@ -80,10 +81,11 @@ namespace ana
                      const TruthMultiVar& var,
                      const TruthCut& truthcut,
                      const SpillCut& spillcut,
+                     const SystShifts& shift,
                      const TruthVar& wei)
     : Spectrum(label, bins)
   {
-    loader.AddSpectrum(*this, var, truthcut, spillcut, wei);
+    loader.AddSpectrum(*this, var, truthcut, spillcut, shift, wei);
   }
   //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& label, const Binning& bins,
@@ -92,10 +94,11 @@ namespace ana
                      const TruthCut& truthcut,
                      const SpillCut& spillcut,
                      const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const SystShifts& shift,
                      const TruthVar& wei)
     : Spectrum(label, bins)
   {
-    loader.AddSpectrum(*this, var, truthcut, spillcut, cut, wei);
+    loader.AddSpectrum(*this, var, truthcut, spillcut, cut, shift, wei);
   }
   //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& label, const Binning& bins,
@@ -104,10 +107,11 @@ namespace ana
                      const TruthCut& truthcut,
                      const SpillCut& spillcut,
                      const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const SystShifts& shift,
                      const TruthVar& wei)
     : Spectrum(label, bins)
   {
-    loader.AddSpectrum(*this, var, truthcut, spillcut, cut, wei);
+    loader.AddSpectrum(*this, var, truthcut, spillcut, cut, shift, wei);
   }
 
   //----------------------------------------------------------------------

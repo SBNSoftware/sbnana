@@ -344,54 +344,88 @@ namespace ana
       // now start the nu loop
       for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
 
-        for(auto& truthcutdef: spillcutdef.second){
+        // Some shifts only adjust the weight, so they're effectively nominal,
+        // but aren't grouped with the other nominal histograms. Keep track of
+        // the results for nominals in these caches to speed those systs up.
+        CutVarCache<bool, TruthCut, caf::SRTrueInteractionProxy> nomTruthCutCache;
+        CutVarCache<double, TruthVar, caf::SRTrueInteractionProxy> nomTruthWeiCache;
+        CutVarCache<double, TruthVar, caf::SRTrueInteractionProxy> nomTruthVarCache;
 
-          const TruthCut& truthcut = truthcutdef.first;
+        for(auto& shiftdef: spillcutdef.second){
+          const SystShifts& shift = shiftdef.first;
 
-          const bool truthpass = truthcut(&nu);
-          // TruthCut failed, skip all the histograms that depended on it
-          if(!truthpass) continue;
+          // Need to provide a clean slate for each new set of systematic
+          // shifts to work from. Copying the whole StandardRecord is pretty
+          // expensive, so modify it in place and revert it afterwards.
 
-          for(auto& truthweidef: truthcutdef.second){
+          caf::SRProxySystController::BeginTransaction();
 
-            const TruthVar& truthweivar = truthweidef.first;
-            double truthwei = truthweivar(&nu);
+          bool shifted = false;
 
-            for(auto& truthvardef: truthweidef.second){
+          double systWeight = 1;
+          // Can special-case nominal to not pay cost of Shift()
+          if(!shift.IsNominal()){
+            shift.Shift(&nu, systWeight);
+            // If there were only weighting systs applied then the cached
+            // nominal values are still valid.
+            shifted = caf::SRProxySystController::AnyShifted();
+          }
 
-              // if TruthMultiVar
-              if(truthvardef.first.IsMulti()){
-                for(double truthval: truthvardef.first.GetMultiVar()(&nu)){
-                  for(Spectrum* s: truthvardef.second.spects)
-                    s->Fill(truthval, truthwei);
+          for(auto& truthcutdef: shiftdef.second){
+
+            const TruthCut& truthcut = truthcutdef.first;
+
+            const bool truthpass = shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
+
+            // TruthCut failed, skip all the histograms that depended on it
+            if(!truthpass) continue;
+
+            for(auto& truthweidef: truthcutdef.second){
+
+              const TruthVar& truthweivar = truthweidef.first;
+
+              double truthwei = shifted ? truthweivar(&nu) : nomTruthWeiCache.Get(truthweivar, &nu);
+
+              truthwei *= systWeight;
+              if(truthwei == 0) continue;
+
+              for(auto& truthvardef: truthweidef.second){
+
+                // if TruthMultiVar
+                if(truthvardef.first.IsMulti()){
+                  for(double truthval: truthvardef.first.GetMultiVar()(&nu)){
+                    for(Spectrum* s: truthvardef.second.spects)
+                      s->Fill(truthval, truthwei);
+                  }
                 }
-              }
-              // if TruthVar
-              else{
+                // if TruthVar
+                else{
 
-                const TruthVar& truthvar = truthvardef.first.GetVar();
-                const double truthval = truthvar(&nu);
+                  const TruthVar& truthvar = truthvardef.first.GetVar();
+                  const double truthval = shifted ? truthvar(&nu) : nomTruthVarCache.Get(truthvar, &nu);
 
-                if(std::isnan(truthval) || std::isinf(truthval)){
-                  std::cerr << "Warning: Bad value: " << truthval
-                            << " returned from a TruthVar. The input variable(s) could "
-                            << "be NaN in the CAF, or perhaps your "
-                            << "Var code computed 0/0?";
-                  std::cout << " Not filling into this histogram for this slice." << std::endl;
-                  continue;
+                  if(std::isnan(truthval) || std::isinf(truthval)){
+                    std::cerr << "Warning: Bad value: " << truthval
+                              << " returned from a TruthVar. The input variable(s) could "
+                              << "be NaN in the CAF, or perhaps your "
+                              << "Var code computed 0/0?";
+                    std::cout << " Not filling into this histogram for this slice." << std::endl;
+                    continue;
+                  }
+
+                  for(Spectrum* s: truthvardef.second.spects) s->Fill(truthval, truthwei);
+
                 }
 
-                for(Spectrum* s: truthvardef.second.spects) s->Fill(truthval, truthwei);
-
-              }
-
-            } // end for truthvardef
+              } // end for truthvardef
 
 
 
-          } // end for truthweidef
+            } // end for truthweidef
 
-        } // end for truthcutdef
+          } // end for truthcutdef
+
+        } // end for shiftdef
 
       } // end for nu loop
 
@@ -427,52 +461,85 @@ namespace ana
 
           if(!HasMatchedSlicePassCut) continue;
 
-          for(auto& truthcutdef: cutdef.second){
+          // Some shifts only adjust the weight, so they're effectively nominal,
+          // but aren't grouped with the other nominal histograms. Keep track of
+          // the results for nominals in these caches to speed those systs up.
+          CutVarCache<bool, TruthCut, caf::SRTrueInteractionProxy> nomTruthCutCache;
+          CutVarCache<double, TruthVar, caf::SRTrueInteractionProxy> nomTruthWeiCache;
+          CutVarCache<double, TruthVar, caf::SRTrueInteractionProxy> nomTruthVarCache;
 
-            const TruthCut& truthcut = truthcutdef.first;
+          for(auto& shiftdef: cutdef.second){
+            const SystShifts& shift = shiftdef.first;
 
-            const bool truthpass = truthcut(&nu);
-            // TruthCut failed, skip all the histograms that depended on it
-            if(!truthpass) continue;
+            // Need to provide a clean slate for each new set of systematic
+            // shifts to work from. Copying the whole StandardRecord is pretty
+            // expensive, so modify it in place and revert it afterwards.
 
-            for(auto& truthweidef: truthcutdef.second){
+            caf::SRProxySystController::BeginTransaction();
 
-              const TruthVar& truthweivar = truthweidef.first;
-              double truthwei = truthweivar(&nu);
+            bool shifted = false;
 
-              for(auto& truthvardef: truthweidef.second){
+            double systWeight = 1;
+            // Can special-case nominal to not pay cost of Shift()
+            if(!shift.IsNominal()){
+              shift.Shift(&nu, systWeight);
+              // If there were only weighting systs applied then the cached
+              // nominal values are still valid.
+              shifted = caf::SRProxySystController::AnyShifted();
+            }
 
-                // if TruthMultiVar
-                if(truthvardef.first.IsMulti()){
-                  for(double truthval: truthvardef.first.GetMultiVar()(&nu)){
-                    for(Spectrum* s: truthvardef.second.spects)
-                      s->Fill(truthval, truthwei);
+            for(auto& truthcutdef: shiftdef.second){
+
+              const TruthCut& truthcut = truthcutdef.first;
+              const bool truthpass = shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
+
+              // TruthCut failed, skip all the histograms that depended on it
+              if(!truthpass) continue;
+
+              for(auto& truthweidef: truthcutdef.second){
+
+                const TruthVar& truthweivar = truthweidef.first;
+
+                double truthwei = shifted ? truthweivar(&nu) : nomTruthWeiCache.Get(truthweivar, &nu);
+
+                truthwei *= systWeight;
+                if(truthwei == 0) continue;
+
+                for(auto& truthvardef: truthweidef.second){
+
+                  // if TruthMultiVar
+                  if(truthvardef.first.IsMulti()){
+                    for(double truthval: truthvardef.first.GetMultiVar()(&nu)){
+                      for(Spectrum* s: truthvardef.second.spects)
+                        s->Fill(truthval, truthwei);
+                    }
                   }
-                }
-                // if TruthVar
-                else{
+                  // if TruthVar
+                  else{
 
-                  const TruthVar& truthvar = truthvardef.first.GetVar();
-                  const double truthval = truthvar(&nu);
+                    const TruthVar& truthvar = truthvardef.first.GetVar();
+                    const double truthval = shifted ? truthvar(&nu) : nomTruthVarCache.Get(truthvar, &nu);
 
-                  if(std::isnan(truthval) || std::isinf(truthval)){
-                    std::cerr << "Warning: Bad value: " << truthval
-                              << " returned from a TruthVar. The input variable(s) could "
-                              << "be NaN in the CAF, or perhaps your "
-                              << "Var code computed 0/0?";
-                    std::cout << " Not filling into this histogram for this slice." << std::endl;
-                    continue;
+                    if(std::isnan(truthval) || std::isinf(truthval)){
+                      std::cerr << "Warning: Bad value: " << truthval
+                                << " returned from a TruthVar. The input variable(s) could "
+                                << "be NaN in the CAF, or perhaps your "
+                                << "Var code computed 0/0?";
+                      std::cout << " Not filling into this histogram for this slice." << std::endl;
+                      continue;
+                    }
+
+                    for(Spectrum* s: truthvardef.second.spects) s->Fill(truthval, truthwei);
+
                   }
 
-                  for(Spectrum* s: truthvardef.second.spects) s->Fill(truthval, truthwei);
+                } // end for truthvardef
 
-                }
+              } // end for truthweidef
 
-              } // end for truthvardef
+            } // end for truthcutdef
 
-            } // end for truthweidef
-
-          } // end for truthcutdef
+          } // end for shiftdef 
 
         } // end for nu loop
 
@@ -796,12 +863,14 @@ namespace ana
     }
 
     for(auto& spillcutdef: fTruthHistDefs){
-      for(auto& truthcutdef: spillcutdef.second){
-        for(auto& truthweidef: truthcutdef.second){
-          for(auto& truthvardef: truthweidef.second){
-            for(Spectrum* s: truthvardef.second.spects){
-              s->fPOT += fPOT;
-              s->fLivetime += fNReadouts;
+      for(auto& shiftdef: spillcutdef.second){
+        for(auto& truthcutdef: shiftdef.second){
+          for(auto& truthweidef: truthcutdef.second){
+            for(auto& truthvardef: truthweidef.second){
+              for(Spectrum* s: truthvardef.second.spects){
+                s->fPOT += fPOT;
+                s->fLivetime += fNReadouts;
+              }
             }
           }
         }
@@ -810,12 +879,14 @@ namespace ana
 
     for(auto& spillcutdef: fTruthHistWithCutDefs){
       for(auto& cutdef: spillcutdef.second){
-        for(auto& truthcutdef: cutdef.second){
-          for(auto& truthweidef: truthcutdef.second){
-            for(auto& truthvardef: truthweidef.second){
-              for(Spectrum* s: truthvardef.second.spects){
-                s->fPOT += fPOT;
-                s->fLivetime += fNReadouts;
+        for(auto& shiftdef: cutdef.second){
+          for(auto& truthcutdef: shiftdef.second){
+            for(auto& truthweidef: truthcutdef.second){
+              for(auto& truthvardef: truthweidef.second){
+                for(Spectrum* s: truthvardef.second.spects){
+                  s->fPOT += fPOT;
+                  s->fLivetime += fNReadouts;
+                }
               }
             }
           }
