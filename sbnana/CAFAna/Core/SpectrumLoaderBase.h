@@ -82,12 +82,14 @@ namespace ana
                              const TruthVar& var,
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
+                             const SystShifts& shift,
                              const TruthVar& wei = kTruthUnweighted);
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
                              const TruthMultiVar& var,
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
+                             const SystShifts& shift,
                              const TruthVar& wei = kTruthUnweighted);
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
@@ -95,6 +97,7 @@ namespace ana
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
                              const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                             const SystShifts& shift,
                              const TruthVar& wei = kTruthUnweighted);
     /// For use by the \ref Spectrum constructor
     virtual void AddSpectrum(Spectrum& spect,
@@ -102,6 +105,7 @@ namespace ana
                              const TruthCut truthcut,
                              const SpillCut& spillcut,
                              const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                             const SystShifts& shift,
                              const TruthVar& wei = kTruthUnweighted);
 
     /// For use by the constructors of \ref ReweightableSpectrum subclasses
@@ -296,10 +300,10 @@ namespace ana
     /// [spillcut][spillwei][spillvar]
     IDMap<SpillCut, IDMap<SpillVar, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
 
-    /// [spillcut][truthcut][truthweight][truthvar]
-    IDMap<SpillCut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>> fTruthHistDefs;
-    /// [spillcut][cut][truthcut][truthweight][truthvar]
-    IDMap<SpillCut, IDMap<Cut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>> fTruthHistWithCutDefs;
+    /// [spillcut][shift][truthcut][truthweight][truthvar]
+    IDMap<SpillCut, IDMap<SystShifts, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>> fTruthHistDefs;
+    /// [spillcut][cut][shift][truthcut][truthweight][truthvar]
+    IDMap<SpillCut, IDMap<Cut, IDMap<SystShifts, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>>> fTruthHistWithCutDefs;
 
     // TODO: Probably someone can make a more efficient version of SpectList
     //       that works with Tree objects... In the meantime, let's use a standard
@@ -353,12 +357,14 @@ namespace ana
                      const TruthVar& var,
                      const TruthCut truthcut,
                      const SpillCut& spillcut,
+                     const SystShifts& shift,
                      const TruthVar& wei = kTruthUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
                      const TruthMultiVar& var,
                      const TruthCut truthcut,
                      const SpillCut& spillcut,
+                     const SystShifts& shift,
                      const TruthVar& wei = kTruthUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
@@ -366,6 +372,7 @@ namespace ana
                      const TruthCut truthcut,
                      const SpillCut& spillcut,
                      const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const SystShifts& shift,
                      const TruthVar& wei = kTruthUnweighted) override {}
 
     void AddSpectrum(Spectrum& spect,
@@ -373,6 +380,7 @@ namespace ana
                      const TruthCut truthcut,
                      const SpillCut& spillcut,
                      const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const SystShifts& shift,
                      const TruthVar& wei = kTruthUnweighted) override {}
 
 

@@ -50,6 +50,15 @@ namespace ana
                        caf::SRSliceProxy* sr,
                        double& weight) const = 0;
 
+    /// \brief Perform the systematic shift
+    ///
+    /// \param sigma   Number of sigma to shift record by
+    /// \param nu      SRTrueInteraction
+    /// \param weight  Scale this weight for reweighting systematics
+    virtual void Shift(double sigma,
+                       caf::SRTrueInteractionProxy* nu,
+                       double& weight) const = 0;
+
     /// PredictionInterp normally interpolates between spectra made at
     /// +/-1,2,3sigma. For some systematics that's overkill. Override this
     /// function to specify different behaviour for this systematic.

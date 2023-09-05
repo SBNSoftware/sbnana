@@ -37,6 +37,23 @@ namespace ana
       ISyst(name, latexName), term(_term), part(_part), detector(_detector), uncertainty(_uncertainty) {}
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
+    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
+
+  private:
+    EnergyScaleSystTerm term;
+    EnergyScaleSystParticle part;
+    EnergyScaleSystDetector detector;
+    double uncertainty;
+  };
+
+  class RecoEnergyScaleSyst: public ISyst
+  {
+  public:
+    RecoEnergyScaleSyst(EnergyScaleSystTerm _term, EnergyScaleSystParticle _part, EnergyScaleSystDetector _detector, double _uncertainty, const std::string& name, const std::string& latexName) : 
+      ISyst(name, latexName), term(_term), part(_part), detector(_detector), uncertainty(_uncertainty) {}
+
+    void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
+    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
 
   private:
     EnergyScaleSystTerm term;

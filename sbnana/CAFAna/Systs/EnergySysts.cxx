@@ -61,6 +61,86 @@ namespace ana {
    
   }
 
+  void EnergyScaleSyst::Shift(double sigma, caf::SRTrueInteractionProxy *nu, double& weight) const
+  {
+  }
+
+  void RecoEnergyScaleSyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
+  {
+    //auto& det = sr->truth.det;
+    bool all = (detector == EnergyScaleSystDetector::kAll);
+    // We'd like to use these, but sr->truth.det doesn't seem to be working correctly right now
+    //bool nd = (detector == EnergyScaleSystDetector::kSBND && det == caf::kSBND);
+    //bool ub = (detector == EnergyScaleSystDetector::kMicroBooNE && det != caf::kSBND && det != caf::kICARUS);
+    //bool fd = (detector == EnergyScaleSystDetector::kICARUS && det == caf::kICARUS);
+    bool nd = (detector == EnergyScaleSystDetector::kSBND && sr->truth.baseline < 120);
+    bool ub = (detector == EnergyScaleSystDetector::kMicroBooNE && sr->truth.baseline > 120 && sr->truth.baseline < 500);
+    bool fd = (detector == EnergyScaleSystDetector::kSBND && sr->truth.baseline > 500);
+    bool detector_cut = all || nd || ub || fd;
+    if(!sr->truth.iscc || abs(sr->truth.pdg) != 14 || isnan(sr->fake_reco.nuE) || !detector_cut) 
+      return ;
+
+    for(auto& pfp: sr->reco.pfp) {
+      if(pfp.trackScore < 0.5) continue;
+      auto& trk = pfp.trk;
+      if(part == EnergyScaleSystParticle::kMuon) {
+        double scaleRange = sigma*uncertainty;
+        double scaleMCS = sigma*uncertainty;
+        switch(term) {
+        case EnergyScaleSystTerm::kConstant:
+          break;
+        case EnergyScaleSystTerm::kSqrt:
+          scaleRange *= std::sqrt(trk.rangeP.p_muon);
+          if(!std::isnan(trk.mcsP.fwdP_muon))
+            scaleMCS *= std::sqrt(trk.mcsP.fwdP_muon);
+          break;
+        case EnergyScaleSystTerm::kInverseSqrt:
+          scaleRange /= std::sqrt(trk.rangeP.p_muon + 0.1);
+          if(!std::isnan(trk.mcsP.fwdP_muon))
+            scaleMCS /= std::sqrt(trk.mcsP.fwdP_muon + 0.1);
+          break;
+        }
+        trk.rangeP.p_muon *= (1+scaleRange);
+        if(!std::isnan(trk.mcsP.fwdP_muon))
+          trk.mcsP.fwdP_muon *= (1+scaleMCS);
+       } else if(part == EnergyScaleSystParticle::kHadron) {
+        double scaleRangeP = sigma*uncertainty;
+        double scaleMCSP = sigma*uncertainty;
+        double scaleRangePi = sigma*uncertainty;
+        double scaleMCSPi = sigma*uncertainty;
+        switch(term) {
+        case EnergyScaleSystTerm::kConstant:
+          break;
+        case EnergyScaleSystTerm::kSqrt:
+          scaleRangeP *= std::sqrt(trk.rangeP.p_proton);
+          if(!std::isnan(trk.mcsP.fwdP_proton))
+            scaleMCSP *= std::sqrt(trk.mcsP.fwdP_proton);
+          scaleRangePi *= std::sqrt(trk.rangeP.p_pion);
+          if(!std::isnan(trk.mcsP.fwdP_pion))
+            scaleMCSPi *= std::sqrt(trk.mcsP.fwdP_pion);
+          break;
+        case EnergyScaleSystTerm::kInverseSqrt:
+          scaleRangeP /= std::sqrt(trk.rangeP.p_proton + 0.1);
+          if(!std::isnan(trk.mcsP.fwdP_proton))
+            scaleMCSP /= std::sqrt(trk.mcsP.fwdP_proton + 0.1);
+          scaleRangePi /= std::sqrt(trk.rangeP.p_pion + 0.1);
+          if(!std::isnan(trk.mcsP.fwdP_pion))
+            scaleMCSPi /= std::sqrt(trk.mcsP.fwdP_pion + 0.1);
+          break;
+        }
+        trk.rangeP.p_proton *= (1+scaleRangeP);
+        if(!std::isnan(trk.mcsP.fwdP_proton))
+          trk.mcsP.fwdP_proton *= (1+scaleMCSP);
+        trk.rangeP.p_pion *= (1+scaleRangePi);
+        if(!std::isnan(trk.mcsP.fwdP_pion))
+          trk.mcsP.fwdP_pion *= (1+scaleMCSPi);
+      }
+    }
+  }
+  void RecoEnergyScaleSyst::Shift(double sigma, caf::SRTrueInteractionProxy *nu, double& weight) const
+  {
+  }
+
    const EnergyScaleSyst kEnergyScaleMuon(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuon", "Correlated linear E_{#mu} scale");
    const EnergyScaleSyst kEnergyScaleMuonSqrt(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuonSqrt", "Correlated sqrt E_{#mu} scale");
    const EnergyScaleSyst kEnergyScaleMuonInvSqrt(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuonInvSqrt", "Correlated inv sqrt E_{#mu} scale");
