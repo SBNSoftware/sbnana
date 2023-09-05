@@ -690,69 +690,6 @@ namespace ana
       } // end for tree
     } // end for spillcut
 
-    // Weights trees
-    // Sigma knobs
-    for ( auto& [spillcut, shiftmap] : fNSigmasTreeDefs ) {
-      const bool spillpass = spillcut(sr);
-      // Cut failed, skip all the histograms that depend on it
-      if(!spillpass) continue;
-
-      unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
-      // NB: We DON'T keep track of Nominal Cut/Var/etc. because we want to shift/reset shifts for the weight saving... We sacrifice potential speed here by choice.
-      for( caf::SRSliceProxy& slc: sr->slc ) {
-        for ( auto& [shift, cutmap] : shiftmap ) {
-          for ( auto& [cut, treemap] : cutmap ) {
-            const bool pass = cut(&slc);
-            // Cut failed, skip all the histograms that depended on it
-            if(!pass) continue;
-
-            for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
-
-              std::map<std::string, std::vector<double>> headerVals;
-              std::map<std::string, std::vector<double>> recordVals;
-              for ( auto& [syst, systname] : treemapIt->second ) {
-                for ( int sigma=treemapIt->first->NSigmaLo(systname); sigma<=treemapIt->first->NSigmaHi(systname); ++sigma ) {
-
-                  // Need to provide a clean slate for each new set of systematic
-                  // shifts to work from. Copying the whole StandardRecord is pretty
-                  // expensive, so modify it in place and revert it afterwards.
-                  caf::SRProxySystController::BeginTransaction();
-
-                  double systWeight = 1;
-                  // Can special-case nominal to not pay cost of Shift()
-                  if(!shift.IsNominal()){
-                    shift.Shift(&slc, systWeight);
-                  }
-
-                  // Now shift for the weight we want to save
-                  const SystShifts& shiftSigma = SystShifts(syst,sigma);
-                  double systWeightSigma = 1;
-                  shiftSigma.Shift(&slc, systWeightSigma);
-
-                  recordVals[systname].push_back(systWeightSigma);
-
-                  // Reset shifts to get the next sigma
-                  caf::SRProxySystController::Rollback();
-                }
-              }
-              // If fSaveRunSubrunEvt then fill these entries...
-              if ( treemapIt->first->SaveRunSubEvent() ) {
-                headerVals["Run/i"].push_back( sr->hdr.run );
-                headerVals["Subrun/i"].push_back( sr->hdr.subrun );
-                headerVals["Evt/i"].push_back( sr->hdr.evt );
-              }
-              if ( treemapIt->first->SaveSliceNum() ) {
-                headerVals["Slice/i"].push_back( idxSlice );
-              }
-
-              treemapIt->first->UpdateEntries(headerVals,recordVals);
-            } // end for tree
-          } // end for cut
-        } // end for shift
-        idxSlice+=1;
-      } // end for slice
-    } // end for spillcut
-
     // TruthTrees
     //unsigned int idxSpillCut = 0; // testing
     for ( auto& [spillcut, shiftmap] : fTruthTreeDefs ) {
@@ -872,6 +809,69 @@ namespace ana
         idxSlice+=1;
       } // end for slice
       //idxSpillCut+=1;
+    } // end for spillcut
+
+    // Weights trees
+    // Sigma knobs
+    for ( auto& [spillcut, shiftmap] : fNSigmasTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+      // Cut failed, skip all the histograms that depend on it
+      if(!spillpass) continue;
+
+      unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
+      // NB: We DON'T keep track of Nominal Cut/Var/etc. because we want to shift/reset shifts for the weight saving... We sacrifice potential speed here by choice.
+      for( caf::SRSliceProxy& slc: sr->slc ) {
+        for ( auto& [shift, cutmap] : shiftmap ) {
+          for ( auto& [cut, treemap] : cutmap ) {
+            const bool pass = cut(&slc);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+
+              std::map<std::string, std::vector<double>> headerVals;
+              std::map<std::string, std::vector<double>> recordVals;
+              for ( auto& [syst, systname] : treemapIt->second ) {
+                for ( int sigma=treemapIt->first->NSigmaLo(systname); sigma<=treemapIt->first->NSigmaHi(systname); ++sigma ) {
+
+                  // Need to provide a clean slate for each new set of systematic
+                  // shifts to work from. Copying the whole StandardRecord is pretty
+                  // expensive, so modify it in place and revert it afterwards.
+                  caf::SRProxySystController::BeginTransaction();
+
+                  double systWeight = 1;
+                  // Can special-case nominal to not pay cost of Shift()
+                  if(!shift.IsNominal()){
+                    shift.Shift(&slc, systWeight);
+                  }
+
+                  // Now shift for the weight we want to save
+                  const SystShifts& shiftSigma = SystShifts(syst,sigma);
+                  double systWeightSigma = 1;
+                  shiftSigma.Shift(&slc, systWeightSigma);
+
+                  recordVals[systname].push_back(systWeightSigma);
+
+                  // Reset shifts to get the next sigma
+                  caf::SRProxySystController::Rollback();
+                }
+              }
+              // If fSaveRunSubrunEvt then fill these entries...
+              if ( treemapIt->first->SaveRunSubEvent() ) {
+                headerVals["Run/i"].push_back( sr->hdr.run );
+                headerVals["Subrun/i"].push_back( sr->hdr.subrun );
+                headerVals["Evt/i"].push_back( sr->hdr.evt );
+              }
+              if ( treemapIt->first->SaveSliceNum() ) {
+                headerVals["Slice/i"].push_back( idxSlice );
+              }
+
+              treemapIt->first->UpdateEntries(headerVals,recordVals);
+            } // end for tree
+          } // end for cut
+        } // end for shift
+        idxSlice+=1;
+      } // end for slice
     } // end for spillcut
 
     // Universe knobs
