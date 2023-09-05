@@ -836,6 +836,24 @@ namespace ana
                   }
                 }
               }
+              // Adding CutType
+
+              if ( treemapIt->first->SaveTruthCutType() ){
+                // Loop over reco slices, and check if the truth-matched slice pass the (Slice)Cut
+                bool HasMatchedSlicePassCut = false;
+                for ( auto const& slc : sr->slc ) {
+                  if ( slc.truth.index < 0 ) continue;
+                  else if ( slc.truth.index != nu.index ) continue;
+                  if( treemapIt->first->GetSignalSelectionCut()(&slc) ){
+                    HasMatchedSlicePassCut = true;
+                    break;
+                  }
+                }
+                int tmp_CutType = HasMatchedSlicePassCut ? 1 : 0;
+                recordVals["CutType/i"].push_back( tmp_CutType );
+              }
+
+
               treemapIt->first->UpdateEntries(recordVals);
               //idxTree+=1;
             } // end for tree
