@@ -95,7 +95,13 @@ namespace ana {
   //// ----------------------------------------------
 
   const Var kGetNuMIFluxWeight([](const caf::SRSliceProxy* slc) -> double {
-    if (slc->truth.index < 0 || abs(slc->truth.initpdg) == 16) return 1.0;
+    return kGetTruthNuMIFluxWeight(&slc->truth);
+  });
+
+  //// ----------------------------------------------
+
+  const TruthVar kGetTruthNuMIFluxWeight([](const caf::SRTrueInteractionProxy* nu) -> double {
+    if (nu->index < 0 || abs(nu->initpdg) == 16) return 1.0;
 
     if (!FluxWeightNuMI.fWeight[0][0][0]) {
       std::cout << "Trying to access un-available weight array..." << std::endl;
@@ -103,19 +109,17 @@ namespace ana {
     }
 
     unsigned int hcIdx = 0; // assume always FHC for now...
-    unsigned int flavIdx = (abs(slc->truth.initpdg) == 12) ? 0 : 1;
-    unsigned int signIdx = (slc->truth.initpdg > 0) ? 0 : 1;
+    unsigned int flavIdx = (abs(nu->initpdg) == 12) ? 0 : 1;
+    unsigned int signIdx = (nu->initpdg > 0) ? 0 : 1;
 
     TH1* h = FluxWeightNuMI.fWeight[hcIdx][flavIdx][signIdx];
     assert(h);
 
-    const int bin = h->FindBin(slc->truth.E);
+    const int bin = h->FindBin(nu->E);
 
     if (bin == 0 || bin == h->GetNbinsX() + 1) return 1.0;
     if (std::isinf(h->GetBinContent(bin)) || std::isnan(h->GetBinContent(bin))) return 1.0;
     return h->GetBinContent(bin);
   });
-
-  //// ----------------------------------------------
 
 }

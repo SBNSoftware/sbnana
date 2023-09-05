@@ -27,5 +27,6 @@ namespace ana
   // set up to use the flux weight
   static const NuMIPpfxFluxWeight FluxWeightNuMI;
   extern const Var kGetNuMIFluxWeight;
+  extern const TruthVar kGetTruthNuMIFluxWeight;
 
 }
