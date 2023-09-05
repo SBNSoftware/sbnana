@@ -167,6 +167,13 @@ namespace ana
                                 const Cut& cut,
                                 const SystShifts& shift);
 
+    /// For use by the constructors of \ref NSigmasTree class but for TrueTree
+    virtual void AddNSigmasTree(NSigmasTree& tree,
+                                const std::vector<std::string>& labels,
+                                const std::vector<const ISyst*>& systsToStore,
+                                const TruthCut& truthcut,
+                                const SystShifts& shift);
+
     /// For use by the constructors of \ref NUniversesTree class
     virtual void AddNUniversesTree(NUniversesTree& tree,
                                    const std::vector<std::string>& labels,
@@ -321,6 +328,7 @@ namespace ana
     std::map<SpillCut, std::map<SystShifts, std::map<TruthCut, std::map<Tree*, std::map<TruthVarOrMultiVar, std::string>>>>> fTruthTreeDefs;
     // And a version that saves up the syst weights used to make event-by-event splines
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NSigmasTree*, std::map<const ISyst*, std::string>>>>> fNSigmasTreeDefs;
+    std::map<SystShifts, std::map<TruthCut, std::map<NSigmasTree*, std::map<const ISyst*, std::string>>>> fTruthNSigmasTreeDefs;
     // And a version that saves up universe-based systematic weights to make event-by-event weight lists
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NUniversesTree*, std::map<std::vector<VarOrMultiVar>, std::string>>>>> fNUniversesTreeDefs;
 
@@ -443,6 +451,12 @@ namespace ana
                         const std::vector<const ISyst*>& systsToStore,
                         const SpillCut& spillcut,
                         const Cut& cut,
+                        const SystShifts& shift) override {}
+
+    void AddNSigmasTree(NSigmasTree& tree,
+                        const std::vector<std::string>& labels,
+                        const std::vector<const ISyst*>& systsToStore,
+                        const TruthCut& truthcut,
                         const SystShifts& shift) override {}
 
     void AddNUniversesTree(NUniversesTree& tree,
