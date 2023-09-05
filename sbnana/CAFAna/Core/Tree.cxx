@@ -1181,6 +1181,24 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  NUniversesTree::NUniversesTree( const std::string name, const std::vector<std::string>& labels,
+                                  SpectrumLoaderBase& loader,
+                                  const std::vector<std::vector<TruthVar>>& univsKnobs,
+                                  const std::vector<unsigned int>& nUniverses,
+                                  const TruthCut& truthcut,
+                                  const SystShifts& shift, const bool saveRunSubEvt)
+  : WeightsTree(name,labels,nUniverses,saveRunSubEvt,false)
+  {
+    assert( labels.size() == univsKnobs.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      assert( univsKnobs.at(i).size() == nUniverses.at(i) );
+    }
+
+    loader.AddNUniversesTree( *this, labels, univsKnobs, truthcut, shift );
+  }
+
+  //----------------------------------------------------------------------
   void NUniversesTree::SaveTo( TDirectory* dir ) const
   {
     std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;

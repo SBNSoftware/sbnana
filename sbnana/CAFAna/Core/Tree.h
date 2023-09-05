@@ -156,10 +156,14 @@ namespace ana
                  const SpillCut& spillcut,
                  const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
     /// constructor with a vector of \ref ISyst, but for TrueTree
+    /// Dedicated for signal efficiency, thus has slightly different behavior
+    /// - Do not take spillcut
+    /// - truthcut: Signal definition is defined here. Only the TrueInteraction (=nu) that satisfies truthcut will be filled
     NSigmasTree( const std::string name, const std::vector<std::string>& labels,
                  SpectrumLoaderBase& loader,
                  const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
-                 const TruthCut& truthcut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
+                 const TruthCut& truthcut,
+                 const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
     void SaveTo( TDirectory* dir ) const override;
     void SaveToSplines( TDirectory* dir ) const;
     void SaveToGraphs( TDirectory* dir ) const;
@@ -174,6 +178,16 @@ namespace ana
                     const std::vector<std::vector<Var>>& univsKnobs, const std::vector<unsigned int>& nUniverses,
                     const SpillCut& spillcut,
                     const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    /// constructor with a vector of vectors of \ref Var corresponding to a number of universes for which we want to extract weights, for TrueTree
+    /// Dedicated for signal efficiency, thus has slightly different behavior
+    /// - Do not take spillcut
+    /// - truthcut: Signal definition is defined here. Only the TrueInteraction (=nu) that satisfies truthcut will be filled
+    NUniversesTree( const std::string name, const std::vector<std::string>& labels,
+                    SpectrumLoaderBase& loader,
+                    const std::vector<std::vector<TruthVar>>& univsKnobs, const std::vector<unsigned int>& nUniverses,
+                    const TruthCut& truthcut,
+                    const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
+
     void SaveTo( TDirectory* dir ) const override;
   };
 

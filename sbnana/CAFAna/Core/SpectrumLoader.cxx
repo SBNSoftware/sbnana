@@ -914,9 +914,9 @@ namespace ana
 
             treemapIt->first->UpdateEntries(headerVals,recordVals);
           } // end for tree
-        } // end for cut
+        } // end for truthcut
       } // end for shift
-    } // end for slice
+    } // end for nu
 
     // Universe knobs
     for ( auto& [spillcut, shiftmap] : fNUniversesTreeDefs ) {
@@ -983,6 +983,63 @@ namespace ana
         idxSlice+=1;
       } // end for slice
     } // end for spillcut
+
+    // Universe knobs, Truth
+    for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
+      // Some shifts only adjust the weight, so they're effectively nominal,
+      // but aren't grouped with the other nominal histograms. Keep track of
+      // the results for nominals in these caches to speed those systs up.
+      CutVarCache<bool, TruthCut, caf::SRTrueInteractionProxy> nomTruthCutCache;
+
+      for ( auto& [shift, truthcutmap] : fTruthNUniversesTreeDefs ) {
+        // Need to provide a clean slate for each new set of systematic
+        // shifts to work from. Copying the whole StandardRecord is pretty
+        // expensive, so modify it in place and revert it afterwards.
+        caf::SRProxySystController::BeginTransaction();
+
+        bool shifted = false;
+
+        double systWeight = 1;
+        // Can special-case nominal to not pay cost of Shift()
+        if(!shift.IsNominal()){
+          shift.Shift(&nu, systWeight);
+          // If there were only weighting systs applied then the cached
+          // nominal values are still valid.
+          shifted = caf::SRProxySystController::AnyShifted();
+        }
+
+        for ( auto& [truthcut, treemap] : truthcutmap ) {
+          const bool pass = shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
+          // Cut failed, skip all the histograms that depended on it
+          if(!pass) continue;
+
+          for ( std::map<NUniversesTree*, std::map<std::vector<TruthVarOrMultiVar>, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+            std::map<std::string, std::vector<double>> headerVals;
+            std::map<std::string, std::vector<double>> recordVals;
+            for ( auto& [universes, systname] : treemapIt->second ) {
+              for ( auto const& truthvar : universes ) {
+                double truthval = truthvar.GetVar()(&nu);
+                recordVals[systname].push_back(truthval);
+              }
+            }
+            // If fSaveRunSubrunEvt then fill these entries...
+            if ( treemapIt->first->SaveRunSubEvent() ) {
+              headerVals["Run/i"].push_back( sr->hdr.run );
+              headerVals["Subrun/i"].push_back( sr->hdr.subrun );
+              headerVals["Evt/i"].push_back( sr->hdr.evt );
+            }
+
+            treemapIt->first->UpdateEntries(headerVals,recordVals);
+          } // end for tree
+        } // end for truthcut
+
+        // Return StandardRecord to its unshifted form ready for the next
+        // histogram.
+        caf::SRProxySystController::Rollback();
+      } // end for shift
+
+    } // end for nu
+
 
   }
 
@@ -1099,6 +1156,15 @@ namespace ana
       }
     }
 
+    // NSigmasTrees, Truth
+    for ( auto& [shift, truthcutmap] : fTruthNSigmasTreeDefs ) {
+      for ( auto& [truthcut, treemap] : truthcutmap ) {
+        for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+          treemapIt->first->UpdateExposure(fPOT,fNReadouts);
+        }
+      } 
+    } 
+
     // NUniversesTrees
     for ( auto& [spillcut, shiftmap] : fNUniversesTreeDefs ) {
       for ( auto& [shift, cutmap] : shiftmap ) {
@@ -1109,6 +1175,16 @@ namespace ana
         }
       }
     }
+
+    // NUniversesTrees, Truth
+    for ( auto& [shift, truthcutmap] : fTruthNUniversesTreeDefs ) {
+      for ( auto& [truthcut, treemap] : truthcutmap ) {
+        for ( std::map<NUniversesTree*, std::map<std::vector<TruthVarOrMultiVar>, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+            treemapIt->first->UpdateExposure(fPOT,fNReadouts);
+        }     
+      }     
+    }    
+
 
   }
 } // namespace

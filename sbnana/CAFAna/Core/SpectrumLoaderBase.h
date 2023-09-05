@@ -182,6 +182,14 @@ namespace ana
                                    const Cut& cut,
                                    const SystShifts& shift);
 
+
+    /// For use by the constructors of \ref NUniversesTree class but for TrueTree
+    virtual void AddNUniversesTree(NUniversesTree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<std::vector<TruthVar>>& univKnobs,
+                                   const TruthCut& truthcut,
+                                   const SystShifts& shift);
+
     /// Load all the registered spectra
     virtual void Go() = 0;
 
@@ -331,6 +339,7 @@ namespace ana
     std::map<SystShifts, std::map<TruthCut, std::map<NSigmasTree*, std::map<const ISyst*, std::string>>>> fTruthNSigmasTreeDefs;
     // And a version that saves up universe-based systematic weights to make event-by-event weight lists
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NUniversesTree*, std::map<std::vector<VarOrMultiVar>, std::string>>>>> fNUniversesTreeDefs;
+    std::map<SystShifts, std::map<TruthCut, std::map<NUniversesTree*, std::map<std::vector<TruthVarOrMultiVar>, std::string>>>> fTruthNUniversesTreeDefs;
 
   };
 
@@ -465,6 +474,13 @@ namespace ana
                            const SpillCut& spillcut,
                            const Cut& cut,
                            const SystShifts& shift) override {}
+
+    void AddNUniversesTree(NUniversesTree& tree,
+                           const std::vector<std::string>& labels,
+                           const std::vector<std::vector<TruthVar>>& univKnobs,
+                           const TruthCut& truthcut,
+                           const SystShifts& shift) override {}
+
   };
   /// \brief Dummy loader that doesn't load any files
   ///
