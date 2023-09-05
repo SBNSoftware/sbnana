@@ -11,7 +11,7 @@ using namespace std;
 namespace ana{
 
   std::vector<std::string> GetNuMITrueTreeLabels();
-  std::vector<SpillMultiVar> GetNuMITrueTreeVars();
+  std::vector<TruthVar> GetNuMITrueTreeVars();
 
   std::vector<std::string> GetNuMIRecoTreeLabels();
   std::vector<Var> GetNuMIRecoTreeVars();

@@ -7,10 +7,6 @@ namespace ana{
   std::vector<string> GetNuMITrueTreeLabels(){
 
     return {
-      // CutType
-      "CutType/i",
-      // SpillCutType
-      "SpillCutType/i",
       // Interaction
       "TruePDG/i", "TrueMode/i", "TrueTarget/i", "TrueIsCC/i",
       // Weight
@@ -23,7 +19,7 @@ namespace ana{
       "TrueMuonCos",
       "TrueMuonCosBeam",
       "TrueMuonLength",
-      "TrueMuonContained",
+      "TrueMuonContained/i",
       // Proton
       "TrueProtonP",
       "TrueProtonPt",
@@ -40,43 +36,37 @@ namespace ana{
     };
 
   }
-  std::vector<SpillMultiVar> GetNuMITrueTreeVars(){
+  std::vector<TruthVar> GetNuMITrueTreeVars(){
 
-    return {};
-/*
     return {
-      // CutType
-      kCutTypeVectorPerSignalNu,
-      // SpillCutType
-      kSpillCutTypeVectorPerSignalNu,
       // Interaction
-      kTruePDGVectorPerSignalNu, kTrueModeVectorPerSignalNu, kTrueTargetVectorPerSignalNu, kTrueIsCCVectorPerSignalNu,
+      kTruth_NeutrinoPDG, kTruth_NeutrinoMode, kTruth_Target, kTruth_IsCC,
       // Weight
-      kNuMIPPFXWeightVectorPerSignalNu,
+      kGetTruthNuMIFluxWeight,
       // Nu E
-      kTrueEVectorPerSignalNu,
+      kTruth_NeutrinoE,
       // Muon
-      kTrueMuonPVectorPerSignalNu,
-      kTrueMuonPtVectorPerSignalNu,
-      kTrueMuonNuCosineThetaVectorPerSignalNu,
-      kTrueMuonCosThBeamVectorPerSignalNu,
-      kTrueMuonLengthVectorPerSignalNu,
-      kTrueMuonContainedVectorPerSignalNu,
+      kTruth_MuonP,
+      kTruth_MuonPt,
+      kTruth_MuonNuCosineTheta,
+      kTruth_MuonCosThBeam,
+      kTruth_MuonLength,
+      kTruth_MuonContained,
       // Proton
-      kTrueProtonPVectorPerSignalNu,
-      kTrueProtonPtVectorPerSignalNu,
-      kTrueProtonNuCosineThetaVectorPerSignalNu,
-      kTrueProtonLengthVectorPerSignalNu,
+      kTruth_ProtonP,
+      kTruth_ProtonPt,
+      kTruth_ProtonNuCosineTheta,
+      kTruth_ProtonLength,
       // Muon+Proton
-      kTrueCosThMuonProtonVectorPerSignalNu,
+      kTruth_CosThMuonProton,
       // TKI
-      kTruedeltaPTVectorPerSignalNu,
-      kTruedeltaPTxVectorPerSignalNu,
-      kTruedeltaPTyVectorPerSignalNu,
-      kTruedeltaalphaTVectorPerSignalNu,
-      kTruedeltaphiTVectorPerSignalNu,
+      kTruth_deltaPT,
+      kTruth_deltaPTx,
+      kTruth_deltaPTy,
+      kTruth_deltaalphaT,
+      kTruth_deltaphiT,
     };
-*/
+
   }
 
   std::vector<std::string> GetNuMIRecoTreeLabels(){
