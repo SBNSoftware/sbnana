@@ -19,7 +19,7 @@ namespace ana
               SpectrumLoaderBase& loader,
               const std::vector<Var>& vars, const SpillCut& spillcut,
               const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -51,7 +51,7 @@ namespace ana
               SpectrumLoaderBase& loader,
               const std::vector<MultiVar>& vars, const SpillCut& spillcut,
               const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -82,7 +82,7 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<SpillVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -109,7 +109,7 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -136,10 +136,15 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<TruthVar>& vars, const SpillCut& spillcut,
-              const TruthCut& truthcut, const SystShifts& shift, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
+              const TruthCut& truthcut,
+              const Cut& SignalSelection,
+              const SystShifts& shift,
+              const bool saveRunSubEvt)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(true), SignalSelection(SignalSelection)
   {
     assert( labels.size() == vars.size() );
+
+    fOrderedBranchNames.push_back( "CutType/i" ); fBranchEntries["CutType/i"] = {};
 
     for ( unsigned int i=0; i<labels.size(); ++i ) {
       fOrderedBranchNames.push_back( labels.at(i) );
