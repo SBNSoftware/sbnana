@@ -151,6 +151,14 @@ namespace ana
                          const std::vector<SpillMultiVar>& vars,
                          const SpillCut& spillcut);
 
+    /// For use by the constructors of \ref Tree class
+    virtual void AddTree(Tree& tree,
+                         const std::vector<std::string>& labels,
+                         const std::vector<TruthVar>& vars,
+                         const SpillCut& spillcut,
+                         const TruthCut& truthcut,
+                         const SystShifts& shift);
+
     /// For use by the constructors of \ref NSigmasTree class
     virtual void AddNSigmasTree(NSigmasTree& tree,
                                 const std::vector<std::string>& labels,
@@ -310,6 +318,7 @@ namespace ana
     //       map. But otherwise, let's keep it the same way...
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<Tree*, std::map<VarOrMultiVar, std::string>>>>> fTreeDefs;
     std::map<SpillCut, std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>> fSpillTreeDefs;
+    std::map<SpillCut, std::map<SystShifts, std::map<TruthCut, std::map<Tree*, std::map<TruthVarOrMultiVar, std::string>>>>> fTruthTreeDefs;
     // And a version that saves up the syst weights used to make event-by-event splines
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NSigmasTree*, std::map<const ISyst*, std::string>>>>> fNSigmasTreeDefs;
     // And a version that saves up universe-based systematic weights to make event-by-event weight lists
@@ -421,6 +430,13 @@ namespace ana
                  const std::vector<std::string>& labels,
                  const std::vector<SpillMultiVar>& vars,
                  const SpillCut& spillcut) override {}
+
+    void AddTree(Tree& tree,
+                 const std::vector<std::string>& labels,
+                 const std::vector<TruthVar>& vars,
+                 const SpillCut& spillcut,
+                 const TruthCut& truthcut,
+                 const SystShifts& shift) override {}
 
     void AddNSigmasTree(NSigmasTree& tree,
                         const std::vector<std::string>& labels,

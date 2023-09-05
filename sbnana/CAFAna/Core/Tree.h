@@ -39,6 +39,12 @@ namespace ana
     Tree( const std::string name, const std::vector<std::string>& labels,
           SpectrumLoaderBase& loader,
           const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt = false );
+    /// constructor with a vector of \ref TruthVar
+    Tree( const std::string name, const std::vector<std::string>& labels,
+          SpectrumLoaderBase& loader,
+          const std::vector<TruthVar>& vars, const SpillCut& spillcut,
+          const TruthCut& truthcut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false );
+
     // Add functionality to update the protected stuff from elsewhere
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
     virtual void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap );

@@ -132,6 +132,34 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  // Constructor for a set of TruthVars
+  Tree::Tree( const std::string name, const std::vector<std::string>& labels,
+              SpectrumLoaderBase& loader,
+              const std::vector<TruthVar>& vars, const SpillCut& spillcut,
+              const TruthCut& truthcut, const SystShifts& shift, const bool saveRunSubEvt )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
+  {
+    assert( labels.size() == vars.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      fOrderedBranchNames.push_back( labels.at(i) );
+      fBranchEntries[labels.at(i)] = {};
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
+    }
+
+    loader.AddTree( *this, labels, vars, spillcut, truthcut, shift );
+  }
+
+  //----------------------------------------------------------------------
   // Add an entry to a branch
   void Tree::UpdateEntries( const std::map<std::string, std::vector<double>> valsMap )
   {
