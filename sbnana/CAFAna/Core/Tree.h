@@ -43,7 +43,10 @@ namespace ana
     Tree( const std::string name, const std::vector<std::string>& labels,
           SpectrumLoaderBase& loader,
           const std::vector<TruthVar>& vars, const SpillCut& spillcut,
-          const TruthCut& truthcut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false );
+          const TruthCut& truthcut,
+          const Cut& SignalSelection,
+          const SystShifts& shift = kNoShift,
+          const bool saveRunSubEvt = false );
 
     // Add functionality to update the protected stuff from elsewhere
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
@@ -58,6 +61,8 @@ namespace ana
     bool SaveSliceNum() const {return fSaveSliceNum;}
     void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
+    bool SaveTruthCutType() const {return fSaveTruthCutType;}
+    Cut GetSignalSelectionCut() const {return SignalSelection;}
     virtual void SaveTo( TDirectory* dir ) const;
   protected:
     friend class WeightsTree;
@@ -69,6 +74,8 @@ namespace ana
     double fLivetime;
     bool fSaveRunSubEvt;
     bool fSaveSliceNum;
+    bool fSaveTruthCutType;
+    const Cut SignalSelection;
   };
 
   // Similar to Tree but for event weights e.g. to make splines...
