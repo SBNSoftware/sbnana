@@ -2,8 +2,8 @@
 
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Core/MultiVar.h"
+#include "sbnana/SBNAna/Vars/NuMITruthVar.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
-#include "sbnana/SBNAna/Vars/PrimaryUtils.h"
 
 namespace ana
 {

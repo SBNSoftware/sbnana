@@ -1,7 +1,6 @@
 #include "sbnana/SBNAna/Cuts/NuMIXSecTreeHelper.h"
 
 using namespace ana;
-using namespace ana::PrimaryUtil;
 
 namespace ana{
 
@@ -43,6 +42,8 @@ namespace ana{
   }
   std::vector<SpillMultiVar> GetNuMITrueTreeVars(){
 
+    return {};
+/*
     return {
       // CutType
       kCutTypeVectorPerSignalNu,
@@ -75,7 +76,7 @@ namespace ana{
       kTruedeltaalphaTVectorPerSignalNu,
       kTruedeltaphiTVectorPerSignalNu,
     };
-
+*/
   }
 
   std::vector<std::string> GetNuMIRecoTreeLabels(){
