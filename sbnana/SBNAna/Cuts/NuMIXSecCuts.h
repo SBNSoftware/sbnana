@@ -68,6 +68,7 @@ namespace ana
   extern const Cut kNuMI_1muNp0piStudy_Signal_WithoutPhaseSpaceCut;
   /// \ref Signal with phase space cut = "Signal"
   extern const Cut kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut;
+  extern const TruthCut kTruthCut_IsSignal;
   /// \ref Signal but fails phase space cut = "out of phase space" (OOPS)
   extern const Cut kNuMI_1muNp0piStudy_Signal_FailPhaseSpaceCut;
   /// \ref CC but NOT "Signal" or "OOPS"
