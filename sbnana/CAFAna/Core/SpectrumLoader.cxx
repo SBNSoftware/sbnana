@@ -757,8 +757,6 @@ namespace ana
     //unsigned int idxSpillCut = 0; // testing
     for ( auto& [spillcut, shiftmap] : fTruthTreeDefs ) {
       const bool spillpass = spillcut(sr);
-      // Cut failed, skip all the histograms that depend on it
-      if(!spillpass) continue;
 
       unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
       for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
@@ -851,7 +849,12 @@ namespace ana
                 }
                 int tmp_CutType = HasMatchedSlicePassCut ? 1 : 0;
                 recordVals["CutType/i"].push_back( tmp_CutType );
+
+                int tmp_SpillCutType = spillpass ? 1 : 0;
+                recordVals["SpillCutType/i"].push_back( tmp_SpillCutType );
+
               }
+
 
 
               treemapIt->first->UpdateEntries(recordVals);
