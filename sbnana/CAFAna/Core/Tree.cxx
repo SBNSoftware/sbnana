@@ -790,6 +790,19 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                            SpectrumLoaderBase& loader,
+                            const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
+                            const TruthCut& truthcut, const SystShifts& shift, const bool saveRunSubEvt)
+  : WeightsTree(name,labels,nSigma,saveRunSubEvt,false)
+  {
+    assert( labels.size() == systsToStore.size() );
+    assert( nSigma.size() == labels.size() );
+
+    loader.AddNSigmasTree( *this, labels, systsToStore, truthcut, shift );
+  }
+
+  //----------------------------------------------------------------------
   void NSigmasTree::SaveToSplines( TDirectory* dir ) const
   {
     std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;

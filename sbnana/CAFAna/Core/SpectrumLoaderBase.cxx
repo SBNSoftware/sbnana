@@ -513,6 +513,26 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddNSigmasTree(NSigmasTree& tree,
+                                          const std::vector<std::string>& labels,
+                                          const std::vector<const ISyst*>& systsToStore,
+                                          const TruthCut& truthcut,
+                                          const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add NSigmasTree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fTruthNSigmasTreeDefs[shift][truthcut][&tree][ systsToStore.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::AddNUniversesTree(NUniversesTree& tree,
                                              const std::vector<std::string>& labels,
                                              const std::vector<std::vector<Var>>& univKnobs,

@@ -40,6 +40,11 @@ namespace ana
           SpectrumLoaderBase& loader,
           const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt = false );
     /// constructor with a vector of \ref TruthVar
+    /// Dedicated for signal efficiency, thus has slightly different behavior
+    /// - spillcut: It does not cut event by spillcut, but creates a branch "SpillCutType"
+    /// - truthcut: Signal definition is defined here. Only the TrueInteraction (=nu) that satisfies truthcut will be filled
+    /// - SignalSelection: Reco cut that defined your signal selection. 
+    ///   For each nu, it loops over reco slices, and find if any matched slice pass this cut, and save this to "CutType" branch
     Tree( const std::string name, const std::vector<std::string>& labels,
           SpectrumLoaderBase& loader,
           const std::vector<TruthVar>& vars, const SpillCut& spillcut,
@@ -150,6 +155,11 @@ namespace ana
                  const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
                  const SpillCut& spillcut,
                  const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    /// constructor with a vector of \ref ISyst, but for TrueTree
+    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                 SpectrumLoaderBase& loader,
+                 const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
+                 const TruthCut& truthcut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
     void SaveTo( TDirectory* dir ) const override;
     void SaveToSplines( TDirectory* dir ) const;
     void SaveToGraphs( TDirectory* dir ) const;

@@ -690,6 +690,120 @@ namespace ana
       } // end for tree
     } // end for spillcut
 
+    // TruthTrees
+    //unsigned int idxSpillCut = 0; // testing
+    for ( auto& [spillcut, shiftmap] : fTruthTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+
+      for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
+        // Some shifts only adjust the weight, so they're effectively nominal,
+        // but aren't grouped with the other nominal histograms. Keep track of
+        // the results for nominals in these caches to speed those systs up.
+        CutVarCache<bool, TruthCut, caf::SRTrueInteractionProxy> nomTruthCutCache;
+        CutVarCache<double, TruthVar, caf::SRTrueInteractionProxy> nomTruthVarCache;
+
+        //unsigned int idxShift = 0; // testing
+        for ( auto& [shift, truthcutmap] : shiftmap ) {
+          // Need to provide a clean slate for each new set of systematic
+          // shifts to work from. Copying the whole StandardRecord is pretty
+          // expensive, so modify it in place and revert it afterwards.
+          caf::SRProxySystController::BeginTransaction();
+
+          bool shifted = false;
+
+          double systWeight = 1;
+          // Can special-case nominal to not pay cost of Shift()
+          if(!shift.IsNominal()){
+            shift.Shift(&nu, systWeight);
+            // If there were only weighting systs applied then the cached
+            // nominal values are still valid.
+            shifted = caf::SRProxySystController::AnyShifted();
+          }
+
+          //unsigned int idxCut = 0; // testing
+          for ( auto& [truthcut, treemap] : truthcutmap ) {
+            const bool pass = shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            //unsigned int idxTree = 0;
+            for ( std::map<Tree*, std::map<TruthVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+              //unsigned int idxVar = 0;
+              std::map<std::string, std::vector<double>> recordVals;
+              unsigned int numEntries=0;
+              for ( auto& [truthvarormulti, truthvarname] : treemapIt->second ) {
+                //std::cout << "SpillCut " << idxSpillCut << " Shift " << idxShift << " Cut " << idxCut << " Tree " << idxTree << " Var " << idxVar << std::endl;
+                if(truthvarormulti.IsMulti()){
+                  auto const& truthvals = truthvarormulti.GetMultiVar()(&nu);
+                  for(double truthval: truthvals) recordVals[truthvarname].push_back(truthval);
+                  if (numEntries==0)    numEntries = truthvals.size();
+                  continue;
+                }
+
+                const TruthVar& truthvar = truthvarormulti.GetVar();
+                const double truthval = shifted ? truthvar(&nu) : nomTruthVarCache.Get(truthvar, &nu);
+
+                //std::cout << "    VAL = " << turthval << std::endl;
+
+                if(std::isnan(truthval) || std::isinf(truthval)){
+                  std::cerr << "Warning: Bad value: " << truthval
+                            << " returned from a Var. The input variable(s) could "
+                            << "be NaN in the CAF, or perhaps your "
+                            << "Var code computed 0/0?";
+                  std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
+                }
+
+                recordVals[truthvarname].push_back(truthval);
+                if( numEntries==0 ) numEntries = 1;
+                //idxVar+=1;
+              } // end for truthvar/truthvarname
+              // If fSaveRunSubrunEvt then fill these entries...
+              if ( treemapIt->first->SaveRunSubEvent() ) {
+                for ( unsigned int idxRun=0; idxRun<numEntries; ++idxRun ) {
+                  recordVals["Run/i"].push_back( sr->hdr.run );
+                  recordVals["Subrun/i"].push_back( sr->hdr.subrun );
+                  recordVals["Evt/i"].push_back( sr->hdr.evt );
+                }
+              }
+              // Adding CutType
+
+              if ( treemapIt->first->SaveTruthCutType() ){
+                // Loop over reco slices, and check if the truth-matched slice pass the (Slice)Cut
+                bool HasMatchedSlicePassCut = false;
+                for ( auto const& slc : sr->slc ) {
+                  if ( slc.truth.index < 0 ) continue;
+                  else if ( slc.truth.index != nu.index ) continue;
+                  if( treemapIt->first->GetSignalSelectionCut()(&slc) ){
+                    HasMatchedSlicePassCut = true;
+                    break;
+                  }
+                }
+                int tmp_CutType = HasMatchedSlicePassCut ? 1 : 0;
+                recordVals["CutType/i"].push_back( tmp_CutType );
+
+                int tmp_SpillCutType = spillpass ? 1 : 0;
+                recordVals["SpillCutType/i"].push_back( tmp_SpillCutType );
+
+              }
+
+
+
+              treemapIt->first->UpdateEntries(recordVals);
+              //idxTree+=1;
+            } // end for tree
+            //idxCut+=1;
+          } // end for cut
+
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+          caf::SRProxySystController::Rollback();
+
+          //idxShift+=1;
+        } // end for shift
+      } // end for slice
+      //idxSpillCut+=1;
+    } // end for spillcut
+
     // Weights trees
     // Sigma knobs
     for ( auto& [spillcut, shiftmap] : fNSigmasTreeDefs ) {
@@ -753,126 +867,56 @@ namespace ana
       } // end for slice
     } // end for spillcut
 
-    // TruthTrees
-    //unsigned int idxSpillCut = 0; // testing
-    for ( auto& [spillcut, shiftmap] : fTruthTreeDefs ) {
-      const bool spillpass = spillcut(sr);
+    // Truth Sigma knobs
+    // NB: We DON'T keep track of Nominal Cut/Var/etc. because we want to shift/reset shifts for the weight saving... We sacrifice potential speed here by choice.
+    for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
+      for ( auto& [shift, truthcutmap] : fTruthNSigmasTreeDefs ) {
+        for ( auto& [truthcut, treemap] : truthcutmap ) {
+          const bool pass = truthcut(&nu);
+          // Cut failed, skip all the histograms that depended on it
+          if(!pass) continue;
 
-      unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
-      for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
-        // Some shifts only adjust the weight, so they're effectively nominal,
-        // but aren't grouped with the other nominal histograms. Keep track of
-        // the results for nominals in these caches to speed those systs up.
-        CutVarCache<bool, TruthCut, caf::SRTrueInteractionProxy> nomTruthCutCache;
-        CutVarCache<double, TruthVar, caf::SRTrueInteractionProxy> nomTruthVarCache;
+          for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
 
-        //unsigned int idxShift = 0; // testing
-        for ( auto& [shift, truthcutmap] : shiftmap ) {
-          // Need to provide a clean slate for each new set of systematic
-          // shifts to work from. Copying the whole StandardRecord is pretty
-          // expensive, so modify it in place and revert it afterwards.
-          caf::SRProxySystController::BeginTransaction();
+            std::map<std::string, std::vector<double>> headerVals;
+            std::map<std::string, std::vector<double>> recordVals;
+            for ( auto& [syst, systname] : treemapIt->second ) {
+              for ( int sigma=treemapIt->first->NSigmaLo(systname); sigma<=treemapIt->first->NSigmaHi(systname); ++sigma ) {
 
-          bool shifted = false;
+                // Need to provide a clean slate for each new set of systematic
+                // shifts to work from. Copying the whole StandardRecord is pretty
+                // expensive, so modify it in place and revert it afterwards.
+                caf::SRProxySystController::BeginTransaction();
 
-          double systWeight = 1;
-          // Can special-case nominal to not pay cost of Shift()
-          if(!shift.IsNominal()){
-            shift.Shift(&nu, systWeight);
-            // If there were only weighting systs applied then the cached
-            // nominal values are still valid.
-            shifted = caf::SRProxySystController::AnyShifted();
-          }
-
-          //unsigned int idxCut = 0; // testing
-          for ( auto& [truthcut, treemap] : truthcutmap ) {
-            const bool pass = shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
-            // Cut failed, skip all the histograms that depended on it
-            if(!pass) continue;
-
-            //unsigned int idxTree = 0;
-            for ( std::map<Tree*, std::map<TruthVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
-              //unsigned int idxVar = 0;
-              std::map<std::string, std::vector<double>> recordVals;
-              unsigned int numEntries=0;
-              for ( auto& [truthvarormulti, truthvarname] : treemapIt->second ) {
-                //std::cout << "SpillCut " << idxSpillCut << " Slice " << idxSlice << " Shift " << idxShift << " Cut " << idxCut << " Tree " << idxTree << " Var " << idxVar << std::endl;
-                if(truthvarormulti.IsMulti()){
-                  auto const& truthvals = truthvarormulti.GetMultiVar()(&nu);
-                  for(double truthval: truthvals) recordVals[truthvarname].push_back(truthval);
-                  if (numEntries==0)    numEntries = truthvals.size();
-                  continue;
+                double systWeight = 1;
+                // Can special-case nominal to not pay cost of Shift()
+                if(!shift.IsNominal()){
+                  shift.Shift(&nu, systWeight);
                 }
 
-                const TruthVar& truthvar = truthvarormulti.GetVar();
-                const double truthval = shifted ? truthvar(&nu) : nomTruthVarCache.Get(truthvar, &nu);
+                // Now shift for the weight we want to save
+                const SystShifts& shiftSigma = SystShifts(syst,sigma);
+                double systWeightSigma = 1;
+                shiftSigma.Shift(&nu, systWeightSigma);
 
-                //std::cout << "    VAL = " << turthval << std::endl;
+                recordVals[systname].push_back(systWeightSigma);
 
-                if(std::isnan(truthval) || std::isinf(truthval)){
-                  std::cerr << "Warning: Bad value: " << truthval
-                            << " returned from a Var. The input variable(s) could "
-                            << "be NaN in the CAF, or perhaps your "
-                            << "Var code computed 0/0?";
-                  std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
-                }
-
-                recordVals[truthvarname].push_back(truthval);
-                if( numEntries==0 ) numEntries = 1;
-                //idxVar+=1;
-              } // end for truthvar/truthvarname
-              // If fSaveRunSubrunEvt then fill these entries...
-              if ( treemapIt->first->SaveRunSubEvent() || treemapIt->first->SaveSliceNum() ) {
-                for ( unsigned int idxRun=0; idxRun<numEntries; ++idxRun ) {
-                  if ( treemapIt->first->SaveRunSubEvent() ) {
-                    recordVals["Run/i"].push_back( sr->hdr.run );
-                    recordVals["Subrun/i"].push_back( sr->hdr.subrun );
-                    recordVals["Evt/i"].push_back( sr->hdr.evt );
-                  }
-                  if ( treemapIt->first->SaveSliceNum() ) {
-                    recordVals["Slice/i"].push_back( idxSlice );
-                  }
-                }
+                // Reset shifts to get the next sigma
+                caf::SRProxySystController::Rollback();
               }
-              // Adding CutType
+            }
+            // If fSaveRunSubrunEvt then fill these entries...
+            if ( treemapIt->first->SaveRunSubEvent() ) {
+              headerVals["Run/i"].push_back( sr->hdr.run );
+              headerVals["Subrun/i"].push_back( sr->hdr.subrun );
+              headerVals["Evt/i"].push_back( sr->hdr.evt );
+            }
 
-              if ( treemapIt->first->SaveTruthCutType() ){
-                // Loop over reco slices, and check if the truth-matched slice pass the (Slice)Cut
-                bool HasMatchedSlicePassCut = false;
-                for ( auto const& slc : sr->slc ) {
-                  if ( slc.truth.index < 0 ) continue;
-                  else if ( slc.truth.index != nu.index ) continue;
-                  if( treemapIt->first->GetSignalSelectionCut()(&slc) ){
-                    HasMatchedSlicePassCut = true;
-                    break;
-                  }
-                }
-                int tmp_CutType = HasMatchedSlicePassCut ? 1 : 0;
-                recordVals["CutType/i"].push_back( tmp_CutType );
-
-                int tmp_SpillCutType = spillpass ? 1 : 0;
-                recordVals["SpillCutType/i"].push_back( tmp_SpillCutType );
-
-              }
-
-
-
-              treemapIt->first->UpdateEntries(recordVals);
-              //idxTree+=1;
-            } // end for tree
-            //idxCut+=1;
-          } // end for cut
-
-          // Return StandardRecord to its unshifted form ready for the next
-          // histogram.
-          caf::SRProxySystController::Rollback();
-
-          //idxShift+=1;
-        } // end for shift
-        idxSlice+=1;
-      } // end for slice
-      //idxSpillCut+=1;
-    } // end for spillcut
+            treemapIt->first->UpdateEntries(headerVals,recordVals);
+          } // end for tree
+        } // end for cut
+      } // end for shift
+    } // end for slice
 
     // Universe knobs
     for ( auto& [spillcut, shiftmap] : fNUniversesTreeDefs ) {
