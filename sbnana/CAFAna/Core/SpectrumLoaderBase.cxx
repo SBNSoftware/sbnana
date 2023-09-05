@@ -150,6 +150,9 @@ namespace ana
   SpectrumLoaderBase::~SpectrumLoaderBase()
   {
     fHistDefs.RemoveLoader(this);
+    fSpillHistDefs.RemoveLoader(this);
+    fTruthHistDefs.RemoveLoader(this);
+    fTruthHistWithCutDefs.RemoveLoader(this);
   }
 
   //----------------------------------------------------------------------
@@ -266,9 +269,86 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const TruthVar& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistDefs[spillcut][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthMultiVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const TruthVar& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistDefs[spillcut][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                                       const TruthVar& wei)
+  { 
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistWithCutDefs[spillcut][cut][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+    
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthMultiVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                                       const TruthVar& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistWithCutDefs[spillcut][cut][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::RemoveSpectrum(Spectrum* spect)
   {
     fHistDefs.Erase(spect);
+    fSpillHistDefs.Erase(spect);
+    fTruthHistDefs.Erase(spect);
+    fTruthHistWithCutDefs.Erase(spect);
   }
 
   //----------------------------------------------------------------------
@@ -435,6 +515,9 @@ namespace ana
   RemoveReweightableSpectrum(ReweightableSpectrum* spect)
   {
     fHistDefs.Erase(spect);
+    fSpillHistDefs.Erase(spect);
+    fTruthHistDefs.Erase(spect);
+    fTruthHistWithCutDefs.Erase(spect);
   }
 
   //----------------------------------------------------------------------
@@ -471,4 +554,8 @@ namespace ana
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<Var, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::VarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
 
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SpillVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::SpillVarOrMultiVar, SpectrumLoaderBase::SpectList>>>;
+
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>;
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
+
 } // namespace

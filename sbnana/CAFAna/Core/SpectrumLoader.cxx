@@ -111,6 +111,16 @@ namespace ana
 
     fHistDefs.RemoveLoader(this);
     fHistDefs.Clear();
+
+    fSpillHistDefs.RemoveLoader(this);
+    fSpillHistDefs.Clear();
+
+    fTruthHistDefs.RemoveLoader(this);
+    fTruthHistDefs.Clear();
+
+    fTruthHistWithCutDefs.RemoveLoader(this);
+    fTruthHistWithCutDefs.Clear();
+
   }
 
   //----------------------------------------------------------------------
@@ -321,6 +331,156 @@ namespace ana
         } // end for shiftdef
       } // end for slc
     } // end for spillcutdef
+
+    // TruthVar without (Slice)Cut
+
+    for(auto& spillcutdef: fTruthHistDefs){
+      const SpillCut& spillcut = spillcutdef.first;
+
+      const bool spillpass = spillcut(sr); // nomSpillCutCache.Get(spillcut, sr);
+      // Cut failed, skip all the histograms that depended on it
+      if(!spillpass) continue;
+
+      // now start the nu loop
+      for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
+
+        for(auto& truthcutdef: spillcutdef.second){
+
+          const TruthCut& truthcut = truthcutdef.first;
+
+          const bool truthpass = truthcut(&nu);
+          // TruthCut failed, skip all the histograms that depended on it
+          if(!truthpass) continue;
+
+          for(auto& truthweidef: truthcutdef.second){
+
+            const TruthVar& truthweivar = truthweidef.first;
+            double truthwei = truthweivar(&nu);
+
+            for(auto& truthvardef: truthweidef.second){
+
+              // if TruthMultiVar
+              if(truthvardef.first.IsMulti()){
+                for(double truthval: truthvardef.first.GetMultiVar()(&nu)){
+                  for(Spectrum* s: truthvardef.second.spects)
+                    s->Fill(truthval, truthwei);
+                }
+              }
+              // if TruthVar
+              else{
+
+                const TruthVar& truthvar = truthvardef.first.GetVar();
+                const double truthval = truthvar(&nu);
+
+                if(std::isnan(truthval) || std::isinf(truthval)){
+                  std::cerr << "Warning: Bad value: " << truthval
+                            << " returned from a TruthVar. The input variable(s) could "
+                            << "be NaN in the CAF, or perhaps your "
+                            << "Var code computed 0/0?";
+                  std::cout << " Not filling into this histogram for this slice." << std::endl;
+                  continue;
+                }
+
+                for(Spectrum* s: truthvardef.second.spects) s->Fill(truthval, truthwei);
+
+              }
+
+            } // end for truthvardef
+
+
+
+          } // end for truthweidef
+
+        } // end for truthcutdef
+
+      } // end for nu loop
+
+    } // end for spillcutdef
+
+
+    // TruthVar with (Slice)Cut by truth-matching
+
+    for(auto& spillcutdef: fTruthHistWithCutDefs){
+      const SpillCut& spillcut = spillcutdef.first;
+
+      const bool spillpass = spillcut(sr); // nomSpillCutCache.Get(spillcut, sr);
+      // Cut failed, skip all the histograms that depended on it
+      if(!spillpass) continue;
+
+      for(auto& cutdef: spillcutdef.second){
+
+        const Cut& cut = cutdef.first;
+
+        // now start the nu loop
+        for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
+
+          // Loop over reco slices, and check if the truth-matched slice pass the (Slice)Cut
+          bool HasMatchedSlicePassCut = false;
+          for ( auto const& slc : sr->slc ) {
+            if ( slc.truth.index < 0 ) continue;
+            else if ( slc.truth.index != nu.index ) continue;
+            if( cut(&slc) ){
+              HasMatchedSlicePassCut = true;
+              break;
+            }
+          }
+
+          if(!HasMatchedSlicePassCut) continue;
+
+          for(auto& truthcutdef: cutdef.second){
+
+            const TruthCut& truthcut = truthcutdef.first;
+
+            const bool truthpass = truthcut(&nu);
+            // TruthCut failed, skip all the histograms that depended on it
+            if(!truthpass) continue;
+
+            for(auto& truthweidef: truthcutdef.second){
+
+              const TruthVar& truthweivar = truthweidef.first;
+              double truthwei = truthweivar(&nu);
+
+              for(auto& truthvardef: truthweidef.second){
+
+                // if TruthMultiVar
+                if(truthvardef.first.IsMulti()){
+                  for(double truthval: truthvardef.first.GetMultiVar()(&nu)){
+                    for(Spectrum* s: truthvardef.second.spects)
+                      s->Fill(truthval, truthwei);
+                  }
+                }
+                // if TruthVar
+                else{
+
+                  const TruthVar& truthvar = truthvardef.first.GetVar();
+                  const double truthval = truthvar(&nu);
+
+                  if(std::isnan(truthval) || std::isinf(truthval)){
+                    std::cerr << "Warning: Bad value: " << truthval
+                              << " returned from a TruthVar. The input variable(s) could "
+                              << "be NaN in the CAF, or perhaps your "
+                              << "Var code computed 0/0?";
+                    std::cout << " Not filling into this histogram for this slice." << std::endl;
+                    continue;
+                  }
+
+                  for(Spectrum* s: truthvardef.second.spects) s->Fill(truthval, truthwei);
+
+                }
+
+              } // end for truthvardef
+
+            } // end for truthweidef
+
+          } // end for truthcutdef
+
+        } // end for nu loop
+
+      } // end for cutdef
+
+    } // end for spillcutdef
+
+
 
     // Trees
     //unsigned int idxSpillCut = 0; // testing
@@ -630,6 +790,34 @@ namespace ana
           for(Spectrum* s: spillvardef.second.spects){
             s->fPOT += fPOT;
             s->fLivetime += fNReadouts;
+          }
+        }
+      }
+    }
+
+    for(auto& spillcutdef: fTruthHistDefs){
+      for(auto& truthcutdef: spillcutdef.second){
+        for(auto& truthweidef: truthcutdef.second){
+          for(auto& truthvardef: truthweidef.second){
+            for(Spectrum* s: truthvardef.second.spects){
+              s->fPOT += fPOT;
+              s->fLivetime += fNReadouts;
+            }
+          }
+        }
+      }
+    }
+
+    for(auto& spillcutdef: fTruthHistWithCutDefs){
+      for(auto& cutdef: spillcutdef.second){
+        for(auto& truthcutdef: cutdef.second){
+          for(auto& truthweidef: truthcutdef.second){
+            for(auto& truthvardef: truthweidef.second){
+              for(Spectrum* s: truthvardef.second.spects){
+                s->fPOT += fPOT;
+                s->fLivetime += fNReadouts;
+              }
+            }
           }
         }
       }

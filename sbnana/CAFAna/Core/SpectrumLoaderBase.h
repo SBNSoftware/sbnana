@@ -77,6 +77,33 @@ namespace ana
                              const SpillCut& cut,
                              const SpillVar& wei = kSpillUnweighted);
 
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const TruthVar& var,
+                             const TruthCut truthcut,
+                             const SpillCut& spillcut,
+                             const TruthVar& wei = kTruthUnweighted);
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const TruthMultiVar& var,
+                             const TruthCut truthcut,
+                             const SpillCut& spillcut,
+                             const TruthVar& wei = kTruthUnweighted);
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const TruthVar& var,
+                             const TruthCut truthcut,
+                             const SpillCut& spillcut,
+                             const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                             const TruthVar& wei = kTruthUnweighted);
+    /// For use by the \ref Spectrum constructor
+    virtual void AddSpectrum(Spectrum& spect,
+                             const TruthMultiVar& var,
+                             const TruthCut truthcut,
+                             const SpillCut& spillcut,
+                             const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                             const TruthVar& wei = kTruthUnweighted);
+
     /// For use by the constructors of \ref ReweightableSpectrum subclasses
     virtual void AddReweightableSpectrum(ReweightableSpectrum& spect,
                                          const Var& var,
@@ -257,6 +284,7 @@ namespace ana
 
     typedef _VarOrMultiVar<caf::SRSliceProxy> VarOrMultiVar;
     typedef _VarOrMultiVar<caf::SRSpillProxy> SpillVarOrMultiVar;
+    typedef _VarOrMultiVar<caf::SRTrueInteractionProxy> TruthVarOrMultiVar;
 
     template<class T>
     friend bool operator<(const _VarOrMultiVar<T>& a, const _VarOrMultiVar<T>& b) noexcept;
@@ -268,6 +296,11 @@ namespace ana
     /// [spillcut][spillwei][spillvar]
     IDMap<SpillCut, IDMap<SpillVar, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
 
+    /// [spillcut][truthcut][truthweight][truthvar]
+    IDMap<SpillCut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>> fTruthHistDefs;
+    /// [spillcut][cut][truthcut][truthweight][truthvar]
+    IDMap<SpillCut, IDMap<Cut, IDMap<TruthCut, IDMap<TruthVar, IDMap<TruthVarOrMultiVar, SpectList>>>>> fTruthHistWithCutDefs;
+
     // TODO: Probably someone can make a more efficient version of SpectList
     //       that works with Tree objects... In the meantime, let's use a standard
     //       map. But otherwise, let's keep it the same way...
@@ -277,6 +310,7 @@ namespace ana
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NSigmasTree*, std::map<const ISyst*, std::string>>>>> fNSigmasTreeDefs;
     // And a version that saves up universe-based systematic weights to make event-by-event weight lists
     std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NUniversesTree*, std::map<std::vector<VarOrMultiVar>, std::string>>>>> fNUniversesTreeDefs;
+
   };
 
   // For map-making
@@ -314,6 +348,34 @@ namespace ana
                      const SpillMultiVar& var,
                      const SpillCut& cut,
                      const SpillVar& wei = kSpillUnweighted) override {}
+
+    void AddSpectrum(Spectrum& spect,
+                     const TruthVar& var,
+                     const TruthCut truthcut,
+                     const SpillCut& spillcut,
+                     const TruthVar& wei = kTruthUnweighted) override {}
+
+    void AddSpectrum(Spectrum& spect,
+                     const TruthMultiVar& var,
+                     const TruthCut truthcut,
+                     const SpillCut& spillcut,
+                     const TruthVar& wei = kTruthUnweighted) override {}
+
+    void AddSpectrum(Spectrum& spect,
+                     const TruthVar& var,
+                     const TruthCut truthcut,
+                     const SpillCut& spillcut,
+                     const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const TruthVar& wei = kTruthUnweighted) override {}
+
+    void AddSpectrum(Spectrum& spect,
+                     const TruthMultiVar& var,
+                     const TruthCut truthcut,
+                     const SpillCut& spillcut,
+                     const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const TruthVar& wei = kTruthUnweighted) override {}
+
+
 
     void AddReweightableSpectrum(ReweightableSpectrum& spect,
                                  const Var& var,
