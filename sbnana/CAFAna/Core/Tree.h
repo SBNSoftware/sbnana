@@ -114,8 +114,8 @@ namespace ana
   protected:
     std::map< std::string, std::vector<double>> fBranchEntries;
     std::map< std::string, std::vector<std::vector<double>>> fBranchWeightEntries;
-    std::map< std::string, unsigned int> fNSigmasLo;
-    std::map< std::string, unsigned int> fNSigmasHi;
+    std::map< std::string, int> fNSigmasLo;
+    std::map< std::string, int> fNSigmasHi;
     std::map< std::string, unsigned int> fNWeightsExpected;
     //std::map< std::string, std::vector<double>> fNWeightsThrows; // stores the expected ordering of NSigmas per knob or universe throws per knob.
     std::string fTreeName;
