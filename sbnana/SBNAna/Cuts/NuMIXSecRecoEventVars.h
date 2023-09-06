@@ -25,6 +25,7 @@ namespace ana{
   extern const Var kNuMITrueq0; //!< q0; energy transfer
   extern const Var kNuMITrueq3; //!< q3; momentum transfer
   extern const Var kNuMITruew; //!< w; hadronic mass
+  extern const Var kNuMIIsFHC; //!< 0: RHC, 1: FHC
   // - Muon
   extern const Var kNuMIMuonTrueKE; //!< True muon kinetic energy
   extern const Var kNuMIMuonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino

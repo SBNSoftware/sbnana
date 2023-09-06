@@ -65,6 +65,9 @@ namespace ana{
     }
     return NPtl;
   });
+  const TruthVar kTruth_IsFHC([](const caf::SRTrueInteractionProxy *nu) -> int {
+    return 1;
+  });
 
   // Muon
 

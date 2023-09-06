@@ -36,6 +36,7 @@ namespace ana{
   extern const TruthVar kTruth_Npim_All;
   extern const TruthVar kTruth_Npi0_Primary;
   extern const TruthVar kTruth_Npi0_All;
+  extern const TruthVar kTruth_IsFHC; // 0: RHC, 1: FHC; note) dummy for now. always return 1
 
   // Muon
 

@@ -88,6 +88,11 @@ namespace ana{
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
     return kTruth_w(&slc->truth);
   });
+  // 0: RHC, 1: FHC
+  const Var kNuMIIsFHC([](const caf::SRSliceProxy* slc) -> int {
+    if ( slc->truth.index < 0 ) return -5; //TODO Define better dummy value
+    return kTruth_IsFHC(&slc->truth);
+  });
 
   // True muon kinetic energy
   const Var kNuMIMuonTrueKE([](const caf::SRSliceProxy* slc) -> double {

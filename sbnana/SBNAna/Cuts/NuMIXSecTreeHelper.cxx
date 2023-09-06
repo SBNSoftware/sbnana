@@ -9,6 +9,7 @@ namespace ana{
     return {
       // Interaction
       "TruePDG/i", "TrueMode/i", "TrueTarget/i", "TrueIsCC/i",
+      "TrueIsFHC/i",
       // Weight
       "FluxWeight",
       // Nu E
@@ -41,6 +42,7 @@ namespace ana{
     return {
       // Interaction
       kTruth_NeutrinoPDG, kTruth_NeutrinoMode, kTruth_Target, kTruth_IsCC,
+      kTruth_IsFHC,
       // Weight
       kGetTruthNuMIFluxWeight,
       // Nu E
@@ -76,6 +78,7 @@ namespace ana{
       "CutType/i",
       // Intercation
       "TruePDG/i", "TrueMode/i", "TrueTarget/i", "TrueIsCC/i",
+      "TrueIsFHC/i",
       // Number of primary particles
       "TrueNProton/i", "TrueNNeutron/i",
       "TrueNpip/i", "TrueNpim/i", "TrueNpi0/i",
@@ -137,6 +140,7 @@ namespace ana{
       kNuMICutType,
       // Intercation
       kNuMITruePDG, kNuMITrueMode, kNuMITrueTarget, kNuMITrueIsCC,
+      kNuMIIsFHC,
       // Number of primary particles
       kNuMITrueNProton, kNuMITrueNNeutron,
       kNuMITrueNpip, kNuMITrueNpim, kNuMITrueNpi0,
