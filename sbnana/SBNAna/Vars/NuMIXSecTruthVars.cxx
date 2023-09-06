@@ -1,4 +1,4 @@
-#include "sbnana/SBNAna/Vars/NuMITruthVar.h"
+#include "sbnana/SBNAna/Vars/NuMIXSecTruthVars.h"
 
 namespace ana{
 

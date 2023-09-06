@@ -2,7 +2,7 @@
 
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/CAFAna/Core/MultiVar.h"
-#include "sbnana/SBNAna/Vars/NuMITruthVar.h"
+#include "sbnana/SBNAna/Vars/NuMIXSecTruthVars.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana
