@@ -4,7 +4,5 @@ __pycache__
 nb/.ipynb_checkpoints
 nb/plots*
 env
-README.md
 test/*.df
-sbnd
 sbnd
