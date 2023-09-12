@@ -62,28 +62,6 @@ namespace ana {
     }
   }
 
-  double NuMIPpfxFluxWeight::GetNuWeight(const caf::Proxy<caf::SRTrueInteraction>& true_int) const {
-
-    if ( abs(true_int.initpdg) == 16 ) return 1.0;
-
-    if ( !fWeight[0][0][0] ) {
-      std::cout << "Trying to access un-available weight array..." << std::endl;
-      std::abort();
-    }
-
-    unsigned int hcIdx = 0; // assume always FHC for now...
-    unsigned int flavIdx = ( abs(true_int.initpdg) == 12 ) ? 0 : 1;
-    unsigned int signIdx = ( true_int.initpdg > 0 ) ? 0 : 1;
-
-    TH1* h = fWeight[hcIdx][flavIdx][signIdx];
-    assert(h);
-
-    const int bin = h->FindBin( true_int.E );
-    if(bin == 0 || bin == h->GetNbinsX()+1) return 1.0;
-    return h->GetBinContent(bin);
-
-  }
-
   NuMIPpfxFluxWeight::~NuMIPpfxFluxWeight()
   {
     for (int i = 0; i < 2; ++i)
