@@ -902,7 +902,7 @@ namespace ana
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         double sigmasArr[NSigmas];
         for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
-          sigmasArr[idxSigma] = double((-1*NSigmas)+int(idxSigma));
+          sigmasArr[idxSigma] = double(fNSigmasLo.at( fOrderedBranchWeightNames.at(idxBranchWeight) ) + int(idxSigma));
         }
 
         double weightsArr[NSigmas];
@@ -1024,7 +1024,7 @@ namespace ana
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         double sigmasArr[NSigmas];
         for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
-          sigmasArr[idxSigma] = double((-1*NSigmas)+int(idxSigma));
+          sigmasArr[idxSigma] = double(fNSigmasLo.at( fOrderedBranchWeightNames.at(idxBranchWeight) ) + int(idxSigma));
         }
 
         double weightsArr[NSigmas];
