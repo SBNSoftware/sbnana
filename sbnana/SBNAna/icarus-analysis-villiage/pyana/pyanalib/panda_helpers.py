@@ -16,7 +16,11 @@ def broadcast(v, df):
 
     return pd.Series(v_rpt, df.index).rename(v.name) 
 
-def multicol_add(df, s):
+def multicol_add(df, s, **panda_kwargs):
+    # if both the series and the df is one level, we can do a simple join()
+    if isinstance(s.name, str) and df.columns.nlevels == 1:
+        return df.join(s, **panda_kwargs)
+
     if isinstance(s.name, str):
         s.name = (s.name,)
 
@@ -29,7 +33,7 @@ def multicol_add(df, s):
     if len(s.name) < nlevel:
         s.name = pad(s.name)
 
-    return df.join(s)
+    return df.join(s, **panda_kwargs)
 
 def multicol_merge(lhs, rhs, **panda_kwargs):
     # Fix the columns
