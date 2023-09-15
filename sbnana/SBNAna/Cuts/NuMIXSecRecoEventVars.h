@@ -27,14 +27,14 @@ namespace ana{
   extern const Var kNuMITruew; //!< w; hadronic mass
   extern const Var kNuMIIsFHC; //!< 0: RHC, 1: FHC
   // - Muon
-  extern const Var kNuMIMuonTrueKE; //!< True muon kinetic energy
-  extern const Var kNuMIMuonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino
-  extern const Var kNuMIMuonTrueContained; //!< 1: contained, 0: not contained (-1: muon not found)
+  extern const Var kNuMITrueMuonKE; //!< True muon kinetic energy
+  extern const Var kNuMITrueMuonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino
+  extern const Var kNuMITrueMuonContained; //!< 1: contained, 0: not contained (-1: muon not found)
   // - Proton
-  extern const Var kNuMIProtonTrueKE; //!< True proton kinetic energy
-  extern const Var kNuMIProtonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino
+  extern const Var kNuMITrueProtonKE; //!< True proton kinetic energy
+  extern const Var kNuMITrueProtonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino
   // - Charged pion
-  extern const Var kNuMIChargedPionTrueKE; //!< True pi+- kinetic energy
+  extern const Var kNuMITrueChargedPionKE; //!< True pi+- kinetic energy
 
   // Reco
   // - Muon

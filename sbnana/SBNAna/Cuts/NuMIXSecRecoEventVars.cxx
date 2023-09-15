@@ -95,33 +95,33 @@ namespace ana{
   });
 
   // True muon kinetic energy
-  const Var kNuMIMuonTrueKE([](const caf::SRSliceProxy* slc) -> double {
+  const Var kNuMITrueMuonKE([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
     return kTruth_MuonKE(&slc->truth);
   });
   // True muon cosine angle w.r.t. neutrino
-  const Var kNuMIMuonNuCosineTheta([](const caf::SRSliceProxy* slc) -> double {
+  const Var kNuMITrueMuonNuCosineTheta([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
     return kTruth_MuonNuCosineTheta(&slc->truth);
   });
   // True muon contain?: 1: contained, 0: not contained (-1: muon not found)
-  const Var kNuMIMuonTrueContained([](const caf::SRSliceProxy* slc) -> int {
+  const Var kNuMITrueMuonContained([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1; //TODO Define better dummy value
     return kTruth_MuonContained(&slc->truth);
   });
   // True proton kinetic energy
-  const Var kNuMIProtonTrueKE([](const caf::SRSliceProxy* slc) -> double {
+  const Var kNuMITrueProtonKE([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
     return kTruth_ProtonKE(&slc->truth);
   });
   // True proton cosine angle w.r.t. neutrino
-  const Var kNuMIProtonNuCosineTheta([](const caf::SRSliceProxy* slc) -> double {
+  const Var kNuMITrueProtonNuCosineTheta([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
     return kTruth_ProtonNuCosineTheta(&slc->truth);
   });
 
   // True Charged pion kinetic energy
-  const Var kNuMIChargedPionTrueKE([](const caf::SRSliceProxy* slc) -> double {
+  const Var kNuMITrueChargedPionKE([](const caf::SRSliceProxy* slc) -> double {
     if ( slc->truth.index < 0 ) return -5.; //TODO Define better dummy value
     return kTruth_ChargedPionKE(&slc->truth);
   });
