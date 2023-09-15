@@ -6,9 +6,6 @@
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/SBNAna/Cuts/Cuts.h"
 
-#include "sbnana/SBNAna/Cuts/NuMIXSecCuts.h"
-#include "sbnana/SBNAna/Cuts/NuMIXSecTrueEventVars.h"
-
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "TCanvas.h"
