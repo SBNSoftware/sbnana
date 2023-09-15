@@ -121,6 +121,7 @@ namespace ana{
       // - True,
       "TrueChargedPionKE",
       // - Reco
+      //   - Track
       "LeadingChargedPionCandidateLength",
       "LeadingChargedPionCandidateNDaughter/i",
       "LeadingChargedPionCandidateMatchedPDG/i",
@@ -145,8 +146,8 @@ namespace ana{
       kNuMITrueNProton, kNuMITrueNNeutron,
       kNuMITrueNpip, kNuMITrueNpim, kNuMITrueNpi0,
       kNuMITrueNpip_All, kNuMITrueNpim_All, kNuMITrueNpi0_All,
-      // True muon kNuMIMuonTrueContained
-      kNuMIMuonTrueContained,
+      // True muon
+      kNuMITrueMuonContained,
       // Is Signal
       kNuMISliceSignalType,
       // Weight
@@ -181,8 +182,9 @@ namespace ana{
       // SideBand
       // pi+-
       // - True
-      kNuMIChargedPionTrueKE,
+      kNuMITrueChargedPionKE,
       // - Reco
+      //   - Track
       kNuMILeadingChargedPionCandidateLength,
       kNuMILeadingChargedPionCandidateNDaughter,
       kNuMILeadingChargedPionCandidateMatchedPDG,
