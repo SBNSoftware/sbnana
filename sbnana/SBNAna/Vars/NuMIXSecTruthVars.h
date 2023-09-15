@@ -64,6 +64,7 @@ namespace ana{
 
   // TKI calculator using momentum vectors
   // https://arxiv.org/abs/1910.08658
+  // https://journals.aps.org/prc/pdf/10.1103/PhysRevC.94.015503
   // Can be used for both reco and truth
   double CalcTKI_deltaPT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu);
   double CalcTKI_deltaPTx(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu);
@@ -81,5 +82,10 @@ namespace ana{
 
   extern const TruthVar kTruth_ChargedPionIndex;
   extern const TruthVar kTruth_ChargedPionKE;
+
+  void GetAllParents(const caf::SRTrueInteractionProxy *nu, int idx, std::vector<int>& current);
+
+  extern const TruthVar kTruth_ChargedPionMichelIndex;
+
 
 } // end namespace ana

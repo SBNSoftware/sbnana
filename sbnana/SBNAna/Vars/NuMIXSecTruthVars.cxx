@@ -539,4 +539,87 @@ namespace ana{
     return ret;
   });
 
-} // end namespace ana
+  void GetAllParents(const caf::SRTrueInteractionProxy *nu, int idx_target, std::vector<int>& current){
+
+    if(idx_target<0) return;
+
+    const auto& prim_target = nu->prim[idx_target];
+    for(std::size_t i_prim(0); i_prim < nu->prim.size(); ++i_prim){
+      const auto& this_prim = nu->prim[i_prim];
+      if( (int)this_prim.G4ID==(int)prim_target.parent ){
+        current.push_back(i_prim);
+        GetAllParents(nu, i_prim, current);
+      }
+    }
+
+  }
+
+  const TruthVar kTruth_ChargedPionMichelIndex([](const caf::SRTrueInteractionProxy *nu) -> int {
+
+    int pion_idx = kTruth_ChargedPionIndex(nu);
+    int ret = -1;
+
+    if(pion_idx>=0){
+
+      const auto& prim_pion = nu->prim[pion_idx];
+
+      // find muon from pion
+      int muon_from_pion_idx = -1;
+      for(std::size_t i_prim(0); i_prim < nu->prim.size(); ++i_prim){
+        const auto& this_prim = nu->prim[i_prim];
+        if( abs(this_prim.pdg)!=13 ) continue;
+        // now get all parents
+        std::vector<int> muon_parents;
+        GetAllParents(nu, i_prim, muon_parents);
+        // check if the pion is one of the parents
+        bool IsDaugtherOfPion = false;
+        for(const auto& mu_parent_index: muon_parents){
+          if( (int)prim_pion.G4ID == (int)nu->prim[mu_parent_index].G4ID ){
+            IsDaugtherOfPion = true;
+            break;
+          }
+        }
+        // if pion is one of the parent, return the muon index and exit the for loop
+        if(IsDaugtherOfPion){
+          muon_from_pion_idx = i_prim;
+          break;
+        }
+      }
+
+      if(muon_from_pion_idx>=0){
+
+        const auto& prim_muon = nu->prim[muon_from_pion_idx];
+
+        // find electron from muon
+        int electron_from_muon_idx = -1;
+        for(std::size_t i_prim(0); i_prim < nu->prim.size(); ++i_prim){
+          const auto& this_prim = nu->prim[i_prim];
+          if( abs(this_prim.pdg)!=11 ) continue;
+          // now get all parents
+          std::vector<int> electron_parents;
+          GetAllParents(nu, i_prim, electron_parents);
+          // check if the pion is one of the parents
+          bool IsDaugtherOfMuon = false;
+          for(const auto& eletron_parent_index: electron_parents){
+            if( (int)prim_muon.G4ID == (int)nu->prim[eletron_parent_index].G4ID ){
+              IsDaugtherOfMuon = true;
+              break;
+            }
+          }
+          // if muon is one of the parent, return the electron index and exit the for loop
+          if(IsDaugtherOfMuon){
+            electron_from_muon_idx = i_prim;
+            break;
+          }
+        }
+
+        ret = electron_from_muon_idx;
+
+      } // END if muon from pion is found
+
+
+    } // END true pion exist
+
+    return ret;
+  });
+
