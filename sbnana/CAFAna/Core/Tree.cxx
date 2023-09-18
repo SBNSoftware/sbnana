@@ -677,7 +677,15 @@ namespace ana
   //----------------------------------------------------------------------
   void WeightsTree::MergeTree( const Tree& inTree )
   {
-    assert( this->fSaveRunSubEvt && this->fSaveSliceNum && inTree.fSaveRunSubEvt && inTree.fSaveSliceNum );
+    // RunSubEvt must be saved
+    assert( this->fSaveRunSubEvt && inTree.fSaveRunSubEvt );
+    // Tree with SpilVar or TruthVar does not require SliceNum to be saved.
+    // But if either of "This" or "inTree" does save SliceNum, then both should have it saved
+    bool SliceNumIsSaved = false;
+    if( this->fSaveSliceNum || inTree.fSaveSliceNum ){
+      assert( this->fSaveSliceNum && inTree.fSaveSliceNum );
+      SliceNumIsSaved = true;
+    }
 
     // This requires the branches to agree and be in the same order...
     // Someone could write a more complicated version but right now this is the foreseen use.
@@ -686,8 +694,10 @@ namespace ana
       // Entries must be the same
       assert( this->fBranchEntries.at("Run/i").at(idx) == inTree.fBranchEntries.at("Run/i").at(idx) &&
               this->fBranchEntries.at("Subrun/i").at(idx) == inTree.fBranchEntries.at("Subrun/i").at(idx) &&
-              this->fBranchEntries.at("Evt/i").at(idx) == inTree.fBranchEntries.at("Evt/i").at(idx) &&
-              this->fBranchEntries.at("Slice/i").at(idx) == inTree.fBranchEntries.at("Slice/i").at(idx) );
+              this->fBranchEntries.at("Evt/i").at(idx) == inTree.fBranchEntries.at("Evt/i").at(idx) );
+      if(SliceNumIsSaved){
+        assert( this->fBranchEntries.at("Slice/i").at(idx) == inTree.fBranchEntries.at("Slice/i").at(idx) );
+      }
     }
 
     std::vector<std::string> branchesToFill;
