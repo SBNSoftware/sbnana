@@ -7,6 +7,7 @@
 #include "TH2D.h"
 #include "TGraph.h"
 #include "TSpline.h"
+#include "TClonesArray.h"
 
 #include <cassert>
 #include <cmath>
@@ -995,6 +996,135 @@ namespace ana
     theTree.Write();
 
     tmp->cd();
+  }
+
+  //----------------------------------------------------------------------
+  void NSigmasTree::SaveToTClonesArrays( TDirectory* dir ) const
+  {
+
+    std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;
+    std::cout << "  " << fNEntries << " Entries" << std::endl;
+    std::cout << "  For " << fPOT << " POT and " << fLivetime << " Livetime" << std::endl;
+    std::cout << "  Containing " << fOrderedBranchWeightNames.size() << " TClonesArray per entry..." << std::endl;
+
+    // Check (and assert) that the branches all have fNEntries
+    for ( auto const& [branch, values] : fBranchEntries ){
+      assert( (long long)values.size() == fNEntries );
+    }
+    for ( auto const& [branch, weightVecs] : fBranchWeightEntries ){
+      assert( (long long)weightVecs.size() == fNEntries );
+    }
+
+    TDirectory *tmp = gDirectory;
+    dir->cd();
+
+    TH1D thePOT("POT","POT",1,0,1);
+    thePOT.SetBinContent(1,fPOT);
+    thePOT.Write();
+
+    TH1D theLivetime("Livetime","Livetime",1,0,1);
+    theLivetime.SetBinContent(1,fLivetime);
+    theLivetime.Write();
+
+    TTree theTree( fTreeName.c_str(), fTreeName.c_str() );
+
+    const int NBranches = fOrderedBranchNames.size();
+
+    bool treatAsInt[ NBranches ];
+    bool treatAsLong[ NBranches ];
+
+    double entryValsDouble[ NBranches ];
+    int entryValsInt[ NBranches ];
+    long long entryValsLong[ NBranches ];
+
+    for ( unsigned int idxBranch=0; idxBranch<fOrderedBranchNames.size(); ++idxBranch ) {
+      if ( fOrderedBranchNames.at(idxBranch).find("/i")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/i")).c_str(),
+                        &entryValsInt[idxBranch] );
+        treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/I")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/I")).c_str(),
+                        &entryValsInt[idxBranch] );
+        treatAsInt[idxBranch] = true;
+        treatAsLong[idxBranch] = false;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/l")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/l")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/L")!=std::string::npos ) {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).substr(0, fOrderedBranchNames.at(idxBranch).find("/L")).c_str(),
+                        &entryValsLong[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = true;
+      }
+      else if ( fOrderedBranchNames.at(idxBranch).find("/")!=std::string::npos ) {
+        std::cout << "WARNING!! A '/' was found in the variable name, possibly by mistake? Will treat this branch as a double..." << std::endl;
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
+      }
+      else {
+        theTree.Branch( fOrderedBranchNames.at(idxBranch).c_str(), &entryValsDouble[idxBranch] );
+        treatAsInt[idxBranch] = false;
+        treatAsLong[idxBranch] = false;
+      }
+    }
+
+    const int NBranchesWeights = fOrderedBranchWeightNames.size();
+
+    TClonesArray *arraysArr[NBranchesWeights];
+    for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+      arraysArr[idxBranchWeight] = new TClonesArray("TGraph", 1);
+      theTree.Branch( fOrderedBranchWeightNames.at(idxBranchWeight).c_str(), &arraysArr[idxBranchWeight], 32000, -1);
+    }
+
+    // Loop over entries
+    for ( unsigned int idxEntry=0; idxEntry < fNEntries; ++idxEntry ) {
+      // Fill up the vals for the standard value branches
+      for ( unsigned int idxBranch=0; idxBranch < fOrderedBranchNames.size(); ++idxBranch ) {
+        if ( !treatAsInt[idxBranch] && !treatAsLong[idxBranch] )     entryValsDouble[idxBranch] = fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry);
+        else if ( treatAsInt[idxBranch] && !treatAsLong[idxBranch] ) entryValsInt[idxBranch] = (int)lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else if ( treatAsLong[idxBranch] && !treatAsInt[idxBranch] ) entryValsLong[idxBranch] = lround(fBranchEntries.at( fOrderedBranchNames.at(idxBranch) ).at(idxEntry));
+        else {
+          if ( idxEntry==0 ) std::cout << "ERROR!! Branch " << fOrderedBranchNames.at(idxBranch) << " wants to fill as int and long..." << std::endl;
+        }
+      }
+      // Make the graphs
+      for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        double sigmasArr[NSigmas];
+        for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
+          sigmasArr[idxSigma] = double(fNSigmasLo.at( fOrderedBranchWeightNames.at(idxBranchWeight) ) + int(idxSigma));
+        }
+
+        double weightsArr[NSigmas];
+        unsigned int idxVal = 0;
+        for ( auto const& val : fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at( idxEntry ) ) {
+          weightsArr[ idxVal ] = val;
+          idxVal+=1;
+        }
+
+        new( (*arraysArr[idxBranchWeight])[0]) TGraph(NSigmas,sigmasArr,weightsArr);
+
+      }
+
+      theTree.Fill();
+
+      for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
+        arraysArr[idxBranchWeight]->Clear();
+      }
+
+    }
+
+    theTree.Write();
+
+    tmp->cd();
+
   }
 
   //----------------------------------------------------------------------

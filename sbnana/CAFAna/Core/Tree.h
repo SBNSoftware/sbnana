@@ -140,6 +140,7 @@ namespace ana
     void SaveTo( TDirectory* dir ) const override;
     void SaveToSplines( TDirectory* dir ) const;
     void SaveToGraphs( TDirectory* dir ) const;
+    void SaveToTClonesArrays( TDirectory* dir ) const;
   };
 
   class NUniversesTree : public WeightsTree
