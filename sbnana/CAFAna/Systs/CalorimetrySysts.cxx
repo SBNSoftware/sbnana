@@ -39,6 +39,10 @@ namespace ana {
 
   }
 
+  void CalorimetrySyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
+
+  }
+
   const CalorimetrySyst CalorimetrySyst_BetaUp(ana::CaloSyst::kNominal, ana::CaloSyst::kNominal, ana::CaloSyst::kUp, "CalorimetrySyst_BetaUp", "#beta +4%");
   const CalorimetrySyst CalorimetrySyst_BetaDown(ana::CaloSyst::kNominal, ana::CaloSyst::kNominal, ana::CaloSyst::kDown, "CalorimetrySyst_BetaDown", "#beta -4%");
 

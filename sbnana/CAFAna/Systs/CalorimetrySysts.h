@@ -22,6 +22,7 @@ namespace ana
     CalorimetrySyst(CaloSyst _GainSyst, CaloSyst _AlphaSyst, CaloSyst _BetaSyst, const std::string& name, const std::string& latexName);
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
+    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
 
     // Update detector parameters
     inline void UpdateTemperature(double t){ temperature = t; }
