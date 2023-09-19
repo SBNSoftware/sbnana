@@ -3,16 +3,25 @@
 #pragma once
 
 #include "sbnana/CAFAna/Core/ISyst.h"
+#include "TProfile.h"
+#include "TFile.h"
 
 #include <vector>
 
 namespace ana
 {
 
-  enum class CaloSyst {
+  enum CaloSyst {
     kDown=-1,
     kNominal=0,
     kUp=+1,
+  };
+
+  enum ParticleType {
+    kProton=0,
+    kKaon=1,
+    kPion=2,
+    kMuon=3,
   };
 
   class CalorimetrySyst: public ISyst
@@ -20,6 +29,10 @@ namespace ana
   public:
 
     CalorimetrySyst(CaloSyst _GainSyst, CaloSyst _AlphaSyst, CaloSyst _BetaSyst, const std::string& name, const std::string& latexName);
+
+    double GetdEdXFromTemplate(double rr, ParticleType ptlType) const;
+    double GetdEdXErrFromTemplate(double rr, ParticleType ptlType) const;
+    double CalculateChi2(const caf::Proxy<caf::SRTrackCalo>& calo, ParticleType ptlType) const;
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
     void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
@@ -43,6 +56,16 @@ namespace ana
     double gain, alpha, beta;
     double gain_err, alpha_err, beta_err; // fractional uncertainty
     CaloSyst GainSyst, AlphaSyst, BetaSyst;
+
+    // chi2 calculation
+    std::string fTemplateFile;
+    std::string fROOTfile;
+
+    TProfile *dedx_range_pro;   ///< proton template
+    TProfile *dedx_range_ka;    ///< kaon template
+    TProfile *dedx_range_pi;    ///< pion template
+    TProfile *dedx_range_mu;    ///< muon template
+
   };
 
   extern const CalorimetrySyst CalorimetrySyst_BetaUp;
