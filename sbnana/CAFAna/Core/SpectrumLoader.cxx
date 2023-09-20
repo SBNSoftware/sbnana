@@ -425,6 +425,10 @@ namespace ana
 
           } // end for truthcutdef
 
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+          caf::SRProxySystController::Rollback();
+
         } // end for shiftdef
 
       } // end for nu loop
