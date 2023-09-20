@@ -425,6 +425,10 @@ namespace ana
 
           } // end for truthcutdef
 
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+          caf::SRProxySystController::Rollback();
+
         } // end for shiftdef
 
       } // end for nu loop
@@ -448,19 +452,6 @@ namespace ana
         // now start the nu loop
         for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
 
-          // Loop over reco slices, and check if the truth-matched slice pass the (Slice)Cut
-          bool HasMatchedSlicePassCut = false;
-          for ( auto const& slc : sr->slc ) {
-            if ( slc.truth.index < 0 ) continue;
-            else if ( slc.truth.index != nu.index ) continue;
-            if( cut(&slc) ){
-              HasMatchedSlicePassCut = true;
-              break;
-            }
-          }
-
-          if(!HasMatchedSlicePassCut) continue;
-
           // Some shifts only adjust the weight, so they're effectively nominal,
           // but aren't grouped with the other nominal histograms. Keep track of
           // the results for nominals in these caches to speed those systs up.
@@ -471,6 +462,27 @@ namespace ana
           for(auto& shiftdef: cutdef.second){
             const SystShifts& shift = shiftdef.first;
 
+            // Loop over reco slices, and check if the truth-matched slice pass the (Slice)Cut
+            // We have to shift Slice, and rollback for the actual neutrino shifts
+            // NB) Here, the "reweighting" shifts is not considered but only the lateral shifts on reco selection
+            bool HasMatchedSlicePassCut = false;
+            for(caf::SRSliceProxy& slc: sr->slc){
+              caf::SRProxySystController::BeginTransaction();
+              double dummy_systWeight = 1;
+              if(!shift.IsNominal()){
+                shift.Shift(&slc, dummy_systWeight);
+              }
+              if ( slc.truth.index < 0 ) continue;
+              else if ( slc.truth.index != nu.index ) continue;
+              if( cut(&slc) ){
+                HasMatchedSlicePassCut = true;
+                break;
+              }
+              caf::SRProxySystController::Rollback();
+            }
+            if(!HasMatchedSlicePassCut) continue;
+
+
             // Need to provide a clean slate for each new set of systematic
             // shifts to work from. Copying the whole StandardRecord is pretty
             // expensive, so modify it in place and revert it afterwards.
@@ -478,7 +490,6 @@ namespace ana
             caf::SRProxySystController::BeginTransaction();
 
             bool shifted = false;
-
             double systWeight = 1;
             // Can special-case nominal to not pay cost of Shift()
             if(!shift.IsNominal()){
@@ -538,6 +549,10 @@ namespace ana
               } // end for truthweidef
 
             } // end for truthcutdef
+
+            // Return StandardRecord to its unshifted form ready for the next
+            // histogram.
+            caf::SRProxySystController::Rollback();
 
           } // end for shiftdef 
 
