@@ -17,11 +17,9 @@ namespace ana
     kUp=+1,
   };
 
-  enum ParticleType {
-    kProton=0,
-    kKaon=1,
-    kPion=2,
-    kMuon=3,
+  struct Chi2Results { ///< determined particle ID
+    Float_t chi2_kaon, chi2_muon, chi2_pion, chi2_proton, pida;
+    Int_t pid_ndof;
   };
 
   class CalorimetrySyst: public ISyst
@@ -30,9 +28,7 @@ namespace ana
 
     CalorimetrySyst(CaloSyst _GainSyst, CaloSyst _AlphaSyst, CaloSyst _BetaSyst, const std::string& name, const std::string& latexName);
 
-    double GetdEdXFromTemplate(double rr, ParticleType ptlType) const;
-    double GetdEdXErrFromTemplate(double rr, ParticleType ptlType) const;
-    double CalculateChi2(const caf::Proxy<caf::SRTrackCalo>& calo, ParticleType ptlType) const;
+    Chi2Results CalculateChi2(const caf::Proxy<caf::SRTrackCalo>& calo) const;
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
     void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
@@ -68,10 +64,14 @@ namespace ana
 
   };
 
-  extern const CalorimetrySyst CalorimetrySyst_BetaUp;
-  extern const CalorimetrySyst CalorimetrySyst_BetaDown;
+  extern const CalorimetrySyst CalorimetrySyst_NoShift; // for debugging
   extern const CalorimetrySyst CalorimetrySyst_GainUp;
   extern const CalorimetrySyst CalorimetrySyst_GainDown;
-
+  extern const CalorimetrySyst CalorimetrySyst_AlphaUp;
+  extern const CalorimetrySyst CalorimetrySyst_AlphaDown;
+  extern const CalorimetrySyst CalorimetrySyst_BetaUp;
+  extern const CalorimetrySyst CalorimetrySyst_BetaDown;
+  extern const CalorimetrySyst CalorimetrySyst_GainUpBetaDown;
+  extern const CalorimetrySyst CalorimetrySyst_GainDownBetaUp;
 
 }
