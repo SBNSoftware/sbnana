@@ -6,6 +6,19 @@ from pyanalib.dataset import Dataset
 from pyanalib.panda_helpers import *
 import weights
 
+def simple_dataset(f, key):
+    df = pd.read_hdf(f, key=key)
+    cv = pd.Series(1, index=df.index)
+    cv.name = ("wgt", "cv")
+    df = multicol_add(df, broadcast(cv, df))
+    return Dataset(df, -1, -1)
+
+def simple_dataset_df(df):
+    cv = pd.Series(1, index=df.index)
+    cv.name = ("wgt", "cv")
+    df = multicol_add(df, broadcast(cv, df))
+    return Dataset(df, -1, -1)
+
 def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnu"):
     hdrdf = pd.read_hdf(f, key=hdrkey)
     livetime = 0.
@@ -28,7 +41,7 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnu"):
         df = multicol_add(df, broadcast(w, df))
 
     # Genie systematics
-    geniesyst = [c for c in mcdf.columns if c[0].endswith("multisigma_Genie")]
+    geniesyst = [c for c in mcdf.columns if c[0].startswith("GENIEReWeight_ICARUS_v1_multisigma")]
     for f in geniesyst:
         w = mcdf[f].groupby(level=list(range(mcdf.index.nlevels-1))).prod()
         w.name = tuple(["wgt", "geniesyst"] + list(f))
