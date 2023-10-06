@@ -554,6 +554,49 @@ namespace ana{
 
   }
 
+  // Michel
+  const TruthVar kTruth_MuonMichelIndex([](const caf::SRTrueInteractionProxy *nu) -> int {
+
+    int muon_idx = kTruth_MuonIndex(nu);
+    int ret = -1;
+
+    if(muon_idx>=0){
+
+      const auto& prim_muon = nu->prim[muon_idx];
+
+      // find electron from muon
+      int electron_from_muon_idx = -1;
+      for(std::size_t i_prim(0); i_prim < nu->prim.size(); ++i_prim){
+        const auto& this_prim = nu->prim[i_prim];
+        if( abs(this_prim.pdg)!=11 ) continue;
+        // now get all parents
+        std::vector<int> electron_parents;
+        GetAllParents(nu, i_prim, electron_parents);
+        // check if the pion is one of the parents
+        bool IsDaugtherOfMuon = false;
+
+        for(const auto& eletron_parent_index: electron_parents){
+          if( (int)prim_muon.G4ID == (int)nu->prim[eletron_parent_index].G4ID ){
+            IsDaugtherOfMuon = true;
+            break;
+          }
+
+        }
+        // if muon is one of the parent, return the electron index and exit the for loop
+        if(IsDaugtherOfMuon){
+          electron_from_muon_idx = i_prim;
+          break;
+        }
+      }
+
+      ret = electron_from_muon_idx;
+
+    } // END if muon is found
+
+
+    return ret;
+  });
+
   const TruthVar kTruth_ChargedPionMichelIndex([](const caf::SRTrueInteractionProxy *nu) -> int {
 
     int pion_idx = kTruth_ChargedPionIndex(nu);

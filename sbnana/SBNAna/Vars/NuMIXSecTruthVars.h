@@ -85,6 +85,8 @@ namespace ana{
 
   void GetAllParents(const caf::SRTrueInteractionProxy *nu, int idx, std::vector<int>& current);
 
+  // Michel
+  extern const TruthVar kTruth_MuonMichelIndex;
   extern const TruthVar kTruth_ChargedPionMichelIndex;
 
 
