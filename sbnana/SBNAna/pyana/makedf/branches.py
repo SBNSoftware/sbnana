@@ -51,6 +51,7 @@ trueparticlenames = [
     "cont_tpc",
     "genE",
     "interaction_id",
+    "gstatus",
     #This causes length mismatch
 #     'plane.0.0.nhit',
 #    'plane.0.1.nhit',
@@ -224,5 +225,10 @@ mcnubranches = [
     "rec.mc.nu.iscc",
     "rec.mc.nu.genie_mode"
 ]
+
+#Comment this out if you are not using hdr inds in your dataframes
+mcnubranches += hdrinds
+mcprimbranches += hdrinds
+pfpbranches += hdrinds
 
 

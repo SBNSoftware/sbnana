@@ -42,20 +42,20 @@ def _loaddf(applyfs, inds,g):
     # fname, index, applyfs = inp
     index, fname = g
     # Convert pnfs to xroot URL's
-    if fname.startswith("/pnfs") and "scratch" not in fname:
-        fname = fname.replace("/pnfs", "root://fndca1.fnal.gov:1094/pnfs/fnal.gov/usr")
-    # fix xroot URL's
-    elif fname.startswith("xroot"):
-        fname = fname[1:]
+    # if fname.startswith("/pnfs") and "scratch" not in fname:
+    #     fname = fname.replace("/pnfs", "root://fndca1.fnal.gov:1094/pnfs/fnal.gov/usr")
+    # # fix xroot URL's
+    # elif fname.startswith("xroot"):
+    #     fname = fname[1:]
 
     madef = False
 
     # Flatten non-flat cafs
-    if "flat" not in fname.split("/")[-1].split("."):
-        flatcaf = "/tmp/" + fname.split("/")[-1].split(".")[0] + ".flat.root"
-        subprocess.run(["flatten_caf", fname, flatcaf],  stdout=subprocess.DEVNULL)
-        fname = flatcaf
-        madef = True
+    # if "flat" not in fname.split("/")[-1].split("."):
+    #     flatcaf = "/tmp/" + fname.split("/")[-1].split(".")[0] + ".flat.root"
+    #     subprocess.run(["flatten_caf", fname, flatcaf],  stdout=subprocess.DEVNULL)
+    #     fname = flatcaf
+    #     madef = True
    
     try:
         f = uproot.open(fname, timeout=120)
@@ -114,22 +114,26 @@ class NTupleGlob(object):
         with Pool(processes=nproc) as pool:
             for i, dfs in enumerate(tqdm(pool.imap_unordered(partial(_loaddf, fs, self.inds), enumerate(thisglob)), total=len(thisglob), unit="file", delay=5, smoothing=0.6)):
                 if dfs is not None:
-                    [df.reset_index(level='__ntuple', drop=True, inplace=True) 
-                     for df in dfs if '__ntuple' in df.index.names]
+                    #[df.reset_index(level='__ntuple', drop=True, inplace=True) 
+                    # for df in dfs if '__ntuple' in df.index.names]
                     ret.append(dfs)
         
         ret = [pd.concat([dfs[i] for dfs in ret], axis=0, ignore_index=False) for i in range(len(fs))] 
             
-        return ret
-
-        # Fix the index So that we don't need __ntuple
-        for i in range(len(ret)):
-            sub_index = ret[i].index.names[2:]
-            ret[i] = ret[i].reset_index()
-            ret[i].entry = ret[i].groupby(["__ntuple", "entry"]).ngroup()
-            ret[i].set_index(["entry"] + sub_index, inplace=True, verify_integrity=True)
-            ret[i].sort_index(inplace=True)
-            if not savemeta:
-                del ret[i]["__ntuple"]
+        if self.inds is not None:
+            return ret
+        
+        else:
+            # Fix the index So that we don't need __ntuple
+            for i in range(len(ret)):
+                sub_index = ret[i].index.names[2:]
+                ret[i] = ret[i].reset_index()
+                ret[i].entry = ret[i].groupby(["__ntuple", "entry"]).ngroup()
+                ret[i].set_index(["entry"] + sub_index, inplace=True, verify_integrity=True)
+                ret[i].sort_index(inplace=True)
+                if not savemeta:
+                    del ret[i]["__ntuple"]
+                    
+            return ret
 
 
