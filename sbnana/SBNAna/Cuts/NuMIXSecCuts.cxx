@@ -250,20 +250,31 @@ namespace ana {
       return false; // not signal
 
     unsigned int nMu(0), nP(0), nPi(0);
+    double MaxMuonP = -5.;
+    double MaxProtonP = -5.;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
 
-      bool PassMuonPCut = (momentum > 0.226);
-      if ( abs(prim.pdg) == 13 && (ApplyPhaseSpcaeCut ? PassMuonPCut : true) ) nMu+=1;
+      if ( abs(prim.pdg) == 13 ){
+        nMu+=1;
+        MaxMuonP = std::max(MaxMuonP, momentum);
+      }
 
-      bool PassProtonPCut = (momentum > 0.4 && momentum < 1.);
-      if ( abs(prim.pdg) == 2212 && (ApplyPhaseSpcaeCut ? PassProtonPCut : true)  ) nP+=1;
+      if ( abs(prim.pdg) == 2212 ){
+        nP+=1;
+        MaxProtonP = std::max(MaxProtonP, momentum);
+      }
 
       if ( abs(prim.pdg) == 111 || abs(prim.pdg) == 211 ) nPi+=1;
     }
     if ( nMu!=1 || nP==0 || nPi > 0 ) return false;
+
+    if(ApplyPhaseSpcaeCut){
+      if( MaxMuonP<=0.226 ) return false;
+      if( MaxProtonP<=0.4 || MaxProtonP>=1.0 ) return false;
+    }
 
     return true;
 
