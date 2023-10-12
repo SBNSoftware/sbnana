@@ -7,7 +7,7 @@
 
 namespace ana {
 
-   CalorimetrySyst::CalorimetrySyst(CaloSyst _GainSyst, CaloSyst _AlphaSyst, CaloSyst _BetaSyst, const std::string& name, const std::string& latexName):
+   CalorimetrySyst::CalorimetrySyst(const std::string& name, const std::string& latexName):
      ISyst(name, latexName),
   {
 
@@ -145,7 +145,7 @@ namespace ana {
 
     for(auto& pfp: sr->reco.pfp){
 
-      double& this_phi = pfp.trk.phi;
+      double this_phi = pfp.trk.phi;
 
       for(int i_plane=0; i_plane<3; ++i_plane){
 
@@ -153,7 +153,7 @@ namespace ana {
 
         // shift dedx
         for(auto& pt: pfp.trk.calo[i_plane].points){
-          double& this_dedx = pt.dedx;
+          double this_dedx = pt.dedx;
           if(isnan(this_dedx)) continue;
           if(isinf(this_dedx)) continue;
 
