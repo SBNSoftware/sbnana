@@ -8,7 +8,7 @@
 namespace ana {
 
    CalorimetrySyst::CalorimetrySyst(const std::string& name, const std::string& latexName):
-     ISyst(name, latexName),
+     ISyst(name, latexName)
   {
 
     cet::search_path sp("FW_SEARCH_PATH");
