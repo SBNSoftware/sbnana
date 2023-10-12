@@ -203,5 +203,7 @@ namespace ana {
 
   }
 
+  const CalorimetrySyst kCaloSyst("CaloSyst", "Calorimetry systematics");
+
 
 } // end namespace ana

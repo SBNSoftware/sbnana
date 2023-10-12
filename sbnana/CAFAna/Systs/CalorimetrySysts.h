@@ -40,5 +40,6 @@ namespace ana
 
   };
 
+  extern const CalorimetrySyst kCaloSyst;
 
 }
