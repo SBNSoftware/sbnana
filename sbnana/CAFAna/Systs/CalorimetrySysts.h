@@ -3,8 +3,9 @@
 #pragma once
 
 #include "sbnana/CAFAna/Core/ISyst.h"
-#include "TProfile.h"
 #include "TFile.h"
+#include "TGraph2D.h"
+#include "TProfile.h"
 
 #include <vector>
 
