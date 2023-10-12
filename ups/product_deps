@@ -256,6 +256,8 @@ ifdhc		v2_6_20		-
 osclib		v00.22		-
 sbnanaobj	v09_21_03	-
 sbndata		v01_04		-
+larsoft_data    v1_02_02        -
+cetlib          v3_16_00        -
 cetmodules	v3_21_01	-	only_for_build
 end_product_list
 ####################################
@@ -311,11 +313,12 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	sbnanaobj	ifdhc		osclib			sbndata	notes
-c7:debug	c7:debug	c7:p3913:debug	c7:n315:stanfree:debug	-nq-	-nq-
-c7:prof		c7:prof		c7:p3913:prof	c7:n315:stanfree:prof	-nq-	-nq-
-e20:debug	e20:debug	e20:p3913:debug	e20:n315:stanfree:debug	-nq-	-nq-
-e20:prof	e20:prof	e20:p3913:prof	e20:n315:stanfree:prof	-nq-	-nq-
+
+qualifier	sbnanaobj	ifdhc		osclib			sbndata	larsoft_data cetlib    notes
+c7:debug	c7:debug	c7:p3913:debug	c7:n315:stanfree:debug	-nq-	-nq-         c7:debug
+c7:prof		c7:prof		c7:p3913:prof	c7:n315:stanfree:prof	-nq-	-nq-         c7:prof   -nq-
+e20:debug	e20:debug	e20:p3913:debug	e20:n315:stanfree:debug	-nq-	-nq-         e20:debug -nq-
+e20:prof	e20:prof	e20:p3913:prof	e20:n315:stanfree:prof	-nq-	-nq-         e20:prof  -nq-
 end_qualifier_list
 ####################################
 
