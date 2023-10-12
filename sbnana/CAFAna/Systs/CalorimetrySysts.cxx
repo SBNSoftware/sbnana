@@ -199,6 +199,10 @@ namespace ana {
 
   }
 
+  void CalorimetrySyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
+
+  }
+
   const CalorimetrySyst kCaloSyst("CaloSyst", "Calorimetry systematics");
 
 
