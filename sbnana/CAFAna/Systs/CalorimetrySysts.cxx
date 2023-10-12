@@ -25,10 +25,10 @@ namespace ana {
     sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath);
 
     TFile *file_Chi2Template = TFile::Open(kChi2TemplateFullFilePath.c_str());
-    dedx_range_pro = (TProfile*)file->Get("dedx_range_pro");
-    dedx_range_ka  = (TProfile*)file->Get("dedx_range_ka");
-    dedx_range_pi  = (TProfile*)file->Get("dedx_range_pi");
-    dedx_range_mu  = (TProfile*)file->Get("dedx_range_mu");
+    dedx_range_pro = (TProfile*)file_Chi2Template->Get("dedx_range_pro");
+    dedx_range_ka  = (TProfile*)file_Chi2Template->Get("dedx_range_ka");
+    dedx_range_pi  = (TProfile*)file_Chi2Template->Get("dedx_range_pi");
+    dedx_range_mu  = (TProfile*)file_Chi2Template->Get("dedx_range_mu");
 
   }
 
