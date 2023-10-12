@@ -6,6 +6,7 @@
 #include "TFile.h"
 #include "TGraph2D.h"
 #include "TProfile.h"
+#include "TMath.h"
 
 #include <vector>
 
@@ -26,7 +27,6 @@ namespace ana
     Chi2Results CalculateChi2(const caf::Proxy<caf::SRTrackCalo>& calo) const;
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
-    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
 
   private:
 

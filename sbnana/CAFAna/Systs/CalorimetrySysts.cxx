@@ -145,7 +145,7 @@ namespace ana {
 
     for(auto& pfp: sr->reco.pfp){
 
-      double this_phi = pfp.trk.phi;
+      double this_phi = TMath::ACos( fabs(pfp.trk.dir.x) ) * 180./M_PI;
 
       for(int i_plane=0; i_plane<3; ++i_plane){
 
@@ -196,10 +196,6 @@ namespace ana {
 
       }
     }
-
-  }
-
-  void CalorimetrySyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
 
   }
 
