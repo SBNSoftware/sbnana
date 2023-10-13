@@ -7,8 +7,14 @@
 
 namespace ana {
 
-   CalorimetrySyst::CalorimetrySyst(const std::string& name, const std::string& latexName):
-     ISyst(name, latexName)
+   CalorimetrySyst::CalorimetrySyst(CaloSystMode mode, const std::string& name, const std::string& latexName):
+     ISyst(name, latexName),
+     temperature(8.75e1),
+     rho(-0.00615 * temperature + 1.928),
+     Efield(4.938e-1),
+     gain(0.01265), alpha(0.93), beta(0.212),
+     gain_err(0.01),
+     kCaloSystMode(mode)
   {
 
     cet::search_path sp("FW_SEARCH_PATH");
@@ -18,7 +24,7 @@ namespace ana {
     sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath);
 
     TFile* file_dEdXUncTemplate = TFile::Open(kdEdXUncTemplateFullFilePath.c_str());
-    dedx_unc_template = (TGraph2D*)file_dEdXUncTemplate->Get("dEdXAbsUncertainty_phi_vs_dEdX");
+    dedx_unc_template = (TGraph2D*)file_dEdXUncTemplate->Get("dEdXRelUncertainty_dEdX_vs_phi");
 
     std::string kChi2TemplateFileName = "dEdxrestemplates.root";
     std::string kChi2TemplateFullFilePath;
@@ -141,10 +147,9 @@ namespace ana {
   void CalorimetrySyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
   {
 
-    // TODO sigma is ambiguous for this kind of multi-param cases; not using it for now
-
     for(auto& pfp: sr->reco.pfp){
 
+      if(isnan(pfp.trk.dir.x) || isinf(pfp.trk.dir.x)) continue;
       double this_phi = TMath::ACos( fabs(pfp.trk.dir.x) ) * 180./M_PI;
 
       for(int i_plane=0; i_plane<3; ++i_plane){
@@ -157,8 +162,13 @@ namespace ana {
           if(isnan(this_dedx)) continue;
           if(isinf(this_dedx)) continue;
 
-          double this_dedx_unc = dedx_unc_template->Interpolate(this_phi, this_dedx);
-          pt.dedx = this_dedx + sigma*this_dedx_unc;
+          if(kCaloSystMode==CaloSystMode::kGainShift){
+            pt.dedx = ( std::exp( (1. + sigma*gain_err) * std::log(alpha + (beta/rho/Efield)*this_dedx) ) - alpha ) / (beta/rho/Efield);
+          }
+          else if(kCaloSystMode==CaloSystMode::kdEdXShift){
+            double this_dedx_relunc = dedx_unc_template->Interpolate(this_dedx, this_phi);
+            pt.dedx = (1. + sigma*this_dedx_relunc)*this_dedx;
+          }
 
         }
         // shift chi2
@@ -203,7 +213,8 @@ namespace ana {
 
   }
 
-  const CalorimetrySyst kCaloSyst("CaloSyst", "Calorimetry systematics");
+  const CalorimetrySyst kCalodEdXShiftSyst(CaloSystMode::kdEdXShift, "CalodEdXShiftSyst", "Calo. dEdX shift");
+  const CalorimetrySyst kCaloGainShiftSyst(CaloSystMode::kGainShift, "CaloGainShiftSyst", "Calo. Gain shift");
 
 
 } // end namespace ana

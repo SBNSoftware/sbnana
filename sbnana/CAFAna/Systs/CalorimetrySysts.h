@@ -13,6 +13,11 @@
 namespace ana
 {
 
+  enum CaloSystMode {
+    kdEdXShift=0,
+    kGainShift=1,
+  };
+
   struct Chi2Results { ///< determined particle ID
     Float_t chi2_kaon, chi2_muon, chi2_pion, chi2_proton, pida;
     Int_t pid_ndof;
@@ -22,7 +27,7 @@ namespace ana
   {
   public:
 
-    CalorimetrySyst(const std::string& name, const std::string& latexName);
+    CalorimetrySyst(CaloSystMode mode, const std::string& name, const std::string& latexName);
 
     Chi2Results CalculateChi2(const caf::Proxy<caf::SRTrackCalo>& calo) const;
 
@@ -30,6 +35,14 @@ namespace ana
     void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
 
   private:
+
+    // detector parameters
+    double temperature, rho, Efield;
+
+    // nominal parameters
+    double gain, alpha, beta;
+    double gain_err;
+    CaloSystMode kCaloSystMode;
 
     // dEdX uncertainty template
     TGraph2D *dedx_unc_template;
@@ -41,6 +54,7 @@ namespace ana
 
   };
 
-  extern const CalorimetrySyst kCaloSyst;
+  extern const CalorimetrySyst kCalodEdXShiftSyst;
+  extern const CalorimetrySyst kCaloGainShiftSyst;
 
 }
