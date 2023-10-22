@@ -4,8 +4,36 @@ import pandas as pd
 import uproot
 from pyanalib.variable import VAR, ARGVAR
 
-# MEAN ENEGY LOSS
 LAr_density_gmL = 1.389875
+
+# RECOMBINATION
+
+# ArgoNeuT params
+MODA = 0.930
+MODB = 0.212
+Wion = 1e3 / 4.237e7
+
+Vps = 75058
+Enom = (375./385)*Vps*1e-3 /148.25
+Eshort = (368.6/378.6)*Vps*1e-3 /148.25
+Efield = Enom
+
+def recombination(dEdx, A=MODA, B=MODB, E=Efield):
+    alpha = A
+    beta = B / (LAr_density_gmL * E)
+
+    dQdx = np.log(alpha + dEdx*beta) / (Wion * beta)
+    return dQdx
+
+def recombination_cor(dQdx, A=MODA, B=MODB, E=Efield):
+    alpha = A
+    beta = B / (LAr_density_gmL * E)
+        
+    dEdx = (np.exp(dQdx*Wion*beta)- alpha) / beta
+        
+    return dEdx
+
+# MEAN ENEGY LOSS
 mass_electron = 0.5109989461 # MeV https://pdg.lbl.gov/2020/listings/rpp2020-list-K-plus-minus.pdf
 muon_mass = 105.6583745 # MeV https://pdg.lbl.gov/2020/listings/rpp2020-list-muon.pdf
 
@@ -36,30 +64,34 @@ def Calc_MEAN_DEDX(T, thisIval=Ival, mass=proton_mass, z=1):
 
     return dEdx_mean
 
-def Calc_RR_points(KE, dRR=0.01, mass=muon_mass, z=1, thisIval=Ival):
+def Calc_RR_points(KE, dRR=0.01, mass=muon_mass, z=1, thisIval=Ival, do_recombine=False):
     thisKE = KE
-    KE_points = [thisKE]
+    KE_points = [0.]
     RR_points = [0.]
 
     while thisKE > 0.0:
-        deltaKE = Calc_MEAN_DEDX(np.array([thisKE]), mass=mass, z=1, thisIval=thisIval) * dRR
+        deltaKE = Calc_MEAN_DEDX(np.array([thisKE]), mass=mass, z=z, thisIval=thisIval) * dRR
         RR_points.append(RR_points[-1] + dRR)
-        thisKE -= deltaKE[0]
-        KE_points.append(thisKE)
+        deltaKE = deltaKE[0]
+        thisKE -= deltaKE
+        if do_recombine:
+            deltaKE = recombination(deltaKE/dRR)*dRR
+ 
+        KE_points.append(KE_points[-1]+deltaKE)
 
-    KE_points = np.array(list(reversed(KE_points[:-1])))
-    RR_points = np.array(RR_points[:-1])
+    # KE_points = np.array(list(reversed(KE_points[:-1])))
+    KE_points = np.array(KE_points)
+    KE_points = np.flip(KE_points[-1] - KE_points)
+    RR_points = np.array(RR_points)
 
     return KE_points, RR_points
 
+# Range to Energy
 KE_points_max = 1000.
 KE_points, RR_points = Calc_RR_points(KE_points_max, mass=muon_mass)
-
 RR2KE_mu = CubicSpline(RR_points, KE_points)
 
-KE_points_max = 1000.
 KE_points, RR_points = Calc_RR_points(KE_points_max, mass=proton_mass)
-
 RR2KE_p = CubicSpline(RR_points, KE_points)
 
 KE_points, RR_points = Calc_RR_points(KE_points_max, mass=2*proton_mass)
@@ -73,6 +105,22 @@ RR2KE_a = CubicSpline(RR_points, KE_points)
 
 KE_points, RR_points = Calc_RR_points(KE_points_max, mass=3*proton_mass, z=2)
 RR2KE_3he = CubicSpline(RR_points, KE_points)
+
+# Range to Charge
+Q_points, RR_points = Calc_RR_points(KE_points_max, mass=proton_mass, do_recombine=True)
+RR2Q_p = CubicSpline(RR_points, Q_points)
+
+Q_points, RR_points = Calc_RR_points(KE_points_max, mass=2*proton_mass, do_recombine=True)
+RR2Q_d = CubicSpline(RR_points, Q_points)
+
+Q_points, RR_points = Calc_RR_points(KE_points_max, mass=3*proton_mass, do_recombine=True)
+RR2Q_t = CubicSpline(RR_points, Q_points)
+
+Q_points, RR_points = Calc_RR_points(KE_points_max, mass=4*proton_mass, do_recombine=True, z=2)
+RR2Q_a = CubicSpline(RR_points, Q_points)
+
+Q_points, RR_points = Calc_RR_points(KE_points_max, mass=3*proton_mass, do_recombine=True, z=2)
+RR2Q_3he = CubicSpline(RR_points, Q_points)
 
 def Calc_Q2KE_points(KE, recomb, dQ0=500, mass=muon_mass, z=1):
     thisKE = KE
@@ -92,33 +140,6 @@ def Calc_Q2KE_points(KE, recomb, dQ0=500, mass=muon_mass, z=1):
     Q_points = np.cumsum(np.flip(np.array(Q_points[:-1]), axis=0), axis=0)
 
     return KE_points, Q_points
-
-# RECOMBINATION
-
-# ArgoNeuT params
-MODA = 0.930
-MODB = 0.212
-Wion = 1e3 / 4.237e7
-
-Vps = 75058
-Enom = (375./385)*Vps*1e-3 /148.25
-Eshort = (368.6/378.6)*Vps*1e-3 /148.25
-Efield = Enom
-
-def recombination(dEdx, A=MODA, B=MODB, E=Efield):
-    alpha = A
-    beta = B / (LAr_density_gmL * E)
-
-    dQdx = np.log(alpha + dEdx*beta) / (Wion * beta)
-    return dQdx
-
-def recombination_cor(dQdx, A=MODA, B=MODB, E=Efield):
-    alpha = A
-    beta = B / (LAr_density_gmL * E)
-        
-    dEdx = (np.exp(dQdx*Wion*beta)- alpha) / beta
-        
-    return dEdx
 
 # EXPECTED dE/dx FILES
 datadir = "/icarus/data/users/gputnam/"

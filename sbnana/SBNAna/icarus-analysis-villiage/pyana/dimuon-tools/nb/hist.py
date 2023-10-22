@@ -1,101 +1,152 @@
 import numpy as np
 import pandas as pd
-from pyanalib.histogram import Histogram
+from pyanalib.histogram import varhistogram
+from pyanalib.variable import SystVariable
 import matplotlib
+import weights
 
-def makehist(var, dataset, cut=None, bins=None, POT=None, livetime=None, areanorm=False, weight=None):
-    h = Histogram(var, dataset.POT, dataset.livetime, cut, bins, weight)
-    h = h.to_pot(POT) if POT else h.to_livetime(livetime) if livetime else h.to_area() if areanorm else h
-    return h
+class SystSpectrum(object):
+    def __init__(self, hs, hscales=None):
+        self.hs = hs
+        self.hscales = hscales
 
-def get_systematic_variations(systs, df, hnom, histf):
-    diff_his = []
-    diff_los = []
-    for s in systs:
-        w_ps = df.wgt[(*s, "ps")]
-        h_ps = histf(w_ps)
+    def cov(self, cv):
+        hcov = None
+        for i in range(len(self.hs)):
+            thisscale = self.hscales[i] if self.hscales else 1
 
-        w_ms = df.wgt[(*s, "ms")]
-        h_ms = histf(w_ms)
+            thiscov = np.outer(thisscale*(cv.N - self.hs[i].N), thisscale*(cv.N - self.hs[i].N))
 
-        h_lo = np.minimum(h_ps.N, h_ms.N)
-        h_hi = np.maximum(h_ps.N, h_ms.N)
-        diff_hi = np.abs(h_hi - hnom.N)
-        diff_lo = np.abs(hnom.N - h_lo)
-        diff_his.append(diff_hi**2)
-        diff_los.append(diff_lo**2)
+            if hcov is None:
+                hcov = thiscov
+            else:
+                hcov += thiscov
 
-    err_hi = np.sqrt(sum(diff_his))
-    err_lo = np.sqrt(sum(diff_los))
+        return hcov / len(self.hs)
 
-    return err_lo, err_hi
+def makehist(var, dataset, cut=None, bins=None, 
+  POT=None, livetime=None, areanorm=False, 
+  categories=None,
+  cvweight=True, wgtf=None, 
+  systematics=False, syst_weightname="all", syst_datasets=None, syst_dataset_cut=None):
 
-def plotmc(fig, var, dataset, cut=None, bins=None, POT=None, areanorm=False, errorbar=False, fluxsyst=False, geniesyst=False, cvweight=True, categories=None, wgtf=None, hist_kw={}):
+    if wgtf is None:
+        wgtf = lambda x: x
 
-    def do_wgtf(w):
-        if wgtf: return wgtf(w)
-        return w
+    cvw = dataset.df.wgt.cv if cvweight else pd.Series(1, dataset.df.index)
 
-    cvw = do_wgtf(dataset.df.wgt.cv if cvweight else pd.Series(1, dataset.df.index))
+    if isinstance(cut, SystVariable):
+        c0 = cut.cv()
+    else:
+        c0 = cut
+    c = c0(dataset.df) if c0 else pd.Series(True, dataset.df.index)
 
-    v = var(dataset.df)
-    vcut = cut(dataset.df) if cut is not None else cut
-    h = makehist(v, dataset, vcut, bins, POT, areanorm=areanorm and categories is None, weight=cvw)
-    bins = h.bins
+    if isinstance(var, SystVariable):
+        v0 = var.cv()
+    else:
+        v0 = var
+    v = v0(dataset.df)
+    
+    def histf(w=1., do_areanorm=True, thiscut=c, thisdataset=dataset, thisvar=v, thiscv=cvw):
+        h = varhistogram(thisvar, thisdataset.POT, thisdataset.livetime, thiscut, bins, wgtf(thiscv*w))
+        h = h.to_pot(POT) if POT else h.to_livetime(livetime) if livetime else h.to_area() if areanorm and do_areanorm else h
+        return h
 
     if categories:
-        hs = [makehist(v, dataset, vcut & c(dataset.df) if vcut is not None else c(dataset.df), bins, POT, weight=cvw) for c in categories] 
-        if areanorm:
+        h = histf(do_areanorm=False)
+
+        hs = [histf(thiscut=c&s(dataset.df), do_areanorm=False) for s in categories]
+        if areanorm: # do it across all categories
             norm = np.sum(h.N)*(h.bins[1] - h.bins[0])
-            hs = [hi.scale(1./norm) for hi in hs] 
-        fhist = fig.hist([h.centers for _ in hs], bins=h.bins, weights=[hi.N for hi in hs], stacked=True, **hist_kw)
+            hs = [hi.scaled(1./norm) for hi in hs] 
+
+        h = hs
     else:
-        fhist = fig.hist(h.centers, bins=h.bins, weights=h.N, **hist_kw)
+        h = histf()
 
-    if errorbar:
-        fig.errorbar(h.centers, h.N, h.Nerr, linestyle="none", color="black")
+    hsyst = []
+    if systematics:
+        # weights are all multisims
+        if syst_weightname is not None: 
+            hsyst_weights = []
+            for col in dataset.df.wgt[syst_weightname].columns:
+                if not col[0].startswith("univ"): continue
+                hsyst_weights.append(histf(dataset.df.wgt[syst_weightname][col]))
+            hsyst.append(SystSpectrum(hsyst_weights))
 
-    fluxsyst = fluxsyst and "fluxsyst" in dataset.df.wgt.columns.get_level_values(0)
-    geniesyst = geniesyst and "geniesyst" in dataset.df.wgt.columns.get_level_values(0)
-    if fluxsyst:
-        systs = [("fluxsyst", f) for f in dataset.df.wgt.fluxsyst.columns.get_level_values(0)[::2]]
-        histf = lambda w: makehist(v, dataset, vcut, bins, POT, areanorm=areanorm, weight=cvw*do_wgtf(w))
-        ferr_lo, ferr_hi = get_systematic_variations(systs, dataset.df, h, histf)
-    else: 
-        ferr_lo = ferr_hi = 0
-    if geniesyst:
-        systs = [("geniesyst", f) for f in dataset.df.wgt.geniesyst.columns.get_level_values(0)[::2]]
-        histf = lambda w: makehist(v, dataset, vcut, bins, POT, areanorm=areanorm, weight=cvw*do_wgtf(w))
-        gerr_lo, gerr_hi = get_systematic_variations(systs, dataset.df, h, histf)
-        gerr_lo = np.sqrt(ferr_lo**2 + gerr_lo**2)
-        gerr_hi = np.sqrt(ferr_hi**2 + gerr_hi**2)
-    else: 
-        gerr_lo = gerr_hi = 0
+        # variations on the cut
+        if isinstance(cut, SystVariable):
+            for cprime in cut.systs():
+                 cp = cprime(dataset.df)
+                 if isinstance(cp, list): # handle multi-var
+                     hsyst.append(SystSpectrum([histf(thiscut=cps) for cps in cp]))
+                 else:
+                     hsyst.append(SystSpectrum([histf(thiscut=cp)]))
 
-    gs = None
-    fs = None
-    if geniesyst:
-        gs = fig.fill_between(h.bins, np.append(h.N - gerr_lo, 0), np.append(h.N + gerr_hi, 0), alpha=0.5, color="gray", step="post", hatch="x")
-    if fluxsyst:
-        fs = fig.fill_between(h.bins, np.append(h.N - ferr_lo, 0), np.append(h.N + ferr_hi, 0), alpha=0.5, color="gray", step="post", hatch=".")
+        # variations on the variable
+        if isinstance(var, SystVariable):
+            for vprime in var.systs():
+                 vp = vprime(dataset.df)
+                 if isinstance(cp, list): # handle multi-var
+                     hsyst.append(SystSpectrum([histf(thisvar=vps) for vps in vp]))
+                 else:
+                     hsyst.append(SystSpectrum([histf(thisvar=vp)]))
 
-    return fhist, fs, gs
+        # variations on the dataset
+        if syst_datasets is not None:
+            systc = syst_dataset_cut(dataset.df) if syst_dataset_cut else pd.Series(True, dataset.df.index)
+            h_all = histf()
+            h_syst_subset = histf(thiscut=c&systc)
+            h_scale = h_all.divide(h_syst_subset)
 
-def plotdata(fig, var, dataset, beamoff_dataset=None, cut=None, bins=None, POT=None, areanorm=False):
-    varon = var(dataset.df)
-    cuton = cut(dataset.df) if cut is not None else cut
-    h = makehist(varon, dataset, cuton, bins, dataset.POT)
-    if beamoff_dataset:
-        varoff = var(beamoff_dataset.df)
-        cutoff = cut(beamoff_dataset.df) if cut is not None else cut
-        h = h - makehist(varoff, beamoff_dataset, cutoff, bins, livetime=dataset.livetime)
+            # set default weights
+            for dprimes in syst_datasets:
+                hds = []
+                for dprime in dprimes:
+                    c = c0(dprime.df) if cut else pd.Series(True, dprime.df.index)
+                    v = v0(dprime.df)
+                    cvw_prime = dprime.df.wgt.cv if cvweight else pd.Series(1, dprime.df.index)
+                hds.append(histf(thisdataset=dprime, thisvar=v, thiscut=c, thiscv=cvw_prime))
 
-    h = h.to_pot(POT) if POT else h.to_area() if areanorm else h
+            hsyst.append(SystSpectrum(hds, [h_scale.N for _ in hds]))
 
+    return h, hsyst
+
+def makecovariance(h, hsyst):
+    return sum([s.cov(h) for s in hsyst])
+
+def plotmc(fig, hs, scov=None, **hist_kw):
+    if not isinstance(hs, list):
+        hs = [hs]
+
+    fhist = fig.hist([h.centers for h in hs], bins=hs[0].bins, weights=[hi.N for hi in hs], stacked=True, **hist_kw)
+
+    if scov is not None:
+        htot = sum(hs)
+        fill = fig.fill_between(htot.bins, np.append(htot.N - np.sqrt(np.diag(scov)), 0), np.append(htot.N + np.sqrt(np.diag(scov)), 0), 
+            alpha=0.5, color="gray", step="post", hatch="x")
+    else: fill = None
+
+    return fhist, fill
+
+def plotdata(fig, h, **hist_kw):
     d = fig.errorbar(h.centers, h.N, h.Nerr, 
-        linestyle="none", color="black", marker=".")
+        linestyle="none", color="black", marker=".", **hist_kw)
 
     return d
+
+def plotratio(fig, num, denom, scov=None):
+    h = num.divide(denom, False)
+    d = fig.errorbar(h.centers, h.N, np.abs(num.Nerr/denom.N), 
+        linestyle="none", color="black", marker=".")
+
+    if scov is not None:
+        fill = fig.fill_between(h.bins, np.append(1 - np.sqrt(np.diag(scov))/denom.N, 0), np.append(1 + np.sqrt(np.diag(scov))/denom.N, 0), 
+            alpha=0.5, color="gray", step="post", hatch="x")
+    else: fill = None
+
+    return d, fill
+
 
 def makelegend(fig, mc, data=None, mc_labels=["MC"], split=False):
     (_, _, fh), fs, gs = mc
