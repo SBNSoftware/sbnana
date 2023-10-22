@@ -49,8 +49,8 @@ def numisyst(nupdg, nuE, fsyst=FSYST):
         uncdf = getallpdg_histdf(flux_f["fractional_uncertainties"]["beam"][uc], "hfrac_beam_" + uc + "_fhc_")
         wgtdf_p = 1 + uncdf
         wgtdf_m = 1 - uncdf
-        wgtdf_p.name = (uc, "ps")
-        wgtdf_m.name = (uc, "ms")
+        wgtdf_p.name = (uc, "ps1")
+        wgtdf_m.name = (uc, "ms1")
         beam_syst_wgts.append(wgtdf_p)
         beam_syst_wgts.append(wgtdf_m)
     
@@ -58,8 +58,8 @@ def numisyst(nupdg, nuE, fsyst=FSYST):
         uncdf = getallpdg_histdf(flux_f["pca"]["principal_components"], "hpc_%i_fhc_" % i)
         wgtdf_p = 1 + uncdf
         wgtdf_m = 1 - uncdf
-        wgtdf_p.name = (("pca%i" % i), "ps")
-        wgtdf_m.name = (("pca%i" % i), "ms")
+        wgtdf_p.name = (("pca%i" % i), "ps1")
+        wgtdf_m.name = (("pca%i" % i), "ms1")
         beam_syst_wgts.append(wgtdf_p)
         beam_syst_wgts.append(wgtdf_m)
 
