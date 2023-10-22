@@ -52,7 +52,7 @@ class Histogram(object):
             return self.scaled(othr)
         return self.multiply(othr)
 
-    def __div__(self, othr):
+    def __truediv__(self, othr):
         if not isinstance(othr, Histogram):
             return self.scaled(1/othr)
         return self.divide(othr)

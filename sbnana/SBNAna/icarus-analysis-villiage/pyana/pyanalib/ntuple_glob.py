@@ -43,7 +43,7 @@ def _loaddf(applyfs, g):
     index, fname = g
     # Convert pnfs to xroot URL's
     if fname.startswith("/pnfs"):
-        fname = fname.replace("/pnfs", "root://fndca1.fnal.gov:1094/pnfs/fnal.gov/usr")
+        fname = fname.replace("/pnfs", "root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr")
     # fix xroot URL's
     elif fname.startswith("xroot"):
         fname = fname[1:]
@@ -113,7 +113,7 @@ class NTupleGlob(object):
 
         try:
             with Pool(processes=nproc) as pool:
-                for i, dfs in enumerate(tqdm(pool.imap_unordered(partial(_loaddf, fs), enumerate(thisglob)), total=len(thisglob), unit="file", delay=5, smoothing=0.6)):
+                for i, dfs in enumerate(tqdm(pool.imap_unordered(partial(_loaddf, fs), enumerate(thisglob)), total=len(thisglob), unit="file", delay=5, smoothing=0.2)):
                     if dfs is not None:
                         ret.append(dfs)
         # Ctrl-C handling
