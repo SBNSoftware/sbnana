@@ -25,6 +25,10 @@ if __name__ == "__main__":
     if printhelp:
         print("Usage: python rundf.py [config.py] [output.df] [inputs.root,]")
     else:
+        # Don't clog up the server you're running on -- let other processes take priority
+        os.nice(10)
+
+
         exec(open(sys.argv[1]).read())
         if "NAMES" not in globals() or "DFS" not in globals():
             print("ERROR: config file must define <NAMES> and <DFS>")
@@ -32,8 +36,5 @@ if __name__ == "__main__":
         if len(NAMES) != len(DFS): 
             print("ERROR: <NAMES> and <DFS> must have same length")
             exit(1)
-
-        # Don't clog up the server you're running on -- let other processes take priority
-        os.nice(10)
 
         main(sys.argv[2], sys.argv[3:])
