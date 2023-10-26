@@ -28,6 +28,7 @@ const caf::SRPFPProxy* LargestRecoShower(const caf::SRSliceProxy* slc){
   const caf::SRPFPProxy* largestShower;
   for (const auto& pfp : slc->reco.pfp) {
     if (pfp.trackScore > 0.5) { continue; }
+    if (std::isnan(pfp.shw.end.x)) { continue; }
     if (pfp.shw.bestplane_energy > largestE) {
       largestE = pfp.shw.bestplane_energy;
       largestShower= &pfp;
@@ -44,7 +45,7 @@ const MultiVar kMatches([](const caf::SRSliceProxy* slc) -> std::vector<double> 
   for (const auto& pfp : slc->reco.pfp) {
     if (pfp.trackScore > 0.5) { continue; }
     if (pfp.id == largestShower->id) { continue; }
-    if (pfp.shw.bestplane_energy < 0) { continue; } 
+    if (std::isnan(pfp.shw.end.x)) { continue; } 
     bool isMatch = (pfp.shw.truth.bestmatch.G4ID == largestShower->shw.truth.bestmatch.G4ID);
     if (isMatch) { matches.push_back(1); }
     else { matches.push_back(0); }
@@ -59,7 +60,7 @@ const MultiVar kEnergies([](const caf::SRSliceProxy* slc) -> std::vector<double>
   for (const auto& pfp : slc->reco.pfp) {
       if (pfp.trackScore > 0.5) { continue; }
     if (pfp.id == largestShower->id) { continue; }
-    if (pfp.shw.bestplane_energy < 0) { continue; } 
+    if (std::isnan(pfp.shw.end.x)) { continue; } 
     energies.push_back(pfp.shw.bestplane_energy);
   }
   return energies;
@@ -72,7 +73,7 @@ const MultiVar kSlices([](const caf::SRSliceProxy* slc) -> std::vector<double> {
   for (const auto& pfp : slc->reco.pfp) {
       if (pfp.trackScore > 0.5) { continue; }
     if (pfp.id == largestShower->id) { continue; }
-    if (pfp.shw.bestplane_energy < 0) { continue; } 
+    if (std::isnan(pfp.shw.end.x)) { continue; } 
     if (!slc->is_clear_cosmic) { slices.push_back(1); }
     else { slices.push_back(0); }
   }
@@ -86,7 +87,7 @@ const MultiVar kAngles([](const caf::SRSliceProxy* slc) -> std::vector<double> {
   for (const auto& pfp : slc->reco.pfp) {
       if (pfp.trackScore > 0.5) { continue; }
       if (pfp.id == largestShower->id) { continue; }
-      if (pfp.shw.bestplane_energy < 0) { continue; } 
+      if (std::isnan(pfp.shw.end.x)) { continue; } 
     TVector3 recoDir(pfp.shw.end.x-pfp.shw.start.x,
  		 pfp.shw.end.y-pfp.shw.start.y,
 		 pfp.shw.end.z-pfp.shw.start.z);
@@ -109,7 +110,7 @@ const MultiVar kEndtoend([](const caf::SRSliceProxy* slc) -> std::vector<double>
     for (const auto& pfp : slc->reco.pfp) {
       if (pfp.trackScore > 0.5) { continue; }
       if (pfp.id == largestShower->id) { continue; }
-      if (pfp.shw.bestplane_energy < 0) { continue; } 
+      if (std::isnan(pfp.shw.end.x)) { continue; } 
       TVector3 recoTraj(largestShower->shw.end.x-pfp.shw.end.x,
   	  	        largestShower->shw.end.y-pfp.shw.end.y,
 		        largestShower->shw.end.z-pfp.shw.end.z);
@@ -126,7 +127,7 @@ const MultiVar kEndtostart([](const caf::SRSliceProxy* slc) -> std::vector<doubl
     for (const auto& pfp : slc->reco.pfp) {
       if (pfp.trackScore > 0.5) { continue; }
       if (pfp.id == largestShower->id) { continue; }
-      if (pfp.shw.bestplane_energy < 0) { continue; } 
+      if (std::isnan(pfp.shw.end.x)) { continue; } 
       TVector3 recoTraj(largestShower->shw.end.x-pfp.shw.start.x,
   	  	        largestShower->shw.end.y-pfp.shw.start.y,
 		        largestShower->shw.end.z-pfp.shw.start.z);
@@ -143,7 +144,7 @@ const MultiVar kStarttostart([](const caf::SRSliceProxy* slc) -> std::vector<dou
     for (const auto& pfp : slc->reco.pfp) {
       if (pfp.trackScore > 0.5) { continue; }
       if (pfp.id == largestShower->id) { continue; }
-      if (pfp.shw.bestplane_energy < 0) { continue; } 
+      if (std::isnan(pfp.shw.end.x)) { continue; } 
       TVector3 recoTraj(largestShower->shw.start.x-pfp.shw.start.x,
   	  	        largestShower->shw.start.y-pfp.shw.start.y,
 		        largestShower->shw.start.z-pfp.shw.start.z);
@@ -160,7 +161,7 @@ const MultiVar kStarttoend([](const caf::SRSliceProxy* slc) -> std::vector<doubl
     for (const auto& pfp : slc->reco.pfp) {
       if (pfp.trackScore > 0.5) { continue; }
       if (pfp.id == largestShower->id) { continue; }
-      if (pfp.shw.bestplane_energy < 0) { continue; } 
+      if (std::isnan(pfp.shw.end.x)) { continue; } 
       TVector3 recoTraj(largestShower->shw.start.x-pfp.shw.end.x,
   	  	        largestShower->shw.start.y-pfp.shw.end.y,
 		        largestShower->shw.start.z-pfp.shw.end.z);
@@ -177,7 +178,7 @@ const MultiVar kIntersections([](const caf::SRSliceProxy* slc) -> std::vector<do
     for (const auto& pfp : slc->reco.pfp) {
       if (pfp.trackScore > 0.5) { continue; }
       if (pfp.id == largestShower->id) { continue; }
-      if (pfp.shw.bestplane_energy <= 0) { continue; } 
+      if (std::isnan(pfp.shw.end.x)) { continue; } 
 
       TVector3 r(largestShower->shw.start.x-pfp.shw.start.x,
   	  	        largestShower->shw.start.y-pfp.shw.start.y,
