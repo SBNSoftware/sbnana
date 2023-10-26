@@ -48,7 +48,7 @@ const Var kFindSliceInfo([](const caf::SRSliceProxy* slc) -> int {
   return 42;
 });
 
-void make_training_texts(const std::string inputName="nue_cosmic_recursiveshower.root")
+void make_training_texts(const std::string inputName="/icarus/app/users/rhowell/ShowerTraining/nue_cosmic_recursiveshower.root")
 {
 
   SpectrumLoader loader(inputName);

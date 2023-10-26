@@ -1,6 +1,10 @@
+#include "TVector3.h"
 #include "sbnana/CAFAna/Core/Binning.h"
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/Core/SpectrumLoader.h"
+#include "sbnana/CAFAna/Core/Spectrum.h"
+#include "sbnana/CAFAna/Core/Binning.h"
+//#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include "sbnana/SBNAna/Vars/NumuVars.h"
 #include "sbnana/SBNAna/Vars/NueVars.h"
@@ -15,7 +19,7 @@
 using namespace ana;
 
 
-const double ClosestDistanceBetweenLines(TVector3 a0, TVector3 a1, TVector3 b0, TVector3 b1, bool clampAll):
+const double ClosestDistanceBetweenLines(TVector3 a0, TVector3 a1, TVector3 b0, TVector3 b1, bool clampAll){
 
     bool campA0 = false;
     bool campA1 = false;
@@ -35,8 +39,8 @@ const double ClosestDistanceBetweenLines(TVector3 a0, TVector3 a1, TVector3 b0, 
     double magA = A.Mag();
     double magB = B.Mag();
     
-    TVectro3 _A = A / magA;
-    TVectro3 _B = B / magB;
+    TVector3 _A = A / magA;
+    TVector3 _B = B / magB;
     
     TVector3 cross = (_A.Cross(_B);
     double denom = cross.Mag()*cross.Mag();
