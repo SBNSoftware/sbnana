@@ -6,7 +6,7 @@ import numpy as np
 def decay_in_icarus(in_dist, out_dist, mean_dist): # same as what Gray defined as "decay weight." I've changed the name bc technically the decay weight also includes a factor of the branching fraction (which is just 1 for hps, where it always decays into muons where we are looking).
     return np.exp(-in_dist / mean_dist) - \
           np.exp(-out_dist / mean_dist)
-    
+
 def flux_weight(mixing): 
     return mixing * mixing
 
@@ -80,7 +80,7 @@ def add_hdr_info(df):
     new_df = df.copy()
     proc = []
     clust = []
-    for idx in final_df.index:
+    for idx in new_df.index:
         p = hdrs[idx[0]].loc[(idx[1],idx[2])].proc
         c = hdrs[idx[0]].loc[(idx[1],idx[2])].cluster
         proc.append(p)
@@ -154,4 +154,53 @@ def make_categories(df, bsm=False):
         categories = higgs_benchmarks + alp_benchmarks + alp_nosup_benchmarks + [is_nu] + [is_cosmic]
         return categories
 
-
+def apply_cuts(df, cuts, flip_last_cut=False):
+    
+    #new_df = df.copy()
+    categories = make_categories(df)
+    
+    # initialze data frames
+    cut_results_df = pd.DataFrame(
+        np.zeros((0,len(categories)), dtype=int), # start w/ zero rows (cuts), fill later
+        columns = [c.name for c in categories] # [c.name.split(',')[-1] for c in categories]
+    )
+    cut_results_df_mc = cut_results_df.copy() #deep=True
+    cut_results_df_pot = cut_results_df.copy() #deep=True
+    cut_results_df_percent = cut_results_df.copy() #deep=True
+    
+    # fill in first row of data frame for "no cuts"
+    row_mc = []
+    row_pot = []
+    for c in categories:
+        #print(sum(df[c].scale))
+        row_mc.append(df[c].shape[0])
+        row_pot.append(sum(df[c].scale))
+    cut_results_df_mc.loc["preselection"] = row_mc 
+    first_row_mc = row_mc
+    cut_results_df_pot.loc["preselection"] = row_pot
+    cut_results_df_percent.loc["preselection"] = [1.] * len(row_pot)
+    
+    # Loop through cuts to make rows for data frame and to make master_mask
+    for i in range(len(cuts)):
+        func_output = cuts[i](*[df])
+        if flip_last_cut: #overwrite with the flip
+            if i == len(cuts)-1:
+                func_output = cuts[i](*[df], flip=True)
+                
+        if i==0: 
+            master_mask = func_output[0]
+        else:
+            master_mask = master_mask & func_output[0]
+        new_df = df[master_mask]
+        new_categories = make_categories(new_df)
+        
+        row_mc = []
+        row_pot = []
+        for c in new_categories:
+            row_mc.append(new_df[c].shape[0])
+            row_pot.append(sum(new_df[c].scale))
+        cut_results_df_mc.loc[func_output[1]] = row_mc   
+        cut_results_df_pot.loc[func_output[1]] = row_pot
+        cut_results_df_percent.loc[func_output[1]] = np.array(row_mc)/np.array(first_row_mc)
+    
+    return cut_results_df_mc, cut_results_df_pot, cut_results_df_percent, master_mask 
