@@ -46,6 +46,16 @@ namespace ana{
       return GetSpillCutTypeVectorPerNu(sr, Is1muNp0piWithPhaseSpaceCut);
     }
   );
+  const SpillMultiVar kSpillCutTypeVectorPerFVNu(
+    [](const caf::SRSpillProxy *sr) -> std::vector<double> {
+      return GetSpillCutTypeVectorPerNu(sr, IsNuInFV);
+    }
+  );
+  const SpillMultiVar kSpillCutTypeVectorPerAVNu(
+    [](const caf::SRSpillProxy *sr) -> std::vector<double> {
+      return GetSpillCutTypeVectorPerNu(sr, IsNuInAV);
+    }
+  );
 
   // For each true signal neutrino,
   // return 1 if it is matched to a reco slice that pass signal selection (WITHOUT THE SHOWER CUT)
@@ -106,6 +116,16 @@ namespace ana{
       return GetNuMIPPFXWeightVectorPerNu(sr, Is1muNp0piWithPhaseSpaceCut);
     }
   );
+  const SpillMultiVar kNuMIPPFXWeightVectorPerFVNu(
+    [](const caf::SRSpillProxy *sr) -> std::vector<double> {
+      return GetNuMIPPFXWeightVectorPerNu(sr, IsNuInFV);
+    }
+  );
+  const SpillMultiVar kNuMIPPFXWeightVectorPerAVNu(
+    [](const caf::SRSpillProxy *sr) -> std::vector<double> {
+      return GetNuMIPPFXWeightVectorPerNu(sr, IsNuInAV);
+    }
+  );
 
   std::vector<double> GetSigmaWeightVectorPerNu(
     const caf::SRSpillProxy* sr,
@@ -135,4 +155,62 @@ namespace ana{
     int univIdx
   );
 
+  /// And now many of the same as for 0pi signal, but for any neutrino in the fiducial volume (IsNuInFV)
+  const SpillMultiVar kTruePDGVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::NeutrinoPDG_True);
+  const SpillMultiVar kTrueModeVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::NeutrinoMode_True);
+  const SpillMultiVar kTrueIsCCVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::IsCC_True);
+  const SpillMultiVar kTrueTargetVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::Target_True);
+  const SpillMultiVar kTrueEVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::NeutrinoE_True);
+  const SpillMultiVar kTrueQ2VectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::Q2_True);
+  const SpillMultiVar kTrueq0VectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::q0_True);
+  const SpillMultiVar kTrueq3VectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::q3_True);
+  const SpillMultiVar kTruewVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::w_True);
+  const SpillMultiVar kTrueMuonPVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::MuonP_True);
+  const SpillMultiVar kTrueMuonPtVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::MuonPt_True);
+  const SpillMultiVar kTrueMuonNuCosineThetaVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::MuonNuCosineTheta_True);
+  const SpillMultiVar kTrueMuonCosThBeamVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::MuonCosThBeam_True);
+  const SpillMultiVar kTrueMuonLengthVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::MuonLength_True);
+  const SpillMultiVar kTrueMuonContainedVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::MuonContained_True);
+  const SpillMultiVar kTrueProtonPVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::ProtonP_True);
+  const SpillMultiVar kTrueProtonPtVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::ProtonPt_True);
+  const SpillMultiVar kTrueProtonNuCosineThetaVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::ProtonNuCosineTheta_True);
+  const SpillMultiVar kTrueProtonLengthVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::ProtonLength_True);
+  const SpillMultiVar kTrueCosThMuonProtonVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::CosThMuonProton_True);
+  const SpillMultiVar kTruedeltaPTVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::deltaPT_True);
+  const SpillMultiVar kTruedeltaPTxVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::deltaPTx_True);
+  const SpillMultiVar kTruedeltaPTyVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::deltaPTy_True);
+  const SpillMultiVar kTruedeltaalphaTVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::deltaalphaT_True);
+  const SpillMultiVar kTruedeltaphiTVectorPerFVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInFV, PrimaryUtil::deltaphiT_True);
+
+  // And active volume (AV)
+  const SpillMultiVar kTruePDGVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::NeutrinoPDG_True);
+  const SpillMultiVar kTrueModeVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::NeutrinoMode_True);
+  const SpillMultiVar kTrueIsCCVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::IsCC_True);
+  const SpillMultiVar kTrueTargetVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::Target_True);
+  const SpillMultiVar kTrueIsInFVPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::IsInFV_True);
+  const SpillMultiVar kTrueEVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::NeutrinoE_True);
+  const SpillMultiVar kTrueQ2VectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::Q2_True);
+  const SpillMultiVar kTrueq0VectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::q0_True);
+  const SpillMultiVar kTrueq3VectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::q3_True);
+  const SpillMultiVar kTruewVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::w_True);
+  const SpillMultiVar kTrueMuonPVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::MuonP_True);
+  const SpillMultiVar kTrueMuonPtVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::MuonPt_True);
+  const SpillMultiVar kTrueMuonNuCosineThetaVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::MuonNuCosineTheta_True);
+  const SpillMultiVar kTrueMuonCosThBeamVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::MuonCosThBeam_True);
+  const SpillMultiVar kTrueMuonLengthVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::MuonLength_True);
+  const SpillMultiVar kTrueMuonContainedVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::MuonContained_True);
+  const SpillMultiVar kTrueProtonPVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::ProtonP_True);
+  const SpillMultiVar kTrueProtonPtVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::ProtonPt_True);
+  const SpillMultiVar kTrueProtonNuCosineThetaVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::ProtonNuCosineTheta_True);
+  const SpillMultiVar kTrueProtonLengthVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::ProtonLength_True);
+  const SpillMultiVar kTrueCosThMuonProtonVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::CosThMuonProton_True);
+  const SpillMultiVar kTruedeltaPTVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::deltaPT_True);
+  const SpillMultiVar kTruedeltaPTxVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::deltaPTx_True);
+  const SpillMultiVar kTruedeltaPTyVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::deltaPTy_True);
+  const SpillMultiVar kTruedeltaalphaTVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::deltaalphaT_True);
+  const SpillMultiVar kTruedeltaphiTVectorPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::deltaphiT_True);
+  const SpillMultiVar kTrueNuBaselinePerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::nuBaseline_True);
+  const SpillMultiVar kTrueNuParentDkXPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::nuParentDkX_True);
+  const SpillMultiVar kTrueNuParentDkYPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::nuParentDkY_True);
+  const SpillMultiVar kTrueNuParentDkZPerAVNu = GetTrueSpillMultiVarPerSignalNu(IsNuInAV, PrimaryUtil::nuParentDkZ_True);
 }

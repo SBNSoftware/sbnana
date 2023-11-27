@@ -121,6 +121,12 @@ namespace ana{
     return PrimaryUtil::ChargedPionKE_True(slc->truth);
   });
 
+  // 0: not signal, 1: signal
+  const Var kNuMIIsSignal([](const caf::SRSliceProxy* slc) -> int {
+    if( kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut(slc) ) return 1;
+    else return 0;
+  });
+
   // 0: Muon candidate track exiting, 1: Muon candidate track contained (-1: no muon candidate)
   const Var kNuMIRecoMuonContained([](const caf::SRSliceProxy* slc) -> int {
     if( kNuMIMuonCandidateIdx(slc) >= 0 ){

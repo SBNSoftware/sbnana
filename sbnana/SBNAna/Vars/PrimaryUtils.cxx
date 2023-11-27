@@ -20,6 +20,17 @@ namespace PrimaryUtil{
   int Target_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.targetPDG;
   }
+  int IsInFV_True(const caf::SRTrueInteractionProxy& true_int){
+    bool isFV = false;
+    if ( !std::isnan(true_int.position.x) && !std::isnan(true_int.position.y) && !std::isnan(true_int.position.z) ) {
+      isFV = (( ( true_int.position.x < -61.94 - 25 && true_int.position.x > -358.49 + 25 ) ||
+                ( true_int.position.x >  61.94 + 25 && true_int.position.x <  358.49 - 25 )) &&
+              ( ( true_int.position.y > -181.86 + 25 && true_int.position.y < 134.96 - 25 ) &&
+                ( true_int.position.z > -894.95 + 30 && true_int.position.z < 894.95 - 50 ) ));
+    }
+
+    return (isFV ? 1 : 0);
+  }
   int NProton_True(const caf::SRTrueInteractionProxy& true_int){
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
@@ -92,6 +103,18 @@ namespace PrimaryUtil{
   }
   double w_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.w;
+  }
+  double nuBaseline_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.baseline;
+  }
+  double nuParentDkX_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.prod_vtx.x;
+  }
+  double nuParentDkY_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.prod_vtx.y;
+  }
+  double nuParentDkZ_True(const caf::SRTrueInteractionProxy& true_int){
+    return true_int.prod_vtx.z;
   }
 
   // Muon

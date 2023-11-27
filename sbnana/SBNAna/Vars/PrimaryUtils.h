@@ -29,6 +29,7 @@ namespace PrimaryUtil{
   int NeutrinoMode_True(const caf::SRTrueInteractionProxy& true_int);
   int IsCC_True(const caf::SRTrueInteractionProxy& true_int);
   int Target_True(const caf::SRTrueInteractionProxy& true_int);
+  int IsInFV_True(const caf::SRTrueInteractionProxy& true_int);
   int NProton_True(const caf::SRTrueInteractionProxy& true_int);
   int NNeutron_True(const caf::SRTrueInteractionProxy& true_int);
   int Npip_True(const caf::SRTrueInteractionProxy& true_int);
@@ -41,6 +42,10 @@ namespace PrimaryUtil{
   double q0_True(const caf::SRTrueInteractionProxy& true_int);
   double q3_True(const caf::SRTrueInteractionProxy& true_int);
   double w_True(const caf::SRTrueInteractionProxy& true_int);
+  double nuBaseline_True(const caf::SRTrueInteractionProxy& true_int);
+  double nuParentDkX_True(const caf::SRTrueInteractionProxy& true_int);
+  double nuParentDkY_True(const caf::SRTrueInteractionProxy& true_int);
+  double nuParentDkZ_True(const caf::SRTrueInteractionProxy& true_int);
 
   // Muon
   int MuonIndex_True(const caf::SRTrueInteractionProxy& true_int);
