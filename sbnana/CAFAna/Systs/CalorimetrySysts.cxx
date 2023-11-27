@@ -7,27 +7,34 @@
 
 namespace ana {
 
-   CalorimetrySyst::CalorimetrySyst(CaloSyst _GainSyst, CaloSyst _AlphaSyst, CaloSyst _BetaSyst, const std::string& name, const std::string& latexName):
+   CalorimetrySyst::CalorimetrySyst(CaloSystMode mode, const std::string& name, const std::string& latexName):
      ISyst(name, latexName),
      temperature(8.75e1),
      rho(-0.00615 * temperature + 1.928),
      Efield(4.938e-1),
      gain(0.01265), alpha(0.93), beta(0.212),
-     gain_err(0.01), alpha_err(0.01), beta_err(0.04),
-     GainSyst(_GainSyst), AlphaSyst(_AlphaSyst), BetaSyst(_BetaSyst)
+     gain_err(0.01),
+     kCaloSystMode(mode)
   {
 
     cet::search_path sp("FW_SEARCH_PATH");
 
-    std::string fTemplateFile = "dEdxrestemplates.root";
+    std::string kdEdXUncTemplateFileName = "template_dEdXUncertainty.root";
+    std::string kdEdXUncTemplateFullFilePath;
+    sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath);
 
-    sp.find_file(fTemplateFile, fROOTfile);
+    TFile* file_dEdXUncTemplate = TFile::Open(kdEdXUncTemplateFullFilePath.c_str());
+    dedx_unc_template = (TGraph2D*)file_dEdXUncTemplate->Get("dEdXRelUncertainty_dEdX_vs_phi");
 
-    TFile *file = TFile::Open(fROOTfile.c_str());
-    dedx_range_pro = (TProfile*)file->Get("dedx_range_pro");
-    dedx_range_ka  = (TProfile*)file->Get("dedx_range_ka");
-    dedx_range_pi  = (TProfile*)file->Get("dedx_range_pi");
-    dedx_range_mu  = (TProfile*)file->Get("dedx_range_mu");
+    std::string kChi2TemplateFileName = "dEdxrestemplates.root";
+    std::string kChi2TemplateFullFilePath;
+    sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath);
+
+    TFile *file_Chi2Template = TFile::Open(kChi2TemplateFullFilePath.c_str());
+    dedx_range_pro = (TProfile*)file_Chi2Template->Get("dedx_range_pro");
+    dedx_range_ka  = (TProfile*)file_Chi2Template->Get("dedx_range_ka");
+    dedx_range_pi  = (TProfile*)file_Chi2Template->Get("dedx_range_pi");
+    dedx_range_mu  = (TProfile*)file_Chi2Template->Get("dedx_range_mu");
 
   }
 
@@ -140,24 +147,29 @@ namespace ana {
   void CalorimetrySyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
   {
 
-    // TODO sigma is ambiguous for this kind of multi-param cases; not using it for now
-
-    double gain_new = (1. + double(GainSyst)*gain_err)*gain;
-    double alpha_new = (1. + double(AlphaSyst)*alpha_err)*alpha; // dummy
-    double beta_new = (1. + double(BetaSyst)*beta_err)*beta;
-
     for(auto& pfp: sr->reco.pfp){
+
+      if(isnan(pfp.trk.dir.x) || isinf(pfp.trk.dir.x)) continue;
+      double this_phi = TMath::ACos( fabs(pfp.trk.dir.x) ) * 180./M_PI;
+
       for(int i_plane=0; i_plane<3; ++i_plane){
 
         // TODO ke
 
         // shift dedx
         for(auto& pt: pfp.trk.calo[i_plane].points){
-          auto& this_dedx = pt.dedx;
+          double this_dedx = pt.dedx;
           if(isnan(this_dedx)) continue;
           if(isinf(this_dedx)) continue;
-          double new_dedx = ( std::exp( (beta_new*gain_new)/(beta*gain) * std::log(alpha + (beta/rho/Efield)*this_dedx) ) - alpha_new ) / (beta_new/rho/Efield);
-          pt.dedx = new_dedx;
+
+          if(kCaloSystMode==CaloSystMode::kGainShift){
+            pt.dedx = ( std::exp( (1. + sigma*gain_err) * std::log(alpha + (beta/rho/Efield)*this_dedx) ) - alpha ) / (beta/rho/Efield);
+          }
+          else if(kCaloSystMode==CaloSystMode::kdEdXShift){
+            double this_dedx_relunc = dedx_unc_template->Interpolate(this_dedx, this_phi);
+            pt.dedx = (1. + sigma*this_dedx_relunc)*this_dedx;
+          }
+
         }
         // shift chi2
         Chi2Results output = CalculateChi2(pfp.trk.calo[i_plane]);
@@ -197,18 +209,8 @@ namespace ana {
 
   }
 
-  void CalorimetrySyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
+  const CalorimetrySyst kCalodEdXShiftSyst(CaloSystMode::kdEdXShift, "CalodEdXShiftSyst", "Calo. dEdX shift");
+  const CalorimetrySyst kCaloGainShiftSyst(CaloSystMode::kGainShift, "CaloGainShiftSyst", "Calo. Gain shift");
 
-  }
-
-  const CalorimetrySyst CalorimetrySyst_NoShift(ana::CaloSyst::kNominal, ana::CaloSyst::kNominal, ana::CaloSyst::kNominal, "CalorimetrySyst_NoShift", "NoShift");
-  const CalorimetrySyst CalorimetrySyst_GainUp(ana::CaloSyst::kUp, ana::CaloSyst::kNominal, ana::CaloSyst::kNominal, "CalorimetrySyst_GainUp", "gain +1%");
-  const CalorimetrySyst CalorimetrySyst_GainDown(ana::CaloSyst::kDown, ana::CaloSyst::kNominal, ana::CaloSyst::kNominal, "CalorimetrySyst_GainDown", "gain -1%");
-  const CalorimetrySyst CalorimetrySyst_AlphaUp(ana::CaloSyst::kNominal, ana::CaloSyst::kUp, ana::CaloSyst::kNominal, "CalorimetrySyst_AlphaUp", "#alpha +4%");
-  const CalorimetrySyst CalorimetrySyst_AlphaDown(ana::CaloSyst::kNominal, ana::CaloSyst::kDown, ana::CaloSyst::kNominal, "CalorimetrySyst_AlphaDown", "#alpha -4%");
-  const CalorimetrySyst CalorimetrySyst_BetaUp(ana::CaloSyst::kNominal, ana::CaloSyst::kNominal, ana::CaloSyst::kUp, "CalorimetrySyst_BetaUp", "#beta +4%");
-  const CalorimetrySyst CalorimetrySyst_BetaDown(ana::CaloSyst::kNominal, ana::CaloSyst::kNominal, ana::CaloSyst::kDown, "CalorimetrySyst_BetaDown", "#beta -4%");
-  const CalorimetrySyst CalorimetrySyst_GainUpBetaDown(ana::CaloSyst::kUp, ana::CaloSyst::kNominal, ana::CaloSyst::kDown, "CalorimetrySyst_GainUpBetaDown", "gain +1%, #beta -4%");
-  const CalorimetrySyst CalorimetrySyst_GainDownBetaUp(ana::CaloSyst::kDown, ana::CaloSyst::kNominal, ana::CaloSyst::kUp, "CalorimetrySyst_GainDownBetaUp", "gain -1%, #beta +4%");
 
 } // end namespace ana
