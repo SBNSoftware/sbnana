@@ -893,7 +893,7 @@ namespace ana
 
     TSpline3 *splinesArr[NBranchesWeights];
     for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
-      splinesArr[idxBranchWeight] = nullptr;
+      splinesArr[ idxBranchWeight ] = nullptr;
       theTree.Branch( fOrderedBranchWeightNames.at(idxBranchWeight).c_str(), &splinesArr[idxBranchWeight] );
     }
 
@@ -908,7 +908,7 @@ namespace ana
           if ( idxEntry==0 ) std::cout << "ERROR!! Branch " << fOrderedBranchNames.at(idxBranch) << " wants to fill as int and long..." << std::endl;
         }
       }
-      // Make the splines
+      // Fill the splines
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         double sigmasArr[NSigmas];
@@ -1190,7 +1190,7 @@ namespace ana
     std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;
     std::cout << "  " << fNEntries << " Entries" << std::endl;
     std::cout << "  For " << fPOT << " POT and " << fLivetime << " Livetime" << std::endl;
-    std::cout << "  Containing " << fOrderedBranchWeightNames.size() << " splines per entry..." << std::endl;
+    std::cout << "  Containing " << fOrderedBranchWeightNames.size() << " values per entry..." << std::endl;
 
     // Check (and assert) that the branches all have fNEntries
     for ( auto const& [branch, values] : fBranchEntries ){

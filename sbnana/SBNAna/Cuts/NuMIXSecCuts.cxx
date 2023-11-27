@@ -208,6 +208,7 @@ namespace ana {
     else if( kNuMIChargedPionSideBand(slc) ) return 2;
     else if( kNuMINeutralPion2phSideBand(slc) ) return 3; // this should be a subset of 4! so if you want 4, use "3 || 4"
     else if( kNuMINeutralPionSideBand(slc) ) return 4;
+    else if ( kNuMISelection_1muNp0pi_WithoutShowerCut(slc) ) return 5; // this is everything in "1" except it doesn't place a cut on showers...
     else return 0;
 
   });
@@ -221,6 +222,12 @@ namespace ana {
     else if( kNuMINeutralPionSideBand(slc) ) return 4;
     else return 0;
 
+  });
+
+  /// Would pass the split muon cut or not?
+  const Var kNuMIPassesSplitMuonCut([](const caf::SRSliceProxy* slc) -> double {
+    if( kNuMIRejectSplitMuons(slc) ) return 1;
+    else return 0;
   });
 
   // Signal definitions:
@@ -239,8 +246,8 @@ namespace ana {
     return ( slc->truth.index < 0 );
   });
   /// \ref Check 1muNp0pi using vector of primaries
-  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyPhaseSpcaeCut){
-
+  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyPhaseSpcaeCut, bool printouts){
+    if ( printouts ) std::cout << "CHECKING Is1muNp0pi with printouts = true..." << std::endl;
     if ( true_int.index < 0 ) return false;
 
     if ( abs(true_int.pdg) != 14 ||
@@ -250,31 +257,51 @@ namespace ana {
       return false; // not signal
 
     unsigned int nMu(0), nP(0), nPi(0);
-    double MaxMuonP = -5.;
-    double MaxProtonP = -5.;
+    unsigned int genieNPhotons(0), genieNMesons(0), genieNBaryonsAndPi0(0);
+    double maxMomentumP = 0.;
+    bool passProtonPCut = false;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
 
-      if ( abs(prim.pdg) == 13 ){
-        nMu+=1;
-        MaxMuonP = std::max(MaxMuonP, momentum);
+      bool PassMuonPCut = (momentum > 0.226);
+      if ( abs(prim.pdg) == 13 ) {
+        if (ApplyPhaseSpcaeCut ? PassMuonPCut : true) nMu+=1;
       }
 
-      if ( abs(prim.pdg) == 2212 ){
+      if ( abs(prim.pdg) == 2212 ) {
         nP+=1;
-        MaxProtonP = std::max(MaxProtonP, momentum);
+        if ( momentum > maxMomentumP ) {
+          maxMomentumP = momentum;
+          passProtonPCut = (momentum > 0.4 && momentum < 1.);
+        }
       }
 
       if ( abs(prim.pdg) == 111 || abs(prim.pdg) == 211 ) nPi+=1;
+      // CHECK A SIMILAR DEFINITION AS MINERVA FOR EXTRA REJECTION OF UNWANTED THINGS IN SIGNAL DEFN.
+      if ( abs(prim.pdg) == 22 && prim.startE > 0.01 ) genieNPhotons+=1;
+      else if ( abs(prim.pdg) == 211 || abs(prim.pdg) == 321 || abs(prim.pdg) == 323 ||
+                prim.pdg == 111 || prim.pdg == 130 || prim.pdg == 310 || prim.pdg == 311 ||
+                prim.pdg == 313 || abs(prim.pdg) == 221 || abs(prim.pdg) == 331 ) genieNMesons+=1;
+      else if ( prim.pdg == 3112 || prim.pdg == 3122 || prim.pdg == 3212 || prim.pdg == 3222 ||
+                prim.pdg == 4112 || prim.pdg == 4122 || prim.pdg == 4212 || prim.pdg == 4222 ||
+                prim.pdg == 411 || prim.pdg == 421 || prim.pdg == 111 ) genieNBaryonsAndPi0+=1;
     }
-    if ( nMu!=1 || nP==0 || nPi > 0 ) return false;
 
-    if(ApplyPhaseSpcaeCut){
-      if( MaxMuonP<=0.226 ) return false;
-      if( MaxProtonP<=0.4 || MaxProtonP>=1.0 ) return false;
+    // if this would have passed signal cuts before ... without phase space consideration
+    if ( printouts && !( nMu!=1 || nP==0 || nPi > 0 ) ) {
+      std::cout << "---> THIS SLICE WOULD HAVE PASSED SIGNAL CRITERIA BEFORE!!" << std::endl;
     }
+
+    if ( nMu!=1 || nP==0 || nPi > 0 || genieNPhotons > 0 || genieNMesons > 0 || genieNBaryonsAndPi0 > 0 ) {
+      if ( printouts ) {
+        std::cout << "---> !! This slice does not pass the current signal criteria." << std::endl;
+        std::cout << "---> NPhotons > 10 MeV: " << genieNPhotons << ", NMesons: " << genieNMesons << ", NBaryonsPi0: " << genieNBaryonsAndPi0 << std::endl;
+      }
+      return false;
+    }
+    else if ( ApplyPhaseSpcaeCut ) return passProtonPCut; 
 
     return true;
 
@@ -287,6 +314,10 @@ namespace ana {
   const Cut kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut([](const caf::SRSliceProxy* slc) {
     return Is1muNp0pi(slc->truth, true);
   });
+  const Cut kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCutWithPrintouts([](const caf::SRSliceProxy* slc) {
+    return Is1muNp0pi(slc->truth, true, true);
+  });
+  /// \ref TruthCut version of signal def
   const TruthCut kTruthCut_IsSignal([](const caf::SRTrueInteractionProxy* nu) {
     return Is1muNp0pi(*nu, true);
   });
@@ -313,4 +344,34 @@ namespace ana {
     else return 0;
   });
 
+  const Var kNuMISliceSignalTypeWithPrintouts([](const caf::SRSliceProxy* slc) -> int {
+    if ( kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCutWithPrintouts(slc) ) return 1; // Signal (with phase space cut)
+    else if ( kNuMI_1muNp0piStudy_Signal_FailPhaseSpaceCut(slc) ) return 2; // Signal but out of phase space cut (OOPS)
+    else if ( kNuMI_1muNp0piStudy_OtherNuCC(slc) ) return 3; // CC but not (signal without phase space cut)
+    else if ( kNuMI_IsSliceNuNC(slc) ) return 4; // NC
+    else if ( kNuMI_IsSlcNotNu(slc) ) return 5; // Not nu-slice Cosmic
+    else return 0;
+  });
+
+  /// \ref Check if the nu interaction is in the fiducial volume only
+  bool IsNuInFV(const caf::Proxy<caf::SRTrueInteraction>& true_int){
+    if ( true_int.index < 0 ) return false;
+
+    if ( std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z) ||
+         !isInFV(true_int.position.x, true_int.position.y, true_int.position.z) )
+      return false; // not signal
+
+    return true;
+  }
+
+  /// \ref Check if the nu interaction is in the fiducial volume only
+  bool IsNuInAV(const caf::Proxy<caf::SRTrueInteraction>& true_int){
+    if ( true_int.index < 0 ) return false;
+
+    if ( std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z) ||
+         !isInAV(true_int.position.x, true_int.position.y, true_int.position.z) )
+      return false; // not signal
+
+    return true;
+  }
 }

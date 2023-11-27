@@ -38,6 +38,13 @@ namespace ana{
   extern const TruthVar kTruth_Npi0_All;
   extern const TruthVar kTruth_IsFHC; // 0: RHC, 1: FHC; note) dummy for now. always return 1
 
+  // Vertex
+  extern const TruthCut kTruth_VertexInFV;
+  const TruthVar kTruth_NuBaseline = SIMPLETRUTHVAR(baseline);
+  const TruthVar kTruth_NuParentDkX = SIMPLETRUTHVAR(prod_vtx.x);
+  const TruthVar kTruth_NuParentDkY = SIMPLETRUTHVAR(prod_vtx.y);
+  const TruthVar kTruth_NuParentDkZ = SIMPLETRUTHVAR(prod_vtx.z);
+
   // Muon
 
   extern const TruthVar kTruth_MuonIndex;

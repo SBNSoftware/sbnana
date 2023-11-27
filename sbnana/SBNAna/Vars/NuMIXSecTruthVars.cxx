@@ -69,6 +69,18 @@ namespace ana{
     return 1;
   });
 
+  // Vertex
+  const TruthCut kTruth_VertexInFV([](const caf::SRTrueInteractionProxy* nu) {
+    bool isFV = false;
+    if ( !std::isnan(nu->position.x) && !std::isnan(nu->position.y) && !std::isnan(nu->position.z) ) {
+      isFV = (( ( nu->position.x < -61.94 - 25 && nu->position.x > -358.49 + 25 ) ||
+                ( nu->position.x >  61.94 + 25 && nu->position.x <  358.49 - 25 )) &&
+              ( ( nu->position.y > -181.86 + 25 && nu->position.y < 134.96 - 25 ) &&
+                ( nu->position.z > -894.95 + 30 && nu->position.z < 894.95 - 50 ) ));
+    }
+    return (isFV ? 1 : 0);
+  });
+
   // Muon
 
   const TruthVar kTruth_MuonIndex([](const caf::SRTrueInteractionProxy *nu) -> int {

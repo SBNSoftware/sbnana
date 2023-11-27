@@ -56,24 +56,34 @@ namespace ana
   extern const Var kNuMICutType;
   extern const Var kNuMICutTypeWithoutShowerCut;
 
+  /// \ref Var for whether it would pass the RejectSplitMuons cut: 1 (passes, no split muon tagged), 0 (fails, split muon tagged)
+  extern const Var kNuMIPassesSplitMuonCut;
+
   /// \ref Signal definitions: Neutrino Neutral Current
   extern const Cut kNuMI_IsSliceNuNC;
   /// \ref Not nu matched: i.e. cosmic, or noise, or not well-matched to an interaction
   extern const Cut kNuMI_IsSlcNotNu;
 
   /// \ref Check 1muNp0pi using vector of primaries; optionally apply phase space cut
-  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyPhaseSpcaeCut);
+  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyPhaseSpcaeCut, bool printouts=false);
   inline bool Is1muNp0piWithPhaseSpaceCut(const caf::Proxy<caf::SRTrueInteraction>& true_int){ return Is1muNp0pi(true_int, true); }
   /// \ref Signal without phase space cut
   extern const Cut kNuMI_1muNp0piStudy_Signal_WithoutPhaseSpaceCut;
   /// \ref Signal with phase space cut = "Signal"
   extern const Cut kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCut;
+  extern const Cut kNuMI_1muNp0piStudy_Signal_WithPhaseSpaceCutWithPrintouts;
+  /// \ref TruthCut version of signal def
   extern const TruthCut kTruthCut_IsSignal;
   /// \ref Signal but fails phase space cut = "out of phase space" (OOPS)
   extern const Cut kNuMI_1muNp0piStudy_Signal_FailPhaseSpaceCut;
   /// \ref CC but NOT "Signal" or "OOPS"
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC;
 
+  /// \ref Check if it's a neutrino in the fiducial volume
+  bool IsNuInFV(const caf::Proxy<caf::SRTrueInteraction>& true_int);
+  bool IsNuInAV(const caf::Proxy<caf::SRTrueInteraction>& true_int);
+
   /// \ref Var for slice type (CutType; 1=Signal, 2=OOPS, 3=OtherCC, 4=NuNC, 5=NotNu)
   extern const Var kNuMISliceSignalType;
+  extern const Var kNuMISliceSignalTypeWithPrintouts;
 }

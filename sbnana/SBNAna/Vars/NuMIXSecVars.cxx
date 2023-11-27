@@ -6,6 +6,16 @@
 namespace ana {
 
   // Utility functions
+  bool isInAV (double x, double y, double z)
+  {
+    if ( std::isnan(x) || std::isnan(y) || std::isnan(z) ) return false;
+
+    return (( ( x < -61.94 && x > -358.49 ) ||
+              ( x >  61.94 && x <  358.49 )) &&
+            ( ( y > -181.86 && y < 134.96 ) &&
+              ( z > -894.95 && z < 894.95 ) ));
+  }
+  
   bool isInFV (double x, double y, double z)
   {
     if ( std::isnan(x) || std::isnan(y) || std::isnan(z) ) return false;
@@ -41,6 +51,15 @@ namespace ana {
   bool IsPrimaryPFP( const caf::SRSliceProxy* slice, const unsigned int idxTrk ) {
     return slice->reco.pfp.at(idxTrk).parent_is_primary;
   }
+
+  // Dummy vars
+  const Var kNuMIDummyVar1([](const caf::SRSliceProxy* slc) -> int {
+    return 1;
+  });
+
+  const Var kNuMIDummyVar0([](const caf::SRSliceProxy* slc) -> int {
+    return 0;
+  });
 
   //// Utilities for chi2
   double GetChi2MIP(const caf::Proxy<caf::SRTrackCalo>& calo){
@@ -209,7 +228,7 @@ namespace ana {
 
   });
 
-  // MultiVar for the proton candidate indices
+  // MultiVar for the photon candidate indices
   const MultiVar kNuMIPhotonCandidateIdxs([](const caf::SRSliceProxy* slc) -> std::vector<double> {
 
     std::vector<double> rets;
@@ -232,7 +251,9 @@ namespace ana {
            std::isnan(shw.len) || shw.len <= 0. ) continue;
 
       // if it meets this then we're not going to cut on it...
-      if ( std::isnan(shw.plane[2].energy) || std::isinf(shw.plane[2].energy) || shw.plane[2].energy <= 0.04 ) continue;
+      //if ( std::isnan(shw.plane[2].energy) || std::isinf(shw.plane[2].energy) || shw.plane[2].energy <= 0.04 ) continue;
+      // Let's check shower length instead
+      if ( std::isnan(shw.len) || std::isinf(shw.len) || shw.len < 10. ) continue;
 
       // and... if it meets then then we're not going to cut on it...
       if ( std::isnan(shw.conversion_gap) || std::isinf(shw.conversion_gap) || shw.conversion_gap <= 5. ) continue;
@@ -763,6 +784,37 @@ namespace ana {
     return maxE;
   });
 
+  const Var kNuMILeadingPhotonCandidateTrueE([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if(photon_indices.size()<=1) return -5.f;
+
+    // Find 2 most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    unsigned int idxScdy = 0;
+    float scdy = -5.;
+    for ( auto const& photon_idx : photon_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(photon_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxScdy = idxMaxE;
+        scdy = maxE;
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
+        idxScdy = idxI;
+        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
+
+    float trueE = slc->reco.pfp[idxMaxE].shw.truth.p.genE;
+    if ( std::isnan(trueE) || std::isinf(trueE) ) return -5.f;
+
+    return trueE;
+  });
+
   const Var kNuMISecondaryPhotonCandidateE([](const caf::SRSliceProxy* slc) -> float {
     std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
     if(photon_indices.size()<=1) return -5.f;
@@ -789,6 +841,37 @@ namespace ana {
     if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
 
     return scdy;
+  });
+
+  const Var kNuMISecondaryPhotonCandidateTrueE([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if(photon_indices.size()<=1) return -5.f;
+
+    // Find 2 most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    unsigned int idxScdy = 0;
+    float scdy = -5.;
+    for ( auto const& photon_idx : photon_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(photon_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxScdy = idxMaxE;
+        scdy = maxE;
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
+        idxScdy = idxI;
+        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
+
+    float trueE = slc->reco.pfp[idxScdy].shw.truth.p.genE;
+    if ( std::isnan(trueE) || std::isinf(trueE) ) return -5.f;
+
+    return trueE;
   });
 
   const Var kNuMIPhotonCandidatesOpeningAngle([](const caf::SRSliceProxy* slc) -> float {
@@ -887,4 +970,153 @@ namespace ana {
     return ret;
   });
 
+
+  ////// Look at any valid showers in the slice
+  const MultiVar kNuMIShowerCandidateIdxs([](const caf::SRSliceProxy* slc) -> std::vector<double> {
+
+    std::vector<double> rets;
+
+    int primaryInd = kNuMIMuonCandidateIdx(slc);
+    int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
+
+    for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); ++i_pfp){
+
+      if ( i_pfp == (unsigned int)primaryInd || i_pfp == (unsigned int)primaryProtonInd ) {
+        continue; // skip the particle which is the muon or leading proton candidate!
+      }
+      if ( !IsShowerlike(slc, i_pfp) ) { 
+        continue; // skip things with track score > 0.45
+      }
+      auto const& shw = slc->reco.pfp.at(i_pfp).shw;
+
+      // Check if shower fit even seems kind-of valid:
+      if ( std::isnan(shw.start.x) || (shw.start.x > -5.5 && shw.start.x < -4.5) ||
+           std::isnan(shw.len) || shw.len <= 0. ) continue;
+
+      // and... if it meets then then we're not going to cut on it...
+      if ( std::isnan(shw.conversion_gap) || std::isinf(shw.conversion_gap) || shw.conversion_gap <= 5. ) continue;
+
+      rets.push_back( i_pfp );
+    }
+
+    return rets;
+  });
+
+  const Var kNuMILeadingShowerCandidateLen([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> shw_indices = kNuMIShowerCandidateIdxs(slc);
+    if(shw_indices.size()==0) return -5.f;
+
+    // Find most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    for ( auto const& shw_idx : shw_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(shw_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    return slc->reco.pfp[idxMaxE].shw.len;
+  });
+
+  const Var kNuMILeadingShowerCandidateGap([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> shw_indices = kNuMIShowerCandidateIdxs(slc);
+    if(shw_indices.size()==0) return -5.f;
+
+    // Find most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    for ( auto const& shw_idx : shw_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(shw_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( slc->reco.pfp[idxMaxE].shw.conversion_gap >= 0. )
+      return slc->reco.pfp[idxMaxE].shw.conversion_gap;
+    return -5.f;
+  });
+
+  const Var kNuMILeadingShowerCandidateEColl([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> shw_indices = kNuMIShowerCandidateIdxs(slc);
+    if(shw_indices.size()==0) return -5.f;
+
+    // Find most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    for ( auto const& shw_idx : shw_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(shw_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( slc->reco.pfp[idxMaxE].shw.plane[2].energy >= 0. )
+      return slc->reco.pfp[idxMaxE].shw.plane[2].energy;
+    return -5.f;
+  });
+
+  const Var kNuMILeadingShowerCandidateNHitsColl([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> shw_indices = kNuMIShowerCandidateIdxs(slc);
+    if(shw_indices.size()==0) return -5.f;
+
+    // Find most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    for ( auto const& shw_idx : shw_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(shw_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( slc->reco.pfp[idxMaxE].shw.plane[2].nHits >= 0. )
+      return slc->reco.pfp[idxMaxE].shw.plane[2].nHits;
+    return -5.f;
+  });
+
+  const Var kNuMILeadingShowerCandidateOpenAngle([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> shw_indices = kNuMIShowerCandidateIdxs(slc);
+    if(shw_indices.size()==0) return -5.f;
+
+    // Find most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    for ( auto const& shw_idx : shw_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(shw_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( slc->reco.pfp[idxMaxE].shw.open_angle >= 0. )
+      return slc->reco.pfp[idxMaxE].shw.open_angle;
+    return -5.f;
+  });
+
+  const Var kNuMILeadingShowerCandidateTrkFitEColl([](const caf::SRSliceProxy* slc) -> float {
+    std::vector<double> shw_indices = kNuMIShowerCandidateIdxs(slc);
+    if(shw_indices.size()==0) return -5.f;
+
+    // Find most energetic:
+    unsigned int idxMaxE = 0;
+    float maxE = -5.;
+    for ( auto const& shw_idx : shw_indices ) {
+      unsigned int idxI = (unsigned int)std::lround(shw_idx);
+      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
+        idxMaxE = idxI;
+        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
+      }
+    }
+
+    if ( slc->reco.pfp[idxMaxE].trk.calo[2].nhit > 0 && slc->reco.pfp[idxMaxE].trk.calo[2].ke >= 0. )
+      return slc->reco.pfp[idxMaxE].trk.calo[2].ke;
+    return -5.f;
+  });
 }
