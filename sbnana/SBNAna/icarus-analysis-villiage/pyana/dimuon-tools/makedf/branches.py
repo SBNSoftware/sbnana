@@ -1,3 +1,16 @@
+mchdrbranches = [
+    "rec.hdr.pot",
+    "rec.hdr.first_in_subrun",
+    "rec.hdr.ismc",
+    "rec.hdr.run",
+    "rec.hdr.subrun",
+    "rec.hdr.ngenevt",
+    "rec.hdr.evt",
+    "rec.hdr.proc",
+    "rec.hdr.cluster",
+    "rec.hdr.fno",
+]
+
 hdrbranches = [
     "rec.hdr.pot",
     "rec.hdr.first_in_subrun",
