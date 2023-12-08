@@ -9,6 +9,10 @@ def make_hdrdf(f):
     hdr = loadbranches(f["recTree"], hdrbranches).rec.hdr
     return hdr
 
+def make_mchdrdf(f):
+    hdr = loadbranches(f["recTree"], mchdrbranches).rec.hdr
+    return hdr
+
 def make_potdf(f):
     pot = loadbranches(f["recTree"], potbranches).rec.hdr.numiinfo
     return pot
@@ -235,7 +239,7 @@ def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=T
 
     if recalo:
         # determine MC or data
-        hdrdf = make_hdrdf(f)
+        hdrdf = make_mchdrdf(f)
         ismc = hdrdf.ismc.iloc[0]
         trkhitdf = make_trkhitdf(f)
 
@@ -419,6 +423,7 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
 
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==2112).groupby(level=[0,1]).sum().rename(("nn", "")))
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==2212).groupby(level=[0,1]).sum().rename(("np", "")))
+    mcdf = mcdf.join((np.abs(mcprimdf.pdg)==13).groupby(level=[0,1]).sum().rename(("nmu", "")))
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==211).groupby(level=[0,1]).sum().rename(("npi", "")))
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==111).groupby(level=[0,1]).sum().rename(("npi0", "")))
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==22).groupby(level=[0,1]).sum().rename(("ng", "")))
@@ -527,7 +532,7 @@ def make_stubs(f):
     stubhitdf = stubhitdf.join(stubdf.efield_vtx)
     stubhitdf = stubhitdf.join(stubdf.efield_end)
 
-    hdrdf = make_hdrdf(f)
+    hdrdf = make_mchdrdf(f)
     ismc = hdrdf.ismc.iloc[0]
     def dEdx2dQdx_mc(dEdx): # MC parameters
         beta = MODB_mc / (LAr_density_gmL_mc * Efield_mc)
@@ -590,7 +595,7 @@ def make_stubs(f):
 
     stub_length_bins = [0, 0.5, 1, 2, 3]
     stub_length_name = ["l0_5cm", "l1cm", "l2cm", "l3cm"]
-    tosave = ["dedx", "dedx_callo", "dedx_calhi", "Q", "length"] 
+    tosave = ["dedx", "dedx_callo", "dedx_calhi", "Q", "length", "charge", "inc_charge"] 
 
     df_tosave = []
     for blo, bhi, name in zip(stub_length_bins[:-1], stub_length_bins[1:], stub_length_name):
