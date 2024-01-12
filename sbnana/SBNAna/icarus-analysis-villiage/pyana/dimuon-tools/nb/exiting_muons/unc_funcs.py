@@ -2,6 +2,9 @@
 
 from math import dist
 import numpy as np
+import pandas as pd 
+from util import *
+from pyanalib import panda_helpers
 
 def decay_in_icarus(in_dist, out_dist, mean_dist): # same as what Gray defined as "decay weight." I've changed the name bc technically the decay weight also includes a factor of the branching fraction (which is just 1 for hps, where it always decays into muons where we are looking).
     return np.exp(-in_dist / mean_dist) - \
@@ -92,15 +95,17 @@ def add_hdr_info(df):
 # COLORS
 
 blues = ["#B0E0E6", "#87CEEB", "#6495ED", "#1E90FF","#4682B4", "#00008B"]
-greens = ["#CFFCDA", "#8DF9A7", "#72DF8C", "#48B161", "#2C8942", "#145C25", "#054915"]
+greens = ["#CFFCDA", "#8DF9A7", "#72DF8C", "#48B161", "#2C8942", "#145C25", "#054915", "#D1F725"]
 purples = ["#D8BFD8", "#9370DB", "#663399"]
 oranges = ["#FECC88", "#FCC171", "#ECA646", "#DE9025", "#CD7A08", "#A15F03"]#, "#", "#"]
+#greens = ["#8FBC8F", "#2E8B57", "#556B2F", "#006400"]
+#oranges = ["#FFDAB9", "#A0522D", "#F4A460"]
 # Use this to find html hex string color codes: https://htmlcolorcodes.com 
 
 # BROAD CATEGORIES ( BSM model + benchmark | nu | cosmic )
 # tmatch = truth match (based on what contributed most E to slice)
 
-def make_categories(df, bsm=False): 
+def make_categories(df, bsm=False, detailed_nu=False):
     
     is_higgs = (df.slc.tmatch.idx >= 0) & df.higgs & (df.slc.truth.npi == 0) & (df.slc.truth.npi0 == 0) # Only consider muon channel, exclude any Higgs that decayed to pions.
     #is_higgs.name = "Scalar"
@@ -133,10 +138,43 @@ def make_categories(df, bsm=False):
         bm.color = greens[l]
         alp_nosup_benchmarks.append( bm )
         
-    #is_nu = (df.slc.tmatch.idx >= 0) & ~df.higgs
     is_nu = (df.slc.tmatch.idx >= 0) & df.nu
-    is_nu.name = "$\\nu$"
-    is_nu.color = "C1"
+    if detailed_nu:
+        
+        numu_cc_coh = is_nu & (df.slc.truth.genie_mode == 3) & (np.abs(df.slc.truth.pdg) == 14) & (df.slc.truth.iscc.astype('bool'))
+        numu_cc_coh.name = '$\\nu_\\mu$ CC COH'
+        numu_cc_coh.color = '#FADD28' #oranges[0]
+        
+        numu_cc_npizp = (is_nu & 
+                         (df.slc.truth.genie_mode != 3) & (np.abs(df.slc.truth.pdg) == 14) & 
+                         (df.slc.truth.iscc.astype('bool')) & (df.slc.truth.npi >= 1) & (df.slc.truth.npi0==0) &
+                         (df.slc.truth.max_proton_ke < 0.02) )
+        numu_cc_npizp.name = "$\\nu_\\mu$ CC n$\\pi$0p"
+        numu_cc_npizp.color = oranges[1]
+        
+        numu_cc_npinp = ( is_nu & 
+                         (df.slc.truth.genie_mode != 3) & (np.abs(df.slc.truth.pdg) == 14) & 
+                         (df.slc.truth.iscc.astype('bool')) & (df.slc.truth.npi >= 1) & (df.slc.truth.npi0==0) & 
+                         (df.slc.truth.max_proton_ke >= 0.02))
+        numu_cc_npinp.name = '$\\nu_\\mu$ CC n$\\pi$np'
+        numu_cc_npinp.color = oranges[2]
+        
+        numu_cc_other = ( is_nu & 
+                         (df.slc.truth.genie_mode != 3) & 
+                         (np.abs(df.slc.truth.pdg) == 14) & (df.slc.truth.iscc.astype('bool')) & 
+                         ( (df.slc.truth.npi<1) | (df.slc.truth.npi0!=0) )
+                        )
+        numu_cc_other.name = '$\\nu_\\mu$ CC Other'
+        numu_cc_other.color = oranges[3]
+        
+        not_numu_cc = is_nu & ( (np.abs(df.slc.truth.pdg) != 14) | ~df.slc.truth.iscc.astype('bool') )
+        not_numu_cc.name = 'not $\\nu_\\mu$ CC'
+        not_numu_cc.color = oranges[4]
+        
+    else:
+        is_nu.name = "$\\nu$"
+        is_nu.color = "C1"
+        
     
     is_cosmic = df.slc.tmatch.idx < 0 # from any file, so I'm assuming both samples include cosmics.
     is_cosmic.name = "Cosmic"
@@ -149,10 +187,18 @@ def make_categories(df, bsm=False):
         categories = [is_bsm] + [is_nu] + [is_cosmic]
         return categories
     
+    if detailed_nu:
+        categories = (higgs_benchmarks + alp_benchmarks + alp_nosup_benchmarks + 
+                      [numu_cc_coh] + [numu_cc_npizp] + [numu_cc_npinp] + [numu_cc_other] + [not_numu_cc] + 
+                      [is_cosmic] 
+                     )
+        return categories
+    
     else:
         #categories = [is_higgs, is_axion, is_alp, is_nu, is_cosmic]
         categories = higgs_benchmarks + alp_benchmarks + alp_nosup_benchmarks + [is_nu] + [is_cosmic]
         return categories
+
 
 def apply_cuts(df, cuts, flip_last_cut=False):
     
@@ -204,3 +250,72 @@ def apply_cuts(df, cuts, flip_last_cut=False):
         cut_results_df_percent.loc[func_output[1]] = np.array(row_mc)/np.array(first_row_mc)
     
     return cut_results_df_mc, cut_results_df_pot, cut_results_df_percent, master_mask 
+
+def angle_between_vecs(a,b, deg=False): #a and b need to be numpy arrays of same length
+    rad = np.arccos(a.dot(b)/(np.sqrt(a.dot(a))*np.sqrt(b.dot(b))))
+    if deg:
+        return rad*180./np.pi
+    else:
+        return rad
+
+# NuMI Angle stuff:
+
+beam2det = np.array([ [0.921035925, 0.022715103, 0.388814672], [0, 0.998297825, -0.058321970], [-0.389477631, 0.053716629, 0.919468161]])
+beamorigin = np.array([4.503730e2, 80.153901e2, 795.112945e2])
+
+BEAMDIR = beam2det.dot(beamorigin) / np.linalg.norm(beam2det.dot(beamorigin)) 
+print(BEAMDIR)
+
+def Sbeamangle(trunk_track, branch_track, beamdir, method): # Use this for Reco!!
+    if method == 'range':
+        trunk_mom = trunk_track.rangeP.p_muon
+        branch_mom = branch_track.rangeP.p_muon
+    if method == 'mcs':
+        trunk_mom = trunk_track.mcsP.fwdP_muon
+        branch_mom = branch_track.mcsP.fwdP_muon
+    if method == 'track_truth':
+        trunk_mom = np.sqrt(trunk_track.truth.p.genp.x*trunk_track.truth.p.genp.x +
+                            trunk_track.truth.p.genp.y*trunk_track.truth.p.genp.y +
+                            trunk_track.truth.p.genp.z*trunk_track.truth.p.genp.z
+                           )
+        branch_mom = np.sqrt(branch_track.truth.p.genp.x*branch_track.truth.p.genp.x +
+                            branch_track.truth.p.genp.y*branch_track.truth.p.genp.y +
+                            branch_track.truth.p.genp.z*branch_track.truth.p.genp.z
+                           )
+    if method == 'weight_by_len': # Instead of weighting by track momentum which would be most correct, just weight by track length.
+        trunk_mom = trunk_track.len
+        branch_mom = branch_track.len
+    if method == 'dir_only':
+        trunk_mom = 1.
+        branch_mom = 1.
+    
+    scalar_mom = trunk_track.dir.multiply(trunk_mom, axis=0) + \
+           branch_track.dir.multiply(branch_mom, axis=0)    
+    scalar_dir = scalar_mom.divide(magdf(scalar_mom), axis=0)
+    ## 11/27/23: error w/ above line from magdf, but IDK why this worked before. 
+    Sbeamangle = np.arccos(scalar_dir.x*beamdir[0] + scalar_dir.y*beamdir[1] + scalar_dir.z*beamdir[2])
+    return Sbeamangle
+
+def true_Sbeamangle(p0_genp, p1_genp, beamdir): # Use this for Truth!!
+    scalar_mom = np.array( [ p0_genp.y+p1_genp.x, p0_genp.y+p1_genp.y, p0_genp.z+p1_genp.z ])
+    Sbeamangle = []
+    for row in scalar_mom.T: # same as column in scalar_mom
+        Sbeamangle.append( angle_between_vecs(row, beamdir) )
+    print(len(Sbeamangle))
+    return Sbeamangle
+
+def getp(track, method):
+    if method == 'range':
+        mom = track.rangeP.p_muon
+    if method == 'mcs':
+        mom = track.mcsP.fwdP_muon
+    if method == 'track_truth':
+        mom = np.sqrt(track.truth.p.genp.x*track.truth.p.genp.x +
+                      track.truth.p.genp.y*track.truth.p.genp.y +
+                      track.truth.p.genp.z*track.truth.p.genp.z
+                     )
+    return mom
+
+
+# PLOTTING FUNCTIONS:
+
