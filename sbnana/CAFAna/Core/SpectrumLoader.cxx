@@ -724,20 +724,23 @@ namespace ana
           // expensive, so modify it in place and revert it afterwards.
           caf::SRProxySystController::BeginTransaction();
 
-          bool shifted = false;
+          // One should use "WeightTree" for the reweight-based systematics
+          // Here we treat "latera"l shifts
 
-          double systWeight = 1;
+          bool truth_shifted = false;
+
+          double truth_systWeight = 1; // but we don't use this reweights
           // Can special-case nominal to not pay cost of Shift()
           if(!shift.IsNominal()){
-            shift.Shift(&nu, systWeight);
+            shift.Shift(&nu, truth_systWeight);
             // If there were only weighting systs applied then the cached
             // nominal values are still valid.
-            shifted = caf::SRProxySystController::AnyShifted();
+            truth_shifted = caf::SRProxySystController::AnyShifted();
           }
 
           //unsigned int idxCut = 0; // testing
           for ( auto& [truthcut, treemap] : truthcutmap ) {
-            const bool pass = shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
+            const bool pass = truth_shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
             // Cut failed, skip all the histograms that depended on it
             if(!pass) continue;
 
@@ -756,7 +759,7 @@ namespace ana
                 }
 
                 const TruthVar& truthvar = truthvarormulti.GetVar();
-                const double truthval = shifted ? truthvar(&nu) : nomTruthVarCache.Get(truthvar, &nu);
+                const double truthval = truth_shifted ? truthvar(&nu) : nomTruthVarCache.Get(truthvar, &nu);
 
                 //std::cout << "    VAL = " << turthval << std::endl;
 
@@ -784,10 +787,21 @@ namespace ana
 
               if ( treemapIt->first->SaveTruthCutType() ){
                 // Loop over reco slices, and check if the truth-matched slice pass the (Slice)Cut
+
                 bool HasMatchedSlicePassCut = false;
-                for ( auto const& slc : sr->slc ) {
+                for ( auto& slc : sr->slc ) {
                   if ( slc.truth.index < 0 ) continue;
                   else if ( slc.truth.index != nu.index ) continue;
+
+
+                  // Here we should shift "Slice-based" Systs
+                  // E.g., Calo syst
+
+                  double slice_systWeight = 1;
+                  // Can special-case nominal to not pay cost of Shift()
+                  if(!shift.IsNominal()){
+                    shift.Shift(&slc, slice_systWeight);
+                  }
                   if( treemapIt->first->GetSignalSelectionCut()(&slc) ){
                     HasMatchedSlicePassCut = true;
                     break;
