@@ -793,16 +793,19 @@ namespace ana
                   if ( slc.truth.index < 0 ) continue;
                   else if ( slc.truth.index != nu.index ) continue;
 
-
                   // Here we should shift "Slice-based" Systs
                   // E.g., Calo syst
 
+                  caf::SRProxySystController::BeginTransaction();
                   double slice_systWeight = 1;
                   // Can special-case nominal to not pay cost of Shift()
                   if(!shift.IsNominal()){
                     shift.Shift(&slc, slice_systWeight);
                   }
-                  if( treemapIt->first->GetSignalSelectionCut()(&slc) ){
+                  bool PassSignalSelectionCut = treemapIt->first->GetSignalSelectionCut()(&slc);
+                  caf::SRProxySystController::Rollback();
+
+                  if( PassSignalSelectionCut ){
                     HasMatchedSlicePassCut = true;
                     break;
                   }
