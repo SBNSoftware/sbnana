@@ -34,7 +34,6 @@ namespace ana {
   double NuMIXSecPiSyst::GetSPPQ2Reweight(double Q2_GeV2) const {
 
     double X = Q2_GeV2;
-    if(X>=3.000000) X = 3.000000;
 
     double this_rw = 1.;
     if( X < 0.025000) this_rw = 1.253255;
@@ -83,7 +82,7 @@ namespace ana {
     // Check res
 
     int NeutCode = NeutReactionCode(sr);
-    if( abs(NeutCode)!=11 || abs(NeutCode)!= 12 || abs(NeutCode)!= 13) return;
+    if( abs(NeutCode)!=11 && abs(NeutCode)!= 12 && abs(NeutCode)!= 13) return;
 
     int TargetPDG = kTruth_Target(sr);
     int TargetA = ((TargetPDG % 10000)) / 10;
@@ -96,11 +95,12 @@ namespace ana {
     double TpiRW = GetSPPTpiReweight(Tpi);
     double FullRW = Q2RW*TpiRW;
 
+
     double this_sigma = sigma;
     if(sigma<0) this_sigma = 0.;
-    if(this_sigma>1) this_sigma = 1.;
+    if(sigma>1) this_sigma = 1.;
 
-    double this_rw = (1.-sigma) * 1. + sigma * FullRW;
+    double this_rw = (1.-this_sigma) * 1. + this_sigma * FullRW;
 
     weight *= this_rw;
 
