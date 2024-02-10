@@ -31,7 +31,7 @@ namespace ana {
 
   }
 
-  double NuMIXSecPiSyst::GetSPPQ2Reweight(double Q2_GeV2, double parameter_value) const {
+  double NuMIXSecPiSyst::GetSPPQ2Reweight(double Q2_GeV2) const {
 
     double X = Q2_GeV2;
     if(X>=3.000000) X = 3.000000;
@@ -53,10 +53,10 @@ namespace ana {
       this_rw = 1.;
     }
 
-    return (1-parameter_value) * 1. + parameter_value * this_rw;
+    return this_rw;
 
   }
-  double NuMIXSecPiSyst::GetSPPTpiReweight(double Tpi_GeV, double parameter_value) const {
+  double NuMIXSecPiSyst::GetSPPTpiReweight(double Tpi_GeV) const {
 
     static double const P0 = 1.347965;
     //static double const P0Err = 0.097783;
@@ -69,12 +69,7 @@ namespace ana {
     double this_rw = P0 + P1 * X;
     if(this_rw<0) this_rw = 1.;
 
-    //std::cout << "[GetSPPTpiReweight] Tpi_GeV = " << Tpi_GeV << ", RW = " << this_rw << std::endl;
-
-    // dial = 0 : 1
-    // dial = 1 : this_rw
-
-    return (1-parameter_value) * 1. + parameter_value * this_rw;
+    return this_rw;
 
   }
 
@@ -97,10 +92,17 @@ namespace ana {
     double Q2 = kTruth_Q2(sr);
     double Tpi = kTruth_ChargedPionKE(sr);
 
-    double Q2RW = GetSPPQ2Reweight(Q2, sigma);
-    double TpiRW = GetSPPTpiReweight(Tpi, sigma);
+    double Q2RW = GetSPPQ2Reweight(Q2);
+    double TpiRW = GetSPPTpiReweight(Tpi);
+    double FullRW = Q2RW*TpiRW;
 
-    weight *= Q2RW*TpiRW;
+    double this_sigma = sigma;
+    if(sigma<0) this_sigma = 0.;
+    if(this_sigma>1) this_sigma = 1.;
+
+    double this_rw = (1.-sigma) * 1. + sigma * FullRW;
+
+    weight *= this_rw;
 
   }
 

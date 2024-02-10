@@ -17,8 +17,8 @@ namespace ana
 
     NuMIXSecPiSyst(const std::string& name, const std::string& latexName);
 
-    double GetSPPQ2Reweight(double Q2_GeV2, double parameter_value) const;
-    double GetSPPTpiReweight(double Tpi_GeV, double parameter_value) const;
+    double GetSPPQ2Reweight(double Q2_GeV2) const;
+    double GetSPPTpiReweight(double Tpi_GeV) const;
 
     // copied from https://github.com/GENIE-MC/Generator/blob/b336eb7b8b99957677979ab44bd0e0062f46efef/src/Framework/GHEP/GHepUtils.cxx#L22
     int NeutReactionCode(caf::SRTrueInteractionProxy *sr) const;
