@@ -1,0 +1,11 @@
+cmake3
+*.pyc
+__pycache__
+*__pycache__
+nb/.ipynb_checkpoints
+nb/plots*
+env
+test/*.df
+sbnd
+*.out
+*.log
