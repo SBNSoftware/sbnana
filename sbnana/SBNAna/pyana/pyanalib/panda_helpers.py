@@ -31,15 +31,23 @@ def multicol_add(df, s):
 
     return df.join(s)
 
-def multicol_addkey(df,s,fill=np.nan):
+def multicol_addkey(df,s,fill=np.nan,inplace=False):
     #can't handle s larger then length of df
     if isinstance(s,str):
         s = [s]
     nlevel = df.columns.nlevels
+    s_depth = max([len(k.split('.')) for k in s]) #depth of s
+    # Pad DataFrame's keys if s has larger depth
+    if s_depth > nlevel:
+        padding = [''] * (s_depth - nlevel)
+        df.columns = pd.MultiIndex.from_tuples([list(col) + padding for col in df.columns])
     col = getcolumns(s,depth=nlevel)
     data = np.full((len(df),len(s)),fill)
     new = pd.MultiIndex.from_tuples(col)
-    return pd.concat([df, pd.DataFrame(data, index=df.index, columns=new)], axis=1)
+    if inplace:
+        df[new] = pd.DataFrame(data, index=df.index, columns=new)
+    else:
+        return pd.concat([df, pd.DataFrame(data, index=df.index, columns=new)], axis=1)
     
     
 
@@ -145,5 +153,3 @@ def loadbranches(tree, branches, **uprargs):
     columns = getcolumns(branches)
     df.columns = pd.MultiIndex.from_tuples(columns)
     return df
-
-

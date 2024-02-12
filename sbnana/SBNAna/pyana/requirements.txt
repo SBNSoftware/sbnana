@@ -13,6 +13,6 @@ h5py
 tables
 emcee
 corner
-xrootd
+#xrootd
 lz4
 xxhash

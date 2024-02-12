@@ -4,6 +4,185 @@ trkbranch = pfpbranch + "trk."
 shwbranch = pfpbranch + "shw."
 hdrbranch = 'rec.hdr.'
 mcprimbranch = 'rec.mc.nu.prim.'
+crumbsbranch = slcbranch + "crumbs_result."
+opt0branch = slcbranch + "opt0."
+truthbranch = slcbranch + "truth."
+
+crumbsbranches = [
+    crumbsbranch + 'bestid',
+    crumbsbranch + 'bestscore',
+    crumbsbranch + 'ccnuescore',
+    crumbsbranch + 'ccnumuscore',
+    crumbsbranch + 'crt.hitscore',
+    crumbsbranch + 'crt.hittime',
+    crumbsbranch + 'crt.trackscore',
+    crumbsbranch + 'crt.tracktime',
+    crumbsbranch + 'ncscore',
+    crumbsbranch + 'pds.fmpe',
+    crumbsbranch + 'pds.fmtime',
+    crumbsbranch + 'pds.fmtotalscore',
+    crumbsbranch + 'score',
+    crumbsbranch + 'tpc.crlongtrackdefl',
+    crumbsbranch + 'tpc.crlongtrackdiry',
+    crumbsbranch + 'tpc.crlongtrackhitfrac',
+    crumbsbranch + 'tpc.crnhitsmax',
+    crumbsbranch + 'tpc.nufinalstatepfos',
+    crumbsbranch + 'tpc.nusphereeigenratio',
+    crumbsbranch + 'tpc.nuspherespacepoints',
+    crumbsbranch + 'tpc.nutotalhits',
+    crumbsbranch + 'tpc.nuvertexy',
+    crumbsbranch + 'tpc.nuwgtdirz',
+    crumbsbranch + 'tpc.stoppingchi2ratio'
+]
+
+opt0branches = [
+ slcbranch + 'opt0.hypoPE',
+ slcbranch + 'opt0.measPE',
+ slcbranch + 'opt0.score',
+ slcbranch + 'opt0.time',
+ slcbranch + 'opt0.tpc',
+ slcbranch + 'opt0_sec.hypoPE',
+ slcbranch + 'opt0_sec.measPE',
+ slcbranch + 'opt0_sec.score',
+ slcbranch + 'opt0_sec.time',
+ slcbranch + 'opt0_sec.tpc',
+]
+
+fmatchbranches = [
+ slcbranch + 'fmatch.chargeCenter.x',
+ slcbranch + 'fmatch.chargeCenter.y',
+ slcbranch + 'fmatch.chargeCenter.z',
+ slcbranch + 'fmatch.chargeQ',
+ slcbranch + 'fmatch.chargeWidth.x',
+ slcbranch + 'fmatch.chargeWidth.y',
+ slcbranch + 'fmatch.chargeWidth.z',
+ slcbranch + 'fmatch.lightCenter.x',
+ slcbranch + 'fmatch.lightCenter.y',
+ slcbranch + 'fmatch.lightCenter.z',
+ slcbranch + 'fmatch.lightPE',
+ slcbranch + 'fmatch.lightWidth.x',
+ slcbranch + 'fmatch.lightWidth.y',
+ slcbranch + 'fmatch.lightWidth.z',
+ slcbranch + 'fmatch.present',
+ slcbranch + 'fmatch.score',
+ slcbranch + 'fmatch.scorePEToQ',
+ slcbranch + 'fmatch.scoreRR',
+ slcbranch + 'fmatch.scoreRatio',
+ slcbranch + 'fmatch.scoreSlope',
+ slcbranch + 'fmatch.scoreY',
+ slcbranch + 'fmatch.scoreZ',
+ slcbranch + 'fmatch.time',
+ slcbranch + 'fmatch_a.chargeCenter.x',
+ slcbranch + 'fmatch_a.chargeCenter.y',
+ slcbranch + 'fmatch_a.chargeCenter.z',
+ slcbranch + 'fmatch_a.chargeQ',
+ slcbranch + 'fmatch_a.chargeWidth.x',
+ slcbranch + 'fmatch_a.chargeWidth.y',
+ slcbranch + 'fmatch_a.chargeWidth.z',
+ slcbranch + 'fmatch_a.lightCenter.x',
+ slcbranch + 'fmatch_a.lightCenter.y',
+ slcbranch + 'fmatch_a.lightCenter.z',
+ slcbranch + 'fmatch_a.lightPE',
+ slcbranch + 'fmatch_a.lightWidth.x',
+ slcbranch + 'fmatch_a.lightWidth.y',
+ slcbranch + 'fmatch_a.lightWidth.z',
+ slcbranch + 'fmatch_a.present',
+ slcbranch + 'fmatch_a.score',
+ slcbranch + 'fmatch_a.scorePEToQ',
+ slcbranch + 'fmatch_a.scoreRR',
+ slcbranch + 'fmatch_a.scoreRatio',
+ slcbranch + 'fmatch_a.scoreSlope',
+ slcbranch + 'fmatch_a.scoreY',
+ slcbranch + 'fmatch_a.scoreZ',
+ slcbranch + 'fmatch_a.time',
+ slcbranch + 'fmatch_b.chargeCenter.x',
+ slcbranch + 'fmatch_b.chargeCenter.y',
+ slcbranch + 'fmatch_b.chargeCenter.z',
+ slcbranch + 'fmatch_b.chargeQ',
+ slcbranch + 'fmatch_b.chargeWidth.x',
+ slcbranch + 'fmatch_b.chargeWidth.y',
+ slcbranch + 'fmatch_b.chargeWidth.z',
+ slcbranch + 'fmatch_b.lightCenter.x',
+ slcbranch + 'fmatch_b.lightCenter.y',
+ slcbranch + 'fmatch_b.lightCenter.z',
+ slcbranch + 'fmatch_b.lightPE',
+ slcbranch + 'fmatch_b.lightWidth.x',
+ slcbranch + 'fmatch_b.lightWidth.y',
+ slcbranch + 'fmatch_b.lightWidth.z',
+ slcbranch + 'fmatch_b.present',
+ slcbranch + 'fmatch_b.score',
+ slcbranch + 'fmatch_b.scorePEToQ',
+ slcbranch + 'fmatch_b.scoreRR',
+ slcbranch + 'fmatch_b.scoreRatio',
+ slcbranch + 'fmatch_b.scoreSlope',
+ slcbranch + 'fmatch_b.scoreY',
+ slcbranch + 'fmatch_b.scoreZ',
+ slcbranch + 'fmatch_b.time',
+]
+
+truthbranches = [
+ truthbranch+ 'E',
+ truthbranch+ 'Q2',
+ truthbranch+ 'baseline',
+ truthbranch+ 'bjorkenX',
+ truthbranch+ 'cryostat',
+ truthbranch+ 'det',
+ truthbranch+ 'eccqe',
+ truthbranch+ 'generator',
+ truthbranch+ 'genie_inttype',
+ truthbranch+ 'genie_mode',
+ truthbranch+ 'genweight',
+ truthbranch+ 'hitnuc',
+ truthbranch+ 'imp_weight',
+ truthbranch+ 'index',
+ truthbranch+ 'inelasticityY',
+ truthbranch+ 'initpdg',
+ truthbranch+ 'is_numucc_primary',
+ truthbranch+ 'iscc',
+ truthbranch+ 'ischarm',
+ truthbranch+ 'isnc',
+ truthbranch+ 'isseaquark',
+ truthbranch+ 'isvtxcont',
+ truthbranch+ 'modq',
+ truthbranch+ 'modq_lab',
+ truthbranch+ 'momentum.x',
+ truthbranch+ 'momentum.y',
+ truthbranch+ 'momentum.z',
+ truthbranch+ 'nneutron',
+ truthbranch+ 'npiminus',
+ truthbranch+ 'npiplus',
+ truthbranch+ 'npizero',
+ truthbranch+ 'nprim',
+ truthbranch+ 'nproton',
+ truthbranch+ 'parent_dcy_E',
+ truthbranch+ 'parent_dcy_mode',
+ truthbranch+ 'parent_dcy_mom.x',
+ truthbranch+ 'parent_dcy_mom.y',
+ truthbranch+ 'parent_dcy_mom.z',
+ truthbranch+ 'parent_pdg',
+ truthbranch+ 'pdg',
+ truthbranch+ 'plane.0.0.nhit',
+ truthbranch+ 'plane.0.0.nhitprim',
+ truthbranch+ 'plane.0.0.visE',
+ truthbranch+ 'plane.0.1.nhit',
+ truthbranch+ 'plane.0.1.nhitprim',
+ truthbranch+ 'plane.0.1.visE',
+ truthbranch+ 'plane.0.2.nhit',
+ truthbranch+ 'plane.0.2.nhitprim',
+ truthbranch+ 'plane.0.2.visE',
+ truthbranch+ 'plane.1.0.nhit',
+ truthbranch+ 'plane.1.0.nhitprim',
+ truthbranch+ 'plane.1.0.visE',
+ truthbranch+ 'plane.1.1.nhit',
+ truthbranch+ 'plane.1.1.nhitprim',
+ truthbranch+ 'plane.1.1.visE',
+ truthbranch+ 'plane.1.2.nhit',
+ truthbranch+ 'plane.1.2.nhitprim',
+ truthbranch+ 'plane.1.2.visE',
+ truthbranch+ 'position.x',
+ truthbranch+ 'position.y',
+ truthbranch+ 'position.z',
+]
 
 mcprimbranches = [
     mcprimbranch + 'plane.0.0.nhit',
@@ -43,6 +222,7 @@ trueparticlenames = [
     "end_process",
     "pdg",
     "startE",
+    "endE",
     "start.x", "start.y", "start.z",
     "end.x", "end.y", "end.z",
     "genp.x", "genp.y", "genp.z",
@@ -144,6 +324,8 @@ trkbranches = [
   trkbranch + "mcsP.fwdP_muon",
   trkbranch + "rangeP.p_pion",
   trkbranch + "mcsP.fwdP_pion",
+  trkbranch + "rangeP.p_proton",
+  trkbranch + "mcsP.fwdP_proton",
   trkbranch + "bestplane",
   trkbranch + "crthit.distance",
   trkbranch + "crthit.hit.time",
@@ -161,24 +343,6 @@ trkbranches = [
   trkbranch + 'dazzle.pionScore',
   trkbranch + 'dazzle.protonScore',
 ]
-
-for n in trueparticlenames: trkbranches.append(trkbranch + "truth.p." + n)
-for n in trueparticlenames: shwbranches.append(shwbranch + "truth.p." + n)
-
-for n in bestmatchnames: trkbranches.append(trkbranch + "truth.bestmatch." + n)
-for n in bestmatchnames: shwbranches.append(shwbranch + "truth.bestmatch." + n)
-
-
-mcprimbranches += [mcprimbranch + b for b in trueparticlenames]
-pfpallbranches = pfpbranches+trkbranches+shwbranches
-trkbranches += pfpbranches
-shwbranches += pfpbranches
-
-#This causes a length mismatch
-# pfpinds = hdrinds + [
-#     pfpbranch + 'slcID',
-#     pfpbranch + 'id'
-#     ]
 
 pfp_daughter_branch = [
     pfpbranch + "daughters"
@@ -206,14 +370,15 @@ trkhitbranches = [
 ]
 
 slcbranches = [
-    "rec.slc.is_clear_cosmic",
-    "rec.slc.vertex.x", "rec.slc.vertex.y", "rec.slc.vertex.z",
-    "rec.slc.self",
-    "rec.slc.tmatch.eff",
-    "rec.slc.tmatch.pur",
-    "rec.slc.tmatch.index",
-    "rec.slc.producer",
-    "rec.slc.nuid.crlongtrkdiry"
+    slcbranch + "vertex.x", slcbranch + "vertex.y", slcbranch + "vertex.z",
+    slcbranch + "tmatch.eff",
+    slcbranch + "tmatch.pur",
+    slcbranch + "tmatch.index",
+    slcbranch + "producer",
+    slcbranch + "nuid.crlongtrkdiry",
+    slcbranch + 'is_clear_cosmic',
+    #slcbranch + 'nu_pdg',
+    slcbranch + 'nu_score',
 ]
 
 mcnubranches = [
@@ -223,12 +388,22 @@ mcnubranches = [
     "rec.mc.nu.position.z",
     "rec.mc.nu.pdg",
     "rec.mc.nu.iscc",
-    "rec.mc.nu.genie_mode"
+    "rec.mc.nu.genie_mode",
+    "rec.mc.nu.genweight",
 ]
 
-#Comment this out if you are not using hdr inds in your dataframes
-mcnubranches += hdrinds
-mcprimbranches += hdrinds
-pfpbranches += hdrinds
+for n in trueparticlenames: trkbranches.append(trkbranch + "truth.p." + n)
+for n in trueparticlenames: shwbranches.append(shwbranch + "truth.p." + n)
+
+for n in bestmatchnames: trkbranches.append(trkbranch + "truth.bestmatch." + n)
+for n in bestmatchnames: shwbranches.append(shwbranch + "truth.bestmatch." + n)
+
+
+mcprimbranches += [mcprimbranch + b for b in trueparticlenames]
+pfpallbranches = pfpbranches+trkbranches+shwbranches
+slcbranches = crumbsbranches + opt0branches + fmatchbranches + slcbranches + truthbranches
+trkbranches += pfpbranches
+shwbranches += pfpbranches
+
 
 

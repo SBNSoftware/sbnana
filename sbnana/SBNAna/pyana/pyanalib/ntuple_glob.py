@@ -65,6 +65,7 @@ def _loaddf(applyfs, inds,g):
         return None
     with f:
         try:
+            
             dfs = [applyf(f,inds[i]) for i,applyf in enumerate(applyfs)]
         except Exception as e:
             print("Error processing file (%s). Skipping..." % fname)
