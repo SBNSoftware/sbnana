@@ -16,6 +16,7 @@ namespace ana {
   double NuMIXSecPiSyst::GetSPPQ2Reweight(double Q2_GeV2) const {
 
     double X = Q2_GeV2;
+    if(Q2_GeV2>=3.0) X = 2.5;
 
     double this_rw = 1.;
     if( X < 0.025000) this_rw = 1.253255;
@@ -31,7 +32,7 @@ namespace ana {
     else if( X >= 1.300000 && X < 2.000000) this_rw = 1.048199;
     else if( X >= 2.000000 && X < 3.000000) this_rw = 1.650489;
     else{
-      this_rw = 1.;
+      this_rw = 1.650489;
     }
 
     return this_rw;
@@ -45,7 +46,7 @@ namespace ana {
     //static double const P1Err = 0.320814;
 
     double X = Tpi_GeV;
-    if(X>0.350) X = 0.350;
+    if(X>=0.350) X = 0.350;
 
     double this_rw = P0 + P1 * X;
     if(this_rw<0) this_rw = 1.;
