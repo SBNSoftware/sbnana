@@ -40,10 +40,10 @@ namespace ana {
   }
   double NuMIXSecPiSyst::GetSPPTpiReweight(double Tpi_GeV) const {
 
-    static double const P0 = 1.347965;
-    //static double const P0Err = 0.097783;
-    static double const P1 = -2.817372;
-    //static double const P1Err = 0.320814;
+    static double const P0 = 1.337359;
+    //static double const P0Err = 0.096961;
+    static double const P1 = -2.769901;
+    //static double const P1Err = 0.318157;
 
     double X = Tpi_GeV;
     if(X>=0.350) X = 0.350;
