@@ -19,6 +19,7 @@ namespace ana
 
     double GetSPPQ2Reweight(double Q2_GeV2) const;
     double GetSPPTpiReweight(double Tpi_GeV) const;
+    double GetSPPTpiReweightMINERvA(double Tpi_GeV) const;
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
     void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;

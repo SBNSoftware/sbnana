@@ -54,6 +54,49 @@ namespace ana {
     return this_rw;
 
   }
+  double NuMIXSecPiSyst::GetSPPTpiReweightMINERvA(double Tpi_GeV) const {
+
+    double X = Tpi_GeV*1000.; // GeV to MeV
+
+    double this_rw = 1.;
+    if( X < 10.000000) this_rw = 0.267183;
+    else if( X >= 10.000000 && X < 15.000000) this_rw = 0.218322;
+    else if( X >= 15.000000 && X < 20.000000) this_rw = 0.372796;
+    else if( X >= 20.000000 && X < 25.000000) this_rw = 0.587210;
+    else if( X >= 25.000000 && X < 30.000000) this_rw = 0.767524;
+    else if( X >= 30.000000 && X < 36.000000) this_rw = 0.880305;
+    else if( X >= 36.000000 && X < 42.000000) this_rw = 0.669767;
+    else if( X >= 42.000000 && X < 48.000000) this_rw = 0.817111;
+    else if( X >= 48.000000 && X < 54.000000) this_rw = 1.092730;
+    else if( X >= 54.000000 && X < 60.000000) this_rw = 0.995627;
+    else if( X >= 60.000000 && X < 66.000000) this_rw = 0.916708;
+    else if( X >= 66.000000 && X < 72.000000) this_rw = 1.243540;
+    else if( X >= 72.000000 && X < 78.000000) this_rw = 1.211460;
+    else if( X >= 78.000000 && X < 84.000000) this_rw = 1.121870;
+    else if( X >= 84.000000 && X < 90.000000) this_rw = 1.253250;
+    else if( X >= 90.000000 && X < 96.000000) this_rw = 1.191510;
+    else if( X >= 96.000000 && X < 102.000000) this_rw = 1.038230;
+    else if( X >= 102.000000 && X < 110.000000) this_rw = 1.237920;
+    else if( X >= 110.000000 && X < 125.000000) this_rw = 1.190560;
+    else if( X >= 125.000000 && X < 140.000000) this_rw = 1.229080;
+    else if( X >= 140.000000 && X < 155.000000) this_rw = 0.988201;
+    else if( X >= 155.000000 && X < 175.000000) this_rw = 1.032940;
+    else if( X >= 175.000000 && X < 200.000000) this_rw = 0.901374;
+    else if( X >= 200.000000 && X < 225.000000) this_rw = 0.757748;
+    else if( X >= 225.000000 && X < 250.000000) this_rw = 0.755932;
+    else if( X >= 250.000000 && X < 275.000000) this_rw = 0.638574;
+    else if( X >= 275.000000 && X < 300.000000) this_rw = 0.493987;
+    else if( X >= 300.000000 && X < 325.000000) this_rw = 0.391947;
+    else if( X >= 325.000000 && X < 350.000000) this_rw = 0.323265;
+    else if( X >= 350.000000 && X < 400.000000) this_rw = 0.452765;
+    else if( X >= 400.000000 && X < 500.000000) this_rw = 0.594541;
+    else if( X >= 500.000000 && X < 700.000000) this_rw = 0.768459;
+    else if( X >= 700.000000 && X < 1000.000000) this_rw = 0.658024;
+    else this_rw = 0.873622;
+
+    return this_rw;
+
+  }
 
   void NuMIXSecPiSyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
   {
@@ -111,12 +154,12 @@ namespace ana {
     double Tpi = kTruth_ChargedPionKE(sr);
 
     double Q2RW = GetSPPQ2Reweight(Q2);
-    double TpiRW = GetSPPTpiReweight(Tpi);
+    double TpiRW = sigma >= 0 ? GetSPPTpiReweight(Tpi) : GetSPPTpiReweightMINERvA(Tpi);
     double FullRW = Q2RW*TpiRW;
 
     double this_sigma = sigma;
-    if(sigma<0) this_sigma = 0.;
-    if(sigma>1) this_sigma = 1.;
+    if (sigma > 1) this_sigma = 1.0;
+    if (sigma < -1) this_sigma = -1.0;
 
     double this_rw = (1.-this_sigma) * 1. + this_sigma * FullRW;
 
