@@ -453,6 +453,11 @@ namespace ana
       means.push_back( sum / fNUniverses );
     }
 
+    TH1D *cvHist = new TH1D("CVHist",";x;y",nBins,0,nBins);
+    for ( unsigned int idxCVHist=0; idxCVHist<nBins; ++idxCVHist ) {
+      cvHist->SetBinContent(idxCVHist+1,means.at(idxCVHist));
+    }
+
     // To make the correlation matrix we also want standard deviations
     std::vector<double> sigmas;
     for ( unsigned int idxB = 0; idxB < nBins; ++idxB ) {
@@ -485,13 +490,20 @@ namespace ana
       }
     }
 
-    h_cov_mtx->Write();
+    TH1D *h_cov_mtx_frac = (TH1D*)h_cov_mtx->Clone();
+    for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
+      for ( unsigned int yBin=1; yBin<=nBins; ++yBin ) {
+        h_cov_mtx_frac->SetBinContent( xBin, yBin, h_cov_mtx_frac->GetBinContent(xBin,yBin)/(means.at(xBin-1)*means.at(yBin-1)) );
+      }
+    }
+
+    h_cov_mtx->Write("cov_hist");
+    h_cov_mtx_frac->Write("cov_frac_hist");
 
     // and using the documentation in https://root.cern/doc/master/group__Matrix.html
     // Let's also save this as a TMatrixD
     // TODO: do I need to save overflow/underflow?
     TArrayD tarray(nBins*nBins);
-
     for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
       const unsigned int row = xBin-1;
       for ( unsigned int yBin=1; yBin<=nBins; ++yBin ) {
@@ -500,11 +512,22 @@ namespace ana
         tarray[nBins*row+column] = val;
       }
     }
-
     TMatrixD cov_mtx(nBins,nBins);
     cov_mtx.SetMatrixArray(tarray.GetArray());
-
     cov_mtx.Write( TString::Format("hCovMtx_%s",fWeightLabel.c_str()) );
+
+    TArrayD tarrayFrac(nBins*nBins);
+    for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
+      const unsigned int row = xBin-1;
+      for ( unsigned int yBin=1; yBin<=nBins; ++yBin ) {
+        const unsigned int column = yBin-1;
+        const double val = h_cov_mtx_frac->GetBinContent(xBin,yBin);
+        tarrayFrac[nBins*row+column] = val;
+      }
+    }
+    TMatrixD cov_mtx_frac(nBins,nBins);
+    cov_mtx_frac.SetMatrixArray(tarrayFrac.GetArray());
+    cov_mtx_frac.Write( TString::Format("hCovMtx_Frac_%s",fWeightLabel.c_str()) );
 
     // And correlation matrix, by way of Corr(X,Y) = Cov(X,Y)/Sigma(X)Sigma(Y)
     // See e.g. PDG 2018, Chapter 39 Page 25, or https://en.wikipedia.org/wiki/Correlation#Correlation_matrices
@@ -518,7 +541,7 @@ namespace ana
       }
     }
 
-    h_corr_mtx->Write();
+    h_corr_mtx->Write("corr_hist");
 
     TArrayD tarray_corr(nBins*nBins);
     for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
@@ -533,6 +556,8 @@ namespace ana
     corr_mtx.SetMatrixArray(tarray_corr.GetArray());
 
     corr_mtx.Write( TString::Format("hCorrMtx_%s",fWeightLabel.c_str()) );
+
+    cvHist->Write( "cvHist" );
 
     tmp->cd();
   }
