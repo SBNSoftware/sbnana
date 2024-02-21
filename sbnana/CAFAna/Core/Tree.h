@@ -76,6 +76,7 @@ namespace ana
                           const SpillCut& spillcut );
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
     void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap ) override;
+    void SaveToDebug( TDirectory* dir, bool shouldSaveUniverses = true ) const;
     void SaveTo( TDirectory* dir ) const override;
     void PrintBinning() const;
   private:

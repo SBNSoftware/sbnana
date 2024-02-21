@@ -336,7 +336,7 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
-  void CovarianceMatrixTree::SaveTo( TDirectory* dir ) const
+  void CovarianceMatrixTree::SaveToDebug( TDirectory* dir, bool shouldSaveUniverses ) const
   {
     assert(fOrderedBranchNames.size() >= 2); // need at least a weight label and a key for the binning...
 
@@ -559,7 +559,24 @@ namespace ana
 
     cvHist->Write( "cvHist" );
 
+    if ( shouldSaveUniverses ) {
+      for ( unsigned int idxU = 0; idxU < fNUniverses; ++idxU ) {
+        TH1D *univHist = new TH1D("CVHist",";x;y",nBins,0,nBins);
+        for ( unsigned int idxUnivHist=0; idxUnivHist<nBins; ++idxUnivHist ) {
+          univHist->SetBinContent(idxUnivHist+1,binCts.at(idxU).at(idxUnivHist));
+        }
+        univHist->Write( TString::Format("hUniverse_%i",idxU) );
+        univHist->~TH1D();
+      }
+    }
+
     tmp->cd();
+  }
+
+  //----------------------------------------------------------------------
+  void CovarianceMatrixTree::SaveTo( TDirectory* dir ) const
+  {
+    this->SaveToDebug( dir, false );
   }
 
   //----------------------------------------------------------------------
