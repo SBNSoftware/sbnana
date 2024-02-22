@@ -561,7 +561,7 @@ namespace ana
 
     if ( shouldSaveUniverses ) {
       for ( unsigned int idxU = 0; idxU < fNUniverses; ++idxU ) {
-        TH1D *univHist = new TH1D("CVHist",";x;y",nBins,0,nBins);
+        TH1D *univHist = new TH1D( TString::Format("hUniverse_%i",idxU) ,";x;y",nBins,0,nBins);
         for ( unsigned int idxUnivHist=0; idxUnivHist<nBins; ++idxUnivHist ) {
           univHist->SetBinContent(idxUnivHist+1,binCts.at(idxU).at(idxUnivHist));
         }
