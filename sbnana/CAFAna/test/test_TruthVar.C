@@ -5,6 +5,7 @@
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
 #include "sbnana/CAFAna/Core/Var.h"
 #include "sbnana/SBNAna/Cuts/Cuts.h"
+#include "sbnana/SBNAna/Cuts/NumuCutsIcarus202106.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
@@ -20,10 +21,33 @@
 
 using namespace ana;
 
+const Cut kEffTestCut = kRFiducial && kNotClearCosmic && kPTrack;
+
 const SpillMultiVar kNuEs([](const caf::SRSpillProxy *sr) -> vector<double> {
   std::vector<double> rets;
   for(const auto& nu: sr->mc.nu){
     rets.push_back(nu.E);
+  }
+  return rets;
+});
+const SpillMultiVar kNuEs_PassCut([](const caf::SRSpillProxy *sr) -> vector<double> {
+  std::vector<double> rets;
+  for(const auto& nu: sr->mc.nu){
+
+    // Loop over reco slices, find if any truth-mathced slice also pass reco Cut
+    bool HasMatchedSlicePassCut = false;
+    for(caf::SRSliceProxy& slc: sr->slc){
+      if ( slc.truth.index < 0 ) continue;
+      else if ( slc.truth.index != nu.index ) continue;
+      if( kEffTestCut(&slc) ){
+        HasMatchedSlicePassCut = true;
+        break;
+      }
+    }
+
+    if(HasMatchedSlicePassCut){
+      rets.push_back(nu.E);
+    }
   }
   return rets;
 });
@@ -44,9 +68,11 @@ void test_TruthVar(){
 
   // Using SpillMultiVar
   Spectrum *sNuE = new Spectrum("NuE", binsEnergy, loader, kNuEs, kNoSpillCut);
+  Spectrum *sNuE_PassCut = new Spectrum("NuE_PassCut", binsEnergy, loader, kNuEs_PassCut, kNoSpillCut);
 
   // Using TruthVar
   Spectrum *sTruthVar_NuE = new Spectrum("TruthVar_NuE", binsEnergy, loader, kTruthVar_NuE, kNoTruthCut, kNoSpillCut);
+  Spectrum *sTruthVar_NuE_PassCut = new Spectrum("TruthVar_NuE_PassCut", binsEnergy, loader, kTruthVar_NuE, kNoTruthCut, kNoSpillCut, kEffTestCut);
 
   // +1 sigma RPA_CCQE dial
   ISyst* iS = new SBNWeightSyst("GENIEReWeight_ICARUS_v2_multisigma_RPA_CCQE");
@@ -61,9 +87,17 @@ void test_TruthVar(){
   h_NuE->SetName("h_NuE");
   h_NuE->Write();
 
+  TH1* h_NuE_PassCut = sNuE_PassCut->ToTH1(3e20);
+  h_NuE_PassCut->SetName("h_NuE_PassCut");
+  h_NuE_PassCut->Write();
+
   TH1* h_TruthVar_NuE = sTruthVar_NuE->ToTH1(3e20);
   h_TruthVar_NuE->SetName("h_TruthVar_NuE");
   h_TruthVar_NuE->Write();
+
+  TH1* h_TruthVar_NuE_PassCut = sTruthVar_NuE_PassCut->ToTH1(3e20);
+  h_TruthVar_NuE_PassCut->SetName("h_TruthVar_NuE_PassCut");
+  h_TruthVar_NuE_PassCut->Write();
 
   TH1* h_TruthVar_NuE_1up = sTruthVar_NuE_1up->ToTH1(3e20);
   h_TruthVar_NuE_1up->SetName("h_TruthVar_NuE_1up");
