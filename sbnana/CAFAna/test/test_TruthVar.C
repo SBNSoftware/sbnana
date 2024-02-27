@@ -20,12 +20,20 @@
 
 using namespace ana;
 
+const SpillMultiVar kNuEs([](const caf::SRSpillProxy *sr) -> vector<double> {
+  std::vector<double> rets;
+  for(const auto& nu: sr->mc.nu){
+    rets.push_back(nu.E);
+  }
+  return rets;
+});
+
 const TruthVar kTruthVar_NuE = SIMPLETRUTHVAR(E);
 
 void test_TruthVar(){
 
   // Input
-  SpectrumLoader loader("/pnfs/icarus/scratch/users/jskim/mc/NuMI_MC_Nu_Phase2/flatcaf/v09_72_00_03p01/230804_GENIESystSGV2_FixFSI/merged/flatcaf_0.root");
+  SpectrumLoader loader("/pnfs/icarus/scratch/users/jskim/mc/NuMI_MC_Nu_Phase2/flatcaf/v09_72_00_03p01/230919_Reproc_SkipCorrupt/flatcaf_0.root");
 
   // output; where plots are saved
   TString outputPath = "./test_TruthVar/";
@@ -34,33 +42,33 @@ void test_TruthVar(){
   // Binning
   const Binning binsEnergy = Binning::Simple(30, 0, 6);
 
-  // All nu
+  // Using SpillMultiVar
+  Spectrum *sNuE = new Spectrum("NuE", binsEnergy, loader, kNuEs, kNoSpillCut);
+
+  // Using TruthVar
   Spectrum *sTruthVar_NuE = new Spectrum("TruthVar_NuE", binsEnergy, loader, kTruthVar_NuE, kNoTruthCut, kNoSpillCut);
 
-  // EnsembleSpectrum
-  std::vector<TruthVar> vec_truthweights;
-  for(int u=0; u<100; u++){
-    std::string psetname = "GENIEReWeight_ICARUS_v2_multisim_ZExpAVariationResponse";
-    vec_truthweights.push_back( GetTruthUniverseWeight(psetname, u) );
-  }
-
-  EnsembleSpectrum *es_TruthVar_Signal_NuE = new EnsembleSpectrum("ES_TruthVar_Signal_NuE", binsEnergy, loader, kTruthVar_NuE, kNoTruthCut, kNoSpillCut, vec_truthweights);
+  // +1 sigma RPA_CCQE dial
+  ISyst* iS = new SBNWeightSyst("GENIEReWeight_ICARUS_v2_multisigma_RPA_CCQE");
+  Spectrum *sTruthVar_NuE_1up = new Spectrum("TruthVar_NuE_1up", binsEnergy, loader, kTruthVar_NuE, kNoTruthCut, kNoSpillCut, SystShifts(iS,+1));
 
   loader.Go();
 
   TFile *f_out = new TFile(outputPath+"/output.root", "RECREATE");
   f_out->cd();
 
+  TH1* h_NuE = sNuE->ToTH1(3e20);
+  h_NuE->SetName("h_NuE");
+  h_NuE->Write();
+
   TH1* h_TruthVar_NuE = sTruthVar_NuE->ToTH1(3e20);
   h_TruthVar_NuE->SetName("h_TruthVar_NuE");
   h_TruthVar_NuE->Write();
 
-  TH1* h_TruthVar_NuE_FromES_Nominal = es_TruthVar_Signal_NuE->Nominal().ToTH1(3e20);
-  h_TruthVar_NuE_FromES_Nominal->SetName("h_TruthVar_NuE_FromES_Nominal");
-  h_TruthVar_NuE_FromES_Nominal->Write();
-  TGraphAsymmErrors* gr_Error_FromES = es_TruthVar_Signal_NuE->ErrorBand(3e20);
-  gr_Error_FromES->Write();
-  f_out->Close();
+  TH1* h_TruthVar_NuE_1up = sTruthVar_NuE_1up->ToTH1(3e20);
+  h_TruthVar_NuE_1up->SetName("h_TruthVar_NuE_1up");
+  h_TruthVar_NuE_1up->Write();
+
 
 
 
