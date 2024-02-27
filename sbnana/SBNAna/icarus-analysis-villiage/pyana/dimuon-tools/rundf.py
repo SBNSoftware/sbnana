@@ -1,4 +1,5 @@
 import sys
+import os
 from pyanalib.ntuple_glob import NTupleGlob
 from makedf.makedf import *
 import pandas as pd
@@ -14,7 +15,10 @@ def main(output, inputs):
     dfs = ntuples.dataframes(nproc="auto", fs=DFS)
     with pd.HDFStore(output) as hdf:
         for k,df in zip(NAMES, dfs):
-            hdf.put(key=k, value=df, format="fixed")
+            try:
+                hdf.put(key=k, value=df, format="fixed")
+            except Exception as e:
+                print("Table %s failed to save, skipping. Exception: %s" % (k, str(e)))
 
 if __name__ == "__main__":
     printhelp = len(sys.argv) < 4 or sys.argv[1] == "-h"
@@ -28,4 +32,8 @@ if __name__ == "__main__":
         if len(NAMES) != len(DFS): 
             print("ERROR: <NAMES> and <DFS> must have same length")
             exit(1)
+
+        # Don't clog up the server you're running on -- let other processes take priority
+        os.nice(10)
+
         main(sys.argv[2], sys.argv[3:])

@@ -8,11 +8,23 @@ def make_hdrdf(f):
     hdr = loadbranches(f["recTree"], hdrbranches).rec.hdr
     return hdr
 
+def make_potdf(f):
+    pot = loadbranches(f["recTree"], potbranches).rec.hdr.numiinfo
+    return pot
+
 def make_mcnudf(f, include_weights=True):
     mcdf = make_mcdf(f)
     mcdf["ind"] = mcdf.index.get_level_values(1)
     if include_weights:
         wgtdf = pd.concat([numisyst.numisyst(mcdf.pdg, mcdf.E), geniesyst.geniesyst(f, mcdf.ind)], axis=1)
+        mcdf = multicol_concat(mcdf, wgtdf)
+    mcdf.index = mcdf.index.droplevel(-1)
+    return mcdf
+
+def make_mchdf(f, include_weights=False):
+    mcdf = loadbranches(f["recTree"], mchbranches).rec.mc.prtl
+    if include_weights:
+        wgtdf = numisyst.numisyst(14, mcdf.E) # TODO: what PDG?
         mcdf = pd.concat([mcdf, wgtdf], axis=1)
     return mcdf
 
@@ -46,6 +58,16 @@ def make_trkhitadcdf(f):
 def make_trkhitdf(f, include_adc=False):
     df = loadbranches(f["recTree"], trkhitbranches).rec.slc.reco.pfp.trk.calo.I2.points
 
+    # Firsthit and Lasthit info
+    ihit = df.index.get_level_values(-1)
+    df["firsthit"] = ihit == 0
+
+    lasthit = df.groupby(level=list(range(df.index.nlevels-1))).tail(1).copy()
+    lasthit["lasthit"] = True
+    df["lasthit"] = lasthit.lasthit
+    df.lasthit = df.lasthit.fillna(False)
+
+    # Include raw waveform information
     if include_adc:
         adcdf = make_trkhitadcdf(f)
         h_ind = adcdf.index.get_level_values(adcdf.index.nlevels-1)
@@ -76,6 +98,41 @@ def make_trkhitdf(f, include_adc=False):
         df = multicol_add(df, hit_count)
 
     return df
+
+def make_nuclhitdf(f):
+    trkhitdf = make_trkhitdf(f)
+    selectdf = make_slc_trkdf(f)
+
+    # select for nucleons
+    crlongtrkdiry = selectdf.slc.nuid.crlongtrkdiry
+    fiducial = SlcInFV(selectdf.slc.vertex)
+    group = list(range(selectdf.index.nlevels-1))
+    nlongtrk = broadcast((selectdf.pfp.trk.len > 25).groupby(level=group).sum(), selectdf)
+
+    # Selection
+    do_select = (crlongtrkdiry > -0.7) & (nlongtrk >= 1) & fiducial & (selectdf.pfp.trk.len < 10) & (selectdf.pfp.trk.chi2pid.I2.pida > 10)
+
+    # apply onto trkhitdf
+    trkhitdf = multicol_add(trkhitdf, do_select.rename("select")) 
+    trkhitdf.select = trkhitdf.select.fillna(False)
+    trkhitdf = trkhitdf[trkhitdf.select]
+    del trkhitdf["select"]
+
+    # Add in other helpful variables
+    trkhitdf = multicol_add(trkhitdf, selectdf.pfp.trk.len.rename("len"))
+    trkhitdf = multicol_add(trkhitdf, dmagdf(selectdf.pfp.trk.start, selectdf.slc.vertex).rename("dist"))
+    trkhitdf = multicol_add(trkhitdf, selectdf.pfp.trk.chi2pid.I2.pida.rename("pida"))
+    trkhitdf = multicol_add(trkhitdf, crlongtrkdiry.rename("crlongtrkdiry"))
+
+    # Get timing on other planes
+    for iplane in range(2):
+        ts = loadbranches(f["recTree"], [trkbranch + "calo.%i.points.t" % iplane]).rec.slc.reco.pfp.trk.calo["I%i" % iplane].points.t
+        tmin = ts.groupby(level=list(range(ts.index.nlevels-1))).min()
+        tmax = ts.groupby(level=list(range(ts.index.nlevels-1))).max()
+        trkhitdf = multicol_add(trkhitdf, tmin.rename(("P%i" % iplane, "tmin")))
+        trkhitdf = multicol_add(trkhitdf, tmax.rename(("P%i" % iplane, "tmax")))
+
+    return trkhitdf
 
 def make_slcdf(f):
     slcdf = loadbranches(f["recTree"], slcbranches)
@@ -120,7 +177,12 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==310).groupby(level=[0,1]).sum().rename(("nk0", "")))
 
     # lepton info
-    mcdf = mcdf.join(magdf(mcprimdf.genp).groupby(level=[0,1]).first().rename(("lmom", "")))
+    for b in mcprimdf.columns:
+        thisb = mcprimdf[b]
+        mcdf = multicol_add(mcdf, thisb.groupby(level=[0,1]).nth(0).rename(tuple(["p0"] + list(b))))
+    for b in mcprimdf.columns:
+        thisb = mcprimdf[b]
+        mcdf = multicol_add(mcdf, thisb.groupby(level=[0,1]).nth(1).rename(tuple(["p1"] + list(b))))
 
     return mcdf
 
@@ -265,16 +327,43 @@ def make_stubs(f):
 
     return pd.concat(dqdxs, axis=1)
 
+def make_evt_trkhitdf(f):
+    # implement the sideband selection
+    def is_muon_contained(trk):
+        return (trk.chi2pid.I2.chi2_proton > 80) & (trk.chi2pid.I2.chi2_muon < 30) & TrkInFV(trk.end) & (trk.len > 10)
+    def is_muon_exiting(trk):
+        return (trk.len > 100) & ~TrkInFV(trk.end)
+    def is_muon(pfp):
+        return (is_muon_contained(pfp.trk) | is_muon_exiting(pfp.trk))
+
+    trkhitdf = make_trkhitdf(f)
+
+    # Save hits on the trunk and branch, only
+    slcdf = make_slc_trkdf(f)
+    trklevel = list(range(slcdf.index.nlevels-1))
+    trunk = slcdf.dist_to_vertex[is_muon(slcdf.pfp)].groupby(level=trklevel).idxmin()
+    nottrunk = slcdf.index.difference(trunk)
+    branch = slcdf.dist_to_vertex.loc[nottrunk][is_muon(slcdf.pfp)].groupby(level=trklevel).idxmin()
+    slcdf["trunk_or_branch"] = False
+    slcdf.loc[trunk, "trunk_or_branch"] = True
+    slcdf.loc[branch, "trunk_or_branch"] = True
+
+    # Apply cut
+    trkhitdf = multicol_add(trkhitdf, slcdf.trunk_or_branch.rename("select")) 
+    trkhitdf.select = trkhitdf.select.fillna(False)
+    trkhitdf = trkhitdf[trkhitdf.select]
+    del trkhitdf["select"]
+
+    return trkhitdf
+
 def make_evtdf(f, load_hits=True):
     # implement the sideband selection
     def is_muon_contained(trk):
-        return (trk.chi2pid.I2.chi2_proton > 30) & (trk.chi2pid.I2.chi2_muon < 80) & TrkInFV(trk.end)
+        return (trk.chi2pid.I2.chi2_proton > 80) & (trk.chi2pid.I2.chi2_muon < 30) & TrkInFV(trk.end) & (trk.len > 10)
     def is_muon_exiting(trk):
         return (trk.len > 100) & ~TrkInFV(trk.end)
-    def is_trk(pfp):
-        return pfp.trackScore > 0.5
     def is_muon(pfp):
-        return is_trk(pfp) & (is_muon_contained(pfp.trk) | is_muon_exiting(pfp.trk))
+        return (is_muon_contained(pfp.trk) | is_muon_exiting(pfp.trk))
     def evt_presel(df):
         trklevel = list(range(df.index.nlevels-1))
         nmuon = broadcast(is_muon(df.pfp).groupby(level=trklevel).sum(), df)
@@ -322,7 +411,7 @@ def make_evtdf(f, load_hits=True):
         trkhitlevel = list(range(trkhitdf.index.nlevels-1))
 
         trunk_min_rr = evtdf.trunk.trk.len - dmagdf(evtdf.trunk.trk.start, evtdf.branch.trk.start)
-        trunk_min_rr.name = "minrr" #("minrr", "")
+        trunk_min_rr.name = ("minrr", "")
         trkhitdf = trkhitdf.join(trunk_min_rr)
 
         trunk_start_dqdx = trkhitdf[(trkhitdf.rr > trkhitdf.minrr) & (trkhitdf.rr > 5)].groupby(level=trkhitlevel).dqdx.median()
@@ -349,11 +438,15 @@ def make_evtdf(f, load_hits=True):
     # Get the other pfp df
     othrdf = trk_slcdf.loc[not_trunk_branch]
     shwdf = othrdf[othrdf.pfp.trackScore < 0.5]
+    trkdf = othrdf[othrdf.pfp.trackScore >= 0.5]
 
     # min/max chi2s
     evtdf["min_othr_chi2_proton"] = othrdf.pfp.trk.chi2pid.I2.chi2_proton.groupby(level=trklevel).min()
     evtdf["max_othr_chi2_muon"] = othrdf.pfp.trk.chi2pid.I2.chi2_muon.groupby(level=trklevel).max()
+
+    # lengths
     evtdf["max_shw_len"] = shwdf.pfp.shw.len.groupby(level=trklevel).max()
+    evtdf["max_othr_trk_len"] = trkdf.pfp.trk.len.groupby(level=trklevel).max()
 
     # stubs!
     evtdf = evtdf.join(make_stubs(f))

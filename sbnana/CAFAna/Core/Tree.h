@@ -83,6 +83,27 @@ namespace ana
     const Cut SignalSelection;
   };
 
+  /// Allows to make covariance matrices using \ref Tree objects cleverly
+  class CovarianceMatrixTree : public Tree
+  {
+  public:
+    /// constructor with a vector \ref SpillMultiVar corresponding to the items to be used in binning decision and the weights
+    CovarianceMatrixTree( const std::string name, const std::vector<std::string>& labels, const std::string weightLabel,
+                          const std::vector< std::vector<std::pair<std::string,std::pair<double,double>>> >& binning,
+                          SpectrumLoaderBase& loader, const std::vector<SpillMultiVar>& vars, const unsigned int nUniverses,
+                          const SpillCut& spillcut );
+    /// Function to update protected members (the branches). DO NOT USE outside of the filling.
+    void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap ) override;
+    void SaveToDebug( TDirectory* dir, bool shouldSaveUniverses = true ) const;
+    void SaveTo( TDirectory* dir ) const override;
+    void PrintBinning() const;
+  private:
+    std::map< unsigned int, std::vector< std::pair<std::string,std::pair<double,double>> >> fBinning;
+    std::vector<std::vector<double>> fWeights;
+    std::string fWeightLabel;
+    unsigned int fNUniverses;
+  };
+
   // Similar to Tree but for event weights e.g. to make splines...
   class WeightsTree
   {
@@ -112,8 +133,8 @@ namespace ana
   protected:
     std::map< std::string, std::vector<double>> fBranchEntries;
     std::map< std::string, std::vector<std::vector<double>>> fBranchWeightEntries;
-    std::map< std::string, unsigned int> fNSigmasLo;
-    std::map< std::string, unsigned int> fNSigmasHi;
+    std::map< std::string, int> fNSigmasLo;
+    std::map< std::string, int> fNSigmasHi;
     std::map< std::string, unsigned int> fNWeightsExpected;
     //std::map< std::string, std::vector<double>> fNWeightsThrows; // stores the expected ordering of NSigmas per knob or universe throws per knob.
     std::string fTreeName;

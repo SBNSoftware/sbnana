@@ -316,6 +316,9 @@ namespace ana
     template<class T>
     friend bool operator<(const _VarOrMultiVar<T>& a, const _VarOrMultiVar<T>& b) noexcept;
 
+    template<class T>
+    friend bool operator<(const _VarOrMultiVar<T>& a, const _VarOrMultiVar<T>& b) noexcept;
+
     /// \brief All the spectra that need to be filled
     ///
     /// [spillcut][shift][cut][wei][var]

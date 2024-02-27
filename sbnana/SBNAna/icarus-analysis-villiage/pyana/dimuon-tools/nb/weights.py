@@ -10,6 +10,6 @@ fluxsyst = [
   "horn1_y",
   "horn_current_plus",
   "water_layer",
-]
+] + ["pca%i" % i for i in range(20)]
 
 fluxsyst = [(f, s) for f in fluxsyst for s in ("ps", "ms")]
