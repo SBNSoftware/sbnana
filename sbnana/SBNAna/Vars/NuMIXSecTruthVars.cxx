@@ -393,7 +393,7 @@ namespace ana{
 
     double CosdeltaalphaT = -1. * pt_mu.Unit().Dot( vec_deltaPT.Unit() );
     double deltaalphaT = TMath::ACos( CosdeltaalphaT );
-    return deltaalphaT;
+    return deltaalphaT*180./M_PI; // degree
 
   }
   double CalcTKI_deltaphiT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
@@ -408,7 +408,7 @@ namespace ana{
 
     double CosdeltaphiT = -1. * pt_mu.Unit().Dot( pt_pro.Unit() );
     double deltaphiT = TMath::ACos( CosdeltaphiT );
-    return deltaphiT;
+    return deltaphiT*180./M_PI; // degree
   }
 
   // TKI
