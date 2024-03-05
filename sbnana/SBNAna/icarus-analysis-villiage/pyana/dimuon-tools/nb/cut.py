@@ -14,6 +14,10 @@ def end_process(trk):
     return trk.truth.p.end_process
 
 @VAR
+def true_pion(trk):
+    return np.abs(trk.truth.p.pdg) == 211
+
+@VAR
 def true_muon(trk):
     return np.abs(trk.truth.p.pdg) == 13
 
@@ -56,6 +60,10 @@ mc_nu_cosmic_categories = [slc_from_nu, ~slc_from_nu]
 @VAR
 def fiducial(slc):
     return SlcInFV(slc.vertex)
+
+@VAR
+def trkfiducial(trk):
+    return TrkInFV(trk.end)
 
 @VAR
 def is_proton(trk):

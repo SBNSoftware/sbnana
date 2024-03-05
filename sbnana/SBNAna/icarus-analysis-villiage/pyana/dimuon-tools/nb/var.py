@@ -1,7 +1,25 @@
 from pyanalib.variable import VAR
+from pyanalib.panda_helpers import *
+from util import *
 
 # Re-export stuff
 from pid import dedxdf, dedx, hchi2u, hchi2p, scale_recombination
+
+@VAR
+def vabs(s):
+    return np.abs(s)
+
+@VAR
+def npfp(df):
+    group = list(range(df.index.nlevels-1))
+    s = df.groupby(level=group).size()
+    return broadcast(s, df)
+
+@VAR
+def nlongtrk(df, lencut=25):
+    group = list(range(df.index.nlevels-1))
+    s = (df.pfp.trk.len > lencut).groupby(level=group).sum()
+    return broadcast(s, df)
 
 @VAR
 def trk(df):
@@ -42,6 +60,12 @@ def chgfracspread(pfp):
 @VAR
 def linfitdiff(pfp):
     return pfp.pfochar.linfitdiff
+
+@VAR
+def recop(pfp):
+    ret = pfp.trk.rangeP.p_muon
+    ret[~TrkInFV(pfp.trk.end)] = pfp.trk.mcsP.fwdP_muon[~TrkInFV(pfp.trk.end)]
+    return ret
 
 @VAR
 def SLCVAR(df):

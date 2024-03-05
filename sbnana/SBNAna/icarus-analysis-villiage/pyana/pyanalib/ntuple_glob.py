@@ -42,11 +42,11 @@ def _loaddf(applyfs, g):
     # fname, index, applyfs = inp
     index, fname = g
     # Convert pnfs to xroot URL's
-    # if fname.startswith("/pnfs") and "scratch" not in fname:
-    #     fname = fname.replace("/pnfs", "root://fndca1.fnal.gov:1094/pnfs/fnal.gov/usr")
+    if fname.startswith("/pnfs"):
+        fname = fname.replace("/pnfs", "root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr")
     # fix xroot URL's
-    # elif fname.startswith("xroot"):
-    #    fname = fname[1:]
+    elif fname.startswith("xroot"):
+        fname = fname[1:]
 
     madef = False
 
@@ -110,10 +110,15 @@ class NTupleGlob(object):
             nproc = min(CPU_COUNT, len(thisglob))
 
         ret = []
-        with Pool(processes=nproc) as pool:
-            for i, dfs in enumerate(tqdm(pool.imap_unordered(partial(_loaddf, fs), enumerate(thisglob)), total=len(thisglob), unit="file", delay=5, smoothing=0.6)):
-                if dfs is not None:
-                    ret.append(dfs)
+
+        try:
+            with Pool(processes=nproc) as pool:
+                for i, dfs in enumerate(tqdm(pool.imap_unordered(partial(_loaddf, fs), enumerate(thisglob)), total=len(thisglob), unit="file", delay=5, smoothing=0.2)):
+                    if dfs is not None:
+                        ret.append(dfs)
+        # Ctrl-C handling
+        except KeyboardInterrupt:
+            print('Received Ctrl-C. Returning dataframes collected so far.')
 
         ret = [pd.concat([dfs[i] for dfs in ret], axis=0, ignore_index=False) for i in range(len(fs))] 
 
