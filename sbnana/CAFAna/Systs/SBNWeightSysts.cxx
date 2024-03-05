@@ -116,10 +116,10 @@ namespace ana
     // properly configured until it's seen its first CAF file.
     return {"AhtBY",
         "BhtBY",
+        "CoulombCCQE",
         "CV1uBY",
         "CV2uBY",
         "EtaNCEL",
-        "FormZone",
         "FrAbs_N",
         "FrAbs_pi",
         "FrCEx_N",
@@ -130,7 +130,6 @@ namespace ana
         "FrPiProd_pi",
         "MFP_N",
         "MFP_pi",
-        "MaCCQE",
         "MaCCRES",
         "MaNCEL",
         "MaNCRES",
@@ -152,6 +151,13 @@ namespace ana
         "NonRESBGvpCC2pi",
         "NonRESBGvpNC1pi",
         "NonRESBGvpNC2pi",
+        "NormCCMEC",
+        "NormNCMEC",
+        "RPA_CCQE",
+        "ZExpA1CCQE",
+        "ZExpA2CCQE",
+        "ZExpA3CCQE",
+        "ZExpA4CCQE",
     };
   }
 

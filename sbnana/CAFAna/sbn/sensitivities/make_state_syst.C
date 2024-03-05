@@ -29,14 +29,14 @@ void make_state_syst(const std::string anatype = numuStr)
   Loaders loaders_nd, loaders_fd, loaders_ub;
 
   if(anatype == numuStr) {
-    const std::string dir = "/sbnd/data/users/jlarkin/workshop_samples/";
-    const std::string fnameBeam_nd = dir + "output_SBNOsc_NumuSelection_Modern_SBND.flat.root";
-    const std::string fnameBeam_fd = dir + "output_SBNOsc_NumuSelection_Modern_Icarus.flat.root";
-    const std::string fnameBeam_ub = dir + "output_SBNOsc_NumuSelection_Modern_Uboone.flat.root";
+    const std::string dir = "/exp/icarus/data/users/jlarkin/";
+    //const std::string fnameBeam_nd = dir + "output_SBNOsc_NumuSelection_Modern_SBND.flat.root";
+    const std::string fnameBeam_fd = dir + "2023A_nucosmics_newreco*.flat.caf.root";
+    //const std::string fnameBeam_ub = dir + "output_SBNOsc_NumuSelection_Modern_Uboone.flat.root";
 
-    loaders_nd.SetLoaderPath(fnameBeam_nd, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
+    //loaders_nd.SetLoaderPath(fnameBeam_nd, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
     loaders_fd.SetLoaderPath(fnameBeam_fd, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
-    loaders_ub.SetLoaderPath(fnameBeam_ub, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
+    //loaders_ub.SetLoaderPath(fnameBeam_ub, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
   }
 
   else if (anatype == nueStr) {
@@ -79,12 +79,9 @@ void make_state_syst(const std::string anatype = numuStr)
     return;
   }
 
-  const Var kRecoE = SIMPLEVAR(reco.reco_energy);
-  const Var kWeight = SIMPLEVAR(reco.weight);
-  const Cut kOneTrue([](const caf::SRProxy* sr)
-         {
-           return (sr->truth.size() == 1);
-         });
+  const Var kRecoE = SIMPLEVAR(fake_reco.nuE);
+  const Var kWeight = SIMPLEVAR(fake_reco.wgt);
+  const Cut kFlavor = SIMPLEVAR(fake_reco.lepton.pid) == (anatype == nueStr ? 11 : 13);
 
   const vector<double> binEdges = {0.2, 0.3, 0.4, 0.45, 0.5,
                            0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0,
@@ -92,28 +89,28 @@ void make_state_syst(const std::string anatype = numuStr)
   const Binning binsEnergy = Binning::Custom(binEdges);
   const HistAxis axEnergy("Reconstructed energy (GeV)", binsEnergy, kRecoE);
 
-  NoExtrapPredictionGenerator nom_gen(axEnergy, kOneTrue, kWeight);
+  NoExtrapPredictionGenerator nom_gen(axEnergy, kNoSpillCut, kFlavor, kWeight);
 
   std::vector<const ISyst*> systs = GetSBNWeightSysts();
   for(const ISyst* s: GetBoosterFluxHadronSysts(30)) systs.push_back(s);
 
   osc::NoOscillations calc;
 
-  PredictionInterp pred_nd(systs, &calc, nom_gen, loaders_nd);
+  //PredictionInterp pred_nd(systs, &calc, nom_gen, loaders_nd);
   PredictionInterp pred_fd(systs, &calc, nom_gen, loaders_fd);
-  PredictionInterp pred_ub(systs, &calc, nom_gen, loaders_ub);
+  //PredictionInterp pred_ub(systs, &calc, nom_gen, loaders_ub);
 
-  loaders_nd.Go();
+  //loaders_nd.Go();
   loaders_fd.Go();
-  loaders_ub.Go();
+  //loaders_ub.Go();
 
   std::cout << "Creating file " << ("cafe_state_syst_"+anatype+".root").c_str() << std::endl;
 
   TFile fout(("cafe_state_syst_"+anatype+".root").c_str(), "RECREATE");
 
-  pred_nd.SaveTo(fout.mkdir("pred_nd"));
+  //pred_nd.SaveTo(fout.mkdir("pred_nd"));
   pred_fd.SaveTo(fout.mkdir("pred_fd"));
-  pred_ub.SaveTo(fout.mkdir("pred_ub"));
+  //pred_ub.SaveTo(fout.mkdir("pred_ub"));
 }
 
 
