@@ -23,7 +23,9 @@ const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
 });
 
 const Cut kIcarus202401BaryFMCut([](const caf::SRSliceProxy *slc) {
-    return !std::isnan(slc->barycenterFM.deltaZ_Trigger) && slc->barycenterFM.deltaZ_Trigger < 100;
+    return !std::isnan(slc->barycenterFM.deltaZ_Trigger) && 
+           slc->barycenterFM.deltaZ_Trigger >= 0 && 
+           slc->barycenterFM.deltaZ_Trigger < 100;
 });
 
 const Cut kIcarus202401FoundMuon = kIcarus202401MuonIdx >= 0;
@@ -56,8 +58,8 @@ const Cut kIcarus202401ContainedMuon([](const caf::SRSliceProxy* slc){
   return kIcarus202401FoundMuon(slc) && Icarus202401contained(slc->reco.pfp.at(kIcarus202401MuonIdx(slc)).trk);
 });
 const Cut kIcarus202401ContainedMuonAndHadrons = kIcarus202401ContainedMuon && kIcarus202401ContainedHadrons;
-const Cut kIcarus202401NumuCCInclusive = kIcarus202401NumuSelection && kIcarus202401ContainedHadrons && kIcarus202401ContainedMuon;
-const Cut kIcarus202401NumuCC0pi = kIcarus202401NumuCCInclusive && kIcarus202401NoPion;
+const Cut kIcarus202401ContainedNumuCCInclusive = kIcarus202401NumuSelection && kIcarus202401ContainedHadrons && kIcarus202401ContainedMuon;
+const Cut kIcarus202401NumuCC0pi = kIcarus202401ContainedNumuCCInclusive && kIcarus202401NoPion;
 const Cut kIcarus202401Contained1muNp = kIcarus202401NumuCC0pi && kIcarus202401NumProtons > 0 && kIcarus202401NumShowers == 0;
 const Cut kIcarus202401Contained1mu1p = kIcarus202401Contained1muNp && kIcarus202401NumProtons == 1;
 }

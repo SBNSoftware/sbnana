@@ -77,7 +77,7 @@ const Var kIcarus202401NumProtons([](const caf::SRSliceProxy* slc)
   int muID = -1;
   if (idx >= 0) muID = slc->reco.pfp.at(idx).id;
   for(auto& pfp: slc->reco.pfp) {
-    if (pfp.trackScore < 0.4) { continue; }
+    if (pfp.trackScore < 0.5) { continue; }
     if(pfp.trk.chi2pid[2].chi2_proton == 0 && pfp.trk.chi2pid[1].chi2_proton == 0) continue;
     auto const& trk = pfp.trk;
     const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
@@ -97,7 +97,7 @@ const Var kIcarus202401NumShowers([](const caf::SRSliceProxy* slc){
                                    slc->vertex.y - pfp.shw.start.y,
                                    slc->vertex.z - pfp.shw.start.z);
     const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
-    if(pfp.trackScore > 0 && (pfp.trackScore < 0.4 || (!Icarus202401_proton_cut(pfp.trk) && pfp.trackScore < 0.5)) && AtSlice && pfp.shw.plane[2].energy > 0.025) count++;
+    if(pfp.trackScore > 0 && pfp.trackScore < 0.5 && AtSlice && pfp.shw.plane[2].energy > 0.025) count++;
   }
   return count;
 });
@@ -147,7 +147,7 @@ const MultiVar kIcarus202401RecoProtonP([](const caf::SRSliceProxy* slc){
   if(mu_idx >= 0) muID = slc->reco.pfp[mu_idx].id;
   for(const auto& pfp: slc->reco.pfp) {
     if(pfp.id == muID) continue;
-    if(pfp.trackScore < 0.4) continue;
+    if(pfp.trackScore < 0.5) continue;
     if(pfp.trk.chi2pid[2].chi2_proton == 0 && pfp.trk.chi2pid[1].chi2_proton == 0) continue;
     if(Icarus202401_proton_cut(pfp.trk) && pfp.parent_is_primary)
       Ps.push_back(pfp.trk.rangeP.p_proton);
