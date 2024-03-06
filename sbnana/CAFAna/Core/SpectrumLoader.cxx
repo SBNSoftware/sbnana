@@ -192,6 +192,8 @@ namespace ana
     if(!sr->hdr.ismc){
       const int nbnb  = sr->hdr.bnbinfo.size();
       const int nnumi = sr->hdr.numiinfo.size();
+      double noffbeambnb = sr->hdr.noffbeambnb;
+      double noffbeamnumi = sr->hdr.noffbeamnumi;
       if(nbnb > 0 && nnumi > 0){
         std::cout << "SpectrumLoader: nonzero number of both BNB (" << nbnb
                   << ") and NuMI (" << nnumi << ") triggers. I'm confused"
@@ -199,7 +201,7 @@ namespace ana
         abort();
       }
 
-      fNReadouts += nbnb + nnumi;
+      fNReadouts += nbnb + nnumi + noffbeambnb + noffbeamnumi;
     }
 
     // This record was only kept as a receptacle for exposure information. It
