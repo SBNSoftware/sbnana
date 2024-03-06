@@ -8,6 +8,8 @@
 #include "sbnana/CAFAna/Analysis/ExpInfo.h"
 #include "sbnana/CAFAna/Analysis/Surface.h"
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
+#include "sbnana/CAFAna/Systs/BoosterFluxSysts.h"
+
 using namespace ana;
 
 #include "OscLib/IOscCalc.h"
@@ -22,42 +24,59 @@ using namespace ana;
 #include <vector>
 
 const double sbndPOT = kPOTnominal;
-const double icarusPOT = kPOTnominal;
-const double uboonePOT = 1.3e21;
+//const double icarusPOT = kPOTnominal;
+const double icarusPOT = kPOTIcarusBNBRun1 + kPOTIcarusBNBRun2;
 
 const std::string numuStr = "numu";
 const std::string nueStr = "nue";
+const std::string icarusStr = "icarus";
+const std::string sbndStr = "sbnd";
+const std::string bothStr = "both";
 
-void syst_spec(const std::string anatype = numuStr)
+void syst_spec(const std::string anatype = numuStr, const std::string exptype = icarusStr)
 {
-  //  GetSBNWeightSysts(); // initialize
-  // ETW 12/18/2019 Just use the agreed list for all. Should fix the flux and genie separate ones too but didn't do that yet
-  const std::vector<const ISyst*>& systs = GetSBNWeightSysts();
 
-  auto systs_flux = GetBoosterFluxWeightSysts();
-  auto systs_genie = GetSBNGenieWeightSysts();
-
-  std::vector<const ISyst*> systs_to_process;
-
-  std::vector<std::string> syst_names{"expskin_FluxUnisim","horncurrent_FluxUnisim","kminus_PrimaryHadronNormalization","kplus_PrimaryHadronFeynmanScaling","kzero_PrimaryHadronSanfordWang","nucleoninexsec_FluxUnisim","nucleonqexsec_FluxUnisim","nucleontotxsec_FluxUnisim","piminus_PrimaryHadronSWCentralSplineVariation","pioninexsec_FluxUnisim","pionqexsec_FluxUnisim","piontotxsec_FluxUnisim","piplus_PrimaryHadronSWCentralSplineVariation","genie_ccresAxial_Genie","genie_ncresAxial_Genie","genie_qema_Genie","genie_NC_Genie","genie_NonResRvbarp1pi_Genie","genie_NonResRvbarp2pi_Genie","genie_NonResRvp1pi_Genie","genie_NonResRvp2pi_Genie","genie_NonResRvbarp1piAlt_Genie","genie_NonResRvbarp2piAlt_Genie","genie_NonResRvp1piAlt_Genie","genie_NonResRvp2piAlt_Genie"};
-
-  for (auto s : systs) {
-    for (auto n : syst_names) if (n == s->ShortName()) systs_to_process.push_back(s);
+  // Check that option is supported
+  if (anatype != numuStr) {
+    std::cout << "Only numu is currently supported" << std::endl;
+    return;
+  }
+  if (exptype != icarusStr) {
+    std::cout << "Only ICARUS is currently supported" << std::endl;
   }
 
-  //for (auto s : systs_to_process) std::cout << s->ShortName() << std::endl;
-  
-  std::vector<std::vector<const ISyst*>> all_systs_vec;
-  all_systs_vec.push_back(systs_to_process);
-  all_systs_vec.push_back(systs_flux);
-  all_systs_vec.push_back(systs_genie);
-  
- std::string n[] = {"all", "flux", "genie"};
+  // Load in systematics 
+
+  // All systematics
+  std::vector<const ISyst*> systs = GetSBNWeightSysts();
+  for(const ISyst* s: GetBoosterFluxHadronSysts(30)) systs.push_back(s);
+
+  //Separately by type
+  //Only flux weights
+  std::vector<const ISyst*> systs_fluxwgt = GetSBNBoosterFluxWeightSysts();
+  //Only hadronic flux systs that are handled via PCA
+  std::vector<const ISyst*> systs_fluxhad;
+  for(const ISyst* s: GetBoosterFluxHadronSysts(30)) systs_fluxhad.push_back(s);
+  //All flux systs
+  std::vector<const ISyst*> systs_flux;
+  for(const ISyst* s: GetSBNBoosterFluxWeightSysts()) systs_flux.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts(30)) systs_flux.push_back(s);
+  //GENIE weigt systs
+  std::vector<const ISyst*> systs_xsec = GetSBNGenieWeightSysts();
+
+  std::string n[] = {"all", "fluxwgt", "fluxhad", "flux", "xsec"};
+  int nsystlists = end(n) - begin(n);
+  std::vector<std::vector<const ISyst*>> systs_vec;
+  systs_vec.push_back(systs);
+  systs_vec.push_back(systs_fluxwgt);
+  systs_vec.push_back(systs_fluxhad);
+  systs_vec.push_back(systs_flux);
+  systs_vec.push_back(systs_xsec);
 
  const char* name_in;
  const char* name_out;
  if (anatype == numuStr) {
-   name_in = "cafe_state_syst_numu.root";
+   name_in = "/exp/icarus/data/users/etw/cafe_state_syst_numu.root";
    name_out = "output_syst_spec_numu.root";
  }
  else if (anatype == nueStr) {
@@ -72,9 +91,16 @@ void syst_spec(const std::string anatype = numuStr)
  TFile fin(name_in);
  TFile fout(name_out,"RECREATE");
 
- PredictionInterp* p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
- PredictionInterp* p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
- PredictionInterp* p_ub = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_ub")).release();
+ PredictionInterp* p_nd;
+ PredictionInterp* p_fd;
+ if (exptype == sbndStr || exptype == bothStr) {
+   p_nd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_nd")).release();
+ }
+ if (exptype == icarusStr || exptype == bothStr) {
+   p_fd = LoadFrom<PredictionInterp>(fin.GetDirectory("pred_fd")).release();
+ }
+
+ osc::NoOscillations unosc;
  
  TLegend* leg_updn = new TLegend(.6, .6, .85, .85);
  leg_updn->SetFillStyle(0);
@@ -85,13 +111,10 @@ void syst_spec(const std::string anatype = numuStr)
  dummy->SetLineColor(kRed);
  leg_updn->AddEntry(dummy->Clone(), "+1#sigma", "l");
 
-  std::vector<const ISyst*> bigsysts;
+ //std::vector<const ISyst*> bigsysts;
 
-  // Some code from Chris' script syst_contour.C
-  // I wasn't using it, but it can be used to look at individual systematics
-  // So I left it, but it's commented out
-  osc::NoOscillations unosc;
-//  for(const ISyst* s: systs){
+
+  //for(const ISyst* s: systs){
 //    p_nd->DebugPlot(s, &unosc);
 //    gPad->Print(TString::Format("plots/debug_nd_%s.pdf", s->ShortName().c_str()).Data());
 //    p_fd->DebugPlot(s, &unosc);
@@ -163,63 +186,53 @@ void syst_spec(const std::string anatype = numuStr)
 //  std::cout << std::endl;
 
 
-  for(int i = 0; i < 3; ++i) {
-    SystShifts shifts;
-    std::vector<TH1*> hists;
-    for (int j = 0; j < 1000; ++j){
-      for(auto s : all_systs_vec[i]) shifts.SetShift(s, gRandom->Gaus());
-      hists.push_back(p_nd->PredictSyst(&unosc, shifts).ToTH1(sbndPOT));
-    }
-    double xbins[] = {0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1., 1.25, 1.5, 2., 2.5, 3.};
-    TH1D *shifted = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
-    TH1D *lower = new TH1D("h2", "hist", 19, xbins);
-    for (int k = 1; k <= 19; ++k ) {
-      std::vector<double> bincont;
-      for (auto h : hists) bincont.push_back(h->GetBinContent(k));
-      std::sort(bincont.begin(),bincont.end());
-      shifted->SetBinContent(k, bincont[840]);
-      lower->SetBinContent(k, bincont[160]);
-    }    
+ for(int i = 0; i < nsystlists; ++i) {
+   double xbins[] = {0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1., 1.25, 1.5, 2., 2.5, 3.};
+   if (exptype == sbndStr || exptype == bothStr) {
+     SystShifts shifts;
+     std::vector<TH1*> hists;
+     auto nominal = p_nd->Predict(&unosc).ToTH1(sbndPOT);
+     for (int j = 0; j < 1000; ++j){
+       for(auto s : systs_vec[i]) shifts.SetShift(s, gRandom->Gaus());
+       hists.push_back(p_nd->PredictSyst(&unosc, shifts).ToTH1(sbndPOT));
+     }
+     TH1D *shifted = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
+     TH1D *lower = new TH1D("h2", "hist", 19, xbins);
+     for (int k = 1; k <= 19; ++k ) {
+       std::vector<double> bincont;
+       for (auto h : hists) bincont.push_back(h->GetBinContent(k));
+       std::sort(bincont.begin(),bincont.end());
+       shifted->SetBinContent(k, bincont[840]);
+       lower->SetBinContent(k, bincont[160]);
+     }    
     
-    shifted->Write(("spect_nd_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
-    lower->Write(("spect_nd_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
+     shifted->Write(("spect_nd_"+n[i]+"_plusonesigma").c_str(), TObject::kOverwrite);
+     lower->Write(("spect_nd_"+n[i]+"_minusonesigma").c_str(), TObject::kOverwrite);
+     nominal->Write(("spect_nd_"+n[i]+"_nom").c_str(),TObject::kOverwrite);
+   }
 
-    SystShifts shifts2;
-    std::vector<TH1*> hists2;
-    for (int j = 0; j < 1000; ++j){
-      for(auto s : all_systs_vec[i]) shifts2.SetShift(s, gRandom->Gaus());
-      hists2.push_back(p_fd->PredictSyst(&unosc, shifts2).ToTH1(icarusPOT));
-    }
-    TH1D *shifted2 = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
-    TH1D *lower2 = new TH1D("h2", "hist", 19, xbins);
-    for (int k = 1; k <= 19; ++k ) {
-      std::vector<double> bincont;
-      for (auto h : hists2) bincont.push_back(h->GetBinContent(k));
-      std::sort(bincont.begin(),bincont.end());
-      shifted2->SetBinContent(k, bincont[840]);
-      lower2->SetBinContent(k, bincont[160]);
-    }    
-    
-    shifted2->Write(("spect_fd_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
-    lower2->Write(("spect_fd_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
-
-    SystShifts shifts3;
-    std::vector<TH1*> hists3;
-    for (int j = 0; j < 1000; ++j){
-      for(auto s : all_systs_vec[i]) shifts3.SetShift(s, gRandom->Gaus());
-      hists3.push_back(p_ub->PredictSyst(&unosc, shifts3).ToTH1(uboonePOT));
-    }
-    TH1D *shifted3 = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
-    TH1D *lower3 = new TH1D("h2", "hist", 19, xbins);
-    for (int k = 1; k <= 19; ++k ) {
-      std::vector<double> bincont;
-      for (auto h : hists3) bincont.push_back(h->GetBinContent(k));
-      std::sort(bincont.begin(),bincont.end());
-      shifted3->SetBinContent(k, bincont[840]);
-      lower3->SetBinContent(k, bincont[160]);
-    }    
-    
-    shifted3->Write(("spect_ub_"+n[i]+"_+1").c_str(), TObject::kOverwrite);
-    lower3->Write(("spect_ub_"+n[i]+"_-1").c_str(), TObject::kOverwrite);
-  }
+   if (exptype == icarusStr || exptype == bothStr) {
+   SystShifts shifts2;
+   std::vector<TH1*> hists2;
+   auto nominal = p_fd->Predict(&unosc).ToTH1(icarusPOT);
+   for (int j = 0; j < 1000; ++j){
+     for(auto s : systs_vec[i]) shifts2.SetShift(s, gRandom->Gaus());
+     hists2.push_back(p_fd->PredictSyst(&unosc, shifts2).ToTH1(icarusPOT));
+   }
+   TH1D *shifted2 = new TH1D(("h"+to_string(i)).c_str(), "hist",19,xbins);
+   TH1D *lower2 = new TH1D("h2", "hist", 19, xbins);
+   for (int k = 1; k <= 19; ++k ) {
+     std::vector<double> bincont;
+     for (auto h : hists2) bincont.push_back(h->GetBinContent(k));
+     std::sort(bincont.begin(),bincont.end());
+     shifted2->SetBinContent(k, bincont[840]);
+     lower2->SetBinContent(k, bincont[160]);
+   }    
+   
+   shifted2->Write(("spect_fd_"+n[i]+"_plusonesigma").c_str(), TObject::kOverwrite);
+   lower2->Write(("spect_fd_"+n[i]+"_minusonesigma").c_str(), TObject::kOverwrite);
+   nominal->Write(("spect_fd_"+n[i]+"_nom").c_str(),TObject::kOverwrite);
+   }
+ }
 }
+
