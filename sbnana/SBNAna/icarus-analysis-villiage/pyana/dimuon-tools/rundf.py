@@ -14,11 +14,13 @@ def main(output, inputs):
 
     dfs = ntuples.dataframes(nproc="auto", fs=DFS)
     with pd.HDFStore(output) as hdf:
-        for k,df in zip(NAMES, dfs):
+        for k,df in zip(reversed(NAMES), reversed(dfs)): # go in reverse order so we can delete along the way
             try:
                 hdf.put(key=k, value=df, format="fixed")
             except Exception as e:
                 print("Table %s failed to save, skipping. Exception: %s" % (k, str(e)))
+
+            del df
 
 if __name__ == "__main__":
     printhelp = len(sys.argv) < 4 or sys.argv[1] == "-h"

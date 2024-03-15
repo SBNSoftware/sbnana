@@ -2,7 +2,6 @@ import uproot
 import numpy as np
 import pandas as pd
 
-# FSYST = "/cvmfs/sbn.opensciencegrid.org/products/sbn/sbndata/v01_04/beamData/NuMIdata/icarus_numi_flux_syst_ana.root"
 FSYST = "/icarus/data/users/gputnam/icarus_numi_flux_syst_ana_v2.root"
 
 beam_uncertainties = [
@@ -40,7 +39,6 @@ def getallpdg_histdf(d, prefix):
 def numisyst(nupdg, nuE, fsyst=FSYST):
     flux_f = uproot.open(fsyst)
 
-    # cv = getallpdg_histdf(flux_f["ppfx_output"]["fhc"]["nom"], "hcv_") / getallpdg_histdf(flux_f["ppfx_output"]["fhc"]["nom"], "hnom_")
     cv = getallpdg_histdf(flux_f["ppfx_flux_weights"], "hweights_fhc_")
     cv.name = ("ppfx", "cv")
 
@@ -68,7 +66,7 @@ def numisyst(nupdg, nuE, fsyst=FSYST):
     iloc = wgts.index.get_indexer(nuind)
     match_wgts = wgts.iloc[iloc]
     match_wgts.loc[iloc < 0, :] = 1.
-    match_wgts.index = nuE.index
+    match_wgts.index = nupdg.index 
 
     return match_wgts
 

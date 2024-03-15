@@ -1,7 +1,7 @@
 from pyanalib.panda_helpers import *
 from .branches import *
 from .util import *
-from . import numisyst, g4syst, geniesyst_mcnuphase2, geniesyst_regen
+from . import numisyst, g4syst, geniesyst_regen
 import uproot
 from scipy import interpolate
 
@@ -29,6 +29,7 @@ def make_mcnudf(f, is_regen=True, include_weights=False):
         else:
             wgtdf = pd.concat([numisyst.numisyst(mcdf.pdg, mcdf.E), geniesyst_mcnuphase2.geniesyst(f, mcdf.ind)], axis=1)
         mcdf = multicol_concat(mcdf, wgtdf)
+
     # mcdf.index = mcdf.index.droplevel(-1)
     return mcdf
 
@@ -224,7 +225,7 @@ recombination_data = lambda dEdx: recombination(dEdx, MODA_data, MODB_data, Efie
 KEs, Qs = Calc_Q2KE_points(1000, recombination_data) 
 Q2KE_data = make_interp(Qs, KEs)
 
-def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=True):
+def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=True, mcs=True):
     trkdf = loadbranches(f["recTree"], trkbranches + shwbranches)
     if scoreCut:
         trkdf = trkdf.rec.slc.reco[trkdf.rec.slc.reco.pfp.trackScore > 0.5]
@@ -236,6 +237,17 @@ def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=T
 
     if requireCosmic:
         trkdf = trkdf[trkdf.pfp.parent == -1]
+
+    if mcs:
+        mcsdf = loadbranches(f["recTree"], [trkmcsbranches[0]]).rec.slc.reco.pfp.trk.mcsP
+        mcsdf_angle = loadbranches(f["recTree"], [trkmcsbranches[1]]).rec.slc.reco.pfp.trk.mcsP
+        mcsdf_angle.index.set_names(mcsdf.index.names, inplace=True)
+
+        mcsdf = mcsdf.merge(mcsdf_angle, how="left", left_index=True, right_index=True)
+        mcsgroup = list(range(mcsdf.index.nlevels-1))
+        cumlen = mcsdf.seg_length.groupby(level=mcsgroup).cumsum()*14 # convert rad length to cm
+        maxlen = (cumlen*(mcsdf.seg_scatter_angles >= 0)).groupby(level=mcsgroup).max()
+        trkdf[("pfp", "trk", "mcsP", "len", "", "")] = maxlen
 
     if recalo:
         # determine MC or data
@@ -354,7 +366,7 @@ def make_trkhitdf(f, include_adc=False):
 
 def make_nuclhitdf(f):
     trkhitdf = make_trkhitdf(f)
-    selectdf = make_slc_trkdf(f)
+    selectdf = make_slc_trkdf(f, mcs=False)
 
     # select for nucleons
     crlongtrkdiry = selectdf.slc.nuid.crlongtrkdiry
@@ -442,9 +454,12 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
 
     return mcdf
 
-def make_slc_trkdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True):
+def make_slc_trkdf_inc(f):
+    return make_slc_trkdf(f, trkDistCut=100)
+
+def make_slc_trkdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkArgs):
     # load
-    trkdf = make_trkdf(f, trkScoreCut)
+    trkdf = make_trkdf(f, trkScoreCut, **trkArgs)
     slcdf = make_slcdf(f)
 
     # merge in tracks
