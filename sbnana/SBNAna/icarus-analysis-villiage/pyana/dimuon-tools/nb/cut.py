@@ -42,7 +42,7 @@ trk_mc_labels = ["Contained $\\nu$ $\\mu$",
               "Cosmic $\\mu$", 
               "Stopping $p$",
               "Other $p$",
-              #"$\\pi$",
+              "$\\pi$",
               "Other"]
     
 trk_mc_categories = [
@@ -51,7 +51,8 @@ trk_mc_categories = [
         true_muon & ~trk_from_nu,
         true_proton & true_trk_stop & stopping@end_process,
         true_proton & (~true_trk_stop | ~stopping@end_process),
-        ~true_muon & ~true_proton 
+        true_pion,
+        ~true_muon & ~true_proton & ~true_pion
 ]
 
 mc_nu_cosmic_labels = ["$\\nu$", "Cosmic"]

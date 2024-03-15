@@ -87,7 +87,7 @@ def makehist(var, dataset, cut=None, bins=None,
         if isinstance(var, SystVariable):
             for vprime in var.systs():
                  vp = vprime(dataset.df)
-                 if isinstance(cp, list): # handle multi-var
+                 if isinstance(vp, list): # handle multi-var
                      hsyst.append(SystSpectrum([histf(thisvar=vps) for vps in vp]))
                  else:
                      hsyst.append(SystSpectrum([histf(thisvar=vp)]))
@@ -97,18 +97,21 @@ def makehist(var, dataset, cut=None, bins=None,
             systc = syst_dataset_cut(dataset.df) if syst_dataset_cut else pd.Series(True, dataset.df.index)
             h_all = histf()
             h_syst_subset = histf(thiscut=c&systc)
-            h_scale = h_all.divide(h_syst_subset)
+            h_scale = h_all.divide(h_syst_subset).N
+            # If there's no events in the subset, then we can't evaluate the systematic anyway.
+            # Just set the scale factor to 1.
+            h_scale[~np.isfinite(h_scale)] = 1
 
             # set default weights
+            hds = []
             for dprimes in syst_datasets:
-                hds = []
                 for dprime in dprimes:
                     c = c0(dprime.df) if cut else pd.Series(True, dprime.df.index)
                     v = v0(dprime.df)
                     cvw_prime = dprime.df.wgt.cv if cvweight else pd.Series(1, dprime.df.index)
                 hds.append(histf(thisdataset=dprime, thisvar=v, thiscut=c, thiscv=cvw_prime))
 
-            hsyst.append(SystSpectrum(hds, [h_scale.N for _ in hds]))
+            hsyst.append(SystSpectrum(hds, [h_scale for _ in hds]))
 
     return h, hsyst
 
@@ -123,8 +126,10 @@ def plotmc(fig, hs, scov=None, **hist_kw):
 
     if scov is not None:
         htot = sum(hs)
-        fill = fig.fill_between(htot.bins, np.append(htot.N - np.sqrt(np.diag(scov)), 0), np.append(htot.N + np.sqrt(np.diag(scov)), 0), 
-            alpha=0.5, color="gray", step="post", hatch="x")
+        diff = np.sqrt(np.diag(scov))
+        diff[np.isnan(diff)] = 0
+        fill = fig.fill_between(htot.bins, np.append(htot.N - diff, 0), np.append(htot.N + diff, 0), 
+            edgecolor="gray", facecolor="none", step="post", hatch="//", linewidth=0)
     else: fill = None
 
     return fhist, fill
@@ -141,8 +146,10 @@ def plotratio(fig, num, denom, scov=None):
         linestyle="none", color="black", marker=".")
 
     if scov is not None:
-        fill = fig.fill_between(h.bins, np.append(1 - np.sqrt(np.diag(scov))/denom.N, 0), np.append(1 + np.sqrt(np.diag(scov))/denom.N, 0), 
-            alpha=0.5, color="gray", step="post", hatch="x")
+        diff = np.sqrt(np.diag(scov))/denom.N
+        diff[np.isnan(diff)] = 0
+        fill = fig.fill_between(h.bins, np.append(1 - diff, 0), np.append(1 + diff, 0), 
+            edgecolor="gray", facecolor="none", step="post", hatch="//", linewidth=0)
     else: fill = None
 
     return d, fill

@@ -1,25 +1,35 @@
 import numpy as np
 import pandas as pd
 import math
+import uproot
 
 from pyanalib.dataset import Dataset
 from pyanalib.panda_helpers import *
 import weights
+import reweight_coh
+import numiweight
 
 def simple_dataset(f, key):
     df = pd.read_hdf(f, key=key)
     cv = pd.Series(1, index=df.index)
     cv.name = ("wgt", "cv")
-    df = multicol_add(df, broadcast(cv, df))
+    df = multicol_add(df, cv)
     return Dataset(df, -1, -1)
 
 def simple_dataset_df(df):
     cv = pd.Series(1, index=df.index)
     cv.name = ("wgt", "cv")
-    df = multicol_add(df, broadcast(cv, df))
+    df = multicol_add(df, cv)
     return Dataset(df, -1, -1)
 
-def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnu", syst_weights=True, mccut=None, mccut_any=True):
+def add_weights(df, wgtdf, tmatch_col=("slc", "tmatch", "idx")):
+    na_set = {}
+    for w in wgtdf.columns:
+        na_set[w] = 1 # don't weight non-truth matched events
+
+    return multicol_merge(df, wgtdf, how="left", left_on=wgtdf.index.names[:2] + [tmatch_col], right_index=True).fillna(na_set)
+
+def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut=None, mccut_any=True, isscalar=False):
     hdrdf = pd.read_hdf(f, key=hdrkey)
     livetime = 0.
     pot = hdrdf.pot.sum()
@@ -38,16 +48,44 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnu", syst_weights=True, mccut=No
         df["mccut"] = mcdfcut
         df = df[df.mccut]
 
-    # Central-Value
-    cv = math.prod([mcdf[w] for w in weights.cv]).groupby(level=list(range(mcdf.index.nlevels-1))).prod()
-    cv.name = ("wgt", "cv")
-    df = multicol_add(df, broadcast(cv, df))
+    # Central-Value, if we can
+    try: 
+        cv = math.prod([mcdf[w] for w in weights.cv])
+        cv.name = ("wgt", "cv")
+        df = add_weights(df, pd.DataFrame(cv))
+    except:
+        if syst_weights:
+            raise
+        else:
+            df = multicol_add(df, pd.Series(1, index=df.index, name=("wgt", "cv")))
+
+    # load concrete correction
+    nuE = mcdf.E
+
+    # apply the concrete weight differently for nuetrinos and scalars
+    # Neutrinos: use the "total" for that pdg
+    # Scalars: lookup the weight for the corresponding parent pdg
+    # re-weight the 
+    nupdg = mcdf.parent_pdg if isscalar else mcdf.pdg
+
+    fluxcorr_wgt = numiweight.concrete_cv(nupdg, nuE) 
+    fluxcorr_wgt.name = ("wgt", "concrete", "cv", "", "", "")
+    df = add_weights(df, pd.DataFrame(fluxcorr_wgt))
+    df[("wgt", "cv", "", "", "", "")] *= df[("wgt", "concrete", "cv", "", "", "")]
+
+    print("Generating Coh-weights!")
+    # generate coherent pion weights
+    cohweight = reweight_coh.cohweight(mcdf, douniv=syst_weights)
+    cohweight.columns = pd.MultiIndex.from_tuples([("wgt", "coh", "cv", "", "", "")] + 
+                                                  [("wgt", "coh", "univ_%i" % i, "", "", "") for i in range(len(cohweight.columns) - 1)])
+    df = add_weights(df, cohweight)
+    df[("wgt", "cv", "", "", "", "")] *= df[("wgt", "coh", "cv", "", "", "")]
+    print("Generated")
 
     if not syst_weights:
         return Dataset(df, livetime, pot, hdrdf)
 
-    # Set the seed to be reproducible
-    np.random.seed(24601)
+    np.random.seed(24601) # My name is Jean-Valjean
 
     # Systematics
     NUNI = 100
@@ -56,6 +94,7 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnu", syst_weights=True, mccut=No
         unidf = pd.DataFrame(1, index=mcdf.index, columns=uni_columns)
         for s in systematics:
             print(s)
+            if s not in mcdf.columns: continue
 
             # +/-1 sigma
             if mcdf[s].columns[0][0].startswith("ps"):
@@ -78,29 +117,43 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnu", syst_weights=True, mccut=No
             unidf = unidf*np.maximum(0, w)
 
         # Total weight is product of all neutrinos in event
-        unidf = unidf.groupby(level=[0,1]).prod()
         unidf.columns = pd.MultiIndex.from_product([["wgt"], [colprefix], uni_columns])
 
-        return unidf.groupby(level=[0,1]).prod()
+        return unidf
 
     # All systematics together
-    df = multicol_merge(df, make_unidf(weights.allsysts, "all"), left_index=True, right_index=True)
-    df = multicol_merge(df, make_unidf(weights.genie_systematics, "xsec"), left_index=True, right_index=True)
-    df = multicol_merge(df, make_unidf(weights.beam_systematics, "flux"), left_index=True, right_index=True)
-    df = multicol_merge(df, make_unidf(weights.g4_systematics, "g4"), left_index=True, right_index=True)
+    df = add_weights(df, make_unidf(weights.genie_systematics, "xsec"))
+    df = add_weights(df, make_unidf(weights.beam_systematics, "flux"))
+    df = add_weights(df, make_unidf(weights.g4_systematics, "g4"))
+
+    # Multiply together to get total
+    for i in range(NUNI):
+        df[("wgt", "all", "univ_%i" % i, "", "", "")] = df[("wgt", "xsec", "univ_%i" % i, "", "", "")]*\
+                                                   df[("wgt", "flux", "univ_%i" % i, "", "", "")]*\
+                                                   df[("wgt", "g4", "univ_%i" % i, "", "", "")]*\
+                                                   df[("wgt", "coh", "univ_%i" % i, "", "", "")]
 
     return Dataset(df, livetime, pot, hdrdf)
 
-datadir = "/icarus/data/users/gputnam/DP2022P/reco/"
-onbeam_csv = datadir + "Run1_Run2.csv"
+datadir = "/icarus/data/users/gputnam/DMCP2023G/normdata/"
+
+grl = datadir + "Run1Run2_grl.txt"
+with open(grl) as f:
+    goodruns = [int(l.rstrip("\n")) for l in f]
+
+onbeam_csv = datadir + "Run1Run2_OnBeam.csv"
 def onbeam_dataset(f, key, hdrkey="hdr"):
-    return majority_dataset(f, key, onbeam_csv, hdrkey)
+    # Data quality onbeam
+    dq_cuts = [9642, 9723, 9941]
+    return majority_dataset(f, key, onbeam_csv, hdrkey, dq_cuts=dq_cuts)
 
-offbeam_csv = datadir + "Run1_Run2_offbeam.csv"
+offbeam_csv = datadir + "Run1Run2_OffBeam.csv"
 def offbeam_dataset(f, key, hdrkey="hdr"):
-    return majority_dataset(f, key, offbeam_csv, hdrkey)
+    # Data quality onbeam
+    dq_cuts = [8518, 9781, 9837, 9851, 9892]
+    return majority_dataset(f, key, offbeam_csv, hdrkey, dq_cuts=dq_cuts)
 
-def majority_dataset(f, key, normfile, hdrkey="hdr"):
+def majority_dataset(f, key, normfile, hdrkey="hdr", dq_cuts=None):
     tomrg = [
         "totpot_corr",
         "livetime_corr",
@@ -116,10 +169,27 @@ def majority_dataset(f, key, normfile, hdrkey="hdr"):
     hdrdf = multicol_merge(hdrdf.reset_index(), normdf[tomrg], 
                 on=["run", "evt"]).set_index(hdrdf.index.names)
 
-    when_hdr = hdrdf.quality_majority & ~hdrdf.minbias
+    # Require on good run list
+    hdrdf["goodrun"] = False
+    for r in goodruns:
+        hdrdf.loc[hdrdf.run == r, "goodrun"] = True
 
-    livetime = hdrdf.livetime_corr[when_hdr].sum()
-    pot = hdrdf.totpot_corr[when_hdr].sum()*1e12
+    # Apply data quality cut
+    if dq_cuts:
+        for r in dq_cuts:
+            hdrdf.loc[hdrdf.run == r, "goodrun"] = False
+
+    # cuts on events
+    when_evt = hdrdf.quality_majority & ~hdrdf.minbias & hdrdf.goodrun
+    # cuts on normalization
+    when_norm = hdrdf.goodrun
+
+    print(normdf.livetime_corr.sum()/1e6, hdrdf[when_norm].livetime_corr.sum()/1e6) # [s]
+    print(normdf.totpot_corr.sum()/1e8, hdrdf[when_norm].totpot_corr.sum()/1e8) # POTe20
+
+    livetime = hdrdf[when_norm].livetime_corr.sum()
+    pot = hdrdf[when_norm].totpot_corr.sum()*1e12
+
     df = pd.read_hdf(f, key)
 
-    return Dataset(df[broadcast(when_hdr, df)], livetime, pot, hdrdf)
+    return Dataset(df[broadcast(when_evt, df)], livetime, pot, hdrdf)

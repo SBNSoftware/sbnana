@@ -54,7 +54,7 @@ genie_systematics = [
     "GENIEReWeight_ICARUS_v2_multisim_DISBYVariationResponse",
 
     # COH
-    "GENIEReWeight_ICARUS_v2_multisigma_NormCCCOH",
+    # "GENIEReWeight_ICARUS_v2_multisigma_NormCCCOH", # handled by tuning
     "GENIEReWeight_ICARUS_v2_multisigma_NormNCCOH",
 
     # FSI
