@@ -260,6 +260,13 @@ namespace ana
     }
   }
 
+  //----------------------------------------------------------------------
+  template<class T> bool
+  operator<(const _Var<T>& a, const _Var<T>& b)
+  {
+    return a.ID() < b.ID();
+  }
+
   // explicitly instantiate the templates for the types we know we have
   template class _Var<caf::SRSpillProxy>;
   template class _Var<caf::SRSliceProxy>;

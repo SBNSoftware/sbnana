@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "sbnana/CAFAna/Core/Cut.h"
 #include "sbnana/CAFAna/Core/IFileSource.h"
@@ -23,6 +24,10 @@ namespace ana
 {
   class Spectrum;
   class ReweightableSpectrum;
+  class Tree;
+  class WeightsTree;
+  class NSigmasTree;
+  class NUniversesTree;
 
   /// Is this data-file representing beam spills or cosmic spills?
   enum DataSource{
@@ -86,6 +91,50 @@ namespace ana
                                          const SliceCut& slicecut,
                                          const SystShifts& shift,
                                          const Var& wei);
+
+    /// For use by the constructors of \ref Tree class
+    virtual void AddTree(Tree& tree,
+                         const std::vector<std::string>& labels,
+                         const std::vector<Var>& vars,
+                         const SpillCut& spillcut,
+                         const Cut& cut,
+                         const SystShifts& shift);
+
+    /// For use by the constructors of \ref Tree class
+    virtual void AddTree(Tree& tree,
+                         const std::vector<std::string>& labels,
+                         const std::vector<MultiVar>& vars,
+                         const SpillCut& spillcut,
+                         const Cut& cut,
+                         const SystShifts& shift);
+
+    /// For use by the constructors of \ref Tree class
+    virtual void AddTree(Tree& tree,
+                         const std::vector<std::string>& labels,
+                         const std::vector<SpillVar>& vars,
+                         const SpillCut& spillcut);
+
+    /// For use by the constructors of \ref Tree class
+    virtual void AddTree(Tree& tree,
+                         const std::vector<std::string>& labels,
+                         const std::vector<SpillMultiVar>& vars,
+                         const SpillCut& spillcut);
+
+    /// For use by the constructors of \ref NSigmasTree class
+    virtual void AddNSigmasTree(NSigmasTree& tree,
+                                const std::vector<std::string>& labels,
+                                const std::vector<const ISyst*>& systsToStore,
+                                const SpillCut& spillcut,
+                                const Cut& cut,
+                                const SystShifts& shift);
+
+    /// For use by the constructors of \ref NUniversesTree class
+    virtual void AddNUniversesTree(NUniversesTree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<std::vector<Var>>& univKnobs,
+                                   const SpillCut& spillcut,
+                                   const Cut& cut,
+                                   const SystShifts& shift);
 
     /// Load all the registered spectra
     virtual void Go() = 0;
@@ -209,13 +258,29 @@ namespace ana
     typedef _VarOrMultiVar<caf::SRSliceProxy> VarOrMultiVar;
     typedef _VarOrMultiVar<caf::SRSpillProxy> SpillVarOrMultiVar;
 
+    template<class T>
+    friend bool operator<(const _VarOrMultiVar<T>& a, const _VarOrMultiVar<T>& b) noexcept;
+
     /// \brief All the spectra that need to be filled
     ///
     /// [spillcut][shift][cut][wei][var]
     IDMap<SpillCut, IDMap<SystShifts, IDMap<Cut, IDMap<Var, IDMap<VarOrMultiVar, SpectList>>>>> fHistDefs;
     /// [spillcut][spillwei][spillvar]
     IDMap<SpillCut, IDMap<SpillVar, IDMap<SpillVarOrMultiVar, SpectList>>> fSpillHistDefs;
+
+    // TODO: Probably someone can make a more efficient version of SpectList
+    //       that works with Tree objects... In the meantime, let's use a standard
+    //       map. But otherwise, let's keep it the same way...
+    std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<Tree*, std::map<VarOrMultiVar, std::string>>>>> fTreeDefs;
+    std::map<SpillCut, std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>> fSpillTreeDefs;
+    // And a version that saves up the syst weights used to make event-by-event splines
+    std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NSigmasTree*, std::map<const ISyst*, std::string>>>>> fNSigmasTreeDefs;
+    // And a version that saves up universe-based systematic weights to make event-by-event weight lists
+    std::map<SpillCut, std::map<SystShifts, std::map<Cut, std::map<NUniversesTree*, std::map<std::vector<VarOrMultiVar>, std::string>>>>> fNUniversesTreeDefs;
   };
+
+  // For map-making
+  template<class T> bool operator<(const SpectrumLoaderBase::_VarOrMultiVar<T>& a, const SpectrumLoaderBase::_VarOrMultiVar<T>& b) noexcept {return a.ID() < b.ID();}
 
   /// \brief Dummy loader that doesn't load any files
   ///
@@ -262,6 +327,44 @@ namespace ana
                                  const Cut& cut,
                                  const SystShifts& shift,
                                  const Var& wei) override {}
+
+    void AddTree(Tree& tree,
+                 const std::vector<std::string>& labels,
+                 const std::vector<Var>& vars,
+                 const SpillCut& spillcut,
+                 const Cut& cut,
+                 const SystShifts& shift) override {}
+
+    void AddTree(Tree& tree,
+                 const std::vector<std::string>& labels,
+                 const std::vector<MultiVar>& vars,
+                 const SpillCut& spillcut,
+                 const Cut& cut,
+                 const SystShifts& shift) override {}
+
+    void AddTree(Tree& tree,
+                 const std::vector<std::string>& labels,
+                 const std::vector<SpillVar>& vars,
+                 const SpillCut& spillcut) override {}
+
+    void AddTree(Tree& tree,
+                 const std::vector<std::string>& labels,
+                 const std::vector<SpillMultiVar>& vars,
+                 const SpillCut& spillcut) override {}
+
+    void AddNSigmasTree(NSigmasTree& tree,
+                        const std::vector<std::string>& labels,
+                        const std::vector<const ISyst*>& systsToStore,
+                        const SpillCut& spillcut,
+                        const Cut& cut,
+                        const SystShifts& shift) override {}
+
+    void AddNUniversesTree(NUniversesTree& tree,
+                           const std::vector<std::string>& labels,
+                           const std::vector<std::vector<Var>>& univKnobs,
+                           const SpillCut& spillcut,
+                           const Cut& cut,
+                           const SystShifts& shift) override {}
   };
   /// \brief Dummy loader that doesn't load any files
   ///

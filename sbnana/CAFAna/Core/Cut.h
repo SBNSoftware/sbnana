@@ -19,6 +19,9 @@ namespace ana
                                              const _Cut<T>& b);
   template<class T> _Cut<T> operator||(const _Cut<T>& a,
                                              const _Cut<T>& b);
+  template<class T> bool operator<(const _Cut<T>& a,
+                                         const _Cut<T>& b); // for map-making
+
   template<class T> _Cut<T> operator!(const _Cut<T>& a);
 
   typedef double (ExposureFunc_t)(const caf::SRSpill* spill);

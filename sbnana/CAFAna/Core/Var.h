@@ -25,6 +25,7 @@ namespace ana
   template<class T> _Var<T> operator/(const _Var<T>& a, const _Var<T>& b);
   template<class T> _Var<T> operator+(const _Var<T>& a, const _Var<T>& b);
   template<class T> _Var<T> operator-(const _Var<T>& a, const _Var<T>& b);
+  template<class T> bool operator<(const _Var<T>& a, const _Var<T>& b); // for map-making
 
   /// Template for Var and SpillVar
   template<class T> class _Var

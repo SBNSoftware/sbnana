@@ -58,5 +58,7 @@ namespace ana
     static int fgNextID;
   };
 
+  bool operator< (const SystShifts& a, const SystShifts& b);
+
   const SystShifts kNoShift = SystShifts::Nominal();
 }
