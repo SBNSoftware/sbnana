@@ -243,13 +243,17 @@ namespace ana {
     // Tpi
     double Tpi = kTruth_ChargedPionKE(sr);
     double TpiRW = GetSPPTpiMINERvAFittedReweight(Tpi);
-    double FullRW = Q2RW*TpiRW;
 
+    // Final RW
+    double FullRW = Q2RW * TpiRW;
+
+    // Restrict the dial in [0,1] range
     double this_sigma = sigma;
     if (sigma > 1) this_sigma = 1.0;
     if (sigma < 0) this_sigma = 0.;
 
-    double this_rw = (1.-this_sigma) * 1. + this_sigma * FullRW;
+    // linear interpolation
+    double this_rw = (1.-this_sigma) * 2. + this_sigma * FullRW;
 
     weight *= this_rw;
 
