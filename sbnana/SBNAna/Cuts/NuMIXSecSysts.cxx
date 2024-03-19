@@ -2,18 +2,70 @@
 #include "sbnana/SBNAna/Vars/NuMIXSecTruthVars.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include <iostream>
+#include "TMath.h"
 
 namespace ana {
 
   // NuMIXSecPiSyst
 
-  NuMIXSecPiSyst::NuMIXSecPiSyst(const std::string& name, const std::string& latexName):
-    ISyst(name, latexName)
-  {
+  bool IsSPP(const caf::SRTrueInteractionProxy *sr){
+
+    // Check process
+
+    int genie_n_photons = 0;
+    int genie_n_mesons = 0;
+    int nPip = 0;
+    for(const auto& prim: sr->prim){
+
+      // only primary
+      if ( prim.start_process != 0 ) continue;
+
+      int pdg = prim.pdg;
+      int energy = prim.genE * 1000.; // GeV->MeV
+
+      if (pdg == 22 && energy > 10.0) {
+        genie_n_photons++;
+      }
+      if (abs(pdg) == 211 || //pi+-
+               pdg == 111 ||  // pi0
+               abs(pdg) == 321 || // K-
+               abs(pdg) == 323 || // K*+-
+               pdg == 130 || // KL0
+               pdg == 310 || // KS0
+               pdg == 311 || // K0
+               pdg == 313 || // K*0
+               abs(pdg) == 221 || // eta
+               abs(pdg) == 331 // eta' (958)
+               ) {
+        genie_n_mesons++;
+      }
+      if(pdg==211){
+        nPip++;
+      }
+
+    }
+
+    if (nPip != 1 || genie_n_mesons!= 1)
+      return false;
+    if (genie_n_photons != 0 )
+      return false;
+
+    int TargetPDG = kTruth_Target(sr);
+    int TargetA = ((TargetPDG % 10000)) / 10;
+    if(TargetA==1) return false;
+
+    return true;
 
   }
 
-  double NuMIXSecPiSyst::GetSPPQ2Reweight(double Q2_GeV2) const {
+  const Var kNuMITrueIsSPP([](const caf::SRSliceProxy* slc) -> int {
+    bool isspp = IsSPP(&slc->truth);
+    if(isspp) return 1;
+    else return 0;
+  });
+
+
+  double GetSPPQ2Reweight(double Q2_GeV2){
 
     double X = Q2_GeV2;
     if(Q2_GeV2>=3.0) X = 2.5;
@@ -38,12 +90,14 @@ namespace ana {
     return this_rw;
 
   }
-  double NuMIXSecPiSyst::GetSPPTpiReweight(double Tpi_GeV) const {
+  double GetSPPTpiCHLinearFitReweight(double Tpi_GeV){
 
-    static double const P0 = 1.337359;
-    //static double const P0Err = 0.096961;
-    static double const P1 = -2.769901;
-    //static double const P1Err = 0.318157;
+    // CH result
+
+    static double const P0 = 1.319098;
+    //static double const P0Err = 0.120327;
+    static double const P1 = -2.743935;
+    //static double const P1Err = 0.488502;
 
     double X = Tpi_GeV;
     if(X>=0.350) X = 0.350;
@@ -54,7 +108,43 @@ namespace ana {
     return this_rw;
 
   }
-  double NuMIXSecPiSyst::GetSPPTpiReweightMINERvA(double Tpi_GeV) const {
+  double GetSPPTpiFeLinearFitReweight(double Tpi_GeV){
+
+    // Fe result
+
+    static double const P0 = 1.293700;
+    //static double const P0Err = 0.147533;
+    static double const P1 = -2.675087;
+    //static double const P1Err = 0.520483;
+
+    double X = Tpi_GeV;
+    if(X>=0.350) X = 0.350;
+
+    double this_rw = P0 + P1 * X;
+    if(this_rw<0) this_rw = 1.;
+
+    return this_rw;
+
+  }
+  double GetSPPTpiPbLinearFitReweight(double Tpi_GeV){
+
+    // Pb result
+
+    static double const P0 = 0.63527749;
+    //static double const P0Err = 0.163223;
+    static double const P1 = +1.274898;
+    //static double const P1Err = 1.367774;
+
+    double X = Tpi_GeV;
+    if(X>=0.350) X = 0.350;
+
+    double this_rw = P0 + P1 * X;
+    if(this_rw<0) this_rw = 1.;
+
+    return this_rw;
+
+  }
+  double GetSPPTpiMINERvATemplateReweight(double Tpi_GeV){
 
     double X = Tpi_GeV*1000.; // GeV to MeV
 
@@ -98,6 +188,45 @@ namespace ana {
 
   }
 
+  double GetSPPTpiMINERvAFittedReweight(double Tpi_GeV){
+
+    static double landau_Cutoff = 0.225;
+    static double linear_Cutoff = (0.225+0.250)/2.;
+
+    if(Tpi_GeV<landau_Cutoff){
+      // Params for Function = norm * ROOT.TMath.Landau(value, mu, sigma)
+      // norm, mpv, width
+      static double LandauParams[3] = {6.62460358, 0.12190376, 0.05738087};
+      return LandauParams[0] * TMath::Landau(Tpi_GeV, LandauParams[1], LandauParams[2]);
+    }
+    else if(landau_Cutoff<=Tpi_GeV && Tpi_GeV<linear_Cutoff){
+      double landau_Cutoff_value = 0.74509867; // Landau value at landau_Cutoff
+      double linear_Cutoff_value = 0.755932; // Template value at linear_Cutoff
+      return (linear_Cutoff_value-landau_Cutoff_value)/(linear_Cutoff-landau_Cutoff) * (Tpi_GeV-landau_Cutoff) + landau_Cutoff_value;
+    }
+    else{
+      if( linear_Cutoff <= Tpi_GeV && Tpi_GeV < 0.250000 ) return 0.755932;
+      else if( 0.250000 <= Tpi_GeV && Tpi_GeV < 0.275000 ) return 0.638574;
+      else if( 0.275000 <= Tpi_GeV && Tpi_GeV < 0.300000 ) return 0.493987;
+      else if( 0.300000 <= Tpi_GeV && Tpi_GeV < 0.325000 ) return 0.391947;
+      else if( 0.325000 <= Tpi_GeV && Tpi_GeV < 0.350000 ) return 0.323265;
+      else if( 0.350000 <= Tpi_GeV && Tpi_GeV < 0.400000 ) return 0.452765;
+      else if( 0.400000 <= Tpi_GeV && Tpi_GeV < 0.500000 ) return 0.594541;
+      else if( 0.500000 <= Tpi_GeV && Tpi_GeV < 0.700000 ) return 0.768459;
+      else if( 0.700000 <= Tpi_GeV && Tpi_GeV < 1.000000 ) return 0.658024;
+      else if( 1.000000 <= Tpi_GeV && Tpi_GeV < 2.000000 ) return 0.873622;
+      else return 0.873622;
+    }
+
+  }
+
+
+  NuMIXSecPiSyst::NuMIXSecPiSyst(const std::string& name, const std::string& latexName):
+    ISyst(name, latexName)
+  {
+
+  }
+
   void NuMIXSecPiSyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
   {
     this->Shift(sigma, &sr->truth, weight);
@@ -105,66 +234,98 @@ namespace ana {
 
   void NuMIXSecPiSyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
 
-    // Check process
+    if( !IsSPP(sr) ) return;
 
-    int genie_n_photons = 0;
-    int genie_n_mesons = 0;
-    int nPip = 0;
-    for(const auto& prim: sr->prim){
-
-      // only primary
-      if ( prim.start_process != 0 ) continue;
-
-      int pdg = prim.pdg;
-      int energy = prim.genE * 1000.; // GeV->MeV
-
-      if (pdg == 22 && energy > 10.0) {
-        genie_n_photons++;
-      }
-      if (abs(pdg) == 211 || //pi+-
-               pdg == 111 ||  // pi0
-               abs(pdg) == 321 || // K-
-               abs(pdg) == 323 || // K*+-
-               pdg == 130 || // KL0
-               pdg == 310 || // KS0
-               pdg == 311 || // K0
-               pdg == 313 || // K*0
-               abs(pdg) == 221 || // eta
-               abs(pdg) == 331 // eta' (958)
-               ) {
-        genie_n_mesons++;
-      }
-      if(pdg==211){
-        nPip++;
-      }
-
-    }
-
-    if (nPip != 1 || genie_n_mesons!= 1)
-      return;
-    if (genie_n_photons != 0 )
-      return;
-
-
-    int TargetPDG = kTruth_Target(sr);
-    int TargetA = ((TargetPDG % 10000)) / 10;
-    if(TargetA==1) return;
-
+    // Q2
     double Q2 = kTruth_Q2(sr);
-    double Tpi = kTruth_ChargedPionKE(sr);
-
     double Q2RW = GetSPPQ2Reweight(Q2);
-    double TpiRW = sigma >= 0 ? GetSPPTpiReweight(Tpi) : GetSPPTpiReweightMINERvA(Tpi);
+
+    // Tpi
+    double Tpi = kTruth_ChargedPionKE(sr);
+    double TpiRW = GetSPPTpiMINERvAFittedReweight(Tpi);
     double FullRW = Q2RW*TpiRW;
 
     double this_sigma = sigma;
     if (sigma > 1) this_sigma = 1.0;
-    if (sigma < -1) this_sigma = -1.0;
+    if (sigma < 0) this_sigma = 0.;
 
     double this_rw = (1.-this_sigma) * 1. + this_sigma * FullRW;
 
     weight *= this_rw;
 
   }
+
+  // Vars
+
+  const Var kNuMISPPQ2RW([](const caf::SRSliceProxy* slc) -> float {
+
+    if( !IsSPP(&slc->truth) ) return 1.;
+
+    double Q2 = kTruth_Q2(&slc->truth);
+
+    double Q2RW = GetSPPQ2Reweight(Q2); // Use Q2 from CH
+
+    return Q2RW;
+
+  });
+
+  const Var kNuMISPPTpiCHLinearFitReweight([](const caf::SRSliceProxy* slc) -> float {
+
+    if( !IsSPP(&slc->truth) ) return 1.;
+
+    double Tpi = kTruth_ChargedPionKE(&slc->truth);
+
+    double TpiRW = GetSPPTpiCHLinearFitReweight(Tpi);
+
+    return TpiRW;
+
+  });
+
+  const Var kNuMISPPTpiFeLinearFitReweight([](const caf::SRSliceProxy* slc) -> float {
+
+    if( !IsSPP(&slc->truth) ) return 1.;
+
+    double Tpi = kTruth_ChargedPionKE(&slc->truth);
+
+    double TpiRW = GetSPPTpiFeLinearFitReweight(Tpi);
+
+    return TpiRW;
+
+  });
+
+  const Var kNuMISPPTpiPbLinearFitReweight([](const caf::SRSliceProxy* slc) -> float {
+
+    if( !IsSPP(&slc->truth) ) return 1.;
+
+    double Tpi = kTruth_ChargedPionKE(&slc->truth);
+
+    double TpiRW = GetSPPTpiPbLinearFitReweight(Tpi);
+
+    return TpiRW;
+
+  });
+
+  const Var kNuMISPPTpiMINERvATemplateReweight([](const caf::SRSliceProxy* slc) -> float {
+
+    if( !IsSPP(&slc->truth) ) return 1.;
+
+    double Tpi = kTruth_ChargedPionKE(&slc->truth);
+
+    double TpiRW = GetSPPTpiMINERvATemplateReweight(Tpi);
+
+    return TpiRW;
+
+  });
+  const Var kNuMISPPTpiMINERvAFittedReweight([](const caf::SRSliceProxy* slc) -> float {
+
+    if( !IsSPP(&slc->truth) ) return 1.;
+
+    double Tpi = kTruth_ChargedPionKE(&slc->truth);
+
+    double TpiRW = GetSPPTpiMINERvAFittedReweight(Tpi);
+
+    return TpiRW;
+
+  });
 
 } // end namespace ana
