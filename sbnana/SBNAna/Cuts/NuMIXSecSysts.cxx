@@ -191,21 +191,15 @@ namespace ana {
   double GetSPPTpiMINERvAFittedReweight(double Tpi_GeV){
 
     static double landau_Cutoff = 0.225;
-    static double linear_Cutoff = (0.225+0.250)/2.;
 
     if(Tpi_GeV<landau_Cutoff){
       // Params for Function = norm * ROOT.TMath.Landau(value, mu, sigma)
       // norm, mpv, width
-      static double LandauParams[3] = {6.62460358, 0.12190376, 0.05738087};
+      static double LandauParams[3] = {6.70797696, 0.12235454, 0.05731087};
       return LandauParams[0] * TMath::Landau(Tpi_GeV, LandauParams[1], LandauParams[2]);
     }
-    else if(landau_Cutoff<=Tpi_GeV && Tpi_GeV<linear_Cutoff){
-      double landau_Cutoff_value = 0.74509867; // Landau value at landau_Cutoff
-      double linear_Cutoff_value = 0.755932; // Template value at linear_Cutoff
-      return (linear_Cutoff_value-landau_Cutoff_value)/(linear_Cutoff-landau_Cutoff) * (Tpi_GeV-landau_Cutoff) + landau_Cutoff_value;
-    }
     else{
-      if( linear_Cutoff <= Tpi_GeV && Tpi_GeV < 0.250000 ) return 0.755932;
+      if( landau_Cutoff <= Tpi_GeV && Tpi_GeV < 0.250000 ) return 0.755932;
       else if( 0.250000 <= Tpi_GeV && Tpi_GeV < 0.275000 ) return 0.638574;
       else if( 0.275000 <= Tpi_GeV && Tpi_GeV < 0.300000 ) return 0.493987;
       else if( 0.300000 <= Tpi_GeV && Tpi_GeV < 0.325000 ) return 0.391947;
