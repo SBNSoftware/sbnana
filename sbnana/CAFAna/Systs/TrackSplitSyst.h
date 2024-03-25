@@ -45,7 +45,6 @@ namespace ana
     void FillPtrPFP( caf::SRPFP& ret, const caf::Proxy<caf::SRPFP>& inPfp ) const;
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
-    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
 
   private:
     // Random engine
@@ -78,7 +77,6 @@ namespace ana
     : TrackSplitSyst( name, latexName, debugPrint, fileName ) { }
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
-    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
   };
 
   extern const TrackSplitSystCheck kTrackSplittingSystCheck;

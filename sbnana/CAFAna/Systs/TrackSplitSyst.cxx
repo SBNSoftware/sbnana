@@ -1231,10 +1231,6 @@ namespace ana {
 
   } // Shift
 
-  void TrackSplitSyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
-
-  }
-
   const TrackSplitSyst kTrackSplittingSyst("TrackSplittingSyst", "Split tracks systematic");
   const TrackSplitSyst kTrackSplittingSystDebug("TrackSplittingSyst", "Split tracks systematic", true);
 
@@ -1465,10 +1461,6 @@ namespace ana {
 
     } // loop pfps
   } // Shift
-
-  void TrackSplitSystCheck::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
-
-  }
 
   const TrackSplitSystCheck kTrackSplittingSystCheck("TrackSplittingSystCheck", "Split tracks systematic testing");
 
