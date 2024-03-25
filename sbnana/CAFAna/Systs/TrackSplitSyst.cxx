@@ -938,16 +938,29 @@ namespace ana {
       PreservedTrkResults.dir_end_z = pfp.trk.dir_end.z;
 
       // Update the track info
-      pfp.trk.len = ((firstPoint[2].rr-splitPoint[2].rr) + (firstPoint[1].rr-splitPoint[1].rr))/2.;
+      //pfp.trk.len = ((firstPoint[2].rr-splitPoint[2].rr) + (firstPoint[1].rr-splitPoint[1].rr))/2.;
+      pfp.trk.len = std::max(firstPoint[0].rr, std::max(firstPoint[1].rr, firstPoint[2].rr)) - std::min(splitPoint[0].rr, std::min(splitPoint[1].rr, splitPoint[2].rr));
       pfp.trk.npts = (pfp.trk.calo[2].nhit + pfp.trk.calo[1].nhit + pfp.trk.calo[0].nhit);
       pfp.trk.bestplane = ( pfp.trk.calo[2].nhit >= pfp.trk.calo[1].nhit ? (pfp.trk.calo[2].nhit >= pfp.trk.calo[0].nhit ? caf::Plane_t(2) : caf::Plane_t(0) ) : 
                                                                            (pfp.trk.calo[0].nhit >= pfp.trk.calo[1].nhit ? caf::Plane_t(0) : caf::Plane_t(1) ));
 
       ////if ( fDebug ) std::cout << "... and its length post-split is now: " << pfp.trk.len << std::endl;
 
-      caf::SRVector3D trkEnd( (splitPoint[2].x + splitPoint[1].x)/2.,
-                              (splitPoint[2].y + splitPoint[1].y)/2.,
-                              (splitPoint[2].z + splitPoint[1].z)/2. );
+      // updated end point: 24 May 2024
+      double endRR = std::numeric_limits<double>::max();
+      double endPtX = -9999.;
+      double endPtY = -9999.;
+      double endPtZ = -9999.;
+      for ( unsigned int idxPt = 0; idxPt < 3; ++idxPt ) {
+      	if ( std::isnan(splitPoint[idxPt].rr) || std::isinf(splitPoint[idxPt].rr) ) continue;
+        if ( splitPoint[idxPt].rr < endRR ) {
+          endRR = splitPoint[idxPt].rr;
+          endPtX = splitPoint[idxPt].x;
+          endPtY = splitPoint[idxPt].y;
+          endPtZ = splitPoint[idxPt].z;
+        }
+      }
+      caf::SRVector3D trkEnd( endPtX, endPtY, endPtZ );
       pfp.trk.end = trkEnd;
 
       caf::SRVector3D trkEndDir( caf::kSignalingNaN, caf::kSignalingNaN, caf::kSignalingNaN );
@@ -1121,34 +1134,31 @@ namespace ana {
 
       // Length
       double scdryLength = 0.;
-      for ( auto const& scdryLenVal : scdryLengths ) scdryLength+=scdryLenVal;
-      if( scdryLengths.size() != 0 ) scdryLength /= double(scdryLengths.size());
+      // Commenting out to use this updated length definition (24 march 2024)
+      //for ( auto const& scdryLenVal : scdryLengths ) scdryLength+=scdryLenVal;
+      //if( scdryLengths.size() != 0 ) scdryLength /= double(scdryLengths.size());
+      for ( auto const& scdryLenVal : scdryLengths ) {
+        if ( scdryLenVal > scdryLength ) scdryLength=scdryLenVal;
+      }
       newPfp.trk.len = scdryLength;
 
-      // Start point
-      double startPtX = 0.;
-      double startPtY = 0.;
-      double startPtZ = 0.;
-      for ( auto const& startPoint : startPoints ) {
-        startPtX+=startPoint[0];
-        startPtY+=startPoint[1];
-        startPtZ+=startPoint[2];
+      // Start point (updated 24 may 2024)
+      double startRR = 0.;
+      double startPtX = caf::kSignalingNaN;
+      double startPtY = caf::kSignalingNaN;
+      double startPtZ = caf::kSignalingNaN;
+      for ( unsigned int idxPt = 0 ; idxPt < startPoints.size(); ++idxPt ) {
+        if ( scdryLengths[idxPt] > startRR ) {
+          startRR = scdryLengths[idxPt];
+          startPtX = startPoints[idxPt][0];
+          startPtY = startPoints[idxPt][1];
+          startPtZ = startPoints[idxPt][2];
+        }
       }
-      if ( startPoints.size() != 0 ) {
-        startPtX /= double(startPoints.size());
-        startPtY /= double(startPoints.size());
-        startPtZ /= double(startPoints.size());
-        caf::SRVector3D trkStartLoc( startPtX,
-                                     startPtY,
-                                     startPtZ );
-        newPfp.trk.start = trkStartLoc;
-      }
-      else {
-        caf::SRVector3D trkStartLoc( caf::kSignalingNaN,
-                                     caf::kSignalingNaN,
-                                     caf::kSignalingNaN );
-        newPfp.trk.start = trkStartLoc;
-      }
+      caf::SRVector3D trkStartLoc( startPtX,
+                                   startPtY,
+                                   startPtZ );
+      newPfp.trk.start = trkStartLoc;
 
       // N points & best plane
       newPfp.trk.npts = (newPfp.trk.calo[2].nhit + newPfp.trk.calo[1].nhit + newPfp.trk.calo[0].nhit);
@@ -1294,11 +1304,11 @@ namespace ana {
       sr->reco.pfp[idxPfp].trk.bestplane = ( sr->reco.pfp[idxPfp].trk.calo[2].nhit >= sr->reco.pfp[idxPfp].trk.calo[1].nhit ? (sr->reco.pfp[idxPfp].trk.calo[2].nhit >= sr->reco.pfp[idxPfp].trk.calo[0].nhit ? caf::Plane_t(2) : caf::Plane_t(0) ) :
                                                                                                                               (sr->reco.pfp[idxPfp].trk.calo[0].nhit >= sr->reco.pfp[idxPfp].trk.calo[1].nhit ? caf::Plane_t(0) : caf::Plane_t(1) ));
 
-      // -- Beginning of track
+      // -- Beginning of track (HAD TRIED FURTHEST START POINT FROM PLANES 0,1,2... INSTEAD TRY PLANE 1,2 HERE LIKE IN SYST ABOVE...)
       std::vector< std::vector<double> > startPoints;
       std::vector< std::vector<double> > dirs;
       std::vector<double> scdryLengths;
-      for ( unsigned int idxPlane=0; idxPlane < 3; ++idxPlane ) {
+      for ( unsigned int idxPlane=1; idxPlane < 3; ++idxPlane ) {
         unsigned int nPoints = 0;
         std::map<double, caf::SRCaloPoint>::iterator it = caloPointRRMap[idxPlane].end();
         if ( caloPointRRMap[idxPlane].size() == 0 ) continue; // if no points then we skip this plane
@@ -1306,7 +1316,6 @@ namespace ana {
         scdryLengths.push_back( it->second.rr );
         std::vector<double> startPoint = { it->second.x, it->second.y, it->second.z };
         startPoints.push_back(startPoint);
-	if ( idxPlane==0 ) continue;
         while ( it!=caloPointRRMap[idxPlane].begin() ) {
           double xyz_start[3] = { it->second.x, it->second.y, it->second.z };
           //std::cout << "xyz: " << xyz_start[0] << " " << xyz_start[1] << " " << xyz_start[2] << std::endl;
@@ -1370,6 +1379,7 @@ namespace ana {
       }
       */
       // Instead of averaging the first point on each of ind2 and collection, pick the one with the largest RR and use that directly...
+      // NB: this was doing pretty good!!! (But want to try bestplane point as well...)
       double startRR = 0.;
       double startPtX = -9999.;
       double startPtY = -9999.;
@@ -1386,13 +1396,24 @@ namespace ana {
 				   startPtY,
 				   startPtZ );
       sr->reco.pfp[idxPfp].trk.start = trkStartLoc;
-
+/*
+      unsigned int ourBestPlane = sr->reco.pfp[idxPfp].trk.bestplane;
+      //caf::SRVector3D trkStartLoc( firstPoint[ourBestPlane].x,
+      //                             firstPoint[ourBestPlane].y,
+      //                             firstPoint[ourBestPlane].z );
+      caf::SRVector3D trkStartLoc( startPoints[ourBestPlane][0],
+                                   startPoints[ourBestPlane][1],
+                                   startPoints[ourBestPlane][2] );
+      sr->reco.pfp[idxPfp].trk.start = trkStartLoc;
+*/
+     
       // -- End of track
       //caf::SRVector3D trkEnd( (lastPoint[2].x + lastPoint[1].x)/2.,
       //                        (lastPoint[2].y + lastPoint[1].y)/2.,
       //                        (lastPoint[2].z + lastPoint[1].z)/2. );
       //sr->reco.pfp[idxPfp].trk.end = trkEnd;
       // and TRY SIMILAR WITH THE LAST POINT...
+      // Commenting out to try best plane... This method that I'm commenting out was really good for start, less so but still decent for end...
       double endRR = std::numeric_limits<double>::max();
       double endPtX = -9999.;
       double endPtY = -9999.;
@@ -1408,7 +1429,12 @@ namespace ana {
       }
       caf::SRVector3D trkEnd( endPtX, endPtY, endPtZ );
       sr->reco.pfp[idxPfp].trk.end = trkEnd;
-      // -- But actually average over:
+/*
+      caf::SRVector3D trkEnd( lastPoint[ourBestPlane].x,
+                              lastPoint[ourBestPlane].y,
+                              lastPoint[ourBestPlane].z );
+      sr->reco.pfp[idxPfp].trk.end = trkEnd;
+*/
 
       // -- Other track and shower quantities
       TrkMomentumResults p_output = CalculateMomenta(sr->reco.pfp[idxPfp].trk.len);
