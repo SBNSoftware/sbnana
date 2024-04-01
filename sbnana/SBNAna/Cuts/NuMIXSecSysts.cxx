@@ -244,6 +244,7 @@ namespace ana {
 
     // 1/CVCorr is the correction back to nominal = 1sigma
     double oneSigRW = 1./CVCorr;
+    // Size of the one-sigma by subtracting 1
     double oneSigUnc = oneSigRW-1.;
 
     double this_rw = 1. + sigma * oneSigUnc;
