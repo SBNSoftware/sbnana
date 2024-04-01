@@ -41,13 +41,13 @@ namespace ana
 
   };
 
-  // CV correction
+  // CV correction weight; kNuMISPPQ2RW * kNuMISPPTpiMINERvAFittedReweight
   extern const Var kNuMISPPCVCorrection;
 
-  // Separate reweight for study
+  // Separate reweight values for study
   // - Q2-template RW
   extern const Var kNuMISPPQ2RW;
-  // - Tpi lineaer-fitted RW using MINERvA CC1pi; data is available for 35<tpi<350 MeV,
+  // - Tpi linear-fitted RW using MINERvA CC1pi; data is available for 35<tpi<350 MeV,
   //   and the RW is extrapolated down to 0. Above 350 MeV, the value at 350 MeV is used
   extern const Var kNuMISPPTpiCHLinearFitReweight;
   extern const Var kNuMISPPTpiFeLinearFitReweight;
