@@ -254,7 +254,12 @@ namespace ana {
   }
 
   // CV correction
-  const Var kNuMISPPCVCorrection = kNuMISPPQ2RW * kNuMISPPTpiMINERvAFittedReweight;
+  const Var kNuMISPPCVCorrection([](const caf::SRSliceProxy* slc) -> float {
+    if( !IsSPP(&slc->truth) ) return 1.;
+    double Q2RW = kNuMISPPQ2RW(slc);
+    double TpiRW = kNuMISPPTpiMINERvAFittedReweight(slc);
+    return Q2RW*TpiRW;
+  });
 
   // Separate reweight for study
 
