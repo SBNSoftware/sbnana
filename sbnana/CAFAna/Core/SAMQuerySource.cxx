@@ -239,6 +239,7 @@ namespace ana
       std::string resolved;
       for(TString loc: locs){
 	// Never try to access bluearc locations from the grid
+	std::cout << loc << std::endl;
 	if(!RunningOnGrid() && loc.BeginsWith("novadata:") && best < 3){
 	  loc.Remove(0, 9);
 
@@ -279,6 +280,12 @@ namespace ana
 	  resolved = loc;
 	}
 
+	if(loc.BeginsWith("cnafdisk:") && best < 1) {
+	  best = 1;
+	  loc.ReplaceAll("cnafdisk:/icarusdata/", "https://xfer-archive.cr.cnaf.infn.it:8443/icarusdata/");
+	  if(loc.First('(') >= 0) loc.Resize(loc.First('('));
+          resolved = loc;
+	}
       } // end for loc
 
       if(best == 0 || resolved.empty()){

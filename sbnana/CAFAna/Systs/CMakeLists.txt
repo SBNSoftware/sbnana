@@ -1,3 +1,5 @@
+#find_package(cetlib)
+#find_package(cetlib_except)
 
 file(GLOB lib_srcs *.cxx)
 cet_make_library(LIBRARY_NAME CAFAnaSysts
@@ -5,6 +7,10 @@ cet_make_library(LIBRARY_NAME CAFAnaSysts
          LIBRARIES CAFAnaCore
                    CAFAnaCuts
                    sbnanaobj::StandardRecordProxy
+		   sbnanaobj::StandardRecord
+		   SBNAnaVars
+		   #cetlib::cetlib
+                   #cetlib_except::cetlib_except
         )
 
 # Allow "StandardRecord/" to find the right directory
