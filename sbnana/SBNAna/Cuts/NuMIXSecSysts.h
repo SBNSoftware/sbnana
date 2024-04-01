@@ -41,13 +41,21 @@ namespace ana
 
   };
 
-  extern const Var kNuMISPPQ2RW;
+  // CV correction
+  extern const Var kNuMISPPCVCorrection;
 
+  // Separate reweight for study
+  // - Q2-template RW
+  extern const Var kNuMISPPQ2RW;
+  // - Tpi lineaer-fitted RW using MINERvA CC1pi; data is available for 35<tpi<350 MeV,
+  //   and the RW is extrapolated down to 0. Above 350 MeV, the value at 350 MeV is used
   extern const Var kNuMISPPTpiCHLinearFitReweight;
   extern const Var kNuMISPPTpiFeLinearFitReweight;
   extern const Var kNuMISPPTpiPbLinearFitReweight;
-
+  // - MINERvA untracked pion analysis observed a tpi suppresion for low tpi from data
+  //   - binned value
   extern const Var kNuMISPPTpiMINERvATemplateReweight;
+  //   - binned value fitted with analytic function
   extern const Var kNuMISPPTpiMINERvAFittedReweight;
 
 

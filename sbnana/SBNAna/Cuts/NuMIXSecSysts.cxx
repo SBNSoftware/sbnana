@@ -236,24 +236,26 @@ namespace ana {
 
     // Tpi
     double Tpi = kTruth_ChargedPionKE(sr);
+    //double TpiRW = GetSPPTpiMINERvATemplateReweight(Tpi);
     double TpiRW = GetSPPTpiMINERvAFittedReweight(Tpi);
 
-    // Final RW
-    double FullRW = Q2RW * TpiRW;
+    // CV correction as the full RW
+    double CVCorr = Q2RW * TpiRW;
 
-    // Restrict the dial in [0,1] range
-    double this_sigma = sigma;
-    if (sigma > 1) this_sigma = 1.0;
-    if (sigma < 0) this_sigma = 0.;
+    // 1/CVCorr is the correction back to nominal = 1sigma
+    double oneSigRW = 1./CVCorr;
+    double oneSigUnc = oneSigRW-1.;
 
-    // linear interpolation
-    double this_rw = (1.-this_sigma) * 2. + this_sigma * FullRW;
+    double this_rw = 1. + sigma * oneSigUnc;
 
     weight *= this_rw;
 
   }
 
-  // Vars
+  // CV correction
+  const Var kNuMISPPCVCorrection = kNuMISPPQ2RW * kNuMISPPTpiMINERvAFittedReweight;
+
+  // Separate reweight for study
 
   const Var kNuMISPPQ2RW([](const caf::SRSliceProxy* slc) -> float {
 
