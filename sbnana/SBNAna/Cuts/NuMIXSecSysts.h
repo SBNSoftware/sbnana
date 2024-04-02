@@ -42,6 +42,7 @@ namespace ana
   };
 
   // CV correction weight; kNuMISPPQ2RW * kNuMISPPTpiMINERvAFittedReweight
+  extern const TruthVar kTruth_NuMISPPCVCorrection;
   extern const Var kNuMISPPCVCorrection;
 
   // Separate reweight values for study

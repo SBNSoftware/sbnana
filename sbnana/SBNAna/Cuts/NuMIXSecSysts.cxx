@@ -230,21 +230,11 @@ namespace ana {
 
     if( !IsSPP(sr) ) return;
 
-    // Q2
-    double Q2 = kTruth_Q2(sr);
-    double Q2RW = GetSPPQ2Reweight(Q2);
+    double CVCorr = kTruth_NuMISPPCVCorrection(sr);
 
-    // Tpi
-    double Tpi = kTruth_ChargedPionKE(sr);
-    //double TpiRW = GetSPPTpiMINERvATemplateReweight(Tpi);
-    double TpiRW = GetSPPTpiMINERvAFittedReweight(Tpi);
-
-    // CV correction as the full RW
-    double CVCorr = Q2RW * TpiRW;
-
-    // 1/CVCorr is the correction back to nominal = 1sigma
+    // 1/CVCorr is the correction back to nominal = 1sigma 
     double oneSigRW = 1./CVCorr;
-    // Size of the one-sigma by subtracting 1
+    // Size of the one-sigma uncertainty obtained by subtracting 1
     double oneSigUnc = oneSigRW-1.;
 
     double this_rw = 1. + sigma * oneSigUnc;
@@ -254,14 +244,31 @@ namespace ana {
   }
 
   // CV correction
+  const TruthVar kTruth_NuMISPPCVCorrection([](const caf::SRTrueInteractionProxy *nu) -> int {
+
+    if( !IsSPP(nu) ) return 1.;
+
+    // Q2
+    double Q2 = kTruth_Q2(nu);
+    double Q2RW = GetSPPQ2Reweight(Q2);
+
+    // Tpi
+    double Tpi = kTruth_ChargedPionKE(nu);
+    double TpiRW = GetSPPTpiMINERvAFittedReweight(Tpi);
+
+    // CV correction as the full RW
+    double CVCorr = Q2RW * TpiRW;
+
+    return CVCorr;
+
+  });
   const Var kNuMISPPCVCorrection([](const caf::SRSliceProxy* slc) -> float {
-    if( !IsSPP(&slc->truth) ) return 1.;
-    double Q2RW = kNuMISPPQ2RW(slc);
-    double TpiRW = kNuMISPPTpiMINERvAFittedReweight(slc);
-    return Q2RW*TpiRW;
+
+    return kTruth_NuMISPPCVCorrection(&slc->truth);
+
   });
 
-  // Separate reweight for study
+  // Separate reweights for study
 
   const Var kNuMISPPQ2RW([](const caf::SRSliceProxy* slc) -> float {
 
