@@ -112,7 +112,7 @@ class Variable(object):
         return self.do_op(othr, operator.rsub)
 
     def __radd__(self, othr):
-        return self.do_op(othr, operator.radd)
+        return self.do_op(othr, operator.add)
 
     def __rmul__(self, othr):
         return self.do_op(othr, operator.rmul)
