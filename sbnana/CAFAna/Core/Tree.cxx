@@ -147,6 +147,7 @@ namespace ana
     assert( labels.size() == vars.size() );
 
     fOrderedBranchNames.push_back( "CutType/i" ); fBranchEntries["CutType/i"] = {};
+    fOrderedBranchNames.push_back( "RecoShiftWeight" ); fBranchEntries["RecoShiftWeight"] = {};
     fOrderedBranchNames.push_back( "SpillCutType/i" ); fBranchEntries["SpillCutType/i"] = {};
 
     for ( unsigned int i=0; i<labels.size(); ++i ) {

@@ -789,6 +789,7 @@ namespace ana
                 // Loop over reco slices, and check if the truth-matched slice pass the (Slice)Cut
 
                 bool HasMatchedSlicePassCut = false;
+                double MatchedSlice_systWeight = 1.;
                 for ( auto& slc : sr->slc ) {
                   if ( slc.truth.index < 0 ) continue;
                   else if ( slc.truth.index != nu.index ) continue;
@@ -807,6 +808,7 @@ namespace ana
 
                   if( PassSignalSelectionCut ){
                     HasMatchedSlicePassCut = true;
+                    MatchedSlice_systWeight = slice_systWeight;
                     break;
                   }
                 }
@@ -815,6 +817,8 @@ namespace ana
 
                 int tmp_SpillCutType = spillpass ? 1 : 0;
                 recordVals["SpillCutType/i"].push_back( tmp_SpillCutType );
+
+                recordVals["RecoShiftWeight"].push_back( MatchedSlice_systWeight );
 
               }
 
