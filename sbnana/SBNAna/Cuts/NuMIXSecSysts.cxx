@@ -244,7 +244,7 @@ namespace ana {
   }
 
   // CV correction
-  const TruthVar kTruth_NuMISPPCVCorrection([](const caf::SRTrueInteractionProxy *nu) -> int {
+  const TruthVar kTruth_NuMISPPCVCorrection([](const caf::SRTrueInteractionProxy *nu) -> float {
 
     if( !IsSPP(nu) ) return 1.;
 
