@@ -32,7 +32,7 @@ namespace ana
         std::abort();
       }
 
-      fSystFilePath = std::string(sbndata) + "detectorSysts/detector_syst_ratios.root";
+      fSystFilePath = std::string(sbndata) + "detectorSysts/detector_syst_intnoise_ratios.root";
       //fSystFilePath = "/exp/icarus/app/users/jzettle/Systematics_SelAnl/Selection/initial_syst_ratios.root";
     }
   }
@@ -76,10 +76,10 @@ namespace ana
 
   std::vector<const ISyst*> GetDetectorSysts()
   {
-    const std::vector<std::string> syst_names = {"cohnoise_p1sigma",
-                                                 "cohnoise_m1sigma",
-                                                 "cohnoise_p2sigma",
-                                                 "cohnoise_m2sigma"};
+    const std::vector<std::string> syst_names = {"intnoise_p1sigma",
+                                                 "intnoise_m1sigma",
+                                                 "intnoise_p2sigma",
+                                                 "intnoise_m2sigma"};
     static std::vector<const ISyst*> ret;
     if(!ret.empty()) return ret;
 
