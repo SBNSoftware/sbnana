@@ -170,6 +170,11 @@ namespace ana
                  const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
                  const TruthCut& truthcut,
                  const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
+    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                 SpectrumLoaderBase& loader,
+                 const std::vector<const ISyst*>& systsToStore, const std::vector<std::vector<double>>& nSigma,
+                 const TruthCut& truthcut,
+                 const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
     void SaveTo( TDirectory* dir ) const override;
     void SaveToSplines( TDirectory* dir ) const;
     void SaveToGraphs( TDirectory* dir ) const;
