@@ -91,13 +91,33 @@ namespace ana
     const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = nu->wgt;
     if(wgts.empty()) return;
 
-    const Univs u = GetUnivs(x);
+    // Check if 0-to-1 dial
+    // For 0-to-1 dials, e.g., GENIE DecayAngMEC,
+    // we only save one universe with x=1.
+    // In this case, 
+    bool IsMorphDial = false;
+    const std::vector<float>& v = UniverseOracle::Instance().ShiftsForSyst( ShortName() );
+    if(v.size()==1){
+      if( fabs(v[0] - 1.0) < 1E-5 ){
+        IsMorphDial = true;
+      }
+    }
 
-    double y = 0;
-    if(u.w0 != 0) y += u.w0 * wgts[fIdx].univ[u.i0];
-    if(u.w1 != 0) y += u.w1 * wgts[fIdx].univ[u.i1];
+    if(IsMorphDial){
+      double fullrw = wgts[fIdx].univ[0];
+      double this_rw = x * fullrw + (1.-x) * 1.;
+      weight *= this_rw;
+    }
+    else{
+      const Univs u = GetUnivs(x);
 
-    weight *= y;
+      double y = 0;
+      if(u.w0 != 0) y += u.w0 * wgts[fIdx].univ[u.i0];
+      if(u.w1 != 0) y += u.w1 * wgts[fIdx].univ[u.i1];
+
+      weight *= y;
+    }
+
   }
 
   // --------------------------------------------------------------------------
@@ -241,4 +261,57 @@ namespace ana
     return ret;
   }
   
+  // --------------------------------------------------------------------------
+  SBNWeightMirrorSyst::SBNWeightMirrorSyst(const std::string& systName)
+    : SBNWeightSyst(systName)
+  {
+  }
+
+  // --------------------------------------------------------------------------
+  void SBNWeightMirrorSyst::Shift(double x, caf::SRSliceProxy* sr, double& weight) const
+  {
+    this->Shift(x, &sr->truth, weight);
+  }
+
+  // --------------------------------------------------------------------------
+  void SBNWeightMirrorSyst::Shift(double x, caf::SRTrueInteractionProxy* nu, double& weight) const
+  {
+
+    double mirrored_x = x<0 ? -x : x;
+
+    if(nu->index < 0) return;
+
+    if(fIdx == -1) fIdx = UniverseOracle::Instance().SystIndex(ShortName());
+
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = nu->wgt;
+    if(wgts.empty()) return;
+
+    // Check if 0-to-1 dial
+    // For 0-to-1 dials, e.g., GENIE DecayAngMEC,
+    // we only save one universe with x=1.
+    // In this case, 
+    bool IsMorphDial = false;
+    const std::vector<float>& v = UniverseOracle::Instance().ShiftsForSyst( ShortName() );
+    if(v.size()==1){
+      if( fabs(v[0] - 1.0) < 1E-5 ){
+        IsMorphDial = true;
+      }
+    }
+
+    if(IsMorphDial){
+      double fullrw = wgts[fIdx].univ[0];
+      double this_rw = mirrored_x * fullrw + (1.-mirrored_x) * 1.;
+      weight *= this_rw;
+    }
+    else{
+      const Univs u = GetUnivs(mirrored_x);
+
+      double y = 0;
+      if(u.w0 != 0) y += u.w0 * wgts[fIdx].univ[u.i0];
+      if(u.w1 != 0) y += u.w1 * wgts[fIdx].univ[u.i1];
+
+      weight *= y;
+    }
+  }
+
 }

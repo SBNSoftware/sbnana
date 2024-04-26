@@ -64,4 +64,16 @@ namespace ana
 
   const std::vector<const ISyst*>& GetSBNBoosterFluxWeightSysts();
   const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
+
+
+  class SBNWeightMirrorSyst: public SBNWeightSyst
+  {
+  public:
+    SBNWeightMirrorSyst(const std::string& systName);
+
+    void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
+    void Shift(double x, caf::SRTrueInteractionProxy* sr, double& weight) const override;
+  };
+
+
 }
