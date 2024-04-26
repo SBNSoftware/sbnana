@@ -204,14 +204,14 @@ namespace ana
   {
     // We can't ask the UniverseOracle about this, because it doesn't get
     // properly configured until it's seen its first CAF file.
-    return {"expskin",
-            "horncurrent",
-            "nucleoninexsec",
-            "nucleonqexsec",
-            "nucleontotxsec",
-            "pioninexsec",
-            "pionqexsec",
-            "piontotxsec"};
+    return {"expskin_Flux",
+            "horncurrent_Flux",
+            "nucleoninexsec_Flux",
+            "nucleonqexsec_Flux",
+            "nucleontotxsec_Flux",
+            "pioninexsec_Flux",
+            "pionqexsec_Flux",
+            "piontotxsec_Flux"};
   }
 
   // --------------------------------------------------------------------------
