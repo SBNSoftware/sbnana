@@ -861,7 +861,8 @@ namespace ana
               std::map<std::string, std::vector<double>> headerVals;
               std::map<std::string, std::vector<double>> recordVals;
               for ( auto& [syst, systname] : treemapIt->second ) {
-                for ( int sigma=treemapIt->first->NSigmaLo(systname); sigma<=treemapIt->first->NSigmaHi(systname); ++sigma ) {
+                for ( unsigned int i_sigma=0; i_sigma<treemapIt->first->NWeights(systname); ++i_sigma){
+                  double sigma = treemapIt->first->GetSigma(systname, i_sigma);
 
                   // Need to provide a clean slate for each new set of systematic
                   // shifts to work from. Copying the whole StandardRecord is pretty
