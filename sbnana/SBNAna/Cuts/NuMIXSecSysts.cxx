@@ -1,12 +1,15 @@
 #include "sbnana/SBNAna/Cuts/NuMIXSecSysts.h"
 #include "sbnana/SBNAna/Vars/NuMIXSecTruthVars.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
 #include <iostream>
 #include "TMath.h"
+#include "TFile.h"
 
 namespace ana {
 
-  // NuMIXSecPiSyst
+  //---------------------------------------------------------------------
+  // Single-pion production CV correction and systematics
 
   bool IsSPP(const caf::SRTrueInteractionProxy *sr){
 
@@ -340,5 +343,123 @@ namespace ana {
     return TpiRW;
 
   });
+
+  //---------------------------------------------------------------------
+  // Split-track reweighting
+
+  NuMIXSecSplitTrackReweight::NuMIXSecSplitTrackReweight(){
+    // TH1* fRWCathode[2]; // [cryo]
+
+    const char* sbndata = std::getenv("SBNDATA_DIR");
+    if (!sbndata) {
+      std::cout << "NuMIXSecSplitTrackReweight: $SBNDATA_DIR environment variable not set. Please setup "
+                   "the sbndata product."
+                << std::endl;
+      std::abort();
+    }
+
+    // cathode
+    std::string fCathodeFilePath = std::string(sbndata) +
+                   "anaData/NuMI/TrackSplitReweight_cathode.root";
+    TFile fCathode(fCathodeFilePath.c_str());
+    if (fCathode.IsZombie()) {
+      std::cout << "NuMIXSecSplitTrackReweight: Failed to open " << fCathodeFilePath << std::endl;
+      std::abort();
+    }
+
+    for (int i_cryo : {0, 1}) {
+      std::string strCryo = i_cryo==0 ? "East" : "West";
+      for (int isSplit : {0, 1}) {
+        std::string strIsSplit = isSplit==1 ? "Split" : "Reco";
+
+        std::string hname = "RW_"+strIsSplit+"_"+strCryo;
+
+        TH1* h = (TH1*)fCathode.Get(hname.c_str());
+        if (!h) {
+          std::cout << "NuMIXSecSplitTrackReweight: failed to find " << hname << " in " << fCathode.GetName()
+                    << std::endl;
+          std::abort();
+        }
+        h = (TH1*)h->Clone(UniqueName().c_str());
+        h->SetDirectory(0);
+
+        fRWCathode[i_cryo][isSplit] = h;
+
+      }
+    }
+
+  }
+  NuMIXSecSplitTrackReweight::~NuMIXSecSplitTrackReweight(){
+
+  }
+  NuMIXSecSplitTrackReweight& NuMIXSecSplitTrackReweight::Instance()
+  {
+    static NuMIXSecSplitTrackReweight splitTrackRW;
+    return splitTrackRW;
+  }
+  double NuMIXSecSplitTrackReweight::GetCathodeRW(const caf::Proxy<caf::SRTrack>& trk) const{
+
+    double start_x = trk.start.x;
+    double end_x = trk.end.x;
+    double cathode_x = start_x>0. ? 210.21500 : -210.21500;
+
+    bool CathodeCrossing = (start_x-cathode_x) * (end_x-cathode_x) < 0;
+    bool EndAtCathode = abs(end_x)>207. &&  abs(end_x)<212.;
+
+    // If cathode crossing, it is not split and reco-ed
+    bool IsReco = CathodeCrossing;
+    // If not crossing and end point is close to the cathode, it's a split track
+    bool IsSplit = !CathodeCrossing && EndAtCathode;
+
+    if(!IsReco || !IsSplit){
+      return 1.;
+    }
+
+    double cthetax = trk.dir.x;
+
+    // x<0: East cryo = 0, x>0: West cryo = 1
+    int idx_cryo = start_x<0. ? 0 : 1;
+    // Reco:0, Split:1
+    int idx_IsSplit = IsSplit? 1 : 0;
+
+    int this_bin = fRWCathode[idx_cryo][idx_IsSplit]->FindBin(cthetax);
+    double rw = fRWCathode[idx_cryo][idx_IsSplit]->GetBinContent(this_bin);
+
+    return rw;
+
+  }
+
+  // CV correction
+  const Var kNuMISplitTrackCVCorrection([](const caf::SRSliceProxy* slc) -> float {
+    int MuonIdx = kNuMIMuonCandidateIdx(slc);
+    if(MuonIdx<0) return 1.;;
+    auto const& trk = slc->reco.pfp.at(kNuMIMuonCandidateIdx(slc)).trk;
+
+    const NuMIXSecSplitTrackReweight& splitTrackRW  = NuMIXSecSplitTrackReweight::Instance();
+
+    return splitTrackRW.GetCathodeRW(trk);
+  });
+
+/*
+  NuMIXSecSplitTrackSyst::NuMIXSecSplitTrackSyst(const std::string& name, const std::string& latexName):
+    ISyst(name, latexName)
+  {
+
+  }
+
+  void NuMIXSecSplitTrackSyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
+  {
+
+    int MuonIdx = kNuMIMuonCandidateIdx(sr);
+    if(MuonIdx<0) return;
+
+    auto const& trk = slc->reco.pfp.at(kNuMIMuonCandidateIdx(slc)).trk;
+
+
+  }
+
+  void NuMIXSecSplitTrackSyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
+  }
+*/
 
 } // end namespace ana

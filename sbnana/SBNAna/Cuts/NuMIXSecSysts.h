@@ -6,9 +6,12 @@
 #include "sbnana/SBNAna/Vars/NuMIXSecVars.h"
 #include "sbnana/CAFAna/Core/ISyst.h"
 
+#include "TH1.h"
+
 namespace ana
 {
 
+  //---------------------------------------------------------------------
   // Single-pion production CV correction and systematics
 
   bool IsSPP(const caf::SRTrueInteractionProxy *sr);
@@ -59,5 +62,39 @@ namespace ana
   //   - binned value fitted with analytic function
   extern const Var kNuMISPPTpiMINERvAFittedReweight;
 
+  //---------------------------------------------------------------------
+  // Split-track reweighting
+
+  class NuMIXSecSplitTrackReweight{
+
+    public:
+
+      NuMIXSecSplitTrackReweight();
+      ~NuMIXSecSplitTrackReweight();
+      static NuMIXSecSplitTrackReweight& Instance();
+
+      TH1* fRWCathode[2][2]; // [cryo; 0/1][IsSplit?]
+
+      double GetCathodeRW(const caf::Proxy<caf::SRTrack>& trk) const;
+
+  };
+
+  // CV correction
+  extern const Var kNuMISplitTrackCVCorrection;
+
+/*
+  class NuMIXSecSplitTrackSyst: public ISyst
+  {
+  public:
+
+    NuMIXSecSplitTrackSyst(const std::string& name, const std::string& latexName);
+
+    void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
+    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
+
+  private:
+
+  };
+*/
 
 }
