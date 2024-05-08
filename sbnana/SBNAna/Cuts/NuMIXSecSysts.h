@@ -9,7 +9,7 @@
 namespace ana
 {
 
-  // Temporary pi syst
+  // Single-pion production CV correction and systematics
 
   bool IsSPP(const caf::SRTrueInteractionProxy *sr);
   extern const Var kNuMITrueIsSPP;
