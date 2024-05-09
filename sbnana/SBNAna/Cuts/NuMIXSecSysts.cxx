@@ -406,12 +406,12 @@ namespace ana {
     bool CathodeCrossing = (start_x-cathode_x) * (end_x-cathode_x) < 0;
     bool EndAtCathode = abs(end_x)>207. &&  abs(end_x)<212.;
 
-    // If cathode crossing, it is not split and reco-ed
+    // If cathode crossing, it is not split but reco-ed
     bool IsReco = CathodeCrossing;
     // If not crossing and end point is close to the cathode, it's a split track
     bool IsSplit = !CathodeCrossing && EndAtCathode;
 
-    if(!IsReco || !IsSplit){
+    if(!IsReco && !IsSplit){
       return 1.;
     }
 
