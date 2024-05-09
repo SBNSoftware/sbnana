@@ -86,6 +86,9 @@ namespace ana
 
   // CV correction
   extern const Var kNuMISplitTrackCVCorrection;
+  // Cathode and Z separately
+  extern const Var kNuMICathodeSplitTrackCVCorrection;
+  extern const Var kNuMIZZeroSplitTrackCVCorrection;
 
 /*
   class NuMIXSecSplitTrackSyst: public ISyst

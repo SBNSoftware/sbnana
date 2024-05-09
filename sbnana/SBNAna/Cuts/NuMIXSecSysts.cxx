@@ -388,6 +388,36 @@ namespace ana {
       }
     }
 
+    // z=0
+    std::string fZZeroFilePath = std::string(sbndata) +
+                   "anaData/NuMI/TrackSplitReweight_zzero.root";
+    TFile fZZero(fZZeroFilePath.c_str());
+    if (fZZero.IsZombie()) {
+      std::cout << "NuMIXSecSplitTrackReweight: Failed to open " << fZZeroFilePath << std::endl;
+      std::abort();
+    }
+
+    for (int i_cryo : {0, 1}) {
+      std::string strCryo = i_cryo==0 ? "East" : "West";
+      for (int isSplit : {0, 1}) {
+        std::string strIsSplit = isSplit==1 ? "Split" : "Reco";
+
+        std::string hname = "RW_"+strIsSplit+"_"+strCryo;
+
+        TH1* h = (TH1*)fZZero.Get(hname.c_str());
+        if (!h) {
+          std::cout << "NuMIXSecSplitTrackReweight: failed to find " << hname << " in " << fZZero.GetName()
+                    << std::endl;
+          std::abort();
+        }
+        h = (TH1*)h->Clone(UniqueName().c_str());
+        h->SetDirectory(0);
+
+        fRWZZero[i_cryo][isSplit] = h;
+
+      }
+    }
+
   }
   NuMIXSecSplitTrackReweight::~NuMIXSecSplitTrackReweight(){
 
@@ -537,6 +567,28 @@ namespace ana {
 */
 
   });
+  // Cathode and Z separately
+  const Var kNuMICathodeSplitTrackCVCorrection([](const caf::SRSliceProxy* slc) -> float {
+    int MuonIdx = kNuMIMuonCandidateIdx(slc);
+    if(MuonIdx<0) return 1.;
+    auto const& trk = slc->reco.pfp.at(kNuMIMuonCandidateIdx(slc)).trk;
+
+    const NuMIXSecSplitTrackReweight& splitTrackRW  = NuMIXSecSplitTrackReweight::Instance();
+
+    return splitTrackRW.GetCathodeRW(trk);
+
+  });
+  const Var kNuMIZZeroSplitTrackCVCorrection([](const caf::SRSliceProxy* slc) -> float {
+    int MuonIdx = kNuMIMuonCandidateIdx(slc);
+    if(MuonIdx<0) return 1.;
+    auto const& trk = slc->reco.pfp.at(kNuMIMuonCandidateIdx(slc)).trk;
+
+    const NuMIXSecSplitTrackReweight& splitTrackRW  = NuMIXSecSplitTrackReweight::Instance();
+
+    return splitTrackRW.GetZZeroRW(trk);
+    
+  });
+
 
 /*
   NuMIXSecSplitTrackSyst::NuMIXSecSplitTrackSyst(const std::string& name, const std::string& latexName):
