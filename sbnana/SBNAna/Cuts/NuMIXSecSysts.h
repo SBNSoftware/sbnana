@@ -75,6 +75,7 @@ namespace ana
 
       TH1* fRWCathode[2][2]; // [cryo; 0/1][IsSplit?]
 
+      int CathodeSplitType(const caf::Proxy<caf::SRTrack>& trk) const;
       double GetCathodeRW(const caf::Proxy<caf::SRTrack>& trk) const;
 
   };

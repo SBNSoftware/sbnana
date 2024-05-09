@@ -397,7 +397,11 @@ namespace ana {
     static NuMIXSecSplitTrackReweight splitTrackRW;
     return splitTrackRW;
   }
-  double NuMIXSecSplitTrackReweight::GetCathodeRW(const caf::Proxy<caf::SRTrack>& trk) const{
+  int NuMIXSecSplitTrackReweight::CathodeSplitType(const caf::Proxy<caf::SRTrack>& trk) const{
+
+    // -1: reweight not applicable
+    //  0: reco-ed
+    //  1: split
 
     double start_x = trk.start.x;
     double end_x = trk.end.x;
@@ -412,15 +416,31 @@ namespace ana {
     bool IsSplit = !CathodeCrossing && EndAtCathode;
 
     if(!IsReco && !IsSplit){
+      return -1;
+    }
+    if(IsReco) return 0;
+    if(IsSplit) return 1;
+
+    // should not happen
+    std::cout << "[NuMIXSecSplitTrackReweight::CathodeSplitType] Wrong track type" << std::endl;
+    abort();
+    return -2;
+
+  }
+  double NuMIXSecSplitTrackReweight::GetCathodeRW(const caf::Proxy<caf::SRTrack>& trk) const{
+
+    int splitType = CathodeSplitType(trk);
+
+    if(splitType<0){
       return 1.;
     }
 
     double cthetax = trk.dir.x;
 
     // x<0: East cryo = 0, x>0: West cryo = 1
-    int idx_cryo = start_x<0. ? 0 : 1;
+    int idx_cryo = trk.start.x<0. ? 0 : 1;
     // Reco:0, Split:1
-    int idx_IsSplit = IsSplit? 1 : 0;
+    int idx_IsSplit = splitType==1? 1 : 0;
 
     int this_bin = fRWCathode[idx_cryo][idx_IsSplit]->FindBin(cthetax);
     double rw = fRWCathode[idx_cryo][idx_IsSplit]->GetBinContent(this_bin);
