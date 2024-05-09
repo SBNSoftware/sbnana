@@ -74,9 +74,13 @@ namespace ana
       static NuMIXSecSplitTrackReweight& Instance();
 
       TH1* fRWCathode[2][2]; // [cryo; 0/1][IsSplit?]
+      TH1* fRWZZero[2][2]; // [cryo; 0/1][IsSplit?]
 
       int CathodeSplitType(const caf::Proxy<caf::SRTrack>& trk) const;
       double GetCathodeRW(const caf::Proxy<caf::SRTrack>& trk) const;
+
+      int ZZeroSplitType(const caf::Proxy<caf::SRTrack>& trk) const;
+      double GetZZeroRW(const caf::Proxy<caf::SRTrack>& trk) const;
 
   };
 

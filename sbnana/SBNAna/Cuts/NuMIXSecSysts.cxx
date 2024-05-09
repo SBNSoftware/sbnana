@@ -408,7 +408,7 @@ namespace ana {
     double cathode_x = start_x>0. ? 210.21500 : -210.21500;
 
     bool CathodeCrossing = (start_x-cathode_x) * (end_x-cathode_x) < 0;
-    bool EndAtCathode = abs(end_x)>207. &&  abs(end_x)<212.;
+    bool EndAtCathode = abs(end_x)>207. && abs(end_x)<212.;
 
     // If cathode crossing, it is not split but reco-ed
     bool IsReco = CathodeCrossing;
@@ -449,15 +449,93 @@ namespace ana {
 
   }
 
+  int NuMIXSecSplitTrackReweight::ZZeroSplitType(const caf::Proxy<caf::SRTrack>& trk) const{
+
+    // -1: reweight not applicable
+    //  0: reco-ed
+    //  1: split
+
+    double start_z = trk.start.z;
+    double end_z = trk.end.z;
+
+    bool ZZeroCrossing = (start_z) * (end_z) < 0;
+    bool EndAtZZero = end_z>-4. && end_z<4.;
+
+    // If z=0 crossing, it is not split but reco-ed
+    bool IsReco = ZZeroCrossing;
+    // If not crossing and end point is close to z=0, it's a split track
+    bool IsSplit = !ZZeroCrossing && EndAtZZero;
+
+    if(!IsReco && !IsSplit){
+      return -1;
+    }
+    if(IsReco) return 0;
+    if(IsSplit) return 1;
+
+    // should not happen
+    std::cout << "[NuMIXSecSplitTrackReweight::ZZeroSplitType] Wrong track type" << std::endl;
+    abort();
+    return -2;
+
+  }
+  double NuMIXSecSplitTrackReweight::GetZZeroRW(const caf::Proxy<caf::SRTrack>& trk) const{
+
+    int splitType = ZZeroSplitType(trk);
+
+    if(splitType<0){
+      return 1.;
+    }
+    // Z=0 boundary is not simulated in the MC
+    // We only reweight the reco-ed track in the MC to match the data
+    if(splitType==1){
+      return 1.;
+    }
+
+    double cthetaz = trk.dir.z;
+
+    // x<0: East cryo = 0, x>0: West cryo = 1
+    int idx_cryo = trk.start.x<0. ? 0 : 1;
+    // Reco:0, Split:1
+    int idx_IsSplit = splitType==1? 1 : 0;
+
+    int this_bin = fRWZZero[idx_cryo][idx_IsSplit]->FindBin(cthetaz);
+    double rw = fRWZZero[idx_cryo][idx_IsSplit]->GetBinContent(this_bin);
+
+    return rw;
+
+  }
+
   // CV correction
   const Var kNuMISplitTrackCVCorrection([](const caf::SRSliceProxy* slc) -> float {
     int MuonIdx = kNuMIMuonCandidateIdx(slc);
-    if(MuonIdx<0) return 1.;;
+    if(MuonIdx<0) return 1.;
     auto const& trk = slc->reco.pfp.at(kNuMIMuonCandidateIdx(slc)).trk;
 
     const NuMIXSecSplitTrackReweight& splitTrackRW  = NuMIXSecSplitTrackReweight::Instance();
 
-    return splitTrackRW.GetCathodeRW(trk);
+    //int cathodeSplitType = splitTrackRW.CathodeSplitType(trk);
+    double rwCathodeSplit = splitTrackRW.GetCathodeRW(trk);
+    //int zzeroSplitType = splitTrackRW.ZZeroSplitType(trk);
+    double rwZZeroSplit = splitTrackRW.GetZZeroRW(trk);
+
+    return rwCathodeSplit * rwZZeroSplit;
+
+/*
+    // When Z-crossing
+    if(zzeroSplitType==0){
+
+      // Also cathode crossing
+      if(cathodeSplitType==0){
+
+      }
+      // But split at the cathode 
+      if(cathodeSplitType==1){
+
+      }
+
+    }
+*/
+
   });
 
 /*
