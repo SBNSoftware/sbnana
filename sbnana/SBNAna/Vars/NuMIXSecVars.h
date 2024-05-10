@@ -126,4 +126,9 @@ namespace ana
   extern const Var kNuMILeadingShowerCandidateNHitsColl;
   extern const Var kNuMILeadingShowerCandidateOpenAngle;
   extern const Var kNuMILeadingShowerCandidateTrkFitEColl;
+
+  // Some Enu and Q2, Wexp calculations
+  extern const Var kNuMIRecoEnu;
+  extern const Var kNuMIRecoQ2;
+  extern const Var kNuMIRecoWexp;
 }
