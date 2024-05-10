@@ -393,7 +393,7 @@ namespace ana{
 
     double CosdeltaalphaT = -1. * pt_mu.Unit().Dot( vec_deltaPT.Unit() );
     double deltaalphaT = TMath::ACos( CosdeltaalphaT );
-    return deltaalphaT;
+    return deltaalphaT*180./M_PI; // degree
 
   }
   double CalcTKI_deltaphiT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
@@ -408,7 +408,7 @@ namespace ana{
 
     double CosdeltaphiT = -1. * pt_mu.Unit().Dot( pt_pro.Unit() );
     double deltaphiT = TMath::ACos( CosdeltaphiT );
-    return deltaphiT;
+    return deltaphiT*180./M_PI; // degree
   }
 
   // TKI
@@ -546,6 +546,63 @@ namespace ana{
     int truth_idx = kTruth_ChargedPionIndex(nu);
     if(truth_idx>=0){
       ret = nu->prim.at(truth_idx).genE - M_CHARGEDPION;
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ChargedPionNuCosineTheta([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ChargedPionIndex(nu);
+    if(truth_idx>=0){
+
+      const auto& p_cpion = nu->prim.at(truth_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_cpion.x, p_cpion.y, p_cpion.z);
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+
+      ret = vec_p_mu.Unit().Dot( vec_p_nu.Unit() );
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ChargedPionCosThBeam([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ChargedPionIndex(nu);
+    if(truth_idx>=0){
+
+      TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
+
+      const auto& p_cpion = nu->prim.at(truth_idx).genp;
+      TVector3 vec_p_cpion(p_cpion.x, p_cpion.y, p_cpion.z);
+
+      double angle = rFromNuMI.Angle(vec_p_cpion);
+
+      ret = TMath::Cos( angle );
+    }
+
+    return ret;
+  });
+
+  // Pion+Proton
+  const TruthVar kTruth_CosThProtonChargedPion([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_cpion_idx = kTruth_ChargedPionIndex(nu);
+    int truth_pro_idx = kTruth_ProtonIndex(nu);
+    if(truth_cpion_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_cpion = nu->prim.at(truth_cpion_idx).genp;
+      const auto& p_pro = nu->prim.at(truth_pro_idx).genp;
+
+      TVector3 vec_p_cpion(p_cpion.x, p_cpion.y, p_cpion.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+
+      ret = vec_p_cpion.Unit().Dot( vec_p_pro.Unit() );
+
     }
 
     return ret;

@@ -969,6 +969,82 @@ namespace ana {
 
     return ret;
   });
+  // Chargedpion angle w.r.t. beam
+  const Var kLeadingChargedPionCandidateRecoCosThBeam([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+
+    if ( kNuMILeadingChargedPionCandidateInd(slc) >= 0 ) {
+      auto const& cpiontrk = slc->reco.pfp.at(kNuMILeadingChargedPionCandidateInd(slc)).trk;
+
+      double magNuMI = sqrt(315.120380*315.120380 + 33.644912*33.644912 + 733.632532*733.632532);
+      TVector3 rFromNuMI(315.120380/magNuMI, 33.644912/magNuMI, 733.632532/magNuMI);
+
+      TVector3 cpionDir(cpiontrk.dir.x, cpiontrk.dir.y, cpiontrk.dir.z);
+      cpionDir = cpionDir.Unit();
+
+      costh = TMath::Cos( cpionDir.Angle(rFromNuMI) );
+    }
+
+    return costh;
+  });
+  const Var kLeadingChargedPionCandidateTrueCosThBeam([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = kTruth_ChargedPionCosThBeam(&slc->truth);
+
+    return costh;
+  });
+
+  // Chargedpion angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
+  const Var kLeadingChargedPionCandidateRecoCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    int cpionIdx = kNuMILeadingChargedPionCandidateInd(slc);
+    if ( cpionIdx>=0 ) {
+      auto const& trk = slc->reco.pfp.at(cpionIdx).trk;
+      TVector3 vec_trk(trk.dir.x, trk.dir.y, trk.dir.z);
+
+      const auto& vtx = slc->vertex;
+      TVector3 vec_vtx(vtx.x, vtx.y, vtx.z);
+      TVector3 dFromNuMI(315.120380, 33.644912, 733.632532);
+      dFromNuMI *= 100.; // m to cm
+      TVector3 vec_numi_to_vtx = (dFromNuMI + vec_vtx).Unit();
+
+      double angle = vec_trk.Angle(vec_numi_to_vtx);
+      costh = TMath::Cos(angle);
+    }
+
+    return costh;
+  });
+  const Var kLeadingChargedPionCandidateTrueCosThVtx([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = kTruth_ChargedPionNuCosineTheta(&slc->truth);
+
+    return costh;
+  });
+  // Angle btw chargedpion and proton
+  const Var kNuMIRecoCosThProtonChargedPion([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+
+    if ( kNuMILeadingChargedPionCandidateInd(slc) >= 0 && kNuMIProtonCandidateIdx(slc) >= 0 ) {
+      auto const& cpiontrk = slc->reco.pfp.at(kNuMILeadingChargedPionCandidateInd(slc)).trk;
+      auto const& ptrk = slc->reco.pfp.at(kNuMIProtonCandidateIdx(slc)).trk;
+
+      TVector3 cpionDir(cpiontrk.dir.x, cpiontrk.dir.y, cpiontrk.dir.z);
+      cpionDir = cpionDir.Unit();
+      TVector3 pDir(ptrk.dir.x, ptrk.dir.y, ptrk.dir.z);
+      pDir = pDir.Unit();
+
+      costh = TMath::Cos( cpionDir.Angle(pDir) );
+    }
+
+    return costh;
+  });
+
+  const Var kNuMITrueCosThProtonChargedPion([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = kTruth_CosThProtonChargedPion(&slc->truth);
+
+    return costh;
+  });
 
 
   ////// Look at any valid showers in the slice
