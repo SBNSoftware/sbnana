@@ -90,6 +90,11 @@ namespace ana{
 
   extern const TruthVar kTruth_ChargedPionIndex;
   extern const TruthVar kTruth_ChargedPionKE;
+  extern const TruthVar kTruth_ChargedPionNuCosineTheta;
+  extern const TruthVar kTruth_ChargedPionCosThBeam;
+
+  // Pion+Proton
+  extern const TruthVar kTruth_CosThProtonChargedPion;
 
   void GetAllParents(const caf::SRTrueInteractionProxy *nu, int idx, std::vector<int>& current);
 
