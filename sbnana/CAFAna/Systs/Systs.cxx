@@ -16,4 +16,10 @@ const POTSyst& GetPOTSyst()
   return psyst;
 }
 
+const NormSyst& GetNormSyst()
+{
+  static const NormSyst psyst;
+  return psyst;
+}
+
 }
