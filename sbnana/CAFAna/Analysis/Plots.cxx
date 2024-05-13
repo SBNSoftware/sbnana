@@ -479,6 +479,29 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  THStack* ToTHStack(const std::vector<std::pair<Spectrum, Color_t>>& s,
+                     double pot, std::pair<Spectrum&, Color_t> p, double livetime,
+                     bool reversed)
+  {
+    THStack* ret = new THStack;
+    TH1* h = p.first.ToTH1(livetime, p.second, kSolid, kLivetime);
+    h->SetFillColor(p.second);
+    std::vector<TH1*> hs;
+    if(!reversed) ret->Add(h, "hist");
+    for(auto it: s){
+      TH1* h = it.first.ToTH1(pot, it.second);
+      h->SetFillColor(it.second);
+      if(reversed) hs.insert(hs.begin(), h);
+      else ret->Add(h, "hist");
+    }
+    if(reversed) {
+        for(const auto h: hs) ret->Add(h, "hist");
+        ret->Add(h, "hist");
+    }
+    return ret;
+  }
+
+  //----------------------------------------------------------------------
   /// Helper for \ref AutoPlaceLegend
   double PointDistanceToBox(double x, double y,
                             double x0, double y0, double x1, double y1)
