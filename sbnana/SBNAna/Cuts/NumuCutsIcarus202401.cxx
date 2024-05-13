@@ -22,6 +22,14 @@ const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
     return false;
 });
 
+const SpillCut kIcarus202401CRTPMTVetoData([](const caf::SRSpillProxy* spill){
+    for(const auto& match: spill->crtpmt_matches) {
+        if(match.flashGateTime > -0.4 && match.flashGateTime < 1.6 && match.flashClassification == 0)
+            return true;
+    }
+    return false;
+});
+
 const Cut kIcarus202401BaryFMCut([](const caf::SRSliceProxy *slc) {
     return !std::isnan(slc->barycenterFM.deltaZ_Trigger) && 
            slc->barycenterFM.deltaZ_Trigger >= 0 && 
