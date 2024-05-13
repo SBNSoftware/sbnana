@@ -5,6 +5,7 @@
 namespace ana {
 
 extern const SpillCut kIcarus202401CRTPMTVeto;
+extern const SpillCut kIcarus202401CRTPMTVetoData;
 extern const Cut kIcarus202401BaryFMCut;
 extern const Cut kIcarus202401FoundMuon;
 extern const Cut kIcarus202401RecoFiducial;
