@@ -1328,4 +1328,53 @@ namespace ana {
       return sqrt(W2);
     });
 
+  // PDG and G4ID of reco mu, p, pi candidates
+  const Var kNuMIRecoMuonCandidateTruePDG([](const caf::SRSliceProxy* slc) -> int {
+      int idx = kNuMIMuonCandidateIdx(slc);
+      if ( idx < 0 ) return 0;
+
+      if ( !std::isnan(slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg) ) return slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg;
+      return 0;
+    });
+
+  const Var kNuMIRecoProtonCandidateTruePDG([](const caf::SRSliceProxy* slc) -> int {
+      int idx = kNuMIProtonCandidateIdx(slc);
+      if ( idx < 0 ) return 0;
+
+      if ( !std::isnan(slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg) ) return slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg;
+      return 0;
+    });
+
+  const Var kNuMIRecoPionCandidateTruePDG([](const caf::SRSliceProxy* slc) -> int {
+      int idx = kNuMILeadingChargedPionCandidateInd(slc);
+      if ( idx < 0 ) return 0;
+
+      if ( !std::isnan(slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg) ) return slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg;
+      return 0;
+    });
+
+  const Var kNuMIRecoMuonCandidateTrueG4ID([](const caf::SRSliceProxy* slc) -> int {
+      int idx = kNuMIMuonCandidateIdx(slc);
+      if ( idx < 0 ) return 0;
+
+      if ( !std::isnan(slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg) ) return slc->reco.pfp.at((unsigned int)idx).trk.truth.p.G4ID;
+      return 0;
+    });
+
+  const Var kNuMIRecoProtonCandidateTrueG4ID([](const caf::SRSliceProxy* slc) -> int {
+      int idx = kNuMIProtonCandidateIdx(slc);
+      if ( idx < 0 ) return 0;
+
+      if ( !std::isnan(slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg) ) return slc->reco.pfp.at((unsigned int)idx).trk.truth.p.G4ID;
+      return 0;
+    });
+
+  const Var kNuMIRecoPionCandidateTrueG4ID([](const caf::SRSliceProxy* slc) -> int {
+      int idx = kNuMILeadingChargedPionCandidateInd(slc);
+      if ( idx < 0 ) return 0;
+
+      if ( !std::isnan(slc->reco.pfp.at((unsigned int)idx).trk.truth.p.pdg) ) return slc->reco.pfp.at((unsigned int)idx).trk.truth.p.G4ID;
+      return 0;
+    });
+
 }
