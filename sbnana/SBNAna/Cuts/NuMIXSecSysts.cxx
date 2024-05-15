@@ -13,6 +13,21 @@ namespace ana {
 
   bool IsSPP(const caf::SRTrueInteractionProxy *sr){
 
+/*
+    // Below using NUANCE code
+    const auto& NUANCECode = sr->genie_inttype;
+    bool IsCCSinglePiPlus = false;
+    if(NUANCECode == caf::genie_interaction_type_::kResCCNuProtonPiPlus){
+      IsCCSinglePiPlus = true;
+    }
+    if(NUANCECode == caf::genie_interaction_type_::kResCCNuNeutronPiPlus){
+      IsCCSinglePiPlus = true;
+    }
+
+    return IsCCSinglePiPlus;
+*/
+
+    // Below using event record
     // Check process
 
     int genie_n_photons = 0;
@@ -59,12 +74,17 @@ namespace ana {
 
     return true;
 
+
   }
 
-  const Var kNuMITrueIsSPP([](const caf::SRSliceProxy* slc) -> int {
-    bool isspp = IsSPP(&slc->truth);
+  const TruthVar kTruth_IsSPP([](const caf::SRTrueInteractionProxy *nu) -> int {
+    bool isspp = IsSPP(nu);
     if(isspp) return 1;
     else return 0;
+  });
+
+  const Var kNuMITrueIsSPP([](const caf::SRSliceProxy* slc) -> int {
+    return kTruth_IsSPP(&slc->truth);
   });
 
 
@@ -93,6 +113,26 @@ namespace ana {
     return this_rw;
 
   }
+  double GetSPPLowQ2Suppression(double Q2_GeV2, double sigma){
+
+    static double const Q2_Max = 0.7;
+    static double const Q2_t1 = 0;
+    static double const Q2_t2 = 0.35;
+    static double const R1 = 0.3;
+    static double const R2 = 0.6;
+
+    if ((Q2_GeV2 > Q2_Max) || (Q2_GeV2 < 0)) {
+      return 1.;
+    }
+
+    double RQ2 = (R2 * ((Q2_GeV2 - Q2_t1) * (Q2_GeV2 - Q2_Max)) /
+           ((Q2_t2 - Q2_t1) * (Q2_t2 - Q2_Max))) +
+          (((Q2_GeV2 - Q2_t1) * (Q2_GeV2 - Q2_t2)) /
+           ((Q2_Max - Q2_t1) * (Q2_Max - Q2_t2)));
+    return 1. - sigma * ((1. - R1) * pow((1. - RQ2), 2));
+
+  }
+
   double GetSPPTpiCHLinearFitReweight(double Tpi_GeV){
 
     // CH result
@@ -246,6 +286,31 @@ namespace ana {
 
   }
 
+  NuMIXSecLowQ2Suppression::NuMIXSecLowQ2Suppression(const std::string& name, const std::string& latexName):
+    ISyst(name, latexName)
+  {
+
+  }
+
+  void NuMIXSecLowQ2Suppression::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
+  {
+    this->Shift(sigma, &sr->truth, weight);
+  }
+
+  void NuMIXSecLowQ2Suppression::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
+
+    if( !IsSPP(sr) ) return;
+
+    double CVCorr = kTruth_NuMISPPLowQ2Suppression(sr);
+    double Suppression = 1. - CVCorr;
+
+    double this_rw = 1. - sigma * Suppression;
+
+    weight *= this_rw;
+
+  }
+
+
   // CV correction
   const TruthVar kTruth_NuMISPPCVCorrection([](const caf::SRTrueInteractionProxy *nu) -> float {
 
@@ -270,6 +335,23 @@ namespace ana {
     return kTruth_NuMISPPCVCorrection(&slc->truth);
 
   });
+
+  const TruthVar kTruth_NuMISPPLowQ2Suppression([](const caf::SRTrueInteractionProxy *nu) -> float {
+
+    if( !IsSPP(nu) ) return 1.;
+
+    // Q2
+    double Q2 = kTruth_Q2(nu);
+    return GetSPPLowQ2Suppression(Q2, 1.);
+
+  });
+  const Var kNuMISPPLowQ2Suppression([](const caf::SRSliceProxy* slc) -> float {
+
+    return kTruth_NuMISPPLowQ2Suppression(&slc->truth);
+
+  });
+
+  
 
   // Separate reweights for study
 

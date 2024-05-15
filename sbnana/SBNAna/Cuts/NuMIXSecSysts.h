@@ -15,10 +15,13 @@ namespace ana
   // Single-pion production CV correction and systematics
 
   bool IsSPP(const caf::SRTrueInteractionProxy *sr);
+  extern const TruthVar kTruth_IsSPP;
   extern const Var kNuMITrueIsSPP;
 
   // Q2 template RW
   double GetSPPQ2Reweight(double Q2_GeV2);
+  // Q2 from MINERvA https://arxiv.org/pdf/1903.01558
+  double GetSPPLowQ2Suppression(double Q2_GeV2, double sigma);
   // Tpi RW
   // - CH, linear fit
   double GetSPPTpiCHLinearFitReweight(double Tpi_GeV);
@@ -44,9 +47,25 @@ namespace ana
 
   };
 
+  class NuMIXSecLowQ2Suppression: public ISyst
+  {
+  public:
+
+    NuMIXSecLowQ2Suppression(const std::string& name, const std::string& latexName);
+
+    void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
+    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
+
+  private:
+
+  };
+
   // CV correction weight; kNuMISPPQ2RW * kNuMISPPTpiMINERvAFittedReweight
   extern const TruthVar kTruth_NuMISPPCVCorrection;
   extern const Var kNuMISPPCVCorrection;
+
+  extern const TruthVar kTruth_NuMISPPLowQ2Suppression;
+  extern const Var kNuMISPPLowQ2Suppression;
 
   // Separate reweight values for study
   // - Q2-template RW
