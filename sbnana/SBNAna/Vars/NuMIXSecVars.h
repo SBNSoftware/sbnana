@@ -131,4 +131,11 @@ namespace ana
   extern const Var kNuMIRecoEnu;
   extern const Var kNuMIRecoQ2;
   extern const Var kNuMIRecoWexp;
+
+  extern const Var kNuMIRecoMuonCandidateTruePDG;
+  extern const Var kNuMIRecoProtonCandidateTruePDG;
+  extern const Var kNuMIRecoPionCandidateTruePDG;
+  extern const Var kNuMIRecoMuonCandidateTrueG4ID;
+  extern const Var kNuMIRecoProtonCandidateTrueG4ID;
+  extern const Var kNuMIRecoPionCandidateTrueG4ID;
 }
