@@ -44,7 +44,8 @@ const Cut kIcarus202401RecoFiducial([](const caf::SRSliceProxy* slc) {
 	       !isnan(slc->vertex.y) &&
 	       ( slc->vertex.y > -181.86 + 25 && slc->vertex.y < 134.96 - 25 ) &&
 	       !isnan(slc->vertex.z) &&
-	       ( slc->vertex.z > -894.95 + 30 && slc->vertex.z < 894.95 - 50 ) );
+	       ( slc->vertex.z > -894.95 + 30 && slc->vertex.z < 894.95 - 50 ) &&
+      !(slc->vertex.x > 210 && slc->vertex.y > 60 && slc->vertex.z > 290 && slc->vertex.z < 390));
     });
 
 const Cut kIcarus202401NumuSelection = kIcarus202401RecoFiducial && kIcarus202401BaryFMCut && kIcarus202401FoundMuon;
@@ -57,7 +58,8 @@ const Cut kIcarus202401ContainedHadrons([](const caf::SRSliceProxy* slc){
   for(auto& pfp: slc->reco.pfp) {
     if (pfp.trackScore < 0.5) { continue; }
     auto const& trk = pfp.trk;
-    if(pfp.id != muID && pfp.parent_is_primary)
+    //if(pfp.id != muID && pfp.parent_is_primary)
+    if(pfp.id != muID)
       if(!Icarus202401contained(trk)) return false;
   }
   return true;
