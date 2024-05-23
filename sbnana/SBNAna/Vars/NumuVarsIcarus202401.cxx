@@ -22,7 +22,8 @@ const Var kIcarus202401MuonIdx([](const caf::SRSliceProxy* slc) -> int {
                                        slc->vertex.z - trk.start.z);
         const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
 
-        int plane = trk.calo[1].nhit > trk.calo[2].nhit ? 1 : 2;
+        //int plane = trk.calo[1].nhit > trk.calo[2].nhit ? 1 : 2;
+        int plane = 2; // Hard code collection plane for now since induction 2 has peak at higher chi2
 
         float Chi2Proton = trk.chi2pid[plane].chi2_proton;
         float Chi2Muon = trk.chi2pid[plane].chi2_muon;
@@ -46,7 +47,8 @@ const Var kIcarus202401MuonIdx([](const caf::SRSliceProxy* slc) -> int {
 
 static bool Icarus202401_proton_cut(const caf::SRTrackProxy& trk)
 {
-  int plane = trk.calo[1].nhit > trk.calo[2].nhit ? 1 : 2;
+  //int plane = trk.calo[1].nhit > trk.calo[2].nhit ? 1 : 2;
+  int plane = 2; // Hard code collection plane for now since induction 2 has peak at higher chi2
   return trk.chi2pid[plane].chi2_proton < 100 && trk.chi2pid[plane].chi2_proton > 0;
 }
 
@@ -77,14 +79,14 @@ const Var kIcarus202401NumProtons([](const caf::SRSliceProxy* slc)
   int muID = -1;
   if (idx >= 0) muID = slc->reco.pfp.at(idx).id;
   for(auto& pfp: slc->reco.pfp) {
-    if (pfp.trackScore < 0.5) { continue; }
+    if (pfp.trackScore < 0.4) { continue; }
     if(pfp.trk.chi2pid[2].chi2_proton == 0 && pfp.trk.chi2pid[1].chi2_proton == 0) continue;
     auto const& trk = pfp.trk;
     const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
                                    slc->vertex.y - trk.start.y,
                                    slc->vertex.z - trk.start.z);
     const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
-    if(pfp.id != muID && Icarus202401_proton_cut(trk) && AtSlice && std::hypot(pfp.trk.rangeP.p_proton, 0.938f) - 0.938 > 0.025)
+    if(pfp.id != muID && Icarus202401_proton_cut(trk) && AtSlice && std::hypot(pfp.trk.rangeP.p_proton, 0.938f) - 0.938 > 0.05)
       ++count;
   }
   return count;
@@ -93,11 +95,14 @@ const Var kIcarus202401NumProtons([](const caf::SRSliceProxy* slc)
 const Var kIcarus202401NumShowers([](const caf::SRSliceProxy* slc){
   int count = 0;
   for(const auto& pfp: slc->reco.pfp) {
+    [[maybe_unused]]
     const float Atslc = std::hypot(slc->vertex.x - pfp.shw.start.x,
                                    slc->vertex.y - pfp.shw.start.y,
                                    slc->vertex.z - pfp.shw.start.z);
-    const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
-    if(pfp.trackScore > 0 && pfp.trackScore < 0.5 && AtSlice && pfp.shw.plane[2].energy > 0.025) count++;
+    //const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
+    const bool AtSlice = pfp.parent_is_primary;
+    const bool isShower = pfp.trackScore > 0 && (pfp.trackScore < 0.4 || (pfp.trackScore < 0.5 && !Icarus202401_proton_cut(pfp.trk)));
+    if(isShower && AtSlice && pfp.shw.plane[2].energy > 0.025) count++;
   }
   return count;
 });
@@ -147,7 +152,7 @@ const MultiVar kIcarus202401RecoProtonP([](const caf::SRSliceProxy* slc){
   if(mu_idx >= 0) muID = slc->reco.pfp[mu_idx].id;
   for(const auto& pfp: slc->reco.pfp) {
     if(pfp.id == muID) continue;
-    if(pfp.trackScore < 0.5) continue;
+    if(pfp.trackScore < 0.4) continue;
     if(pfp.trk.chi2pid[2].chi2_proton == 0 && pfp.trk.chi2pid[1].chi2_proton == 0) continue;
     if(Icarus202401_proton_cut(pfp.trk) && pfp.parent_is_primary)
       Ps.push_back(pfp.trk.rangeP.p_proton);
