@@ -11,8 +11,13 @@
 #include "TProfile.h"
 
 #include <string>
+#include <iostream>
 
 namespace ana {
+
+static constexpr float mmu = 0.106f;
+static constexpr float mp  = 0.9383f;
+static constexpr float mpi = 0.13957f; 
 
 namespace chi2pid {
 
@@ -39,16 +44,20 @@ struct Chi2PID {
     double chi2mu = 0;
     double PIDA = 0; //by Bruce Baller
     std::vector<double> vpida;
+    Chi2PIDResult output{0, 0, 0, 0, 0, 0};
 
     int used_trkres = 0;
-    for(unsigned i = 0; i < calo.points.size(); ++i) { //hits
+    // If no calo points return all 0s
+    if(calo.points.size() == 0) return output;
+    //ignore the first and the last point
+    for(unsigned i = 1; i < calo.points.size() - 1; ++i) { //hits
       const auto& pt = calo.points[i];
       double hit_dedx = pt.dedx;
       double hit_rr = pt.rr;
 
-      //ignore the first and the last point
-      if (i == 0 || i == calo.points.size() - 1) continue;
-      if (hit_rr < 30) {
+      // To match Maria, only consider last 25 cm
+      if (hit_rr > 25) continue;
+      if (hit_rr < 25) {
         PIDA += hit_dedx * pow(hit_rr, 0.42);
         vpida.push_back(hit_dedx * pow(hit_rr, 0.42));
         used_trkres++;
@@ -122,7 +131,6 @@ struct Chi2PID {
     }
 
     // Making output
-    Chi2PIDResult output;
     output.chi2_kaon = chi2ka;
     output.chi2_muon = chi2mu;
     output.chi2_pion = chi2pi;
@@ -150,6 +158,7 @@ const Var kIcarus202401MuonIdx([](const caf::SRSliceProxy* slc) -> int {
       for (std::size_t i(0); i < slc->reco.npfp; ++i) {
         auto const& pfp = slc->reco.pfp.at(i);
         if (pfp.trackScore < 0.5) { continue; }
+	//if (std::isnan(pfp.trk.start.x) || std::isnan(pfp.trk.end.x)){ continue; }
         auto const& trk = pfp.trk;
         const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
                                        slc->vertex.y - trk.start.y,
@@ -190,6 +199,14 @@ static bool Icarus202401_proton_cut(const caf::SRTrackProxy& trk)
   return chi2.chi2_proton < 100 && chi2.chi2_proton > 0;
 }
 
+static bool Icarus202401_proton_cut_exist(const caf::SRTrackProxy& trk)
+{ 
+  //int plane = trk.calo[1].nhit > trk.calo[2].nhit ? 1 : 2;
+    int plane = 2; // Hard code collection plane for now since induction 2 has peak at higher chi2
+    auto chi2 = chi2pid::chi2_calculator.calculate_chi2(trk.calo[plane]);
+    return chi2.chi2_proton > 0;
+}
+
 const Var kIcarus202401NumPions([](const caf::SRSliceProxy* slc)
 {
   int count = 0;
@@ -204,7 +221,7 @@ const Var kIcarus202401NumPions([](const caf::SRSliceProxy* slc)
                                    slc->vertex.z - trk.start.z);
     const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
     //if(pfp.trk.chi2pid[2].chi2_proton == 0 && pfp.trk.chi2pid[1].chi2_proton == 0) continue;
-    if(pfp.id != muID && !Icarus202401_proton_cut(trk) && AtSlice && std::hypot(pfp.trk.rangeP.p_pion, 0.140f) - 0.14 > 0.025)
+    if(pfp.id != muID && !Icarus202401_proton_cut(trk) && Icarus202401_proton_cut_exist(trk) && AtSlice && std::hypot(pfp.trk.rangeP.p_pion, mpi) - mpi > 0.025)
       ++count;
   }
   return count;
@@ -224,7 +241,7 @@ const Var kIcarus202401NumProtons([](const caf::SRSliceProxy* slc)
                                    slc->vertex.y - trk.start.y,
                                    slc->vertex.z - trk.start.z);
     const bool AtSlice = ( Atslc < 10.0 && pfp.parent_is_primary);
-    if(pfp.id != muID && Icarus202401_proton_cut(trk) && AtSlice && std::hypot(pfp.trk.rangeP.p_proton, 0.938f) - 0.938 > 0.05)
+    if(pfp.id != muID && Icarus202401_proton_cut(trk) && AtSlice && std::hypot(pfp.trk.rangeP.p_proton, mp) - mp > 0.05)
       ++count;
   }
   return count;
@@ -245,20 +262,20 @@ const Var kIcarus202401NumShowers([](const caf::SRSliceProxy* slc){
 });
 
 const Var kIcarus202401RecoMuonE([](const caf::SRSliceProxy* slc){
-  return std::hypot(kIcarus202401RecoMuonP(slc), 0.106f);
+  return std::hypot(kIcarus202401RecoMuonP(slc), mmu);
 });
 
 const Var kIcarus202401RecoProtonKE([](const caf::SRSliceProxy* slc){
   double E = 0;
   for(const auto P: kIcarus202401RecoProtonP(slc))
-    E += std::hypot(P, 0.938f) - 0.938;
+    E += std::hypot(P, mp) - mp;
   return E;
 });
 
 const Var kIcarus202401RecoPionE([](const caf::SRSliceProxy* slc){
   double E = 0;
   for(const auto P: kIcarus202401RecoPionP(slc))
-    E += std::hypot(P, 0.140f);
+    E += std::hypot(P, mpi);
   return E;
 });
 
@@ -309,4 +326,5 @@ const MultiVar kIcarus202401RecoPionP([](const caf::SRSliceProxy* slc){
   }
   return Ps;
 });
+
 }
