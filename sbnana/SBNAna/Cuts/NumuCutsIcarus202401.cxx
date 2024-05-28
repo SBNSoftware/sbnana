@@ -3,15 +3,16 @@
 #include "sbnana/SBNAna/Vars/NumuVarsIcarus202401.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
+#include <iostream>
 
 namespace ana {
 
 static bool Icarus202401contained(const caf::SRTrackProxy& trk)
 {
   return ((trk.end.x < -61.94 - 5 && trk.end.x > -358.49 + 5)
-             || (trk.end.x > 61.94 + 5 && trk.end.x < 358.49 - 5))
+	  || (trk.end.x > 61.94 + 5 && trk.end.x < 358.49 - 5))
            && trk.end.y > -181.86 + 5 && trk.end.y < 134.96 - 5
-           && trk.end.z > -894.95 + 5 && trk.end.z < 894.95 - 5;
+	  && trk.end.z > -894.95 + 5 && trk.end.z < 894.95 - 5;
 }
 
 const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
@@ -24,7 +25,7 @@ const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
 
 const SpillCut kIcarus202401CRTPMTVetoData([](const caf::SRSpillProxy* spill){
     for(const auto& match: spill->crtpmt_matches) {
-        if(match.flashGateTime > -0.4 && match.flashGateTime < 1.6 && match.flashClassification == 0)
+        if(match.flashGateTime > -0.4 && match.flashGateTime < 1.5 && match.flashClassification == 0)
             return true;
     }
     return false;
@@ -56,7 +57,9 @@ const Cut kIcarus202401ContainedHadrons([](const caf::SRSliceProxy* slc){
   int muID = -1;
   if (idx >= 0) muID = slc->reco.pfp.at(idx).id;
   for(auto& pfp: slc->reco.pfp) {
-    if (pfp.trackScore < 0.5) { continue; }
+    //if (pfp.trackScore < 0.5) { continue; }
+
+    if(std::isnan(pfp.trk.start.x) || std::isnan(pfp.trk.end.x) || std::isnan(pfp.trk.len)) continue;
     auto const& trk = pfp.trk;
     //if(pfp.id != muID && pfp.parent_is_primary)
     if(pfp.id != muID)
