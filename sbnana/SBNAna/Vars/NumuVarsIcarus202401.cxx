@@ -307,7 +307,11 @@ const MultiVar kIcarus202401RecoProtonP([](const caf::SRSliceProxy* slc){
   for(const auto& pfp: slc->reco.pfp) {
     if(pfp.id == muID) continue;
     if(pfp.trackScore < 0.4) continue;
-    if(Icarus202401_proton_cut(pfp.trk) && pfp.parent_is_primary)
+    auto const& trk = pfp.trk;
+    const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
+                                   slc->vertex.y - trk.start.y,
+                                   slc->vertex.z - trk.start.z);
+    if(Icarus202401_proton_cut(pfp.trk) && pfp.parent_is_primary && Atslc < 10.0 && std::hypot(pfp.trk.rangeP.p_proton, mp) - mp > 0.05)
       Ps.push_back(pfp.trk.rangeP.p_proton);
   }
   return Ps;
@@ -321,8 +325,12 @@ const MultiVar kIcarus202401RecoPionP([](const caf::SRSliceProxy* slc){
   for(const auto& pfp: slc->reco.pfp) {
     if(pfp.id == muID) continue;
     if(pfp.trackScore < 0.5) continue;
-    if(!Icarus202401_proton_cut(pfp.trk) && pfp.parent_is_primary)
-      Ps.push_back(pfp.trk.rangeP.p_proton);
+    auto const& trk = pfp.trk;
+    const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
+                                   slc->vertex.y - trk.start.y,
+                                   slc->vertex.z - trk.start.z);
+    if(Atslc < 10.0 && !Icarus202401_proton_cut(pfp.trk) && pfp.parent_is_primary && Icarus202401_proton_cut_exist(trk) && std::hypot(pfp.trk.rangeP.p_pion, mpi) - mpi > 0.025)
+      Ps.push_back(pfp.trk.rangeP.p_pion);
   }
   return Ps;
 });
