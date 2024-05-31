@@ -5,6 +5,8 @@ cet_make_library(LIBRARY_NAME CAFAnaSysts
          LIBRARIES CAFAnaCore
                    CAFAnaCuts
                    sbnanaobj::StandardRecordProxy
+		   sbnanaobj::StandardRecord
+                   SBNAnaVars
         )
 
 # Allow "StandardRecord/" to find the right directory
