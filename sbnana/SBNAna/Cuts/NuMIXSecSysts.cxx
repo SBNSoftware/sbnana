@@ -116,6 +116,10 @@ namespace ana {
     return this_rw;
 
   }
+
+  // P. Stowell's Q2 suppresion
+  // https://doi.org/10.48550/arXiv.1903.01558
+  // arXiv:1903.01558 
   double GetSPPLowQ2Suppression(double Q2_GeV2, double sigma){
 
     static double const Q2_Max = 0.7;
@@ -257,6 +261,22 @@ namespace ana {
       else if( 1.000000 <= Tpi_GeV && Tpi_GeV < 2.000000 ) return 0.873622;
       else return 0.873622;
     }
+
+  }
+
+  // Our sideband-extracted pi rw
+  double GetNuMIXsecSidebandPiReweight(double Q2Rec){
+
+    double X = Q2Rec+0.5;
+    if(X<0) X = 0.;
+    if(X>1.0) X = 1.0;
+
+    static double FitResult_norm = 1.184e+00;
+    static double FitResult_offset = -1.845e-01;
+
+    double out = (3.-2.*X)*(X*X);
+    return FitResult_norm * out + FitResult_offset;
+
 
   }
 
@@ -426,6 +446,25 @@ namespace ana {
     double TpiRW = GetSPPTpiMINERvAFittedReweight(Tpi);
 
     return TpiRW;
+
+  });
+
+  // Sideband-extracted pi RW
+  const Var kNuMISidebandPiRW([](const caf::SRSliceProxy* slc) -> float {
+
+    int IsSignal = kNuMISliceSignalType(slc);
+    if(IsSignal==5) return 1.;
+
+    int TrueNpip = kNuMITrueNpip(slc);
+    int TrueNpim = kNuMITrueNpim(slc);
+    int TrueNpi0 = kNuMITrueNpi0(slc);
+
+    if(TrueNpip+TrueNpim+TrueNpi0==0) return 1.;
+
+    double RecoQ2 = kNuMIRecoQ2(slc);
+    return GetNuMIXsecSidebandPiReweight(RecoQ2);
+    
+
 
   });
 

@@ -4,6 +4,7 @@
 
 #include "sbnana/SBNAna/Cuts/NuMIXSecCuts.h"
 #include "sbnana/SBNAna/Vars/NuMIXSecVars.h"
+#include "sbnana/SBNAna/Cuts/NuMIXSecRecoEventVars.h"
 #include "sbnana/CAFAna/Core/ISyst.h"
 
 #include "TH1.h"
@@ -33,6 +34,8 @@ namespace ana
   double GetSPPTpiMINERvATemplateReweight(double Tpi_GeV);
   // - MINERvA, fitted (tpi<225MeV), linear interplolation (225<=tpi<237.5MeV), templtae (tpi>=237.5MEV)
   double GetSPPTpiMINERvAFittedReweight(double Tpi_GeV);
+  // Our sideband-extracted pi rw
+  double GetNuMIXsecSidebandPiReweight(double Q2Rec);
 
   class NuMIXSecPiSyst: public ISyst
   {
@@ -80,6 +83,9 @@ namespace ana
   extern const Var kNuMISPPTpiMINERvATemplateReweight;
   //   - binned value fitted with analytic function
   extern const Var kNuMISPPTpiMINERvAFittedReweight;
+
+  // Sideband-extracted pi RW
+  extern const Var kNuMISidebandPiRW;
 
   //---------------------------------------------------------------------
   // Split-track reweighting
