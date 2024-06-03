@@ -15,6 +15,8 @@ namespace ana {
 
 /*
     // Below using NUANCE code
+    // NOTE) When using this pre-FSI SPP definition, for the events pions absorbed,
+    //       those will get "-5" of true pion KE, thus get zero TPi weight.. 
     const auto& NUANCECode = sr->genie_inttype;
     bool IsCCSinglePiPlus = false;
     if(NUANCECode == caf::genie_interaction_type_::kResCCNuProtonPiPlus){
@@ -26,6 +28,7 @@ namespace ana {
 
     return IsCCSinglePiPlus;
 */
+
 
     // Below using event record
     // Check process
