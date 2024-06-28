@@ -1,0 +1,17 @@
+cffi
+jupyterlab==3.3.0a1
+numpy
+uproot==4.3.4
+matplotlib
+scipy
+pandas==1.1.5
+nbstripout
+tqdm
+ipywidgets
+dill
+h5py
+tables
+emcee
+corner
+lz4
+xxhash
