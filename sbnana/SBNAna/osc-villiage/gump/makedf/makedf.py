@@ -119,17 +119,16 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==3222).groupby(level=[0,1]).sum().rename(("nsp", "")))
 
     # lepton info
-    mudf = mcprimdf[np.abs(mcprimdf.pdg)==13].sort_values(mcprimdf.index.names[:2] + [("length", "")]).groupby(level=[0,1]).tail()
+    mudf = mcprimdf[np.abs(mcprimdf.pdg)==13].sort_values(mcprimdf.index.names[:2] + [("genE", "")]).groupby(level=[0,1]).tail()
     mudf.index = mudf.index.droplevel(-1)
-    pdf = mcprimdf[mcprimdf.pdg==2212].sort_values(mcprimdf.index.names[:2] + [("length", "")]).groupby(level=[0,1]).tail()
-    pdf.index = pdf.index.droplevel(-1)
+    mudf.columns = pd.MultiIndex.from_tuples([tuple(["mu"] + list(c)) for c in mudf.columns])
 
-    for b in mcprimdf.columns:
-        thisb = mudf[b]
-        mcdf = multicol_add(mcdf, thisb.rename(tuple(["mu"] + list(b))))
-    for b in mcprimdf.columns:
-        thisb = pdf[b]
-        mcdf = multicol_add(mcdf, thisb.rename(tuple(["p"] + list(b))))
+    pdf = mcprimdf[mcprimdf.pdg==2212].sort_values(mcprimdf.index.names[:2] + [("genE", "")]).groupby(level=[0,1]).tail()
+    pdf.index = pdf.index.droplevel(-1)
+    pdf.columns = pd.MultiIndex.from_tuples([tuple(["p"] + list(c)) for c in pdf.columns])
+
+    mcdf = multicol_merge(mcdf, mudf, left_index=True, right_index=True, how="left", validate="one_to_one")
+    mcdf = multicol_merge(mcdf, pdf, left_index=True, right_index=True, how="left", validate="one_to_one")
 
     return mcdf
 
@@ -151,7 +150,7 @@ def make_slc_trkdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **
 
     return slcdf
 
-def make_eslc_partdf(f, trkDistCut=10., **trkArgs):
+def make_eslc_partdf(f, trkDistCut=-1, **trkArgs):
     # load
     partdf = make_epartdf(f, **trkArgs)
     partdf.columns = pd.MultiIndex.from_tuples([tuple(["particle"] + list(c)) for c in partdf.columns])
@@ -293,11 +292,12 @@ def make_epartdf(f):
 
     tpartdf = loadbranches(f["recTree"], trueparticlebranches)
     tpartdf = tpartdf.rec.true_particles
+    # cut out EMShowerDaughters
+    # tpartdf = tpartdf[(tpartdf.parent == 0)]
 
     etpartdf = loadbranches(f["recTree"], etrueparticlebranches)
     etpartdf = etpartdf.rec.dlp_true.particles
     etpartdf.columns = [s for s in etpartdf.columns]
-
     
     # Do matching
     # 
@@ -344,7 +344,6 @@ def make_epartdf(f):
     epartdf.columns = pd.MultiIndex.from_tuples([fixpos(c) for c in epartdf.columns])
 
     return epartdf
-
 
 def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=True, mcs=True):
     trkdf = loadbranches(f["recTree"], trkbranches + shwbranches)

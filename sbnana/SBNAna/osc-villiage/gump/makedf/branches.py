@@ -23,13 +23,13 @@ hdrbranches = [
     "rec.hdr.cluster",
     "rec.hdr.fno",
 
-    "rec.hdr.triggerinfo.trigger_id",
-    "rec.hdr.triggerinfo.gate_id",
-    "rec.hdr.triggerinfo.trigger_count",
-    "rec.hdr.triggerinfo.gate_count",
-    "rec.hdr.triggerinfo.gate_delta",
-    "rec.hdr.triggerinfo.global_trigger_time",
-    "rec.hdr.triggerinfo.prev_global_trigger_time",
+    # "rec.hdr.triggerinfo.trigger_id",
+    # "rec.hdr.triggerinfo.gate_id",
+    # "rec.hdr.triggerinfo.trigger_count",
+    # "rec.hdr.triggerinfo.gate_count",
+    # "rec.hdr.triggerinfo.gate_delta",
+    # "rec.hdr.triggerinfo.global_trigger_time",
+    # "rec.hdr.triggerinfo.prev_global_trigger_time",
 ]
 
 potbranches = [
@@ -50,6 +50,7 @@ trueparticlenames = [
     "genp.x", "genp.y", "genp.z",
     "length",
     "G4ID",
+    "parent",
     "cont_tpc",
     "genE",
     "interaction_id"
