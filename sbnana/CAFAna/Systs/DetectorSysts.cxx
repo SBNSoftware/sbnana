@@ -66,8 +66,8 @@ namespace ana
     }
     TH1* h = (TH1*)f.Get(hName.c_str());
 
-    double recoNuE = kIcarus202401RecoNuE(slc);
-    const int bin = h->FindBin(recoNuE);
+    double recoENu = kIcarus202401RecoENu(slc);
+    const int bin = h->FindBin(recoENu);
 
     if (bin == 0 || bin == h->GetNbinsX() + 1) return;
     // attempt to not change any weight if the value is inf or nan, just continue with weight as-is... 
