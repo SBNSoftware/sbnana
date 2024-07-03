@@ -257,6 +257,9 @@ eslcbranches = [
 
 eslcmatchedbranches = [
     eslc + "match",
+]
+
+eslcmatchovrlpbranches = [
     eslc + "match_overlap",
 ]
 
@@ -277,6 +280,7 @@ eparticlebranches = [
     epart + "is_principal_match",
     epart + "is_valid",
     epart + "length",
+    epart + "csda_ke",
     epart + "ke",
     epart + "momentum.0",
     epart + "momentum.1",
@@ -308,6 +312,13 @@ etruthpart = "rec.dlp_true.particles."
 etrueparticlebranches = [
     etruthpart + "track_id",
     etruthpart + "id",
+]
+
+etruthint = "rec.dlp_true."
+
+etruthintbranches = [
+    etruthint + "id",
+    etruthint + "nu_id"
 ]
 
 

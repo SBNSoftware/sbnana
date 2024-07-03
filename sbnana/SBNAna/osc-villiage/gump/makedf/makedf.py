@@ -101,12 +101,13 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
     mcprimdf.index = mcprimdf.index.rename(mcdf.index.names[:2] + mcprimdf.index.names[2:])
 
     PROTON_MASS = 0.938272
-    proton_KE = mcprimdf[np.abs(mcprimdf.pdg)==2212].genE.groupby(level=[0,1]).max() - PROTON_MASS
-    proton_KE.name = ("max_proton_ke", "")
-    mcdf = mcdf.join(proton_KE)
+    max_proton_KE = mcprimdf[np.abs(mcprimdf.pdg)==2212].genE.groupby(level=[0,1]).max() - PROTON_MASS
+    max_proton_KE.name = ("max_proton_ke", "")
+    mcdf = mcdf.join(max_proton_KE)
 
     mcdf.max_proton_ke = mcdf.max_proton_ke.fillna(0.)
 
+    # particle counts
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==2112).groupby(level=[0,1]).sum().rename(("nn", "")))
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==2212).groupby(level=[0,1]).sum().rename(("np", "")))
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==13).groupby(level=[0,1]).sum().rename(("nmu", "")))
@@ -118,6 +119,11 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==3112).groupby(level=[0,1]).sum().rename(("nsm", "")))
     mcdf = mcdf.join((np.abs(mcprimdf.pdg)==3222).groupby(level=[0,1]).sum().rename(("nsp", "")))
 
+    # particle counts w/ threshold
+    proton_KE = mcprimdf[np.abs(mcprimdf.pdg)==2212].genE - PROTON_MASS
+    mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==2212) & (proton_KE > 0.05)).rename(("np_50MeV","")))
+    mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==2212) & (proton_KE > 0.02)).rename(("np_20MeV","")))
+ 
     # lepton info
     mudf = mcprimdf[np.abs(mcprimdf.pdg)==13].sort_values(mcprimdf.index.names[:2] + [("genE", "")]).groupby(level=[0,1]).last()
     mudf.columns = pd.MultiIndex.from_tuples([tuple(["mu"] + list(c)) for c in mudf.columns])
@@ -259,16 +265,45 @@ def make_stubs(f):
 def make_eslcdf(f):
     eslcdf = loadbranches(f["recTree"], eslcbranches)
     eslcdf = eslcdf.rec.dlp
+
+    etintdf = loadbranches(f["recTree"], etruthintbranches)
+    etintdf = etintdf.rec.dlp_true
     
     # match to the truth info
     mcdf = make_mcdf(f)
-
     # mc is truth
     mcdf.columns = pd.MultiIndex.from_tuples([tuple(["truth"] + list(c)) for c in mcdf.columns])
 
+    # Do matching
+    # 
+    # First get the ML true particle IDs matched to each reco particle
+    eslc_matchdf = loadbranches(f["recTree"], eslcmatchedbranches)
+    eslc_match_overlap_df = loadbranches(f["recTree"], eslcmatchovrlpbranches)
+    eslc_match_overlap_df.index.names = eslc_matchdf.index.names
+
+    eslc_matchdf = multicol_merge(eslc_matchdf, eslc_match_overlap_df, left_index=True, right_index=True, how="left", validate="one_to_one")
+    eslc_matchdf = eslc_matchdf.rec.dlp
+
+    # Then use bestmatch.match to get the nu ids in etintdf
+    eslc_matchdf_wids = pd.merge(eslc_matchdf, etintdf, left_on=["entry", "match"], right_on=["entry", "id"], how="left")
+    eslc_matchdf_wids.index = eslc_matchdf.index
+
+    # Now use nu_ids to get the true interaction information
+    eslc_matchdf_trueints = multicol_merge(eslc_matchdf_wids, mcdf, left_on=["entry", "nu_id"], right_index=True, how="left")
+    eslc_matchdf_trueints.index = eslc_matchdf_wids.index
+
+    # delete unnecesary matching branches
+    del eslc_matchdf_trueints[("match", "")]
+    del eslc_matchdf_trueints[("nu_id", "")]
+    del eslc_matchdf_trueints[("id", "")]
+
+    # first match is best match
+    bestmatch = eslc_matchdf_trueints.groupby(level=list(range(eslc_matchdf_trueints.index.nlevels-1))).first()
+
     # add extra levels to eslcdf columns
     eslcdf.columns = pd.MultiIndex.from_tuples([tuple(list(c) + [""]*2) for c in eslcdf.columns])
-    eslcdf_withmc = pd.merge(eslcdf, mcdf, left_on=["entry", ("nu_id","")], right_index=True, how="left")
+
+    eslcdf_withmc = multicol_merge(eslcdf, bestmatch, left_index=True, right_index=True, how="left")
 
     # Fix position names (I0, I1, I2) -> (x, y, z)
     def mappos(s):
@@ -277,7 +312,7 @@ def make_eslcdf(f):
         if s == "I2": return "z"
         return s
     def fixpos(c):
-        if c[0] not in ["end_point", "start_point", "start_dir", "vertex"]: return c
+        if c[0] not in ["end_point", "start_point", "start_dir", "vertex", "momentum"]: return c
         return tuple([c[0]] + [mappos(c[1])] + list(c[2:]))
 
     eslcdf_withmc.columns = pd.MultiIndex.from_tuples([fixpos(c) for c in eslcdf_withmc.columns])
@@ -372,3 +407,45 @@ def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=T
 
     return trkdf
 
+def make_eevtdf(f):
+    # load slices and particles
+    partdf = make_epartdf(f)
+
+    df = make_eslcdf(f)
+
+    # load the proton and muon candidates
+    primary = partdf.is_primary
+    mudf = partdf[primary & (partdf.pid == 2)].sort_values(partdf.index.names[:2] + [("length", "", "")]).groupby(level=[0,1]).last()
+    mudf.columns = pd.MultiIndex.from_tuples([tuple(["mu"] + list(c)) for c in mudf.columns])
+
+    pdf = partdf[primary & (partdf.pid == 4)].sort_values(partdf.index.names[:2] + [("length", "", "")]).groupby(level=[0,1]).last()
+    pdf.columns = pd.MultiIndex.from_tuples([tuple(["p"] + list(c)) for c in pdf.columns])
+
+    df = multicol_merge(df, mudf, left_index=True, right_index=True, how="left", validate="one_to_one")
+    df = multicol_merge(df, pdf, left_index=True, right_index=True, how="left", validate="one_to_one")
+
+    # in case we want to cut out other objects -- save the highest energy of each other particle
+    lead_gamma_energy = partdf.ke[primary & (partdf.pid == 0)].groupby(level=[0,1]).max().rename("lead_gamma_energy")
+    df = multicol_add(df, lead_gamma_energy)
+
+    lead_elec_energy = partdf.ke[primary & (partdf.pid == 1)].groupby(level=[0,1]).max().rename("lead_elec_energy")
+    df = multicol_add(df, lead_elec_energy)
+
+    lead_pion_length = partdf.length[primary & (partdf.pid == 3)].groupby(level=[0,1]).max().rename("lead_pion_length")
+    df = multicol_add(df, lead_pion_length)
+
+    subl_muon_length = partdf[primary & (partdf.pid == 2)].sort_values(partdf.index.names[:2] + [("length", "", "")]).length.groupby(level=[0,1]).nth(-2).rename("subl_muon_length")
+    df = multicol_add(df, subl_muon_length)
+
+    subl_proton_length = partdf[primary & (partdf.pid == 4)].sort_values(partdf.index.names[:2] + [("length", "", "")]).length.groupby(level=[0,1]).nth(-2).rename("subl_proton_length")
+    df = multicol_add(df, subl_proton_length)
+
+    # Apply pre-selection: Require fiducial vertex, at least one muon, at least one proton
+
+    # require both muon and proton to be present
+    df = df[~np.isnan(df.mu.pid) & ~np.isnan(df.p.pid)]
+
+    # require fiducial verex
+    df = df[InFV(df.vertex, 50)]
+
+    return df
