@@ -121,8 +121,8 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
 
     # particle counts w/ threshold
     proton_KE = mcprimdf[np.abs(mcprimdf.pdg)==2212].genE - PROTON_MASS
-    mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==2212) & (proton_KE > 0.05)).rename(("np_50MeV","")))
-    mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==2212) & (proton_KE > 0.02)).rename(("np_20MeV","")))
+    mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==2212) & (proton_KE > 0.05)).groupby(level=[0,1]).sum().rename(("np_50MeV","")))
+    mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==2212) & (proton_KE > 0.02)).groupby(level=[0,1]).sum().rename(("np_20MeV","")))
  
     # lepton info
     mudf = mcprimdf[np.abs(mcprimdf.pdg)==13].sort_values(mcprimdf.index.names[:2] + [("genE", "")]).groupby(level=[0,1]).last()
