@@ -1,4 +1,12 @@
-source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh
+export machine=${HOSTNAME}
+if [[ $machine == *sbnd* ]]; then
+  echo "working on a sbnd machine"
+  source /cvmfs/sbnd.opensciencegrid.org/products/sbnd/setup_sbnd.sh
+fi
+if [[ $machine == *icarus* ]]; then
+  echo "working on a icarus machine"
+  source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh
+fi
 setup python v3_9_2
 setup hdf5 v1_12_0a -q e20:prof
 setup sbnana v09_37_02_01 -q e20:prof
