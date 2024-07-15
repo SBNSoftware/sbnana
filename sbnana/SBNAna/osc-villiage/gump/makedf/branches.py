@@ -98,6 +98,8 @@ trkbranches = [
     trkbranch + "mcsP.fwdP_muon",
     trkbranch + "rangeP.p_pion",
     trkbranch + "mcsP.fwdP_pion",
+    trkbranch + "rangeP.p_proton",
+    trkbranch + "mcsP.fwdP_proton",
     trkbranch + "bestplane",
     trkbranch + "crthit.distance",
     trkbranch + "crthit.hit.time",
