@@ -1,6 +1,7 @@
 from pyanalib.panda_helpers import *
 from .branches import *
 from .util import *
+from .calo import *
 from . import numisyst, g4syst, geniesyst
 import uproot
 
@@ -230,8 +231,9 @@ def make_stubs(f):
     if ismc:
         stubdf["ke"] = Q2KE_mc(stubdf.Q)
         # also do calorimetric variations
-        stubdf["ke_callo"] = Q2KE_mc_callo(stubdf.Q)
-        stubdf["ke_calhi"] = Q2KE_mc_calhi(stubdf.Q)
+        # TODO: Systematic variations
+        stubdf["ke_callo"] = np.nan # Q2KE_mc_callo(stubdf.Q)
+        stubdf["ke_calhi"] = np.nan # Q2KE_mc_calhi(stubdf.Q)
     else:
         stubdf["ke"] = Q2KE_data(stubdf.Q)
         stubdf["ke_callo"] = np.nan
