@@ -493,64 +493,62 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     slcdf.columns = pd.MultiIndex.from_tuples([tuple(list(c) +[""]) for c in slcdf.columns])
     slcdf = slcdf.join(stubdf)
     # load pfps
-    slcdf = multicol_merge(slcdf, trkdf, left_index=True, right_index=True, how="right", validate="one_to_many")
+    # slcdf = multicol_merge(slcdf, trkdf, left_index=True, right_index=True, how="right", validate="one_to_many")
 
-    slcdf = multicol_add(slcdf, dmagdf(slcdf.slc.vertex, slcdf.pfp.trk.start).rename(("pfp", "dist_to_vertex")))
+    trkdf = multicol_add(trkdf, dmagdf(slcdf.slc.vertex, trkdf.pfp.trk.start).rename(("pfp", "dist_to_vertex")))
     if trkDistCut > 0:
-        slcdf = slcdf[slcdf.pfp.dist_to_vertex < trkDistCut]
+        trkdf = trkdf[trkdf.pfp.dist_to_vertex < trkDistCut]
     if cutClearCosmic:
         slcdf = slcdf[slcdf.slc.is_clear_cosmic==0]
 
     # ---- calculate additional info ----
     
     # track containment
-    slcdf[("pfp", "trk", "is_contained", "", "", "")] = (InFV(slcdf.pfp.trk.start, 0, det=DETECTOR)) & (InFV(slcdf.pfp.trk.end, 0, det=DETECTOR))
+    trkdf[("pfp", "trk", "is_contained", "", "", "")] = (InFV(trkdf.pfp.trk.start, 0, det=DETECTOR)) & (InFV(trkdf.pfp.trk.end, 0, det=DETECTOR))
 
     # reco momentum -- range for contained, MCS for exiting
-    slcdf[("pfp", "trk", "P", "p_muon", "", "")] = np.nan
-    slcdf.loc[slcdf.pfp.trk.is_contained, ("pfp", "trk", "P", "p_muon", "", "")]  = slcdf.loc[(slcdf.pfp.trk.is_contained), ("pfp", "trk", "rangeP", "p_muon", "", "")]
-    slcdf.loc[np.invert(slcdf.pfp.trk.is_contained), ("pfp", "trk", "P", "p_muon","", "")] = slcdf.loc[np.invert(slcdf.pfp.trk.is_contained), ("pfp", "trk", "mcsP", "fwdP_muon", "", "")]
+    trkdf[("pfp", "trk", "P", "p_muon", "", "")] = np.nan
+    trkdf.loc[trkdf.pfp.trk.is_contained, ("pfp", "trk", "P", "p_muon", "", "")]  = trkdf.loc[(trkdf.pfp.trk.is_contained), ("pfp", "trk", "rangeP", "p_muon", "", "")]
+    trkdf.loc[np.invert(trkdf.pfp.trk.is_contained), ("pfp", "trk", "P", "p_muon","", "")] = trkdf.loc[np.invert(trkdf.pfp.trk.is_contained), ("pfp", "trk", "mcsP", "fwdP_muon", "", "")]
 
-    slcdf[("pfp", "trk", "P", "p_pion", "", "")] = np.nan
-    slcdf.loc[slcdf.pfp.trk.is_contained, ("pfp", "trk", "P", "p_pion", "", "")]  = slcdf.loc[(slcdf.pfp.trk.is_contained), ("pfp", "trk", "rangeP", "p_pion", "", "")]
-    slcdf.loc[np.invert(slcdf.pfp.trk.is_contained), ("pfp", "trk", "P", "p_pion", "", "")] = slcdf.loc[np.invert(slcdf.pfp.trk.is_contained), ("pfp", "trk", "mcsP", "fwdP_pion", "", "")]
+    trkdf[("pfp", "trk", "P", "p_pion", "", "")] = np.nan
+    trkdf.loc[trkdf.pfp.trk.is_contained, ("pfp", "trk", "P", "p_pion", "", "")]  = trkdf.loc[(trkdf.pfp.trk.is_contained), ("pfp", "trk", "rangeP", "p_pion", "", "")]
+    trkdf.loc[np.invert(trkdf.pfp.trk.is_contained), ("pfp", "trk", "P", "p_pion", "", "")] = trkdf.loc[np.invert(trkdf.pfp.trk.is_contained), ("pfp", "trk", "mcsP", "fwdP_pion", "", "")]
 
-    slcdf[("pfp", "trk", "P", "p_proton", "", "")] = np.nan
-    slcdf.loc[slcdf.pfp.trk.is_contained, ("pfp", "trk", "P", "p_proton", "", "")]  = slcdf.loc[(slcdf.pfp.trk.is_contained), ("pfp", "trk", "rangeP", "p_proton", "", "")]
-    slcdf.loc[np.invert(slcdf.pfp.trk.is_contained), ("pfp", "trk", "P", "p_proton", "", "")] = slcdf.loc[np.invert(slcdf.pfp.trk.is_contained), ("pfp", "trk", "mcsP", "fwdP_proton", "", "")]
+    trkdf[("pfp", "trk", "P", "p_proton", "", "")] = np.nan
+    trkdf.loc[trkdf.pfp.trk.is_contained, ("pfp", "trk", "P", "p_proton", "", "")]  = trkdf.loc[(trkdf.pfp.trk.is_contained), ("pfp", "trk", "rangeP", "p_proton", "", "")]
+    trkdf.loc[np.invert(trkdf.pfp.trk.is_contained), ("pfp", "trk", "P", "p_proton", "", "")] = trkdf.loc[np.invert(trkdf.pfp.trk.is_contained), ("pfp", "trk", "mcsP", "fwdP_proton", "", "")]
 
     # opening angles
-    slcdf[("pfp", "trk", "cos", "x", "", "")] = np.nan
-    slcdf[("pfp", "trk", "cos", "x", "", "")] = (slcdf.pfp.trk.end.x-slcdf.pfp.trk.start.x)/slcdf.pfp.trk.len
-    slcdf[("pfp", "trk", "cos", "y", "", "")] = np.nan
-    slcdf[("pfp", "trk", "cos", "y", "", "")] = (slcdf.pfp.trk.end.y-slcdf.pfp.trk.start.y)/slcdf.pfp.trk.len
-    slcdf[("pfp", "trk", "cos", "z", "", "")] = np.nan
-    slcdf[("pfp", "trk", "cos", "z", "", "")] = (slcdf.pfp.trk.end.z-slcdf.pfp.trk.start.z)/slcdf.pfp.trk.len
+    trkdf[("pfp", "trk", "cos", "x", "", "")] = np.nan
+    trkdf[("pfp", "trk", "cos", "x", "", "")] = (trkdf.pfp.trk.end.x-trkdf.pfp.trk.start.x)/trkdf.pfp.trk.len
+    trkdf[("pfp", "trk", "cos", "y", "", "")] = np.nan
+    trkdf[("pfp", "trk", "cos", "y", "", "")] = (trkdf.pfp.trk.end.y-trkdf.pfp.trk.start.y)/trkdf.pfp.trk.len
+    trkdf[("pfp", "trk", "cos", "z", "", "")] = np.nan
+    trkdf[("pfp", "trk", "cos", "z", "", "")] = (trkdf.pfp.trk.end.z-trkdf.pfp.trk.start.z)/trkdf.pfp.trk.len
 
     # ----- loose PID for candidates ----
-    slcdf[("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")] = np.nan
-    slcdf[("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")] = slcdf.pfp.trk.chi2pid.I2.chi2_muon/slcdf.pfp.trk.chi2pid.I2.chi2_proton
+    trkdf[("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")] = np.nan
+    trkdf[("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")] = trkdf.pfp.trk.chi2pid.I2.chi2_muon/trkdf.pfp.trk.chi2pid.I2.chi2_proton
     
     # mu candidate is track pfp with smallest chi2_mu/chi2_p
-    mudf = slcdf[(slcdf.pfp.trackScore > 0.5)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1]).head(1)
+    mudf = trkdf[(trkdf.pfp.trackScore > 0.5)].sort_values(trkdf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1]).head(1)
     mudf.columns = pd.MultiIndex.from_tuples([tuple(["mu"] + list(c)) for c in mudf.columns])
-    slcdf = multicol_merge(slcdf, mudf, left_index=True, right_index=True, how="left", validate="one_to_one")
+    slcdf = multicol_merge(slcdf, mudf.droplevel(-1), left_index=True, right_index=True, how="left", validate="one_to_one")
     idx_mu = mudf.index
         
     # p candidate is track pfp with largest chi2_mu/chi2_p of remaining pfps
-    idx_pfps = slcdf.index
+    idx_pfps = trkdf.index
     idx_not_mu = idx_pfps.difference(idx_mu)
-    notmudf = slcdf.loc[idx_not_mu]
+    notmudf = trkdf.loc[idx_not_mu]
     pdf = notmudf[(notmudf.pfp.trackScore > 0.5)].sort_values(notmudf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1]).tail(1)
     pdf.columns = pd.MultiIndex.from_tuples([tuple(["p"] + list(c)) for c in pdf.columns])
-    slcdf = multicol_merge(slcdf, pdf, left_index=True, right_index=True, how="left", validate="one_to_one")
+    slcdf = multicol_merge(slcdf, pdf.droplevel(-1), left_index=True, right_index=True, how="left", validate="one_to_one")
     idx_p = pdf.index
 
     # calculated and save transverse kinematic variables
-    mudf = slcdf[np.invert(np.isnan(slcdf.mu.pfp.trk.producer))].mu.groupby(level=[0,1]).head(1).pfp.trk
-    mudf.index = mudf.index.droplevel(-1)
-    pdf = slcdf[np.invert(np.isnan(slcdf.p.pfp.trk.producer))].p.groupby(level=[0,1]).head(1).pfp.trk
-    pdf.index = pdf.index.droplevel(-1)
+    mudf = slcdf.mu.pfp.trk
+    pdf = slcdf.p.pfp.trk
 
     # Caculate transverse kinematics
     MASS_A = 22*NEUTRON_MASS + 18*PROTON_MASS - 0.34381
@@ -604,7 +602,7 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     
     # note if there are any other track/showers
     idx_not_mu_p = idx_not_mu.difference(idx_p)
-    otherdf = slcdf.loc[idx_not_mu_p]
+    otherdf = trkdf.loc[idx_not_mu_p]
     # longest other shower
     othershwdf = otherdf[otherdf.pfp.trackScore < 0.5]
     other_shw_length = othershwdf.pfp.trk.len.groupby(level=[0,1]).max().rename("other_shw_length")
@@ -619,6 +617,9 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     slcdf.loc[bad_tmatch, ("slc","tmatch","idx", "", "", "", "")] = np.nan
 
     mcdf.columns = pd.MultiIndex.from_tuples([tuple(list(c) +["", "", "", "", ""]) for c in mcdf.columns])     # match # of column levels
+
+    # require both muon and proton to be present
+    slcdf = slcdf[~np.isnan(mudf.P.p_muon) & ~np.isnan(pdf.P.p_muon)]
 
     df = pd.merge(slcdf.reset_index(), 
                   mcdf.reset_index(),
