@@ -528,7 +528,7 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     slcdf[("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")] = slcdf.pfp.trk.chi2pid.I2.chi2_muon/slcdf.pfp.trk.chi2pid.I2.chi2_proton
     
     # mu candidate is track pfp with smallest chi2_mu/chi2_p
-    mudf = slcdf[(slcdf.pfp.trackScore > 0.5)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1,2]).head(1)
+    mudf = slcdf[(slcdf.pfp.trackScore > 0.5)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1]).head(1)
     idx_mu = mudf.index
     mudf.columns = pd.MultiIndex.from_tuples([tuple(["mu"] + list(c)) for c in mudf.columns])
     slcdf = multicol_merge(slcdf, mudf, left_index=True, right_index=True, how="left", validate="one_to_one")
@@ -537,7 +537,7 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     idx_pfps = slcdf.index
     idx_not_mu = idx_pfps.difference(idx_mu)
     notmudf = slcdf.loc[idx_not_mu]
-    pdf = notmudf[(notmudf.pfp.trackScore > 0.5)].sort_values(notmudf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1,2]).tail(1)
+    pdf = notmudf[(notmudf.pfp.trackScore > 0.5)].sort_values(notmudf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1]).tail(1)
     idx_p = pdf.index
     pdf.columns = pd.MultiIndex.from_tuples([tuple(["p"] + list(c)) for c in pdf.columns])
     slcdf = multicol_merge(slcdf, pdf, left_index=True, right_index=True, how="left", validate="one_to_one")
@@ -547,11 +547,11 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     otherdf = slcdf.loc[idx_not_mu_p]
     # longest other shower
     othershwdf = otherdf[otherdf.pfp.trackScore < 0.5]
-    other_shw_length = othershwdf.pfp.trk.len.groupby(level=[0,1,2]).max().rename("other_shw_length")
+    other_shw_length = othershwdf.pfp.trk.len.groupby(level=[0,1]).max().rename("other_shw_length")
     slcdf = multicol_add(slcdf, other_shw_length)
     # longest other track
     othertrkdf = otherdf[otherdf.pfp.trackScore > 0.5]
-    other_trk_length = othertrkdf.pfp.trk.len.groupby(level=[0,1,2]).max().rename("other_trk_length")
+    other_trk_length = othertrkdf.pfp.trk.len.groupby(level=[0,1]).max().rename("other_trk_length")
     slcdf = multicol_add(slcdf, other_trk_length)
  
     # ---- truth match ----
