@@ -161,7 +161,8 @@ slcbranches = [
     "rec.slc.tmatch.pur",
     "rec.slc.tmatch.index",
     "rec.slc.producer",
-    "rec.slc.nuid.crlongtrkdiry"
+    "rec.slc.nuid.crlongtrkdiry",
+    "rec.slc.nu_score"
 ]
 
 mcbranches = [
