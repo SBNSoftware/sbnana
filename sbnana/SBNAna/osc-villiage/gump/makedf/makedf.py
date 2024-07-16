@@ -40,7 +40,7 @@ def make_mchdf(f, include_weights=False):
         mcdf = pd.concat([mcdf, wgtdf], axis=1)
     return mcdf
 
-def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=True, mcs=True):
+def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, mcs=False):
     trkdf = loadbranches(f["recTree"], trkbranches + shwbranches)
     if scoreCut:
         trkdf = trkdf.rec.slc.reco[trkdf.rec.slc.reco.pfp.trackScore > 0.5]
@@ -400,35 +400,6 @@ def make_epartdf(f):
     epartdf.columns = pd.MultiIndex.from_tuples([fixpos(c) for c in epartdf.columns])
 
     return epartdf
-
-def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=True, mcs=True):
-    trkdf = loadbranches(f["recTree"], trkbranches + shwbranches)
-    if scoreCut:
-        trkdf = trkdf.rec.slc.reco[trkdf.rec.slc.reco.pfp.trackScore > 0.5]
-    else:
-        trkdf = trkdf.rec.slc.reco
-
-    if requiret0:
-        trkdf = trkdf[~np.isnan(trkdf.pfp.t0)]
-
-    if requireCosmic:
-        trkdf = trkdf[trkdf.pfp.parent == -1]
-
-    if mcs:
-        mcsdf = loadbranches(f["recTree"], [trkmcsbranches[0]]).rec.slc.reco.pfp.trk.mcsP
-        mcsdf_angle = loadbranches(f["recTree"], [trkmcsbranches[1]]).rec.slc.reco.pfp.trk.mcsP
-        mcsdf_angle.index.set_names(mcsdf.index.names, inplace=True)
-
-        mcsdf = mcsdf.merge(mcsdf_angle, how="left", left_index=True, right_index=True)
-        mcsgroup = list(range(mcsdf.index.nlevels-1))
-        cumlen = mcsdf.seg_length.groupby(level=mcsgroup).cumsum()*14 # convert rad length to cm
-        maxlen = (cumlen*(mcsdf.seg_scatter_angles >= 0)).groupby(level=mcsgroup).max()
-        trkdf[("pfp", "trk", "mcsP", "len", "", "")] = maxlen
-
-
-    trkdf[("pfp", "tindex", "", "", "", "")] = trkdf.index.get_level_values(2)
-
-    return trkdf
 
 def make_eevtdf(f):
     # load slices and particles
