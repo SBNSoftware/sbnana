@@ -235,9 +235,6 @@ def make_stubs(f, det="ICARUS"):
     stubdf = stubdf.join(stub_pitch)
     stubdf["length"] = magdf(stubdf.vtx - stubdf.end)
     stubdf["Q"] = stubdf.inc_sub_charge
-    
-    if det == "SBND":
-        return stubdf
 
     # convert charge to energy
     if ismc:
@@ -467,7 +464,7 @@ def make_eevtdf(f):
 
 def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkArgs):
     
-    # sbnd or icarus?
+    # ----- sbnd or icarus? -----
     det = loadbranches(f["recTree"], ["rec.hdr.det"]).rec.hdr.det
     if (1 == det.unique()):
         DETECTOR = "SBND"
@@ -478,87 +475,21 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     trkdf = make_trkdf(f, trkScoreCut, **trkArgs)
     slcdf = make_slcdf(f)
     stubdf = make_stubs(f, det=DETECTOR)
-
-    # identify stubs, add existence info to slcdf
-    length = stubdf.length
-    dqdx = stubdf.inc_sub_charge/length
-
-    is_stub = (length < 3.) &\
-              (((length > 0.) & (dqdx > 5.5e5)) |\
-               ((length > 0.5) & (dqdx > 4e5)) |\
-               ((length > 1.5) & (dqdx > 3e5)))
     
-    has_stub = is_stub.groupby(level=[0,1,2]).any().rename(("slc","has_stub"))
-    slcdf = multicol_add(slcdf, has_stub) 
-    slcdf[("slc","has_stub")] = slcdf[("slc","has_stub")].fillna(False)
-    
-    # merge in tracks
+    # ----- merge dfs -----
+    # load stubs
+    slcdf.columns = pd.MultiIndex.from_tuples([tuple(list(c) +[""]) for c in slcdf.columns])
+    slcdf = slcdf.join(stubdf)
+    # load pfps
     slcdf = multicol_merge(slcdf, trkdf, left_index=True, right_index=True, how="right", validate="one_to_many")
 
-    # distance from vertex to track start
     slcdf = multicol_add(slcdf, dmagdf(slcdf.slc.vertex, slcdf.pfp.trk.start).rename(("pfp", "dist_to_vertex")))
-
     if trkDistCut > 0:
         slcdf = slcdf[slcdf.pfp.dist_to_vertex < trkDistCut]
     if cutClearCosmic:
         slcdf = slcdf[slcdf.slc.is_clear_cosmic==0]
-      
-    # PID
-    
-    # use trackscore
-    ts_cut = (slcdf.pfp.trackScore > 0.5)
 
-    pid_shw = np.invert(ts_cut)
-
-    # muon
-    MUSEL_MUSCORE_TH = 25
-    MUSEL_PSCORE_TH = 100
-    MUSEL_LEN_TH = 50
-    
-    # TODO: use scores of all 3 planes
-    # muon_chi2 = (Avg(df, "muon", drop_0=True) < MUSEL_MUSCORE_TH) & (Avg(df, "proton", drop_0=True) > MUSEL_PSCORE_TH)
-
-    # TODO: used BDT scores
-    # len_cut = (masterdf.len.squeeze() > MUSEL_LEN_TH)
-    # dazzle_muon = (masterdf.dazzle.muonScore > 0.6)
-    # muon_cut = (muon_chi2) & (len_cut | dazzle_muon)
-
-    mu_score_cut = (slcdf.pfp.trk.chi2pid.I2.chi2_muon < MUSEL_MUSCORE_TH) & \
-    (slcdf.pfp.trk.chi2pid.I2.chi2_proton > MUSEL_PSCORE_TH)
-    mu_len_cut = (slcdf.pfp.trk.len > MUSEL_LEN_TH)
-    mu_cut = (mu_score_cut) & (mu_len_cut)
-    pid_mu = (ts_cut) & (mu_cut)
-
-    # proton 
-    PSEL_MUSCORE_TH = 0
-    PSEL_PSCORE_TH = 90
-    p_score_cut = (slcdf.pfp.trk.chi2pid.I2.chi2_muon > PSEL_MUSCORE_TH) & (slcdf.pfp.trk.chi2pid.I2.chi2_muon < PSEL_PSCORE_TH) 
-    p_cut = np.invert(mu_cut) & p_score_cut
-    pid_p = (ts_cut) & (p_cut)
-
-    # rest is pion
-    pi_cut = np.invert(mu_cut | p_cut)
-    pid_pi = (ts_cut) & (pi_cut)
-
-    # TODO: try not using trackscore
-
-    # ---------------------------
-
-    # store PID info
-    slcdf[("pfp", "pid", "", "", "", "")] = np.nan
-    slcdf.loc[pid_shw, ("pfp","pid")] = -1
-    slcdf.loc[pid_mu, ("pfp","pid")] = 13
-    slcdf.loc[pid_p, ("pfp","pid")] = 2212
-    slcdf.loc[pid_pi, ("pfp","pid")] = 211
-
-    pid_mu = (slcdf.pfp.pid == 13)
-    truth_mu = (np.abs(slcdf.pfp.trk.truth.p.pdg) == 13)
-
-    pid_p = (slcdf.pfp.pid == 2212)
-    truth_p = (np.abs(slcdf.pfp.trk.truth.p.pdg) == 2212)
-
-    pid_pi = (slcdf.pfp.pid == 211)
-    truth_pi = (np.abs(slcdf.pfp.trk.truth.p.pdg) == 211)
+    # ---- calculate additional info ----
     
     # track containment
     slcdf[("pfp", "trk", "is_contained", "", "", "")] = (InFV(slcdf.pfp.trk.start, 0, det=DETECTOR)) & (InFV(slcdf.pfp.trk.end, 0, det=DETECTOR))
@@ -575,7 +506,7 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     slcdf[("pfp", "trk", "P", "p_proton", "", "")] = np.nan
     slcdf.loc[slcdf.pfp.trk.is_contained, ("pfp", "trk", "P", "p_proton", "", "")]  = slcdf.loc[(slcdf.pfp.trk.is_contained), ("pfp", "trk", "rangeP", "p_proton", "", "")]
     slcdf.loc[np.invert(slcdf.pfp.trk.is_contained), ("pfp", "trk", "P", "p_proton", "", "")] = slcdf.loc[np.invert(slcdf.pfp.trk.is_contained), ("pfp", "trk", "mcsP", "fwdP_proton", "", "")]
-    
+
     # opening angles
     slcdf[("pfp", "trk", "cos", "x", "", "")] = np.nan
     slcdf[("pfp", "trk", "cos", "x", "", "")] = (slcdf.pfp.trk.end.x-slcdf.pfp.trk.start.x)/slcdf.pfp.trk.len
@@ -583,45 +514,46 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     slcdf[("pfp", "trk", "cos", "y", "", "")] = (slcdf.pfp.trk.end.y-slcdf.pfp.trk.start.y)/slcdf.pfp.trk.len
     slcdf[("pfp", "trk", "cos", "z", "", "")] = np.nan
     slcdf[("pfp", "trk", "cos", "z", "", "")] = (slcdf.pfp.trk.end.z-slcdf.pfp.trk.start.z)/slcdf.pfp.trk.len
+
+    # ----- loose PID for candidates ----
+    slcdf[("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")] = np.nan
+    slcdf[("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")] = slcdf.pfp.trk.chi2pid.I2.chi2_muon/slcdf.pfp.trk.chi2pid.I2.chi2_proton
     
-    
-    # track multiplicities per PID
-    mudf = slcdf[(slcdf.pfp.pid == 13)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "len", "", "", "")]).groupby(level=[0,1,2]).last()
+    # mu candidate is track pfp with smallest chi2_mu/chi2_p
+    mudf = slcdf[(slcdf.pfp.trackScore > 0.5)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1,2]).head(1)
+    idx_mu = mudf.index
     mudf.columns = pd.MultiIndex.from_tuples([tuple(["mu"] + list(c)) for c in mudf.columns])
-
-    pdf = slcdf[(slcdf.pfp.pid == 2212)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "len", "", "", "")]).groupby(level=[0,1,2]).last()
-    pdf.columns = pd.MultiIndex.from_tuples([tuple(["p"] + list(c)) for c in pdf.columns])
-
     slcdf = multicol_merge(slcdf, mudf, left_index=True, right_index=True, how="left", validate="one_to_one")
+        
+    # p candidate is track pfp with largest chi2_mu/chi2_p of remaining pfps
+    idx_pfps = slcdf.index
+    idx_not_mu = idx_pfps.difference(idx_mu)
+    notmudf = slcdf.loc[idx_not_mu]
+    pdf = notmudf[(notmudf.pfp.trackScore > 0.5)].sort_values(notmudf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1,2]).tail(1)
+    idx_p = pdf.index
+    pdf.columns = pd.MultiIndex.from_tuples([tuple(["p"] + list(c)) for c in pdf.columns])
     slcdf = multicol_merge(slcdf, pdf, left_index=True, right_index=True, how="left", validate="one_to_one")
-
-    # in case we want to cut out other objects -- save the highest energy of each other particle
-    lead_shw_length = slcdf.pfp.trk.len[(slcdf.pfp.pid < 0)].groupby(level=[0,1,2]).max().rename("lead_shw_length")
-    slcdf = multicol_add(slcdf, lead_shw_length)
-
-    lead_pion_length = slcdf.pfp.trk.len[(slcdf.pfp.pid == 211)].groupby(level=[0,1,2]).max().rename("lead_pion_length")
-    slcdf = multicol_add(slcdf, lead_pion_length)
-
-    subl_muon_length = slcdf[(slcdf.pfp.pid == 13)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "len", "", "", "")]).pfp.trk.len.groupby(level=[0,1,2]).nth(-2).rename("subl_muon_length")
-    slcdf = multicol_add(slcdf, subl_muon_length)
-
-    subl_proton_length = slcdf[(slcdf.pfp.pid == 2212)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "len", "", "", "")]).pfp.trk.len.groupby(level=[0,1,2]).nth(-2).rename("subl_proton_length")
-    slcdf = multicol_add(slcdf, subl_proton_length)
+    
+    # note if there are any other track/showers
+    idx_not_mu_p = idx_not_mu.difference(idx_p)
+    otherdf = slcdf.loc[idx_not_mu_p]
+    # longest other shower
+    othershwdf = otherdf[otherdf.pfp.trackScore < 0.5]
+    other_shw_length = othershwdf.pfp.trk.len.groupby(level=[0,1,2]).max().rename("other_shw_length")
+    slcdf = multicol_add(slcdf, other_shw_length)
+    # longest other track
+    othertrkdf = otherdf[otherdf.pfp.trackScore > 0.5]
+    other_trk_length = othertrkdf.pfp.trk.len.groupby(level=[0,1,2]).max().rename("other_trk_length")
+    slcdf = multicol_add(slcdf, other_trk_length)
  
-    # truth match
+    # ---- truth match ----
     bad_tmatch = np.invert(slcdf.slc.tmatch.eff > 0.5) & (slcdf.slc.tmatch.idx >= 0)
     slcdf.loc[bad_tmatch, ("slc","tmatch","idx", "", "", "", "")] = np.nan
 
-    mcdf.columns = pd.MultiIndex.from_tuples([tuple(list(c) +["", "", "", ""]) for c in mcdf.columns])     # match # of column levels
+    mcdf.columns = pd.MultiIndex.from_tuples([tuple(list(c) +["", "", "", "", ""]) for c in mcdf.columns])     # match # of column levels
 
     df = pd.merge(slcdf.reset_index(), 
                   mcdf.reset_index(),
-                  # left_on=[("__ntuple", "", "",), 
-                  #          ("entry", "", "",), 
-                  #          ("slc", "tmatch", "idx")], 
-                  # right_on=[("__ntuple", "", ""), 
-                  #           ("entry", "", ""), 
-                  #           ("rec.mc.nu..index", "", "")], 
                   left_on=[("entry", "", "",), 
                            ("slc", "tmatch", "idx")], 
                   right_on=[("entry", "", ""), 
