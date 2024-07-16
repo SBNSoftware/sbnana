@@ -529,18 +529,18 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     
     # mu candidate is track pfp with smallest chi2_mu/chi2_p
     mudf = slcdf[(slcdf.pfp.trackScore > 0.5)].sort_values(slcdf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1]).head(1)
-    idx_mu = mudf.index
     mudf.columns = pd.MultiIndex.from_tuples([tuple(["mu"] + list(c)) for c in mudf.columns])
     slcdf = multicol_merge(slcdf, mudf, left_index=True, right_index=True, how="left", validate="one_to_one")
+    idx_mu = mudf.index
         
     # p candidate is track pfp with largest chi2_mu/chi2_p of remaining pfps
     idx_pfps = slcdf.index
     idx_not_mu = idx_pfps.difference(idx_mu)
     notmudf = slcdf.loc[idx_not_mu]
     pdf = notmudf[(notmudf.pfp.trackScore > 0.5)].sort_values(notmudf.pfp.index.names[:-1] + [("pfp", "trk", "chi2pid", "I2", "mu_over_p", "")]).groupby(level=[0,1]).tail(1)
-    idx_p = pdf.index
     pdf.columns = pd.MultiIndex.from_tuples([tuple(["p"] + list(c)) for c in pdf.columns])
     slcdf = multicol_merge(slcdf, pdf, left_index=True, right_index=True, how="left", validate="one_to_one")
+    idx_p = pdf.index
     
     # note if there are any other track/showers
     idx_not_mu_p = idx_not_mu.difference(idx_p)
