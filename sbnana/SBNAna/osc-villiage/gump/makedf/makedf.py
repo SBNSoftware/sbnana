@@ -5,6 +5,10 @@ from .calo import *
 from . import numisyst, g4syst, geniesyst
 import uproot
 
+PROTON_MASS = 0.938272
+MUON_MASS = 0.105658
+PION_MASS = 0.139570
+
 def make_hdrdf(f):
     hdr = loadbranches(f["recTree"], hdrbranches).rec.hdr
     return hdr
@@ -101,7 +105,6 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
 
     mcprimdf.index = mcprimdf.index.rename(mcdf.index.names[:2] + mcprimdf.index.names[2:])
 
-    PROTON_MASS = 0.938272
     max_proton_KE = mcprimdf[np.abs(mcprimdf.pdg)==2212].genE.groupby(level=[0,1]).max() - PROTON_MASS
     max_proton_KE.name = ("max_proton_ke", "")
     mcdf = mcdf.join(max_proton_KE)
@@ -122,8 +125,13 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
 
     # particle counts w/ threshold
     proton_KE = mcprimdf[np.abs(mcprimdf.pdg)==2212].genE - PROTON_MASS
+    muon_KE = mcprimdf[np.abs(mcprimdf.pdg)==13].genE - MUON_MASS
+    pion_KE = mcprimdf[np.abs(mcprimdf.pdg)==211].genE - PION_MASS
     mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==2212) & (proton_KE > 0.05)).groupby(level=[0,1]).sum().rename(("np_50MeV","")))
     mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==2212) & (proton_KE > 0.02)).groupby(level=[0,1]).sum().rename(("np_20MeV","")))
+    mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==13) & (muon_KE > 0.02)).groupby(level=[0,1]).sum().rename(("nmu_20MeV","")))
+    mcdf = mcdf.join(((np.abs(mcprimdf.pdg)==211) & (pion_KE > 0.04)).groupby(level=[0,1]).sum().rename(("npi_40MeV","")))
+
  
     # lepton info
     mudf = mcprimdf[np.abs(mcprimdf.pdg)==13].sort_values(mcprimdf.index.names[:2] + [("genE", "")]).groupby(level=[0,1]).last()
