@@ -592,7 +592,7 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     # require both muon and proton to be present
     slcdf = slcdf[~np.isnan(mudf.P.p_muon) & ~np.isnan(pdf.P.p_muon)]
 
-    df = pd.merge(slcdf.reset_index(), 
+    df = multicol_merge(slcdf.reset_index(), 
                   mcdf.reset_index(),
                   left_on=[("entry", "", "",), 
                            ("slc", "tmatch", "idx")], 
