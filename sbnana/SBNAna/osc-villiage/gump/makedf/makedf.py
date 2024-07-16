@@ -6,6 +6,7 @@ from . import numisyst, g4syst, geniesyst
 import uproot
 
 PROTON_MASS = 0.938272
+NEUTRON_MASS = 0.939565
 MUON_MASS = 0.105658
 PION_MASS = 0.139570
 
@@ -243,6 +244,9 @@ def make_stubs(f, det="ICARUS"):
     stubdf = stubdf.join(stub_pitch)
     stubdf["length"] = magdf(stubdf.vtx - stubdf.end)
     stubdf["Q"] = stubdf.inc_sub_charge
+    stubdf["truth_pdg"] = stubdf.truth.p.pdg
+    stubdf["truth_interaction_id"] = stubdf.truth.p.interaction_id 
+    stubdf["truth_gen_E"] = stubdf.truth.p.genE 
 
     # convert charge to energy
     if ismc:
@@ -541,6 +545,62 @@ def make_evtdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkA
     pdf.columns = pd.MultiIndex.from_tuples([tuple(["p"] + list(c)) for c in pdf.columns])
     slcdf = multicol_merge(slcdf, pdf, left_index=True, right_index=True, how="left", validate="one_to_one")
     idx_p = pdf.index
+
+    # calculated and save transverse kinematic variables
+    mudf = slcdf[np.invert(np.isnan(slcdf.mu.pfp.trk.producer))].mu.groupby(level=[0,1]).head(1).pfp.trk
+    mudf.index = mudf.index.droplevel(-1)
+    pdf = slcdf[np.invert(np.isnan(slcdf.p.pfp.trk.producer))].p.groupby(level=[0,1]).head(1).pfp.trk
+    pdf.index = pdf.index.droplevel(-1)
+
+    # Caculate transverse kinematics
+    MASS_A = 22*NEUTRON_MASS + 18*PROTON_MASS - 0.34381
+    BE = 0.0295
+    MASS_Ap = MASS_A - NEUTRON_MASS + BE
+
+    mu_p = mudf.P.p_muon
+    mu_p_x = mu_p * mudf.cos.x
+    mu_p_y = mu_p * mudf.cos.y
+    mu_p_z = mu_p * mudf.cos.z
+    mu_phi_x = mu_p_x/mag2d(mu_p_x, mu_p_y)
+    mu_phi_y = mu_p_y/mag2d(mu_p_x, mu_p_y)
+
+    p_p = pdf.P.p_proton
+    p_p_x = p_p * pdf.cos.x
+    p_p_y = p_p * pdf.cos.y
+    p_p_z = p_p * pdf.cos.z
+    p_phi_x = p_p_x/mag2d(p_p_x, p_p_y)
+    p_phi_y = p_p_y/mag2d(p_p_x, p_p_y)
+
+    mu_Tp_x = mu_phi_y*mu_p_x - mu_phi_x*mu_p_y
+    mu_Tp_y = mu_phi_x*mu_p_x - mu_phi_y*mu_p_y
+    mu_Tp = mag2d(mu_Tp_x, mu_Tp_y)
+
+    p_Tp_x = mu_phi_y*p_p_x - mu_phi_x*p_p_y
+    p_Tp_y = mu_phi_x*p_p_x - mu_phi_y*p_p_y
+    p_Tp = mag2d(p_Tp_x, p_Tp_y)
+
+    del_Tp_x = mu_Tp_x + p_Tp_x
+    del_Tp_y = mu_Tp_y + p_Tp_y
+    del_Tp = mag2d(del_Tp_x, del_Tp_y)
+
+    del_alpha = np.arccos(-(mu_Tp_x*del_Tp_x + mu_Tp_y*del_Tp_y)/(mu_Tp*del_Tp))
+    del_phi = np.arccos(-(mu_Tp_x*p_Tp_x + mu_Tp_y*p_Tp_y)/(mu_Tp*p_Tp))
+
+    mu_E = mag2d(mu_p, MUON_MASS)
+    p_E = mag2d(p_p, PROTON_MASS)
+
+    R = MASS_A + mu_p_z + p_p_z - mu_E - p_E
+    del_Lp = 0.5*R - mag2d(MASS_Ap, del_Tp)**2/(2*R)
+    del_p = mag2d(del_Tp, del_Lp)
+
+    del_alpha = del_alpha.rename("del_alpha")
+    slcdf = multicol_add(slcdf, del_alpha)
+    del_phi = del_phi.rename("del_phi")
+    slcdf = multicol_add(slcdf, del_phi)
+    del_Tp = del_Tp.rename("del_Tp")
+    slcdf = multicol_add(slcdf, del_Tp)
+    del_p = del_p.rename("del_p")
+    slcdf = multicol_add(slcdf, del_p)
     
     # note if there are any other track/showers
     idx_not_mu_p = idx_not_mu.difference(idx_p)
