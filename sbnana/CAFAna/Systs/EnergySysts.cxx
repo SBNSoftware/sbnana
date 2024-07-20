@@ -198,37 +198,37 @@ namespace ana {
    const EnergyScaleSyst kEnergyScaleHadronSqrtFDBig(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.10, "EnergyScaleHadronSqrtFDBig", "Uncorrelated ICARUS sqrt E_{had} scale");
    const EnergyScaleSyst kEnergyScaleHadronInvSqrtFDBig(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.10, "EnergyScaleHadronInvSqrtFDBig", "Uncorrelated ICARUS inv sqrt E_{had} scale");
 
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuon(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuon", "Correlated linear E_{#mu} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrt(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuonSqrt", "Correlated sqrt E_{#mu} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrt(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuonInvSqrt", "Correlated inv sqrt E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuon(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "RecoEnergyScaleMuon", "Correlated linear E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrt(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "RecoEnergyScaleMuonSqrt", "Correlated sqrt E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrt(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "RecoEnergyScaleMuonInvSqrt", "Correlated inv sqrt E_{#mu} scale");
 
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonND(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "EnergyScaleMuonND", "Uncorrelated SBND linear E_{#mu} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtND(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "EnergyScaleMuonSqrtND", "Uncorrelated SBND sqrt E_{#mu} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtND(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "EnergyScaleMuonInvSqrtND", "Uncorrelated SBND inv sqrt E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonND(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "RecoEnergyScaleMuonND", "Uncorrelated SBND linear E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtND(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "RecoEnergyScaleMuonSqrtND", "Uncorrelated SBND sqrt E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtND(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kSBND, 0.02, "RecoEnergyScaleMuonInvSqrtND", "Uncorrelated SBND inv sqrt E_{#mu} scale");
 
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonUB(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "EnergyScaleMuonUB", "Uncorrelated MicroBooNE linear E_{#mu} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtUB(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "EnergyScaleMuonSqrtUB", "Uncorrelated MicroBooNE sqrt E_{#mu} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtUB(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "EnergyScaleMuonInvSqrtUB", "Uncorrelated MicroBooNE inv sqrt E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonUB(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "RecoEnergyScaleMuonUB", "Uncorrelated MicroBooNE linear E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtUB(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "RecoEnergyScaleMuonSqrtUB", "Uncorrelated MicroBooNE sqrt E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtUB(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kMicroBooNE, 0.02, "RecoEnergyScaleMuonInvSqrtUB", "Uncorrelated MicroBooNE inv sqrt E_{#mu} scale");
 
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonFD(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "EnergyScaleMuonFD", "Uncorrelated ICARUS linear E_{#mu} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtFD(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "EnergyScaleMuonSqrtFD", "Uncorrelated ICARUS sqrt E_{#mu} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtFD(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "EnergyScaleMuonInvSqrtFD", "Uncorrelated ICARUS inv sqrt E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonFD(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "RecoEnergyScaleMuonFD", "Uncorrelated ICARUS linear E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonSqrtFD(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "RecoEnergyScaleMuonSqrtFD", "Uncorrelated ICARUS sqrt E_{#mu} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleMuonInvSqrtFD(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kICARUS, 0.02, "RecoEnergyScaleMuonInvSqrtFD", "Uncorrelated ICARUS inv sqrt E_{#mu} scale");
 
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadron(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleHadron", "Correlated linear E_{had} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrt(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleHadronSqrt", "Correlated sqrt E_{had} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrt(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "EnergyScaleHadronInvSqrt", "Correlated inv sqrt E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadron(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "RecoEnergyScaleHadron", "Correlated linear E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrt(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "RecoEnergyScaleHadronSqrt", "Correlated sqrt E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrt(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kAll, 0.05, "RecoEnergyScaleHadronInvSqrt", "Correlated inv sqrt E_{had} scale");
 
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronND(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleHadronND", "Uncorrelated SBND linear E_{had} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtND(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleHadronSqrtND", "Uncorrelated SBND sqrt E_{had} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtND(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "EnergyScaleHadronInvSqrtND", "Uncorrelated SBND inv sqrt E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronND(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "RecoEnergyScaleHadronND", "Uncorrelated SBND linear E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtND(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "RecoEnergyScaleHadronSqrtND", "Uncorrelated SBND sqrt E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtND(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kSBND, 0.05, "RecoEnergyScaleHadronInvSqrtND", "Uncorrelated SBND inv sqrt E_{had} scale");
 
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronUB(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleHadronUB", "Uncorrelated MicroBooNE linear E_{had} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtUB(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleHadronSqrtUB", "Uncorrelated MicroBooNE sqrt E_{had} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtUB(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "EnergyScaleHadronInvSqrtUB", "Uncorrelated MicroBooNE inv sqrt E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronUB(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "RecoEnergyScaleHadronUB", "Uncorrelated MicroBooNE linear E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtUB(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "RecoEnergyScaleHadronSqrtUB", "Uncorrelated MicroBooNE sqrt E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtUB(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kMicroBooNE, 0.05, "RecoEnergyScaleHadronInvSqrtUB", "Uncorrelated MicroBooNE inv sqrt E_{had} scale");
 
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronFD(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleHadronFD", "Uncorrelated ICARUS linear E_{had} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtFD(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleHadronSqrtFD", "Uncorrelated ICARUS sqrt E_{had} scale");
-   const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtFD(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "EnergyScaleHadronInvSqrtFD", "Uncorrelated ICARUS inv sqrt E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronFD(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "RecoEnergyScaleHadronFD", "Uncorrelated ICARUS linear E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronSqrtFD(EnergyScaleSystTerm::kSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "RecoEnergyScaleHadronSqrtFD", "Uncorrelated ICARUS sqrt E_{had} scale");
+   const RecoEnergyScaleSyst kRecoEnergyScaleHadronInvSqrtFD(EnergyScaleSystTerm::kInverseSqrt, EnergyScaleSystParticle::kHadron, EnergyScaleSystDetector::kICARUS, 0.05, "RecoEnergyScaleHadronInvSqrtFD", "Uncorrelated ICARUS inv sqrt E_{had} scale");
 
   std::vector<const ISyst*> GetEnergySysts() {
     // MicroBooNE, ChargedHadron, Neutron, and EM systs
