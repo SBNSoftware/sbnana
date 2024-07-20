@@ -166,4 +166,11 @@ namespace ana
 
     return ret;
   }
+
+  //----------------------------------------------------------------------
+  bool operator<(const SystShifts& a, const SystShifts& b)
+  {
+    return a.ID() < b.ID();
+  }
+
 }
