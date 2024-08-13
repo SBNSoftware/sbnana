@@ -41,7 +41,7 @@ def make_mchdf(f, include_weights=False):
     return mcdf
 
 # EXPECTED dE/dx FILES
-datadir = "/icarus/data/users/gputnam/"
+datadir = "/exp/icarus/data/users/gputnam/thesis-work/"
 fhist = datadir + "dEdxrestemplates.root"
 
 profp = uproot.open(fhist)["dedx_range_pro"]
