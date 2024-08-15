@@ -43,6 +43,7 @@ jupyterlab-pygments==0.2.2
 jupyterlab-server==2.16.3
 jupyterlab-widgets==3.0.4
 kiwisolver==1.4.4
+lz4==4.3.3
 MarkupSafe==2.1.1
 matplotlib==3.6.2
 matplotlib-inline==0.1.6
@@ -58,7 +59,8 @@ notebook==6.5.2
 notebook-shim==0.2.2
 numexpr==2.8.4
 numpy==1.23.5
-packaging==21.3
+packaging==21.3i
+xxhash==3.4.1
 pandas==1.5.2
 pandocfilters==1.5.0
 parso==0.8.3

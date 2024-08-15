@@ -42,11 +42,11 @@ def _loaddf(applyfs, g):
     # fname, index, applyfs = inp
     index, fname = g
     # Convert pnfs to xroot URL's
-    if fname.startswith("/pnfs"):
-        fname = fname.replace("/pnfs", "root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr")
+    #if fname.startswith("/pnfs"):
+    #    fname = fname.replace("/pnfs", "root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr")
     # fix xroot URL's
-    elif fname.startswith("xroot"):
-        fname = fname[1:]
+    #elif fname.startswith("xroot"):
+    #    fname = fname[1:]
 
     madef = False
 
