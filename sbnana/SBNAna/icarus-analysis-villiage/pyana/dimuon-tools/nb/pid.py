@@ -142,7 +142,7 @@ def Calc_Q2KE_points(KE, recomb, dQ0=500, mass=muon_mass, z=1):
     return KE_points, Q_points
 
 # EXPECTED dE/dx FILES
-datadir = "/icarus/data/users/gputnam/"
+datadir = "/exp/icarus/data/users/gputnam/thesis-work/"
 fhist = datadir + "dEdxrestemplates.root"
 
 profp = uproot.open(fhist)["dedx_range_pro"]

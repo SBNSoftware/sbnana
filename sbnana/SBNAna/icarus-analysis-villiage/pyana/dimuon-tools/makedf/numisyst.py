@@ -2,7 +2,7 @@ import uproot
 import numpy as np
 import pandas as pd
 
-FSYST = "/icarus/data/users/gputnam/icarus_numi_flux_syst_ana_v2.root"
+FSYST = "/exp/icarus/data/users/gputnam/thesis-work/icarus_numi_flux_syst_ana_v2.root"
 
 beam_uncertainties = [
     "beam_div",

@@ -135,7 +135,7 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
 
     return Dataset(df, livetime, pot, hdrdf)
 
-datadir = "/icarus/data/users/gputnam/DMCP2023G/normdata/"
+datadir = "/exp/icarus/data/users/gputnam/thesis-work/DMCP2023G/normdata/"
 
 grl = datadir + "Run1Run2_grl.txt"
 with open(grl) as f:

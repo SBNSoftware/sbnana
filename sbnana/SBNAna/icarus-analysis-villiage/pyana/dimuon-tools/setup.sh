@@ -1,8 +1,7 @@
 source /cvmfs/icarus.opensciencegrid.org/products/icarus/setup_icarus.sh
 setup python v3_9_2
 setup hdf5 v1_12_0a -q e20:prof
-setup sbnana v09_37_02_01 -q e20:prof
-unsetup xrootd
+#unsetup xrootd
 
 source env/bin/activate
 

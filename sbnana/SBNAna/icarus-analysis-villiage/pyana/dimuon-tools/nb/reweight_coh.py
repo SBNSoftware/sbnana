@@ -9,7 +9,7 @@ NUNIV = 100
 
 # Fit configuration file
 # fname = "/icarus/data/users/gputnam/AScale0_fix.min.root" # pre b-scale fix
-fname = "/icarus/data/users/gputnam/fitresult.min.root"
+fname = "/exp/icarus/data/users/gputnam/thesis-work/fitresult.min.root"
 f = uproot.open(fname)
 
 # Load the configuration

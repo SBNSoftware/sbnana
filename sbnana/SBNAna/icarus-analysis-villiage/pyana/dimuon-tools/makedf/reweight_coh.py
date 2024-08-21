@@ -8,7 +8,7 @@ np.random.seed(525600) # moments so dear
 NUNIV = 1000
 
 # Fit configuration file
-fname = "/icarus/data/users/gputnam/AScale0_fix.min.root"
+fname = "/exp/icarus/data/users/gputnam/thesis-work/AScale0_fix.min.root"
 f = uproot.open(fname)
 
 # Load the configuration

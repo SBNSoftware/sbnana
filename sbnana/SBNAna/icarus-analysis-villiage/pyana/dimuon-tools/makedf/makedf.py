@@ -41,7 +41,7 @@ def make_mchdf(f, include_weights=False):
     return mcdf
 
 # EXPECTED dE/dx FILES
-datadir = "/icarus/data/users/gputnam/"
+datadir = "/exp/icarus/data/users/gputnam/thesis-work/"
 fhist = datadir + "dEdxrestemplates.root"
 
 profp = uproot.open(fhist)["dedx_range_pro"]
@@ -503,7 +503,7 @@ def make_fake_evtdf(f):
     trunkdf = evtdf.loc[trunk].droplevel(evtdf.index.nlevels-1)
 
     nottrunk = evtdf.index.difference(trunk)
-    branch = evtdf.pfp.dist_to_vertex.loc[nottrunk][is_muon(evtdf)].groupby(level=list(range(evtdf.index.nlevels-1))).idxmin()
+    branch = evtdf.pfp.dist_to_vertex.loc[nottrunk][is_muon(evtdf.loc[nottrunk])].groupby(level=list(range(evtdf.index.nlevels-1))).idxmin()
     branchdf = evtdf.loc[branch].droplevel(evtdf.index.nlevels-1)
 
     # remove the "pfp" columns in evtdf
@@ -639,7 +639,7 @@ def make_evt_trkhitdf(f):
     trklevel = list(range(slcdf.index.nlevels-1))
     trunk = slcdf.pfp.dist_to_vertex[is_muon(slcdf.pfp)].groupby(level=trklevel).idxmin()
     nottrunk = slcdf.index.difference(trunk)
-    branch = slcdf.pfp.dist_to_vertex.loc[nottrunk][is_muon(slcdf.pfp)].groupby(level=trklevel).idxmin()
+    branch = slcdf.pfp.dist_to_vertex.loc[nottrunk][is_muon(slcdf.pfp.loc[nottrunk])].groupby(level=trklevel).idxmin()
     slcdf["trunk_or_branch"] = False
     slcdf.loc[trunk, "trunk_or_branch"] = True
     slcdf.loc[branch, "trunk_or_branch"] = True
@@ -675,7 +675,7 @@ def make_evtdf(f, load_hits=False):
     trunkdf = slcdf.loc[trunk].droplevel(slcdf.index.nlevels-1)
 
     nottrunk = slcdf.index.difference(trunk)
-    branch = slcdf.pfp.dist_to_vertex.loc[nottrunk][is_muon(slcdf.pfp)].groupby(level=trklevel).idxmin()
+    branch = slcdf.pfp.dist_to_vertex.loc[nottrunk][is_muon(slcdf.pfp.loc[nottrunk])].groupby(level=trklevel).idxmin()
     branchdf = slcdf.loc[branch].droplevel(slcdf.index.nlevels-1)
 
     # remove the "pfp" columns in slcdf
