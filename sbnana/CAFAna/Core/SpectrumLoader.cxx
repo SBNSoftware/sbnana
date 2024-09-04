@@ -831,8 +831,18 @@ namespace ana
       for( caf::SRSliceProxy& slc: sr->slc ) {
         for ( auto& [shift, cutmap] : shiftmap ) {
           for ( auto& [cut, treemap] : cutmap ) {
+
+            caf::SRProxySystController::BeginTransaction();
+
+            double systWeight = 1;
+            // Can special-case nominal to not pay cost of Shift()
+            if(!shift.IsNominal()){
+              shift.Shift(&slc, systWeight);
+            }
             const bool pass = cut(&slc);
             // Cut failed, skip all the histograms that depended on it
+            caf::SRProxySystController::Rollback();
+
             if(!pass) continue;
 
             for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
