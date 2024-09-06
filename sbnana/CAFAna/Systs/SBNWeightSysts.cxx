@@ -337,7 +337,7 @@ namespace ana
     // x: a given sigma
     // Use absvar_to_sigma to decide absvar
 
-    static size_t n = absvar_to_sigma.size();
+    size_t n = absvar_to_sigma.size();
 
     // absvar_to_sigma
     // - first: absolute value
@@ -440,7 +440,7 @@ namespace ana
     // x: a given sigma
     // Use absvar_to_sigma to decide absvar
 
-    static size_t n = univ_to_sigma.size();
+    size_t n = univ_to_sigma.size();
 
     // absvar_to_sigma
     // - first: absolute value
