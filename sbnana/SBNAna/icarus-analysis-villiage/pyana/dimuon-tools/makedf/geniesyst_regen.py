@@ -1,24 +1,13 @@
-cv = [
-  ("ppfx", "cv")
-]
+from . import getsyst
 
-beam_systematics = [
-  "beam_div",
-  "beam_shift_x",
-  "beam_spot",
-  "horn1_x",
-  "horn1_y",
-  "horn_current_plus",
-  "water_layer",
-] + ["pca%i" % i for i in range(20)]
-
-genie_systematics = [
+# Regen systematic variations
+regen_systematics = [
     # CCQE
     "GENIEReWeight_ICARUS_v2_multisigma_VecFFCCQEshape",
     "GENIEReWeight_ICARUS_v2_multisigma_RPA_CCQE",
     "GENIEReWeight_ICARUS_v2_multisigma_CoulombCCQE",
     "GENIEReWeight_ICARUS_v2_multisim_ZExpAVariationResponse",
-
+    
     # MEC
     "GENIEReWeight_ICARUS_v2_multisigma_NormCCMEC",
     "GENIEReWeight_ICARUS_v2_multisigma_NormNCMEC",
@@ -49,7 +38,7 @@ genie_systematics = [
     "GENIEReWeight_ICARUS_v2_multisigma_NonRESBGvbarnCC2pi",
     "GENIEReWeight_ICARUS_v2_multisigma_NonRESBGvbarnNC1pi",
     "GENIEReWeight_ICARUS_v2_multisigma_NonRESBGvbarnNC2pi",
-    
+
     # DIS
     "GENIEReWeight_ICARUS_v2_multisim_DISBYVariationResponse",
 
@@ -65,10 +54,6 @@ genie_systematics = [
     "GENIEReWeight_ICARUS_v2_multisim_NCELVariationResponse",
 ]
 
-g4_systematics = [
-    "reinteractions_piminus_Geant4",
-    "reinteractions_piplus_Geant4",
-    "reinteractions_proton_Geant4"
-]
+def geniesyst(f, nuind):
+    return getsyst.getsyst(f, regen_systematics, nuind)
 
-allsysts = genie_systematics + beam_systematics + g4_systematics

@@ -3,4 +3,9 @@ cmake3
 __pycache__
 nb/.ipynb_checkpoints
 nb/plots*
+nb/Untitled*ipynb
+nb/*Copy*ipynb
 env
+env2
+*.list
+/xrootd-5.5.1/

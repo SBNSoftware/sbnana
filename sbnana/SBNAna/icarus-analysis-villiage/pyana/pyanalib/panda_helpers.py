@@ -16,6 +16,21 @@ def broadcast(v, df):
 
     return pd.Series(v_rpt, df.index).rename(v.name) 
 
+def multicol_concat(lhs, rhs):
+    # Fix the columns
+    lhs_col = lhs.columns
+    rhs_col = rhs.columns
+
+    nlevel = max(lhs_col.nlevels, rhs_col.nlevels)
+
+    def pad(c):
+       return tuple(list(c) + [""]*(nlevel - len(c))) 
+
+    lhs.columns = pd.MultiIndex.from_tuples([pad(c) for c in lhs_col])
+    rhs.columns = pd.MultiIndex.from_tuples([pad(c) for c in rhs_col])
+
+    return pd.concat([lhs, rhs], axis=1)
+
 def multicol_add(df, s, **panda_kwargs):
     # if both the series and the df is one level, we can do a simple join()
     if isinstance(s.name, str) and df.columns.nlevels == 1:
@@ -43,7 +58,9 @@ def multicol_merge(lhs, rhs, **panda_kwargs):
     nlevel = max(lhs_col.nlevels, rhs_col.nlevels)
 
     def pad(c):
-       return tuple(list(c) + [""]*(nlevel - len(c))) 
+       nc = 1 if isinstance(c, str) else len(c)
+       c0 = [c] if isinstance(c, str) else list(c)
+       return tuple(c0 + [""]*(nlevel - nc)) 
 
     lhs.columns = pd.MultiIndex.from_tuples([pad(c) for c in lhs_col])
     rhs.columns = pd.MultiIndex.from_tuples([pad(c) for c in rhs_col])

@@ -1,12 +1,43 @@
-hdrbranches = [
+mchdrbranches = [
     "rec.hdr.pot",
     "rec.hdr.first_in_subrun",
+    "rec.hdr.ismc",
     "rec.hdr.run",
     "rec.hdr.subrun",
     "rec.hdr.ngenevt",
     "rec.hdr.evt",
     "rec.hdr.proc",
     "rec.hdr.cluster",
+    "rec.hdr.fno",
+]
+
+hdrbranches = [
+    "rec.hdr.pot",
+    "rec.hdr.first_in_subrun",
+    "rec.hdr.ismc",
+    "rec.hdr.run",
+    "rec.hdr.subrun",
+    "rec.hdr.ngenevt",
+    "rec.hdr.evt",
+    "rec.hdr.proc",
+    "rec.hdr.cluster",
+    "rec.hdr.fno",
+
+    "rec.hdr.triggerinfo.trigger_id",
+    "rec.hdr.triggerinfo.gate_id",
+    "rec.hdr.triggerinfo.trigger_count",
+    "rec.hdr.triggerinfo.gate_count",
+    "rec.hdr.triggerinfo.gate_delta",
+    "rec.hdr.triggerinfo.global_trigger_time",
+    "rec.hdr.triggerinfo.prev_global_trigger_time",
+]
+
+potbranches = [
+    "rec.hdr.numiinfo.spill_time_s",
+    "rec.hdr.numiinfo.spill_time_ns",
+    "rec.hdr.numiinfo.TRTGTD",
+    "rec.hdr.numiinfo.TORTGT",
+    "rec.hdr.numiinfo.daq_gates",
 ]
 
 trueparticlenames = [
@@ -82,29 +113,33 @@ trkhitadcbranches = [
   trkbranch + "calo.2.points.adcs"
 ]
 
-trkhitbranches = [
-    trkbranch + "calo.2.points.dedx",
-    trkbranch + "calo.2.points.dqdx",
-    trkbranch + "calo.2.points.pitch",
-    trkbranch + "calo.2.points.integral",
-    trkbranch + "calo.2.points.rr",
-    trkbranch + "calo.2.points.wire",
-    trkbranch + "calo.2.points.tpc",
-    trkbranch + "calo.2.points.sumadc",
-    trkbranch + "calo.2.points.t",
-    trkbranch + "calo.2.points.x",
-    trkbranch + "calo.2.points.y",
-    trkbranch + "calo.2.points.z",
+trkhitbranches_perplane = lambda IPLANE : [
+    trkbranch + "calo.%i.points.dedx"% IPLANE,
+    trkbranch + "calo.%i.points.dqdx"% IPLANE,
+    trkbranch + "calo.%i.points.pitch"% IPLANE,
+    trkbranch + "calo.%i.points.integral"% IPLANE,
+    trkbranch + "calo.%i.points.rr"% IPLANE,
+    trkbranch + "calo.%i.points.wire"% IPLANE,
+    trkbranch + "calo.%i.points.tpc"% IPLANE,
+    trkbranch + "calo.%i.points.sumadc"% IPLANE,
+    trkbranch + "calo.%i.points.t"% IPLANE,
+    trkbranch + "calo.%i.points.x"% IPLANE,
+    trkbranch + "calo.%i.points.y"% IPLANE,
+    trkbranch + "calo.%i.points.z"% IPLANE,
 
-    #trkbranch + "calo.2.points.width",
-    #trkbranch + "calo.2.points.mult",
-    #trkbranch + "calo.2.points.tdc0",
+    #trkbranch + "calo.%i.points.width"% IPLANE,
+    #trkbranch + "calo.%i.points.mult"% IPLANE,
+    #trkbranch + "calo.%i.points.tdc0"% IPLANE,
 
-    #trkbranch + "calo.2.points.truth.h_e",
-    #trkbranch + "calo.2.points.truth.h_nelec",
-    #trkbranch + "calo.2.points.truth.pitch",
-    #trkbranch + "calo.2.points.truth.rr",
+    trkbranch + "calo.%i.points.truth.h_e"% IPLANE,
+    trkbranch + "calo.%i.points.truth.h_nelec"% IPLANE,
+    trkbranch + "calo.%i.points.truth.pitch"% IPLANE,
+    trkbranch + "calo.%i.points.truth.rr"% IPLANE,
 ]
+
+trkhitbranches = trkhitbranches_perplane(2)
+trkhitbranches_P1 = trkhitbranches_perplane(1)
+trkhitbranches_P0 = trkhitbranches_perplane(0)
 
 for n in trueparticlenames: trkbranches.append(trkbranch + "truth.p." + n)
 
@@ -121,6 +156,11 @@ slcbranches = [
 
 mcbranches = [
     "rec.mc.nu.E",
+    "rec.mc.nu.bjorkenX",
+    "rec.mc.nu.inelasticityY",
+    "rec.mc.nu.Q2",
+    "rec.mc.nu.w",
+    "rec.mc.nu.t",
     "rec.mc.nu.position.x",
     "rec.mc.nu.position.y",
     "rec.mc.nu.position.z",
@@ -135,10 +175,27 @@ mcprimbranches = [
     "rec.mc.nu.prim.genp.x",
     "rec.mc.nu.prim.genp.y",
     "rec.mc.nu.prim.genp.z",
+    "rec.mc.nu.prim.start.x", "rec.mc.nu.prim.start.y", "rec.mc.nu.prim.start.z",
+    "rec.mc.nu.prim.end.x", "rec.mc.nu.prim.end.y", "rec.mc.nu.prim.end.z",
 ]
 
 slc_mcbranches = ["rec.slc.truth." + ".".join(s.split(".")[3:]) for s in mcbranches]
 slc_mcprimbranches = ["rec.slc.truth." + ".".join(s.split(".")[3:]) for s in mcprimbranches]
+
+mchbranches = [
+  "rec.mc.prtl.E",
+  "rec.mc.prtl.M",
+  "rec.mc.prtl.start.x", "rec.mc.prtl.start.y", "rec.mc.prtl.start.z",
+  "rec.mc.prtl.enter.x", "rec.mc.prtl.enter.y", "rec.mc.prtl.enter.z",
+  "rec.mc.prtl.exit.x", "rec.mc.prtl.exit.y", "rec.mc.prtl.exit.z",
+  "rec.mc.prtl.decay_length",
+  "rec.mc.prtl.allowed_decay_fraction",
+  "rec.mc.prtl.C1",
+  "rec.mc.prtl.C2",
+  "rec.mc.prtl.C3",
+  "rec.mc.prtl.C4",
+  "rec.mc.prtl.C5",
+]
 
 stubbranches = [
     "rec.slc.reco.stub.vtx.x",
