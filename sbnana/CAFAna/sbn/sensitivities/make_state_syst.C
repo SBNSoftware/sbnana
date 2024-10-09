@@ -12,6 +12,12 @@
 
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
 #include "sbnana/CAFAna/Systs/BoosterFluxSysts.h"
+//#include "sbnana/CAFAna/Systs/DetectorSysts.h"
+#include "sbnana/CAFAna/Systs/EnergySysts.h"
+#include "sbnana/CAFAna/Systs/Systs.h"
+
+#include "sbnana/SBNAna/Vars/NumuVarsIcarus202401.h"
+#include "sbnana/SBNAna/Cuts/NumuCutsIcarus202401.h"
 
 #include "OscLib/IOscCalc.h"
 
@@ -28,10 +34,14 @@ void make_state_syst(const std::string anatype = numuStr)
 {
   Loaders loaders_nd, loaders_fd, loaders_ub;
 
+  SpectrumLoader intime_loader("/exp/icarus/data/users/jlarkin/run2_offbeam_correct*.flat.caf.root");
+
   if(anatype == numuStr) {
-    const std::string dir = "/exp/icarus/data/users/jlarkin/";
+    //const std::string dir = "/exp/icarus/data/users/jlarkin/";
+    const std::string dir = "/pnfs/icarus/persistent/users/jzettle/cafs_eventsel/";
     //const std::string fnameBeam_nd = dir + "output_SBNOsc_NumuSelection_Modern_SBND.flat.root";
-    const std::string fnameBeam_fd = dir + "2023A_nucosmics_newreco*.flat.caf.root";
+    //const std::string fnameBeam_fd = dir + "2023A_nucosmics_newreco*.flat.caf.root";
+    const std::string fnameBeam_fd = dir + "mc2024_1d_*.flat.caf.root";
     //const std::string fnameBeam_ub = dir + "output_SBNOsc_NumuSelection_Modern_Uboone.flat.root";
 
     //loaders_nd.SetLoaderPath(fnameBeam_nd, Loaders::kMC, ana::kBeam, Loaders::kNonSwap);
@@ -79,20 +89,49 @@ void make_state_syst(const std::string anatype = numuStr)
     return;
   }
 
-  const Var kRecoE = SIMPLEVAR(fake_reco.nuE);
-  const Var kWeight = SIMPLEVAR(fake_reco.wgt);
-  const Cut kFlavor = SIMPLEVAR(fake_reco.lepton.pid) == (anatype == nueStr ? 11 : 13);
+  const Var kRecoE = kIcarus202401RecoENu;
+  const Var kWeight = kUnweighted;
+  const Cut kSliceSelection = kIcarus202401Contained1muNp;
+  const SpillCut kSpillSelection = kIcarus202401CRTPMTVeto;
+  const Cut kTrueNeutrino = SIMPLEVAR(truth.index) >= 0;
 
-  const vector<double> binEdges = {0.2, 0.3, 0.4, 0.45, 0.5,
+  //const vector<double> binEdges = {0.2, 0.3, 0.4, 0.45, 0.5,
+  //                         0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0,
+  //                         1.25, 1.5, 2.0, 2.5, 3.0};
+  // Adjust binning for ICARUS 1mNp analysis. Low bin is 0 and high bins are very low stats.
+  const vector<double> binEdges = {0.3, 0.4, 0.45, 0.5,
                            0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0,
-                           1.25, 1.5, 2.0, 2.5, 3.0};
+                           1.25, 1.5, 2.0, 3.0};
   const Binning binsEnergy = Binning::Custom(binEdges);
   const HistAxis axEnergy("Reconstructed energy (GeV)", binsEnergy, kRecoE);
 
-  NoExtrapPredictionGenerator nom_gen(axEnergy, kNoSpillCut, kFlavor, kWeight);
+  NoExtrapPredictionGenerator nom_gen(axEnergy, 
+                                      kSpillSelection, 
+                                      kSliceSelection && kTrueNeutrino, 
+                                      kWeight);
+  Spectrum oot_cosmics_fd(loaders_fd.GetLoader(Loaders::kMC), 
+                          axEnergy, 
+                          kSpillSelection, 
+                          kSliceSelection && !kTrueNeutrino, 
+                          kNoShift, 
+                          kWeight);
+  Spectrum intime_cosmics(intime_loader, axEnergy, kSpillSelection, kSliceSelection, kNoShift, kWeight);
 
   std::vector<const ISyst*> systs = GetSBNWeightSysts();
-  for(const ISyst* s: GetBoosterFluxHadronSysts(30)) systs.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts("piplus", 10)) systs.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts("piminus", 10)) systs.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts("kplus", 10)) systs.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts("kminus", 10)) systs.push_back(s);
+  for(const ISyst* s: GetBoosterFluxHadronSysts("kzero", 10)) systs.push_back(s);
+  //for(const ISyst* s: GetDetectorSysts()) systs.push_back(s);
+  //systs.push_back(&GetPOTSyst());
+  //systs.push_back(&GetNormSyst());
+  //systs.push_back(&kRecoEnergyScaleMuon);
+  //systs.push_back(&kRecoEnergyScaleMuonSqrt);
+  //systs.push_back(&kRecoEnergyScaleMuonInvSqrt);
+  //systs.push_back(&kRecoEnergyScaleHadron);
+  //systs.push_back(&kRecoEnergyScaleHadronSqrt);
+  //systs.push_back(&kRecoEnergyScaleHadronInvSqrt);
 
   osc::NoOscillations calc;
 
@@ -103,6 +142,7 @@ void make_state_syst(const std::string anatype = numuStr)
   //loaders_nd.Go();
   loaders_fd.Go();
   //loaders_ub.Go();
+  intime_loader.Go();
 
   std::cout << "Creating file " << ("cafe_state_syst_"+anatype+".root").c_str() << std::endl;
 
@@ -111,6 +151,9 @@ void make_state_syst(const std::string anatype = numuStr)
   //pred_nd.SaveTo(fout.mkdir("pred_nd"));
   pred_fd.SaveTo(fout.mkdir("pred_fd"));
   //pred_ub.SaveTo(fout.mkdir("pred_ub"));
+  
+  oot_cosmics_fd.SaveTo(fout.mkdir("oot_cosmics_fd"));
+  intime_cosmics.SaveTo(fout.mkdir("intime_cosmics_fd"));
 }
 
 
