@@ -51,6 +51,8 @@ find_package( osclib  )
 find_package( pygccxml  )
 find_package( Threads REQUIRED )
 find_package( Eigen3 REQUIRED )
+find_package( cetlib REQUIRED EXPORT )
+find_package( cetlib_except REQUIRED EXPORT )
 
 #ifdhc
 cet_find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB   NO_DEFAULT_PATH )
