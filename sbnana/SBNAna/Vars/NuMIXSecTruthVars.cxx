@@ -1,0 +1,738 @@
+#include "sbnana/SBNAna/Vars/NuMIXSecTruthVars.h"
+
+namespace ana{
+
+  // Neutrino/interaction
+
+  const TruthVar kTruth_NProton_Primary([](const caf::SRTrueInteractionProxy *nu) -> int {
+    int NPtl = 0;
+    for ( auto const& prim : nu->prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == 2212 ) NPtl++;
+    }
+    return NPtl;
+  });
+  const TruthVar kTruth_NNeutron_Primary([](const caf::SRTrueInteractionProxy *nu) -> int {
+    int NPtl = 0;
+    for ( auto const& prim : nu->prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == 2112 ) NPtl++;
+    }
+    return NPtl;
+  });
+  const TruthVar kTruth_Npip_Primary([](const caf::SRTrueInteractionProxy *nu) -> int {
+    int NPtl = 0;
+    for ( auto const& prim : nu->prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == 211 ) NPtl++;
+    }
+    return NPtl;
+  });
+  const TruthVar kTruth_Npip_All([](const caf::SRTrueInteractionProxy *nu) -> int {
+    int NPtl = 0;
+    for ( auto const& prim : nu->prim ) {
+      if ( prim.pdg == 211 ) NPtl++;
+    }
+    return NPtl;
+  });
+  const TruthVar kTruth_Npim_Primary([](const caf::SRTrueInteractionProxy *nu) -> int {
+    int NPtl = 0;
+    for ( auto const& prim : nu->prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( prim.pdg == -211 ) NPtl++;
+    }
+    return NPtl;
+  });
+  const TruthVar kTruth_Npim_All([](const caf::SRTrueInteractionProxy *nu) -> int {
+    int NPtl = 0;
+    for ( auto const& prim : nu->prim ) {
+      if ( prim.pdg == -211 ) NPtl++;
+    }
+    return NPtl;
+  });
+  const TruthVar kTruth_Npi0_Primary([](const caf::SRTrueInteractionProxy *nu) -> int {
+    int NPtl = 0;
+    for ( auto const& prim : nu->prim ) {
+      if ( prim.start_process != 0 ) continue;
+      if ( abs(prim.pdg) == 111 ) NPtl++;
+    }
+    return NPtl;
+  });
+  const TruthVar kTruth_Npi0_All([](const caf::SRTrueInteractionProxy *nu) -> int {
+    int NPtl = 0;
+    for ( auto const& prim : nu->prim ) {
+      if ( abs(prim.pdg) == 111 ) NPtl++;
+    }
+    return NPtl;
+  });
+  const TruthVar kTruth_IsFHC([](const caf::SRTrueInteractionProxy *nu) -> int {
+    return 1;
+  });
+
+  // Vertex
+  const TruthCut kTruth_VertexInFV([](const caf::SRTrueInteractionProxy* nu) {
+    bool isFV = false;
+    if ( !std::isnan(nu->position.x) && !std::isnan(nu->position.y) && !std::isnan(nu->position.z) ) {
+      isFV = (( ( nu->position.x < -61.94 - 25 && nu->position.x > -358.49 + 25 ) ||
+                ( nu->position.x >  61.94 + 25 && nu->position.x <  358.49 - 25 )) &&
+              ( ( nu->position.y > -181.86 + 25 && nu->position.y < 134.96 - 25 ) &&
+                ( nu->position.z > -894.95 + 30 && nu->position.z < 894.95 - 50 ) ));
+    }
+    return (isFV ? 1 : 0);
+  });
+
+  // Muon
+
+  const TruthVar kTruth_MuonIndex([](const caf::SRTrueInteractionProxy *nu) -> int {
+    double max_E(-999);
+    int truth_idx(-1);
+    for(std::size_t i(0); i < nu->prim.size(); ++i){
+      // primary
+      if( nu->prim.at(i).start_process!=0 ) continue;
+      // muon
+      if( abs(nu->prim.at(i).pdg)!=13 ) continue;
+      // non-nan genE
+      if(isnan(nu->prim.at(i).genE)) continue;
+
+      double this_E = nu->prim.at(i).genE;
+      // if larger E, update
+      if(this_E>max_E){
+        max_E = this_E;
+        truth_idx = i;
+      }
+    }
+    return truth_idx;
+  });
+  const TruthVar kTruth_MuonNuCosineTheta([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_MuonIndex(nu);
+    if(truth_idx>=0){
+
+      const auto& p_mu = nu->prim.at(truth_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+
+      ret = vec_p_mu.Unit().Dot( vec_p_nu.Unit() );
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_MuonCosThBeam([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_MuonIndex(nu);
+    if(truth_idx>=0){
+
+      TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
+
+      const auto& p_mu = nu->prim.at(truth_idx).genp;
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+
+      double angle = rFromNuMI.Angle(vec_p_mu);
+
+      ret = TMath::Cos( angle );
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_MuonP([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_MuonIndex(nu);
+    if(truth_idx>=0){
+      const auto& mu_p = nu->prim.at(truth_idx).genp;
+      ret = sqrt(mu_p.x*mu_p.x + mu_p.y*mu_p.y + mu_p.z*mu_p.z);
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_MuonPt([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_MuonIndex(nu);
+    if(truth_idx>=0){
+      const auto& p_mu = nu->prim.at(truth_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+      vec_p_nu = vec_p_nu.Unit(); // make unit vector
+
+      double p_l = vec_p_mu.Dot(vec_p_nu);
+      TVector3 vec_p_t_mu = vec_p_mu - p_l*vec_p_nu;
+
+      ret = vec_p_t_mu.Mag();
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_MuonKE([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_MuonIndex(nu);
+    if(truth_idx>=0){
+      ret = nu->prim.at(truth_idx).genE - M_MUON;
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_MuonLength([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_MuonIndex(nu);
+    if(truth_idx>=0){
+      ret = nu->prim.at(truth_idx).length;
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_MuonContained([](const caf::SRTrueInteractionProxy *nu) -> int {
+    // 1: contained, 0: not contained (-1: muon not found)
+    int ret = -1;
+
+    int truth_idx = kTruth_MuonIndex(nu);
+    if(truth_idx>=0){
+      if(nu->prim.at(truth_idx).contained) ret = 1;
+      else ret = 0;
+    }
+
+    return ret;
+  });
+
+  // (Leading) Proton
+
+  const TruthVar kTruth_ProtonIndex([](const caf::SRTrueInteractionProxy *nu) -> int {
+    double max_E(-999);
+    int truth_idx(-1);
+    for(std::size_t i(0); i < nu->prim.size(); ++i){
+      // primary
+      if( nu->prim.at(i).start_process!=0 ) continue;
+      // proton
+      if( abs(nu->prim.at(i).pdg)!=2212 ) continue;
+      // non-nan genE
+      if(isnan(nu->prim.at(i).genE)) continue;
+
+      double this_E = nu->prim.at(i).genE;
+      // if larger E, update
+      if(this_E>max_E){
+        max_E = this_E;
+        truth_idx = i;
+      }
+    }
+    return truth_idx;
+  });
+  const TruthVar kTruth_ProtonNuCosineTheta([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ProtonIndex(nu);
+    if(truth_idx>=0){
+
+      const auto& p_pro = nu->prim.at(truth_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+
+      ret = vec_p_pro.Unit().Dot( vec_p_nu.Unit() );
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ProtonCosThBeam([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ProtonIndex(nu);
+    if(truth_idx>=0){
+
+      TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
+
+      const auto& p_pro = nu->prim.at(truth_idx).genp;
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+
+      double angle = rFromNuMI.Angle(vec_p_pro);
+
+      ret = TMath::Cos( angle );
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ProtonP([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ProtonIndex(nu);
+    if(truth_idx>=0){
+      const auto& pro_p = nu->prim.at(truth_idx).genp;
+      ret = sqrt(pro_p.x*pro_p.x + pro_p.y*pro_p.y + pro_p.z*pro_p.z);
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ProtonPt([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ProtonIndex(nu);
+    if(truth_idx>=0){
+      const auto& p_pro = nu->prim.at(truth_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+      vec_p_nu = vec_p_nu.Unit();
+
+      double p_l = vec_p_pro.Dot(vec_p_nu);
+      TVector3 vec_p_t_pro = vec_p_pro - p_l*vec_p_nu;
+
+      ret = vec_p_t_pro.Mag();
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ProtonKE([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ProtonIndex(nu);
+    if(truth_idx>=0){
+      ret = nu->prim.at(truth_idx).genE - M_PROTON;
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ProtonLength([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ProtonIndex(nu);
+    if(truth_idx>=0){
+      ret = nu->prim.at(truth_idx).length;
+    }
+
+    return ret;
+  });
+
+  // Muon+Proton
+  const TruthVar kTruth_CosThMuonProton([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_mu_idx = kTruth_MuonIndex(nu);
+    int truth_pro_idx = kTruth_ProtonIndex(nu);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = nu->prim.at(truth_mu_idx).genp;
+      const auto& p_pro = nu->prim.at(truth_pro_idx).genp;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+
+      ret = vec_p_mu.Unit().Dot( vec_p_pro.Unit() );
+
+    }
+
+    return ret;
+  });
+
+  // TKI
+  // https://arxiv.org/abs/1910.08658
+  double CalcTKI_deltaPT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    return vec_deltaPT.Mag();
+
+  }
+  double CalcTKI_deltaPTx(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    double deltaPT_x = ( unit_vec_p_nu.Cross(pt_mu.Unit()) ).Dot(vec_deltaPT);
+
+    return deltaPT_x;
+
+  }
+  double CalcTKI_deltaPTy(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    double deltaPT_y = -1.*(pt_mu.Unit().Dot(vec_deltaPT));
+
+    return deltaPT_y;
+
+  }
+  double CalcTKI_deltaalphaT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    double CosdeltaalphaT = -1. * pt_mu.Unit().Dot( vec_deltaPT.Unit() );
+    double deltaalphaT = TMath::ACos( CosdeltaalphaT );
+    return deltaalphaT*180./M_PI; // degree
+
+  }
+  double CalcTKI_deltaphiT(const TVector3 vec_p_mu, const TVector3 vec_p_pro, const TVector3 vec_p_nu){
+
+    TVector3 unit_vec_p_nu = vec_p_nu.Unit();
+
+    // Get transverse momenta w.r.t. the neutrino direction
+    TVector3 pt_mu = vec_p_mu - (vec_p_mu.Dot(unit_vec_p_nu))*unit_vec_p_nu ;
+    TVector3 pt_pro = vec_p_pro - (vec_p_pro.Dot(unit_vec_p_nu))*unit_vec_p_nu;
+
+    TVector3 vec_deltaPT = pt_mu+pt_pro;
+
+    double CosdeltaphiT = -1. * pt_mu.Unit().Dot( pt_pro.Unit() );
+    double deltaphiT = TMath::ACos( CosdeltaphiT );
+    return deltaphiT*180./M_PI; // degree
+  }
+
+  // TKI
+  const TruthVar kTruth_deltaPT([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_mu_idx = kTruth_MuonIndex(nu);
+    int truth_pro_idx = kTruth_ProtonIndex(nu);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = nu->prim.at(truth_mu_idx).genp;
+      const auto& p_pro = nu->prim.at(truth_pro_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      ret =  CalcTKI_deltaPT(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_deltaPTx([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-99999); // TODO deltaPTx is a signed variable.. for now just making it very very largly negative
+
+    int truth_mu_idx = kTruth_MuonIndex(nu);
+    int truth_pro_idx = kTruth_ProtonIndex(nu);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = nu->prim.at(truth_mu_idx).genp;
+      const auto& p_pro = nu->prim.at(truth_pro_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      ret = CalcTKI_deltaPTx(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_deltaPTy([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-99999); // TODO deltaPTy is a signed variable.. for now just making it very very largly negative
+
+    int truth_mu_idx = kTruth_MuonIndex(nu);
+    int truth_pro_idx = kTruth_ProtonIndex(nu);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = nu->prim.at(truth_mu_idx).genp;
+      const auto& p_pro = nu->prim.at(truth_pro_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      ret = CalcTKI_deltaPTy(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_deltaalphaT([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f); // acos is in the interval of [0,pi]
+
+    int truth_mu_idx = kTruth_MuonIndex(nu);
+    int truth_pro_idx = kTruth_ProtonIndex(nu);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = nu->prim.at(truth_mu_idx).genp;
+      const auto& p_pro = nu->prim.at(truth_pro_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      ret = CalcTKI_deltaalphaT(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_deltaphiT([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f); // acos is in the interval of [0,pi]
+
+    int truth_mu_idx = kTruth_MuonIndex(nu);
+    int truth_pro_idx = kTruth_ProtonIndex(nu);
+    if(truth_mu_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_mu = nu->prim.at(truth_mu_idx).genp;
+      const auto& p_pro = nu->prim.at(truth_pro_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_mu.x, p_mu.y, p_mu.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+      TVector3 vec_p_n(p_nu.x, p_nu.y, p_nu.z);
+
+      ret = CalcTKI_deltaphiT(vec_p_mu, vec_p_pro, vec_p_n);
+
+    }
+
+    return ret;
+  });
+
+  // (Leading) Charged pion
+
+  const TruthVar kTruth_ChargedPionIndex([](const caf::SRTrueInteractionProxy *nu) -> int {
+    double max_E(-999);
+    int truth_idx(-1);
+    for(std::size_t i(0); i < nu->prim.size(); ++i){
+      // primary
+      if( nu->prim.at(i).start_process!=0 ) continue;
+      // pi+-
+      if( abs(nu->prim.at(i).pdg)!=211 ) continue;
+      // non-nan genE
+      if(isnan(nu->prim.at(i).genE)) continue;
+
+      double this_E = nu->prim.at(i).genE;
+      // if larger E, update
+      if(this_E>max_E){
+        max_E = this_E;
+        truth_idx = i;
+      }
+    }
+    return truth_idx;
+  });
+  const TruthVar kTruth_ChargedPionKE([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ChargedPionIndex(nu);
+    if(truth_idx>=0){
+      ret = nu->prim.at(truth_idx).genE - M_CHARGEDPION;
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ChargedPionNuCosineTheta([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ChargedPionIndex(nu);
+    if(truth_idx>=0){
+
+      const auto& p_cpion = nu->prim.at(truth_idx).genp;
+      const auto& p_nu = nu->momentum;
+
+      TVector3 vec_p_mu(p_cpion.x, p_cpion.y, p_cpion.z);
+      TVector3 vec_p_nu(p_nu.x, p_nu.y, p_nu.z);
+
+      ret = vec_p_mu.Unit().Dot( vec_p_nu.Unit() );
+
+    }
+
+    return ret;
+  });
+  const TruthVar kTruth_ChargedPionCosThBeam([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_idx = kTruth_ChargedPionIndex(nu);
+    if(truth_idx>=0){
+
+      TVector3 rFromNuMI(315.120380, 33.644912, 733.632532);
+
+      const auto& p_cpion = nu->prim.at(truth_idx).genp;
+      TVector3 vec_p_cpion(p_cpion.x, p_cpion.y, p_cpion.z);
+
+      double angle = rFromNuMI.Angle(vec_p_cpion);
+
+      ret = TMath::Cos( angle );
+    }
+
+    return ret;
+  });
+
+  // Pion+Proton
+  const TruthVar kTruth_CosThProtonChargedPion([](const caf::SRTrueInteractionProxy *nu) -> double {
+    double ret(-5.f);
+
+    int truth_cpion_idx = kTruth_ChargedPionIndex(nu);
+    int truth_pro_idx = kTruth_ProtonIndex(nu);
+    if(truth_cpion_idx>=0 && truth_pro_idx>=0){
+
+      const auto& p_cpion = nu->prim.at(truth_cpion_idx).genp;
+      const auto& p_pro = nu->prim.at(truth_pro_idx).genp;
+
+      TVector3 vec_p_cpion(p_cpion.x, p_cpion.y, p_cpion.z);
+      TVector3 vec_p_pro(p_pro.x, p_pro.y, p_pro.z);
+
+      ret = vec_p_cpion.Unit().Dot( vec_p_pro.Unit() );
+
+    }
+
+    return ret;
+  });
+
+  void GetAllParents(const caf::SRTrueInteractionProxy *nu, int idx_target, std::vector<int>& current){
+
+    if(idx_target<0) return;
+
+    const auto& prim_target = nu->prim[idx_target];
+    for(std::size_t i_prim(0); i_prim < nu->prim.size(); ++i_prim){
+      const auto& this_prim = nu->prim[i_prim];
+      if( (int)this_prim.G4ID==(int)prim_target.parent ){
+        current.push_back(i_prim);
+        GetAllParents(nu, i_prim, current);
+      }
+    }
+
+  }
+
+  // Michel
+  const TruthVar kTruth_MuonMichelIndex([](const caf::SRTrueInteractionProxy *nu) -> int {
+
+    int muon_idx = kTruth_MuonIndex(nu);
+    int ret = -1;
+
+    if(muon_idx>=0){
+
+      const auto& prim_muon = nu->prim[muon_idx];
+
+      // find electron from muon
+      int electron_from_muon_idx = -1;
+      for(std::size_t i_prim(0); i_prim < nu->prim.size(); ++i_prim){
+        const auto& this_prim = nu->prim[i_prim];
+        if( abs(this_prim.pdg)!=11 ) continue;
+        // now get all parents
+        std::vector<int> electron_parents;
+        GetAllParents(nu, i_prim, electron_parents);
+        // check if the pion is one of the parents
+        bool IsDaugtherOfMuon = false;
+
+        for(const auto& eletron_parent_index: electron_parents){
+          if( (int)prim_muon.G4ID == (int)nu->prim[eletron_parent_index].G4ID ){
+            IsDaugtherOfMuon = true;
+            break;
+          }
+
+        }
+        // if muon is one of the parent, return the electron index and exit the for loop
+        if(IsDaugtherOfMuon){
+          electron_from_muon_idx = i_prim;
+          break;
+        }
+      }
+
+      ret = electron_from_muon_idx;
+
+    } // END if muon is found
+
+
+    return ret;
+  });
+
+  const TruthVar kTruth_ChargedPionMichelIndex([](const caf::SRTrueInteractionProxy *nu) -> int {
+
+    int pion_idx = kTruth_ChargedPionIndex(nu);
+    int ret = -1;
+
+    if(pion_idx>=0){
+
+      const auto& prim_pion = nu->prim[pion_idx];
+
+      // find muon from pion
+      int muon_from_pion_idx = -1;
+      for(std::size_t i_prim(0); i_prim < nu->prim.size(); ++i_prim){
+        const auto& this_prim = nu->prim[i_prim];
+        if( abs(this_prim.pdg)!=13 ) continue;
+        // now get all parents
+        std::vector<int> muon_parents;
+        GetAllParents(nu, i_prim, muon_parents);
+        // check if the pion is one of the parents
+        bool IsDaugtherOfPion = false;
+        for(const auto& mu_parent_index: muon_parents){
+          if( (int)prim_pion.G4ID == (int)nu->prim[mu_parent_index].G4ID ){
+            IsDaugtherOfPion = true;
+            break;
+          }
+        }
+        // if pion is one of the parent, return the muon index and exit the for loop
+        if(IsDaugtherOfPion){
+          muon_from_pion_idx = i_prim;
+          break;
+        }
+      }
+
+      if(muon_from_pion_idx>=0){
+
+        const auto& prim_muon = nu->prim[muon_from_pion_idx];
+
+        // find electron from muon
+        int electron_from_muon_idx = -1;
+        for(std::size_t i_prim(0); i_prim < nu->prim.size(); ++i_prim){
+          const auto& this_prim = nu->prim[i_prim];
+          if( abs(this_prim.pdg)!=11 ) continue;
+          // now get all parents
+          std::vector<int> electron_parents;
+          GetAllParents(nu, i_prim, electron_parents);
+          // check if the pion is one of the parents
+          bool IsDaugtherOfMuon = false;
+          for(const auto& eletron_parent_index: electron_parents){
+            if( (int)prim_muon.G4ID == (int)nu->prim[eletron_parent_index].G4ID ){
+              IsDaugtherOfMuon = true;
+              break;
+            }
+          }
+          // if muon is one of the parent, return the electron index and exit the for loop
+          if(IsDaugtherOfMuon){
+            electron_from_muon_idx = i_prim;
+            break;
+          }
+        }
+
+        ret = electron_from_muon_idx;
+
+      } // END if muon from pion is found
+
+
+    } // END true pion exist
+
+    return ret;
+  });
+
+}

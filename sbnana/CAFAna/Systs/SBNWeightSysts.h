@@ -17,6 +17,7 @@ namespace ana
     UniverseWeight(const std::string& psetName, int univIdx);
 
     double operator()(const caf::SRSliceProxy* sr) const;
+    double operator()(const caf::SRTrueInteractionProxy* nu) const;
 
   protected:
     std::string fPSetName;
@@ -29,6 +30,11 @@ namespace ana
     return Var(UniverseWeight(psetName, univIdx));
   }
 
+  TruthVar GetTruthUniverseWeight(const std::string& psetName, int univIdx)
+  {
+    return TruthVar(UniverseWeight(psetName, univIdx));
+  }
+
 
   class SBNWeightSyst: public ISyst
   {
@@ -36,6 +42,7 @@ namespace ana
     SBNWeightSyst(const std::string& systName);
 
     void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
+    void Shift(double x, caf::SRTrueInteractionProxy* sr, double& weight) const override;
 
   protected:
     mutable int fIdx;
@@ -57,4 +64,55 @@ namespace ana
 
   const std::vector<const ISyst*>& GetSBNBoosterFluxWeightSysts();
   const std::vector<const ISyst*>& GetSBNWeightSysts(); // genie+flux
+
+
+  class SBNWeightMirrorSyst: public SBNWeightSyst
+  {
+  public:
+    SBNWeightMirrorSyst(const std::string& systName);
+
+    void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
+    void Shift(double x, caf::SRTrueInteractionProxy* sr, double& weight) const override;
+  };
+
+  class SBNWeightAbsVarSyst: public SBNWeightSyst
+  {
+  public:
+    SBNWeightAbsVarSyst(
+      const std::string& systName,
+      std::vector< std::pair<double, double> > _absvar_to_sigma
+    );
+
+    double ConvertToAbsolute(double x) const ;
+
+    void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
+    void Shift(double x, caf::SRTrueInteractionProxy* sr, double& weight) const override;
+
+  private:
+    // first: absoludate value, second: sigma
+    std::vector< std::pair<double, double> > absvar_to_sigma;
+
+  };
+
+  class SBNWeightUnivSyst: public SBNWeightSyst
+  {
+  public:
+    SBNWeightUnivSyst( 
+      const std::string& systName,
+      const std::string& psetName,
+      std::vector< std::pair<unsigned, double> > _univ_to_sigma
+    );
+
+    void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
+    void Shift(double x, caf::SRTrueInteractionProxy* sr, double& weight) const override;
+  
+  private:
+    std::string kPsetName;
+    // first: univ, second: sigma
+    std::vector< std::pair<unsigned, double> > univ_to_sigma;
+    std::vector<TruthVar> vec_TruthVar;
+
+  };
+
+
 }

@@ -7,6 +7,7 @@
 #include "sbnana/CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
 #include "sbnana/CAFAna/Core/WildcardSource.h"
+#include "sbnana/CAFAna/Core/Tree.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
@@ -149,6 +150,9 @@ namespace ana
   SpectrumLoaderBase::~SpectrumLoaderBase()
   {
     fHistDefs.RemoveLoader(this);
+    fSpillHistDefs.RemoveLoader(this);
+    fTruthHistDefs.RemoveLoader(this);
+    fTruthHistWithCutDefs.RemoveLoader(this);
   }
 
   //----------------------------------------------------------------------
@@ -265,9 +269,90 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const SystShifts& shift,
+                                       const TruthVar& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistDefs[spillcut][shift][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthMultiVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const SystShifts& shift,
+                                       const TruthVar& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistDefs[spillcut][shift][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                                       const SystShifts& shift,
+                                       const TruthVar& wei)
+  { 
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistWithCutDefs[spillcut][cut][shift][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+    
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddSpectrum(Spectrum& spect,
+                                       const TruthMultiVar& var,
+                                       const TruthCut truthcut,
+                                       const SpillCut& spillcut,
+                                       const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                                       const SystShifts& shift,
+                                       const TruthVar& wei)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Spectra after the call to Go()" << std::endl;
+      abort();
+    }
+
+    fTruthHistWithCutDefs[spillcut][cut][shift][truthcut][wei][var].spects.push_back(&spect);
+
+    spect.AddLoader(this); // Remember we have a Go() pending
+
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::RemoveSpectrum(Spectrum* spect)
   {
     fHistDefs.Erase(spect);
+    fSpillHistDefs.Erase(spect);
+    fTruthHistDefs.Erase(spect);
+    fTruthHistWithCutDefs.Erase(spect);
   }
 
   //----------------------------------------------------------------------
@@ -306,10 +391,202 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<Var>& vars,
+                                   const SpillCut& spillcut,
+                                   const Cut& cut,
+                                   const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fTreeDefs[spillcut][shift][cut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<MultiVar>& vars,
+                                   const SpillCut& spillcut,
+                                   const Cut& cut,
+                                   const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fTreeDefs[spillcut][shift][cut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<SpillVar>& vars,
+                                   const SpillCut& spillcut)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fSpillTreeDefs[spillcut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<SpillMultiVar>& vars,
+                                   const SpillCut& spillcut)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fSpillTreeDefs[spillcut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddTree(Tree& tree,
+                                   const std::vector<std::string>& labels,
+                                   const std::vector<TruthVar>& vars,
+                                   const SpillCut& spillcut,
+                                   const TruthCut& truthcut,
+                                   const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add Tree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fTruthTreeDefs[spillcut][shift][truthcut][&tree][ vars.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddNSigmasTree(NSigmasTree& tree,
+                                          const std::vector<std::string>& labels,
+                                          const std::vector<const ISyst*>& systsToStore,
+                                          const SpillCut& spillcut,
+                                          const Cut& cut,
+                                          const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add NSigmasTree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fNSigmasTreeDefs[spillcut][shift][cut][&tree][ systsToStore.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddNSigmasTree(NSigmasTree& tree,
+                                          const std::vector<std::string>& labels,
+                                          const std::vector<const ISyst*>& systsToStore,
+                                          const TruthCut& truthcut,
+                                          const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add NSigmasTree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      fTruthNSigmasTreeDefs[shift][truthcut][&tree][ systsToStore.at(idx) ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
+  void SpectrumLoaderBase::AddNUniversesTree(NUniversesTree& tree,
+                                             const std::vector<std::string>& labels,
+                                             const std::vector<std::vector<Var>>& univKnobs,
+                                             const SpillCut& spillcut,
+                                             const Cut& cut,
+                                             const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add NUniversesTree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      std::vector<VarOrMultiVar> vecVarOrMultiVar;
+      for ( unsigned int idxUniv=0; idxUniv<univKnobs.at(idx).size(); ++idxUniv ) vecVarOrMultiVar.push_back( univKnobs.at(idx).at(idxUniv) );
+      fNUniversesTreeDefs[spillcut][shift][cut][&tree][ vecVarOrMultiVar ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+
+  //----------------------------------------------------------------------
+
+  void SpectrumLoaderBase::AddNUniversesTree(NUniversesTree& tree,
+                                             const std::vector<std::string>& labels,
+                                             const std::vector<std::vector<TruthVar>>& univKnobs,
+                                             const TruthCut& truthcut,
+                                             const SystShifts& shift)
+  {
+    if(fGone){
+      std::cerr << "Error: can't add NUniversesTree after the call to Go()" << std::endl;
+      abort();
+    }
+
+    for ( unsigned int idx=0; idx<labels.size(); ++idx ) {
+      std::vector<TruthVarOrMultiVar> vecTruthVarOrMultiVar;
+      for ( unsigned int idxUniv=0; idxUniv<univKnobs.at(idx).size(); ++idxUniv ) vecTruthVarOrMultiVar.push_back( univKnobs.at(idx).at(idxUniv) );
+      fTruthNUniversesTreeDefs[shift][truthcut][&tree][ vecTruthVarOrMultiVar ] = labels.at(idx);
+    }
+
+    // TODO do we need to add/remove loaders?
+    //spect.AddLoader(this); // Remember we have a Go() pending
+  }
+
+  //----------------------------------------------------------------------
   void SpectrumLoaderBase::
   RemoveReweightableSpectrum(ReweightableSpectrum* spect)
   {
     fHistDefs.Erase(spect);
+    fSpillHistDefs.Erase(spect);
+    fTruthHistDefs.Erase(spect);
+    fTruthHistWithCutDefs.Erase(spect);
   }
 
   //----------------------------------------------------------------------
@@ -346,4 +623,8 @@ namespace ana
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<Var, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::VarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
 
   template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SpillVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::SpillVarOrMultiVar, SpectrumLoaderBase::SpectList>>>;
+
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>;
+  template struct SpectrumLoaderBase::IDMap<SpillCut, SpectrumLoaderBase::IDMap<Cut, SpectrumLoaderBase::IDMap<SystShifts, SpectrumLoaderBase::IDMap<TruthCut, SpectrumLoaderBase::IDMap<TruthVar, SpectrumLoaderBase::IDMap<SpectrumLoaderBase::TruthVarOrMultiVar, SpectrumLoaderBase::SpectList>>>>>>;
+
 } // namespace

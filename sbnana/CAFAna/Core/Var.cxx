@@ -124,9 +124,11 @@ namespace ana
   // explicitly instantiate the template for the types we know we have
   template Var Var2D(const Var&, const Binning&, const Var&, const Binning&);
   template SpillVar Var2D(const SpillVar&, const Binning&, const SpillVar&, const Binning&);
+  template TruthVar Var2D(const TruthVar&, const Binning&, const TruthVar&, const Binning&);
 
   template Var Var2D(const Var&, int, double, double, const Var&, int, double, double);
   template SpillVar Var2D(const SpillVar&, int, double, double, const SpillVar&, int, double, double);
+  template TruthVar Var2D(const TruthVar&, int, double, double, const TruthVar&, int, double, double);
 
   //----------------------------------------------------------------------
   template<class T> _Var<T>
@@ -151,9 +153,11 @@ namespace ana
   // explicitly instantiate the template for the types we know we have
   template Var Var3D(const Var&, const Binning&, const Var&, const Binning&, const Var&, const Binning&);
   template SpillVar Var3D(const SpillVar&, const Binning&, const SpillVar&, const Binning&, const SpillVar&, const Binning&);
+  template TruthVar Var3D(const TruthVar&, const Binning&, const TruthVar&, const Binning&, const TruthVar&, const Binning&);
 
   template Var Var3D(const Var&, int, double, double, const Var&, int, double, double, const Var&, int, double, double);
   template SpillVar Var3D(const SpillVar&, int, double, double, const SpillVar&, int, double, double, const SpillVar&, int, double, double);
+  template TruthVar Var3D(const TruthVar&, int, double, double, const TruthVar&, int, double, double, const TruthVar&, int, double, double);
 
   //----------------------------------------------------------------------
   Var Scaled(const Var& v, double s)
@@ -260,9 +264,17 @@ namespace ana
     }
   }
 
+  //----------------------------------------------------------------------
+  template<class T> bool
+  operator<(const _Var<T>& a, const _Var<T>& b)
+  {
+    return a.ID() < b.ID();
+  }
+
   // explicitly instantiate the templates for the types we know we have
   template class _Var<caf::SRSpillProxy>;
   template class _Var<caf::SRSliceProxy>;
+  template class _Var<caf::SRTrueInteractionProxy>;
 
   template<class T> int _Var<T>::fgNextID = 0;
 
@@ -274,4 +286,8 @@ namespace ana
   template SpillVar operator/(const SpillVar&, const SpillVar&);
   template SpillVar operator+(const SpillVar&, const SpillVar&);
   template SpillVar operator-(const SpillVar&, const SpillVar&);
+  template TruthVar operator*(const TruthVar&, const TruthVar&);
+  template TruthVar operator/(const TruthVar&, const TruthVar&);
+  template TruthVar operator+(const TruthVar&, const TruthVar&);
+  template TruthVar operator-(const TruthVar&, const TruthVar&);
 }

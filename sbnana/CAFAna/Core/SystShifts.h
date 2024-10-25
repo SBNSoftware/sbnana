@@ -34,6 +34,7 @@ namespace ana
     double Penalty() const;
 
     void Shift(caf::SRSliceProxy* slc, double& weight) const;
+    void Shift(caf::SRTrueInteractionProxy* nu, double& weight) const;
 
     /// Brief description of component shifts, for printing to screen
     std::string ShortName() const;
@@ -57,6 +58,8 @@ namespace ana
     /// The next unused ID
     static int fgNextID;
   };
+
+  bool operator< (const SystShifts& a, const SystShifts& b);
 
   const SystShifts kNoShift = SystShifts::Nominal();
 }

@@ -71,6 +71,7 @@ namespace ana
   // Make sure all versions get generated
   template Cut operator&&<caf::SRSliceProxy>(const Cut& a, const Cut& b);
   template SpillCut operator&&<caf::SRSpillProxy>(const SpillCut& a, const SpillCut& b);
+  template TruthCut operator&&<caf::SRTrueInteractionProxy>(const TruthCut& a, const TruthCut& b);
 
   //----------------------------------------------------------------------
   template<class T> _Cut<T> operator||(const _Cut<T>& a, const _Cut<T>& b)
@@ -95,6 +96,18 @@ namespace ana
   // Make sure all versions get generated
   template Cut operator||<caf::SRSliceProxy>(const Cut& a, const Cut& b);
   template SpillCut operator||<caf::SRSpillProxy>(const SpillCut& a, const SpillCut& b);
+  template TruthCut operator||<caf::SRTrueInteractionProxy>(const TruthCut& a, const TruthCut& b);
+
+  //----------------------------------------------------------------------
+  template<class T> bool operator<(const _Cut<T>& a, const _Cut<T>& b)
+  {
+    return a.ID() < b.ID();
+  }
+
+  // Make sure all versions get generated
+  template bool operator< <caf::SRSliceProxy>(const Cut& a, const Cut& b);
+  template bool operator< <caf::SRSpillProxy>(const SpillCut& a, const SpillCut& b);
+  template bool operator< <caf::SRTrueInteractionProxy>(const TruthCut& a, const TruthCut& b);
 
   //----------------------------------------------------------------------
   template<class T> _Cut<T> operator!(const _Cut<T>& a)
@@ -114,6 +127,7 @@ namespace ana
   // Make sure all versions get generated
   template Cut operator!<caf::SRSliceProxy>(const Cut& a);
   template SpillCut operator!<caf::SRSpillProxy>(const SpillCut& a);
+  template TruthCut operator!<caf::SRTrueInteractionProxy>(const TruthCut& a);
 
 
   //----------------------------------------------------------------------
@@ -194,6 +208,7 @@ namespace ana
   // Make sure all three versions get generated
   template class _Cut<caf::SRSpillProxy>;
   template class _Cut<caf::SRSliceProxy>;
+  template class _Cut<caf::SRTrueInteractionProxy>;
 
   template<class T> int _Cut<T>::fgNextID = 0;
 
@@ -233,4 +248,21 @@ namespace ana
   template SpillCut operator<(double, const SpillVar&);
   template SpillCut operator>=(double, const SpillVar&);
   template SpillCut operator<=(double, const SpillVar&);
+
+  template TruthCut operator>(const TruthVar&, double);
+  template TruthCut operator<(const TruthVar&, double);
+  template TruthCut operator>=(const TruthVar&, double);
+  template TruthCut operator<=(const TruthVar&, double);
+  template TruthCut operator==(const TruthVar&, double);
+
+  template TruthCut operator>(const TruthVar&, const TruthVar&);
+  template TruthCut operator<(const TruthVar&, const TruthVar&);
+  template TruthCut operator>=(const TruthVar&, const TruthVar&);
+  template TruthCut operator<=(const TruthVar&, const TruthVar&);
+  template TruthCut operator==(const TruthVar&, const TruthVar&);
+
+  template TruthCut operator>(double, const TruthVar&);
+  template TruthCut operator<(double, const TruthVar&);
+  template TruthCut operator>=(double, const TruthVar&);
+  template TruthCut operator<=(double, const TruthVar&);
 }

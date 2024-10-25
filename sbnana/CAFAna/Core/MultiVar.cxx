@@ -75,10 +75,12 @@ namespace ana
   // explicitly instantiate the template for the types we know we have
   template MultiVar MultiVar2D(const MultiVar&, const Binning&, const MultiVar&, const Binning&);
   template SpillMultiVar MultiVar2D(const SpillMultiVar&, const Binning&, const SpillMultiVar&, const Binning&);
+  template TruthMultiVar MultiVar2D(const TruthMultiVar&, const Binning&, const TruthMultiVar&, const Binning&);
 
   // explicitly instantiate the templates for the types we know we have
   template class _MultiVar<caf::SRSpillProxy>;
   template class _MultiVar<caf::SRSliceProxy>;
+  template class _MultiVar<caf::SRTrueInteractionProxy>;
 
   // Stupid hack to avoid colliding with the IDs of actual Vars. Just count
   // down through negative numbers.

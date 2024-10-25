@@ -37,6 +37,7 @@ namespace ana
       ISyst(name, latexName), term(_term), part(_part), detector(_detector), uncertainty(_uncertainty) {}
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
+    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
 
   private:
     EnergyScaleSystTerm term;
@@ -52,6 +53,7 @@ namespace ana
       ISyst(name, latexName), term(_term), part(_part), detector(_detector), uncertainty(_uncertainty) {}
 
     void Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const override;
+    void Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const override;
 
   private:
     EnergyScaleSystTerm term;
