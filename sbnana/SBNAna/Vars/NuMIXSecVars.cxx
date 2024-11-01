@@ -281,7 +281,10 @@ namespace ana {
       auto const& trk = slc->reco.pfp.at(kNuMIMuonCandidateIdx(slc)).trk;
       const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
       if(Contained) p = trk.rangeP.p_muon;
-      else p = trk.mcsP.fwdP_muon;
+      else{
+        if(isnan(trk.mcsP.fwdP_muon)) p = -999.;
+        else p = trk.mcsP.fwdP_muon;
+      }
     }
     return p;
   });
