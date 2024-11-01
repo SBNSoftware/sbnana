@@ -209,6 +209,10 @@ namespace ana {
 
   }
 
+  void CalorimetrySyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
+
+  }
+
   const CalorimetrySyst kCalodEdXShiftSyst(CaloSystMode::kdEdXShift, "CalodEdXShiftSyst", "Calo. dEdX shift");
   const CalorimetrySyst kCaloGainShiftSyst(CaloSystMode::kGainShift, "CaloGainShiftSyst", "Calo. Gain shift");
 

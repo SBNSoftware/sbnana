@@ -34,6 +34,7 @@ namespace ana
     double Penalty() const;
 
     void Shift(caf::SRSliceProxy* slc, double& weight) const;
+    void Shift(caf::SRTrueInteractionProxy* nu, double& weight) const;
 
     /// Brief description of component shifts, for printing to screen
     std::string ShortName() const;

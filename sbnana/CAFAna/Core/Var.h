@@ -11,7 +11,7 @@
 
 #include "sbnanaobj/StandardRecord/Proxy/FwdDeclare.h"
 
-namespace caf{class SRSpill; class SRSpillTruthBranch; class SRSlice;}
+namespace caf{class SRSpill; class SRTrueInteraction; class SRSlice;}
 
 namespace ana
 {
@@ -76,6 +76,9 @@ namespace ana
   /// \brief Equivalent of \ref Var acting on \ref caf::SRSpill
   typedef _Var<caf::SRSpillProxy> SpillVar;
 
+  /// \brief Equivalent of \ref Var acting on \ref caf::SRTrueInteraction
+  typedef _Var<caf::SRTrueInteractionProxy> TruthVar;
+
   /// \brief For Vars where literally all you need is a single CAF variable
   ///
   /// eg Var myVar = SIMPLEVAR(my.var.str);
@@ -84,10 +87,14 @@ namespace ana
 
 #define SIMPLESPILLVAR(CAFNAME) SpillVar([](const caf::SRSpillProxy* sr) -> double {return sr->CAFNAME;})
 
+#define SIMPLETRUTHVAR(CAFNAME) TruthVar([](const caf::SRTrueInteractionProxy* sr) -> double {return sr->CAFNAME;})
+
   /// The simplest possible Var, always 1. Used as a default weight.
   const Var kUnweighted([](const caf::SRSliceProxy*){return 1;});
 
   const SpillVar kSpillUnweighted([](const caf::SRSpillProxy*){return 1;});
+
+  const TruthVar kTruthUnweighted([](const caf::SRTrueInteractionProxy*){return 1;});
 
   /// \brief Variable formed from two input variables
   ///
@@ -116,10 +123,6 @@ namespace ana
   Var3D(const _Var<T>& a, int na, double a0, double a1,
         const _Var<T>& b, int nb, double b0, double b1,
         const _Var<T>& c, int nc, double c0, double c1);
-
-  // TODO - remove once no more legacy callers exist
-  #define SpillTruthVar2D Var2D
-  #define SpillTruthVar3D Var3D
 
   /// Use to rescale another variable.
   Var Scaled(const Var& v, double s);
