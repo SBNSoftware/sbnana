@@ -69,4 +69,13 @@ inline std::vector<std::string> GetGENIEDependentKnobNames(){
 
 }
 
+inline std::vector<std::string> GetGENIEMorphKnobNames(){
+  return {
+"VecFFCCQEshape",
+"DecayAngMEC",
+"Theta_Delta2Npi",
+"ThetaDelta2NRad",
+  };
+}
+
 } // END name space
