@@ -23,7 +23,7 @@ void MakeTree(){
 
   // Define inputfiles
   std::vector<std::string> vec_inputs;
-  vec_inputs.push_back("/pnfs/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst11Oct24/flatcaf_SBNNuSyst_0.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/archive/sam_managed_users/jskim/data/4/0/0/d/5a420bc4-9fd8-43cd-b7d0-4dbf5dc50127-flatcaf_SBNNuSyst_0.root");
   bool IsData = false;
 
   // SpectrumLoader
