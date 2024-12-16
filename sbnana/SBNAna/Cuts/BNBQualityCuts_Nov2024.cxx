@@ -31,7 +31,7 @@ const double LM875C_LB = +1e-2;
 //          variables since they change from run to run. If realtime values for 
 //          those optimal BPM variables are not accessible (which is the likely
 //          case), the BPM cuts will likely be hard-coded here. 
-const double HP875_LB = -999;  const double HP875_UB = -999; // units: cm
+const double HP875_LB = -999;  const double HP875_UB = -999; // units: mm
 const double VP875_LB = -999;  const double VP875_UB = -999;
 const double HPTG1_LB = -999;  const double HPTG1_UB = -999;
 const double VPTG1_LB = -999;  const double VPTG1_UB = -999;
