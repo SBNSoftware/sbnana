@@ -4,20 +4,6 @@
 
 namespace ana {
 
-extern const SpillCut kPrelimTOR860; 
-extern const SpillCut kPrelimTOR875;
-
-extern const SpillCut kPrelimLM875A;
-extern const SpillCut kPrelimLM875B;
-extern const SpillCut kPrelimLM875C;
-
-extern const SpillCut kPrelimTHCURR;
-
-
-extern const SpillCut kPRELIMINARY; // combination of all preliminary cuts
-
-// ^--- PRELIMINARY CUTS ; PHYSICALLY MEANINGFUL CUTS ---v
-
 extern const SpillCut kTOR860;
 extern const SpillCut kTOR875;
 
@@ -34,14 +20,17 @@ extern const SpillCut kVPTG1;
 extern const SpillCut kHPTG2;
 extern const SpillCut kVPTG2;
 
+/*
+   This cut is left commented out since it is hard to implement but may be of
+   future use. See the BNBQualityCuts_Nov2024.cxx file for more information.
+   -- Jacob Smith
+
 extern const SpillCut kBTJT2; 
+*/
 
 extern const SpillCut kTHCURR;
 
-extern const SpillCut kPHYSICALLY_MEANINGFUL; // combination of all physically 
-                                     // meaningful cuts
-
-// ^--- PHYSICALLY MEANINGFUL CUTS ; MASTER CUT ---v
+// ^--- INDIVIDUAL CUTS ; MASTER CUT ---v
 
 extern const SpillCut kBNBQuality_Nov24; // combination of ALL cuts given above
 }

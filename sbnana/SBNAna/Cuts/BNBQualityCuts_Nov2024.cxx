@@ -7,39 +7,57 @@ namespace ana { // use namespace ana for entire file
 
 /*
    Here are the hard-coded physically meaningful bounds for BNB quality
-   SpillCuts. There are preliminary SpillCuts that get rid of the near-zero
-   entries for a given variable, and those bounds are hard-coded below the
-   physically meaningful bound definitions.
+   SpillCuts. 
 */
 
-const double TOR860_LB = 999;  const double TOR860_UB = 999; // units: POT
-const double TOR875_LB = 999;  const double TOR875_UB = 999;
+/*
+   While there is sometimes discernable structure in a given BNB quality 
+   variable (e.g. TOR860 and TOR875 stay around 4.5E12 POT when only the BNB is
+   on and 3.0E12 POT when both the BNB and NuMI beams are on), exact behavior of
+   such variables is not known in detail as a function of time. Thus, the latest 
+   (read 'final') version of a given cut will be the most stringent cut we can 
+   make with a limited knowledge of the detailed behavior of that cut.
+*/
 
-const double LM875A_LB = 999;  const double LM875A_UB = 999; // units:
-const double LM875B_LB = 999;  const double LM875B_UB = 999; // UNKNOWN
-const double LM875C_LB = 999;  const double LM875C_UB = 999;
+const double TOR860_LB = +100e9; // units: POT
+const double TOR875_LB = +100e9; 
 
-const double HP875_LB = 999;  const double HP875_UB = 999; // units: cm
-const double VP875_LB = 999;  const double VP875_UB = 999;
-const double HPTG1_LB = 999;  const double HPTG1_UB = 999;
-const double VPTG1_LB = 999;  const double VPTG1_UB = 999;
-const double HPTG2_LB = 999;  const double HPTG2_UB = 999;
-const double VPTG2_LB = 999;  const double VPTG2_UB = 999;
+const double LM875A_LB = +1e-2; // units: rad/s
+const double LM875B_LB = +1e-2;
+const double LM875C_LB = +1e-2;
 
-const double BTJT2_LB = 999;  const double BTJT2_UB = 999; // units: UNKNOWN
+// SMITHJA: I will have to get in touch with (Tom from) the External Beams group
+//          at Fermilab to get final cuts on these beam position monitor (BPM)
+//          variables since they change from run to run. If realtime values for 
+//          those optimal BPM variables are not accessible (which is the likely
+//          case), the BPM cuts will likely be hard-coded here. 
+const double HP875_LB = -999;  const double HP875_UB = -999; // units: cm
+const double VP875_LB = -999;  const double VP875_UB = -999;
+const double HPTG1_LB = -999;  const double HPTG1_UB = -999;
+const double VPTG1_LB = -999;  const double VPTG1_UB = -999;
+const double HPTG2_LB = -999;  const double HPTG2_UB = -999;
+const double VPTG2_LB = -999;  const double VPTG2_UB = -999;
+
+/*
+   The BTJT2 variable is somewhat unreliable to use as a spill-by-spill cut.
+   BTJT2 measures the temperature of the BNB near the target. Since runs can be
+   started/stopped more quickly than the thermal fluctuations of BTJT2, there
+   can be some amount of "cross contamination" between spills. For this reason
+   BTJT2 is deemed to have diminishing returns compared to other BNB quality
+   variables listed. You may employ cuts on BTJT2 at your own peril.
+
+const double BTJT2_LB = 999;  const double BTJT2_UB = 999; // units: deg C
+*/
+
+const double THCURR_LB = +3e0; // units: kA
+
+/* SMITHJA:
+   Further cuts on THCURR could/should be made since it was discovered that
+   the horn current (i.e. THCURR) is not always centered around 174 kA. Further
+   work needed to understand horn current for different runs. -- Jacob Smith
 
 const double THCURR_LB = +173;  const double THCURR_UB = +175; // units: kA
-
-// ^--- PHYSICALLY MEANINGFUL BOUNDS ; PRELIMINARY BOUNDS ---v
-
-const double TOR860_LB_PRELIM = +100e9; // units: POT
-const double TOR875_LB_PRELIM = +100e9; 
-
-const double LM875A_LB_PRELIM = +1e-2; // units: UNKNOWN
-const double LM875B_LB_PRELIM = +1e-2;
-const double LM875C_LB_PRELIM = +1e-2;
-
-const double THCURR_LB_PRELIM = +3e0; // units: kA
+*/
 //-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 
@@ -51,7 +69,7 @@ struct SpillInfo { // contains information about a spill of the BNB
         HP875, VP875, \
         HPTG1, VPTG1, \
         HPTG2, VPTG2, \
-        BTJT2, \
+//        BTJT2,
         THCURR;
   
   // These are used to identify/match spills in the global vector of 
@@ -89,12 +107,12 @@ void fill_spill_info( unsigned int run, const caf::Proxy<caf::SRBNBInfo> &info){
   GLOBAL_SPILL_INFO.back().VPTG1  = info.VPTG1;
   GLOBAL_SPILL_INFO.back().HPTG2  = info.HPTG2;
   GLOBAL_SPILL_INFO.back().VPTG2  = info.VPTG2;
-  GLOBAL_SPILL_INFO.back().BTJT2  = info.BTJT2;
+//  GLOBAL_SPILL_INFO.back().BTJT2  = info.BTJT2;
   GLOBAL_SPILL_INFO.back().THCURR = info.THCURR;
 }
 
-const SpillCut kPrelimTOR860([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){                               // non-zero nbnb indicates new subrun...
+const SpillCut kTOR860([](const caf::SRSpillProxy* sr){
+    if( sr->hdr.nbnbinfo){                           // non-zero nbnb indicates new subrun...
         GLOBAL_SPILL_INFO.clear();                   // ...so we get rid of spills tied to last subrun...
         for( const auto &bnbinfo : sr->hdr.bnbinfo){ // ...and fill in info for this subrun's spills
             fill_spill_info( sr->hdr.run, bnbinfo);  
@@ -103,7 +121,7 @@ const SpillCut kPrelimTOR860([](const caf::SRSpillProxy* sr){
     for( const auto& match: GLOBAL_SPILL_INFO) {
         if( match.event != sr->hdr.evt) continue; // ensure event matching
         // make preliminary cut on variable of interest --v
-        if( match.TOR860 >= TOR860_LB_PRELIM) return true; 
+        if( match.TOR860 >= TOR860_LB) return true; 
     }
     return false; // a spill does not pass a cut if 
                   // there is no event-matched data
@@ -111,196 +129,62 @@ const SpillCut kPrelimTOR860([](const caf::SRSpillProxy* sr){
 
 /*
    NOTE: For brevity of commenting, the preliminary SpillCuts below are not 
-         commented; however, they are the same as kPrelimTOR860 (see above) but
-         with different variables of interest, e.g. TOR875, LM875B, THCURR, etc.
-*/
-
-const SpillCut kPrelimTOR875([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){                               
-        GLOBAL_SPILL_INFO.clear();                   
-        for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
-            fill_spill_info( sr->hdr.run, bnbinfo);  
-        }
-    }
-    for( const auto& match: GLOBAL_SPILL_INFO) {
-        if( match.event != sr->hdr.evt) continue; 
-        if( match.TOR875 >= TOR875_LB_PRELIM) return true; 
-    }
-    return false; 
-});
-
-const SpillCut kPrelimLM875A([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){                               
-        GLOBAL_SPILL_INFO.clear();                   
-        for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
-            fill_spill_info( sr->hdr.run, bnbinfo);  
-        }
-    }
-    for( const auto& match: GLOBAL_SPILL_INFO) {
-        if( match.event != sr->hdr.evt) continue; 
-        if( match.LM875A >= LM875A_LB_PRELIM) return true; 
-    }
-    return false; 
-});
-
-const SpillCut kPrelimLM875B([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){                               
-        GLOBAL_SPILL_INFO.clear();                   
-        for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
-            fill_spill_info( sr->hdr.run, bnbinfo);  
-        }
-    }
-    for( const auto& match: GLOBAL_SPILL_INFO) {
-        if( match.event != sr->hdr.evt) continue; 
-        if( match.LM875B >= LM875B_LB_PRELIM) return true; 
-    }
-    return false; 
-});
-
-const SpillCut kPrelimLM875C([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){                               
-        GLOBAL_SPILL_INFO.clear();                   
-        for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
-            fill_spill_info( sr->hdr.run, bnbinfo);  
-        }
-    }
-    for( const auto& match: GLOBAL_SPILL_INFO) {
-        if( match.event != sr->hdr.evt) continue; 
-        if( match.LM875C >= LM875C_LB_PRELIM) return true; 
-    }
-    return false; 
-});
-
-const SpillCut kPrelimTHCURR([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){                               
-        GLOBAL_SPILL_INFO.clear();                   
-        for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
-            fill_spill_info( sr->hdr.run, bnbinfo);  
-        }
-    }
-    for( const auto& match: GLOBAL_SPILL_INFO) {
-        if( match.event != sr->hdr.evt) continue; 
-        if( match.THCURR >= THCURR_LB_PRELIM) return true; 
-    }
-    return false; 
-});
-
-/* 
-   Amalgamate preliminary SpillCuts (defined directly 
-   above) into combined preliminary SpillCuts.
-*/
-/*
-   NOTE: You cannot chain SpillCuts together like you do with regular Cuts
-         with the use of logical operators such as '&&'.
-         For example, the following definition is invalid:
-           const SpillCut kPrelimTOR = kPrelimTOR860 && kPrelimTOR875;
-         For each SpillCut combination you want to create, you must create
-         a new SpillCut where you explicitly cut on multiple quantities
-         inside the SpillCut definition like what is done above with
-         match.THCURR, etc.
-*/
-
-const SpillCut kPRELIMINARY([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){                               
-        GLOBAL_SPILL_INFO.clear();                   
-        for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
-            fill_spill_info( sr->hdr.run, bnbinfo);  
-        }
-    }
-    for( const auto& match: GLOBAL_SPILL_INFO) {
-        if( match.event != sr->hdr.evt) continue; 
-        if( match.TOR860 >= TOR860_LB_PRELIM && \
-              match.TOR875 >= TOR875_LB_PRELIM && \
-              match.LM875A >= LM875A_LB_PRELIM && \
-              match.LM875B >= LM875B_LB_PRELIM && \
-              match.LM875C >= LM875C_LB_PRELIM && \
-              match.THCURR >= THCURR_LB_PRELIM){
-            return true;
-        } 
-    }
-    return false; 
-});
-
-/* ------------------------------------------------------- \
-//                                                         |
-// ^--- PRELIMINARY CUTS ; PHYSICALLY MEANINGFUL CUTS ---v |
-//                                                         |
-// ------------------------------------------------------ */
-
-const SpillCut kTOR860([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){                               // non-zero nbnb indicates new subrun...
-        GLOBAL_SPILL_INFO.clear();                   // ...so we get rid of spills tied to last subrun...
-        for( const auto &bnbinfo : sr->hdr.bnbinfo){ // ...and fill in info for this subrun's spills
-            fill_spill_info( sr->hdr.run, bnbinfo);  
-        }
-    }
-    for( const auto& match: GLOBAL_SPILL_INFO) {
-        if( match.event != sr->hdr.evt) continue; // ensure event matching
-        // cut on variable of interest --v
-        if( match.TOR860 >= TOR860_LB && match.TOR860 < TOR860_UB) return true;
-    }
-    return false; // a spill does not pass a cut if 
-                  // there is no event-matched data
-});
-
-/*
-   NOTE: For brevity of commenting, the SpillCuts below are not commented;
-         however, they are the same as kTOR860 (see above) but with
-         different variables of interest, e.g. TOR875, BTJT2, LM875B, etc.
+         commented; however, they are the same as kTOR860 (see above) but with
+         different variables of interest, e.g. TOR875, LM875B, THCURR, etc.
 */
 
 const SpillCut kTOR875([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){
-        GLOBAL_SPILL_INFO.clear();
+    if( sr->hdr.nbnbinfo){                               
+        GLOBAL_SPILL_INFO.clear();                   
         for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
             fill_spill_info( sr->hdr.run, bnbinfo);  
         }
     }
     for( const auto& match: GLOBAL_SPILL_INFO) {
         if( match.event != sr->hdr.evt) continue; 
-        if( match.TOR875 >= TOR875_LB && match.TOR875 < TOR875_UB) return true;
+        if( match.TOR875 >= TOR875_LB) return true; 
     }
     return false; 
 });
 
 const SpillCut kLM875A([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){
-        GLOBAL_SPILL_INFO.clear();
+    if( sr->hdr.nbnbinfo){                               
+        GLOBAL_SPILL_INFO.clear();                   
         for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
             fill_spill_info( sr->hdr.run, bnbinfo);  
         }
     }
     for( const auto& match: GLOBAL_SPILL_INFO) {
         if( match.event != sr->hdr.evt) continue; 
-        if( match.LM875A >= LM875A_LB && match.LM875A < LM875A_UB) return true;
+        if( match.LM875A >= LM875A_LB) return true; 
     }
     return false; 
 });
 
 const SpillCut kLM875B([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){
-        GLOBAL_SPILL_INFO.clear();
+    if( sr->hdr.nbnbinfo){                               
+        GLOBAL_SPILL_INFO.clear();                   
         for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
             fill_spill_info( sr->hdr.run, bnbinfo);  
         }
     }
     for( const auto& match: GLOBAL_SPILL_INFO) {
         if( match.event != sr->hdr.evt) continue; 
-        if( match.LM875B >= LM875B_LB && match.LM875B < LM875B_UB) return true;
+        if( match.LM875B >= LM875B_LB) return true; 
     }
     return false; 
 });
 
 const SpillCut kLM875C([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){
-        GLOBAL_SPILL_INFO.clear();
+    if( sr->hdr.nbnbinfo){                               
+        GLOBAL_SPILL_INFO.clear();                   
         for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
             fill_spill_info( sr->hdr.run, bnbinfo);  
         }
     }
     for( const auto& match: GLOBAL_SPILL_INFO) {
         if( match.event != sr->hdr.evt) continue; 
-        if( match.LM875C >= LM875C_LB && match.LM875C < LM875C_UB) return true;
+        if( match.LM875C >= LM875C_LB) return true; 
     }
     return false; 
 });
@@ -388,7 +272,7 @@ const SpillCut kVPTG2([](const caf::SRSpillProxy* sr){
     }
     return false; 
 });
-
+/*
 const SpillCut kBTJT2([](const caf::SRSpillProxy* sr){
     if( sr->hdr.nbnbinfo){
         GLOBAL_SPILL_INFO.clear();
@@ -402,7 +286,7 @@ const SpillCut kBTJT2([](const caf::SRSpillProxy* sr){
     }
     return false; 
 });
-
+*/
 const SpillCut kTHCURR([](const caf::SRSpillProxy* sr){
     if( sr->hdr.nbnbinfo){
         GLOBAL_SPILL_INFO.clear();
@@ -412,49 +296,16 @@ const SpillCut kTHCURR([](const caf::SRSpillProxy* sr){
     }
     for( const auto& match: GLOBAL_SPILL_INFO) {
         if( match.event != sr->hdr.evt) continue; 
-        if( match.THCURR >= THCURR_LB && match.THCURR < THCURR_UB) return true;
+        if( match.THCURR >= THCURR_LB) return true;
     }
     return false; 
 });
 
-/* 
-   Amalgamate physically meaningful SpillCuts (defined directly 
-   above) into combined physically meaningful SpillCuts.
-*/
-
-const SpillCut kPHYSICALLY_MEANINGFUL([](const caf::SRSpillProxy* sr){
-    if( sr->hdr.nbnbinfo){
-        GLOBAL_SPILL_INFO.clear();
-        for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
-            fill_spill_info( sr->hdr.run, bnbinfo);  
-        }
-    }
-    for( const auto& match: GLOBAL_SPILL_INFO) {
-        if( match.event != sr->hdr.evt) continue; 
-        if( match.TOR860 >= TOR860_LB && match.TOR860 < TOR860_UB && \
-              match.TOR875 >= TOR875_LB && match.TOR875 < TOR875_UB && \
-              match.LM875A >= LM875A_LB && match.LM875A < LM875A_UB && \
-              match.LM875B >= LM875B_LB && match.LM875B < LM875B_UB && \
-              match.LM875C >= LM875C_LB && match.LM875C < LM875C_UB && \
-              match.HP875  >= HP875_LB  && match.HP875  < HP875_UB  && \
-              match.VP875  >= VP875_LB  && match.VP875  < VP875_UB  && \
-              match.HPTG1  >= HPTG1_LB  && match.HPTG1  < HPTG1_UB  && \
-              match.VPTG1  >= VPTG1_LB  && match.VPTG1  < VPTG1_UB  && \
-              match.HPTG2  >= HPTG2_LB  && match.HPTG2  < HPTG2_UB  && \
-              match.VPTG2  >= VPTG2_LB  && match.VPTG2  < VPTG2_UB  && \
-              match.BTJT2  >= BTJT2_LB  && match.BTJT2  < BTJT2_UB  && \
-              match.THCURR >= THCURR_LB && match.THCURR < THCURR_UB) {
-            return true;
-        }
-    }
-    return false; 
-});
-
-/* ------------------------------------------------- \
-//                                                   |
-// ^--- PHYSICALLY MEANINGFUL CUTS ; MASTER CUT ---v |
-//                                                   |
-// ------------------------------------------------ */
+/* -------------------------------------- \
+//                                        |
+// ^--- INDIVIDUAL CUTS ; MASTER CUT ---v |
+//                                        |
+// ------------------------------------- */
 
 const SpillCut kBNBQuality_Nov2024([](const caf::SRSpillProxy* sr){
     if( sr->hdr.nbnbinfo){
@@ -465,26 +316,19 @@ const SpillCut kBNBQuality_Nov2024([](const caf::SRSpillProxy* sr){
     }
     for( const auto& match: GLOBAL_SPILL_INFO) {
         if( match.event != sr->hdr.evt) continue; 
-        if( match.TOR860 >= TOR860_LB_PRELIM && \
-              match.TOR875 >= TOR875_LB_PRELIM && \
-              match.LM875A >= LM875A_LB_PRELIM && \
-              match.LM875B >= LM875B_LB_PRELIM && \
-              match.LM875C >= LM875C_LB_PRELIM && \
-              match.THCURR >= THCURR_LB_PRELIM && \
-        // ^--- preliminary cuts ; physically meaningful cuts ---v
-              match.TOR860 >= TOR860_LB && match.TOR860 < TOR860_UB && \
-              match.TOR875 >= TOR875_LB && match.TOR875 < TOR875_UB && \
-              match.LM875A >= LM875A_LB && match.LM875A < LM875A_UB && \
-              match.LM875B >= LM875B_LB && match.LM875B < LM875B_UB && \
-              match.LM875C >= LM875C_LB && match.LM875C < LM875C_UB && \
+        if( match.TOR860 >= TOR860_LB && \
+              match.TOR875 >= TOR875_LB && \
+              match.LM875A >= LM875A_LB && \
+              match.LM875B >= LM875B_LB && \
+              match.LM875C >= LM875C_LB && \
               match.HP875  >= HP875_LB  && match.HP875  < HP875_UB  && \
               match.VP875  >= VP875_LB  && match.VP875  < VP875_UB  && \
               match.HPTG1  >= HPTG1_LB  && match.HPTG1  < HPTG1_UB  && \
               match.VPTG1  >= VPTG1_LB  && match.VPTG1  < VPTG1_UB  && \
               match.HPTG2  >= HPTG2_LB  && match.HPTG2  < HPTG2_UB  && \
               match.VPTG2  >= VPTG2_LB  && match.VPTG2  < VPTG2_UB  && \
-              match.BTJT2  >= BTJT2_LB  && match.BTJT2  < BTJT2_UB  && \
-              match.THCURR >= THCURR_LB && match.THCURR < THCURR_UB) {
+//              match.BTJT2  >= BTJT2_LB  && match.BTJT2  < BTJT2_UB  &&
+              match.THCURR >= THCURR_LB) {
             return true;
         }
     }
