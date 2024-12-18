@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 # cmake_policy(VERSION 3.19)
 
 
-find_package(cetmodules )
+find_package(cetmodules 3.20.00 REQUIRED )
 project(sbnana VERSION 09.78.07 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
@@ -48,11 +48,11 @@ find_package( ROOT REQUIRED )
 find_package( ifdhc REQUIRED)
 find_package( srproxy )
 find_package( osclib  )
-#find_package( pygccxml  )
-#find_package( Threads REQUIRED )
+find_package( pygccxml  )
+find_package( Threads REQUIRED )
 find_package( Eigen3 REQUIRED )
-find_package( cetlib REQUIRED EXPORT )
-find_package( cetlib_except REQUIRED EXPORT )
+#find_package( cetlib REQUIRED EXPORT )
+#find_package( cetlib_except REQUIRED EXPORT )
 
 #ifdhc
 #cet_find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB   NO_DEFAULT_PATH )
