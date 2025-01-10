@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def InFV(df, inzback, inx=10, iny=10, inzfront=10):
+def InFV(df, inzback, inx=10, iny=10, inzfront=15):
     xmin_C0 = -358.49
     xmax_C0 = -61.94
 
@@ -25,8 +25,15 @@ def InFV(df, inzback, inx=10, iny=10, inzfront=10):
     zmin = zmin + inzfront
     zmax = zmax - inzback
 
-    return (((df.x < xmax_C0) & (df.x > xmin_C0)) | ((df.x < xmax_C1) & (df.x > xmin_C1))) &\
+    fid = (((df.x < xmax_C0) & (df.x > xmin_C0)) | ((df.x < xmax_C1) & (df.x > xmin_C1))) &\
         (df.y < ymax) & (df.y > ymin) & (df.z < zmax) & (df.z > zmin)
+
+    # further cut bad regions in parts of the detector
+    bad_WW = (df.x > 210.29) & (df.x < 358.49) & (df.y > 70) & (df.z > 0) # cable
+    bad_EE = (df.x > -358.49) & (df.x < -210.29) & ((df.y > 115) | (df.y < -161.86)) # field cage
+
+    return fid & ~bad_WW & ~bad_EE
+
 
 def TrkInFV(df):
     return InFV(df, 15.)
@@ -47,5 +54,5 @@ def dotdf(df1, df2):
     return df1.x*df2.x + df1.y*df2.y + df1.z*df2.z 
 
 def unitdf(df):
-    return df / magdf(df)
+    return df.divide(magdf(df), axis=0)
 

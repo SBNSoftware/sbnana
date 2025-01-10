@@ -5,6 +5,7 @@
 #include "sbnana/CAFAna/Core/SAMProjectSource.h"
 #include "sbnana/CAFAna/Core/Spectrum.h"
 #include "sbnana/CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Tree.h"
 
 #include "sbnana/CAFAna/Core/GenieWeightList.h"
 
@@ -110,6 +111,10 @@ namespace ana
 
     fHistDefs.RemoveLoader(this);
     fHistDefs.Clear();
+
+    fSpillHistDefs.RemoveLoader(this);
+    fSpillHistDefs.Clear();
+
   }
 
   //----------------------------------------------------------------------
@@ -320,6 +325,277 @@ namespace ana
         } // end for shiftdef
       } // end for slc
     } // end for spillcutdef
+
+    // Trees
+    //unsigned int idxSpillCut = 0; // testing
+    for ( auto& [spillcut, shiftmap] : fTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+      // Cut failed, skip all the histograms that depend on it
+      if(!spillpass) continue;
+
+      unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
+      for( caf::SRSliceProxy& slc: sr->slc ) {
+        // Some shifts only adjust the weight, so they're effectively nominal,
+        // but aren't grouped with the other nominal histograms. Keep track of
+        // the results for nominals in these caches to speed those systs up.
+        CutVarCache<bool, Cut, caf::SRSliceProxy> nomCutCache;
+        CutVarCache<double, Var, caf::SRSliceProxy> nomVarCache;
+
+        //unsigned int idxShift = 0; // testing
+        for ( auto& [shift, cutmap] : shiftmap ) {
+          // Need to provide a clean slate for each new set of systematic
+          // shifts to work from. Copying the whole StandardRecord is pretty
+          // expensive, so modify it in place and revert it afterwards.
+          caf::SRProxySystController::BeginTransaction();
+
+          bool shifted = false;
+
+          double systWeight = 1;
+          // Can special-case nominal to not pay cost of Shift()
+          if(!shift.IsNominal()){
+            shift.Shift(&slc, systWeight);
+            // If there were only weighting systs applied then the cached
+            // nominal values are still valid.
+            shifted = caf::SRProxySystController::AnyShifted();
+          }
+
+          //unsigned int idxCut = 0; // testing
+          for ( auto& [cut, treemap] : cutmap ) {
+            const bool pass = shifted ? cut(&slc) : nomCutCache.Get(cut, &slc);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            //unsigned int idxTree = 0;
+            for ( std::map<Tree*, std::map<VarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+              //unsigned int idxVar = 0;
+              std::map<std::string, std::vector<double>> recordVals;
+              unsigned int numEntries=0;
+              for ( auto& [varormulti, varname] : treemapIt->second ) {
+                //std::cout << "SpillCut " << idxSpillCut << " Slice " << idxSlice << " Shift " << idxShift << " Cut " << idxCut << " Tree " << idxTree << " Var " << idxVar << std::endl;
+                if(varormulti.IsMulti()){
+                  auto const& vals = varormulti.GetMultiVar()(&slc);
+                  for(double val: vals) recordVals[varname].push_back(val);
+                  if (numEntries==0)    numEntries = vals.size();
+                  continue;
+                }
+
+                const Var& var = varormulti.GetVar();
+                const double val = shifted ? var(&slc) : nomVarCache.Get(var, &slc);
+
+                //std::cout << "    VAL = " << val << std::endl;
+
+                if(std::isnan(val) || std::isinf(val)){
+                  std::cerr << "Warning: Bad value: " << val
+                            << " returned from a Var. The input variable(s) could "
+                            << "be NaN in the CAF, or perhaps your "
+                            << "Var code computed 0/0?";
+                  std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
+                }
+
+                recordVals[varname].push_back(val);
+                if( numEntries==0 ) numEntries = 1;
+                //idxVar+=1;
+              } // end for var/varname
+              // If fSaveRunSubrunEvt then fill these entries...
+              if ( treemapIt->first->SaveRunSubEvent() || treemapIt->first->SaveSliceNum() ) {
+                for ( unsigned int idxRun=0; idxRun<numEntries; ++idxRun ) {
+                  if ( treemapIt->first->SaveRunSubEvent() ) {
+                    recordVals["Run/i"].push_back( sr->hdr.run );
+                    recordVals["Subrun/i"].push_back( sr->hdr.subrun );
+                    recordVals["Evt/i"].push_back( sr->hdr.evt );
+                  }
+                  if ( treemapIt->first->SaveSliceNum() ) {
+                    recordVals["Slice/i"].push_back( idxSlice );
+                  }
+                }
+              }
+              treemapIt->first->UpdateEntries(recordVals);
+              //idxTree+=1;
+            } // end for tree
+            //idxCut+=1;
+          } // end for cut
+
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+          caf::SRProxySystController::Rollback();
+
+          //idxShift+=1;
+        } // end for shift
+        idxSlice+=1;
+      } // end for slice
+      //idxSpillCut+=1;
+    } // end for spillcut
+
+    // Spill Trees
+    for ( auto& [spillcut, treemap] : fSpillTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+      // Cut failed, skip all the histograms that depend on it
+      if(!spillpass) continue;
+
+      for ( std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+        std::map<std::string, std::vector<double>> recordVals;
+        unsigned int numEntries = 0;
+        for ( auto& [varormulti, varname] : treemapIt->second ) {
+          if(varormulti.IsMulti()){
+            auto const& vals = varormulti.GetMultiVar()(sr);
+            for(double val: vals) recordVals[varname].push_back(val);
+            if ( numEntries==0 )  numEntries = vals.size();
+            continue;
+          }
+
+          const double val = varormulti.GetVar()(sr);
+
+          if(std::isnan(val) || std::isinf(val)){
+            std::cerr << "Warning: Bad value: " << val
+                      << " returned from a Var. The input variable(s) could "
+                      << "be NaN in the CAF, or perhaps your "
+                      << "Var code computed 0/0?";
+            std::cout << " Still filling into the ''branch'' for this slice." << std::endl;
+          }
+
+          recordVals[varname].push_back(val);
+          if ( numEntries==0 ) numEntries=1;
+        } // end for var/varname
+        if ( treemapIt->first->SaveRunSubEvent() ) {
+          for ( unsigned int idxRun=0; idxRun<numEntries; ++idxRun ) {
+            recordVals["Run/i"].push_back( sr->hdr.run );
+            recordVals["Subrun/i"].push_back( sr->hdr.subrun );
+            recordVals["Evt/i"].push_back( sr->hdr.evt );
+          }
+        }
+        treemapIt->first->UpdateEntries(recordVals);
+      } // end for tree
+    } // end for spillcut
+
+    // Weights trees
+    // Sigma knobs
+    for ( auto& [spillcut, shiftmap] : fNSigmasTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+      // Cut failed, skip all the histograms that depend on it
+      if(!spillpass) continue;
+
+      unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
+      // NB: We DON'T keep track of Nominal Cut/Var/etc. because we want to shift/reset shifts for the weight saving... We sacrifice potential speed here by choice.
+      for( caf::SRSliceProxy& slc: sr->slc ) {
+        for ( auto& [shift, cutmap] : shiftmap ) {
+          for ( auto& [cut, treemap] : cutmap ) {
+            const bool pass = cut(&slc);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+
+              std::map<std::string, std::vector<double>> headerVals;
+              std::map<std::string, std::vector<double>> recordVals;
+              for ( auto& [syst, systname] : treemapIt->second ) {
+                for ( int sigma=treemapIt->first->NSigmaLo(systname); sigma<=treemapIt->first->NSigmaHi(systname); ++sigma ) {
+
+                  // Need to provide a clean slate for each new set of systematic
+                  // shifts to work from. Copying the whole StandardRecord is pretty
+                  // expensive, so modify it in place and revert it afterwards.
+                  caf::SRProxySystController::BeginTransaction();
+
+                  double systWeight = 1;
+                  // Can special-case nominal to not pay cost of Shift()
+                  if(!shift.IsNominal()){
+                    shift.Shift(&slc, systWeight);
+                  }
+
+                  // Now shift for the weight we want to save
+                  const SystShifts& shiftSigma = SystShifts(syst,sigma);
+                  double systWeightSigma = 1;
+                  shiftSigma.Shift(&slc, systWeightSigma);
+
+                  recordVals[systname].push_back(systWeightSigma);
+
+                  // Reset shifts to get the next sigma
+                  caf::SRProxySystController::Rollback();
+                }
+              }
+              // If fSaveRunSubrunEvt then fill these entries...
+              if ( treemapIt->first->SaveRunSubEvent() ) {
+                headerVals["Run/i"].push_back( sr->hdr.run );
+                headerVals["Subrun/i"].push_back( sr->hdr.subrun );
+                headerVals["Evt/i"].push_back( sr->hdr.evt );
+              }
+              if ( treemapIt->first->SaveSliceNum() ) {
+                headerVals["Slice/i"].push_back( idxSlice );
+              }
+
+              treemapIt->first->UpdateEntries(headerVals,recordVals);
+            } // end for tree
+          } // end for cut
+        } // end for shift
+        idxSlice+=1;
+      } // end for slice
+    } // end for spillcut
+
+    // Universe knobs
+    for ( auto& [spillcut, shiftmap] : fNUniversesTreeDefs ) {
+      const bool spillpass = spillcut(sr);
+      // Cut failed, skip all the histograms that depend on it
+      if(!spillpass) continue;
+
+      unsigned int idxSlice = 0; // in case we want to save the slice number to the tree
+      for( caf::SRSliceProxy& slc: sr->slc ) {
+        // Some shifts only adjust the weight, so they're effectively nominal,
+        // but aren't grouped with the other nominal histograms. Keep track of
+        // the results for nominals in these caches to speed those systs up.
+        CutVarCache<bool, Cut, caf::SRSliceProxy> nomCutCache;
+
+        for ( auto& [shift, cutmap] : shiftmap ) {
+          // Need to provide a clean slate for each new set of systematic
+          // shifts to work from. Copying the whole StandardRecord is pretty
+          // expensive, so modify it in place and revert it afterwards.
+          caf::SRProxySystController::BeginTransaction();
+
+          bool shifted = false;
+
+          double systWeight = 1;
+          // Can special-case nominal to not pay cost of Shift()
+          if(!shift.IsNominal()){
+            shift.Shift(&slc, systWeight);
+            // If there were only weighting systs applied then the cached
+            // nominal values are still valid.
+            shifted = caf::SRProxySystController::AnyShifted();
+          }
+
+          for ( auto& [cut, treemap] : cutmap ) {
+            const bool pass = shifted ? cut(&slc) : nomCutCache.Get(cut, &slc);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            for ( std::map<NUniversesTree*, std::map<std::vector<VarOrMultiVar>, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+              std::map<std::string, std::vector<double>> headerVals;
+              std::map<std::string, std::vector<double>> recordVals;
+              for ( auto& [universes, systname] : treemapIt->second ) {
+                for ( auto const& var : universes ) {
+                  double val = var.GetVar()(&slc);
+                  recordVals[systname].push_back(val);
+                }
+              }
+              // If fSaveRunSubrunEvt then fill these entries...
+              if ( treemapIt->first->SaveRunSubEvent() ) {
+                headerVals["Run/i"].push_back( sr->hdr.run );
+                headerVals["Subrun/i"].push_back( sr->hdr.subrun );
+                headerVals["Evt/i"].push_back( sr->hdr.evt );
+              }
+              if ( treemapIt->first->SaveSliceNum() ) {
+                headerVals["Slice/i"].push_back( idxSlice );
+              }
+
+              treemapIt->first->UpdateEntries(headerVals,recordVals);
+            } // end for tree
+          } // end for cut
+
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+          caf::SRProxySystController::Rollback();
+        } // end for shift
+        idxSlice+=1;
+      } // end for slice
+    } // end for spillcut
+
   }
 
   //----------------------------------------------------------------------
@@ -358,6 +634,46 @@ namespace ana
           for(Spectrum* s: spillvardef.second.spects){
             s->fPOT += fPOT;
             s->fLivetime += fNReadouts;
+          }
+        }
+      }
+    }
+
+    // Trees
+    for ( auto& [spillcut, shiftmap] : fTreeDefs ) {
+      for ( auto& [shift, cutmap] : shiftmap ) {
+        for ( auto& [cut, treemap] : cutmap ) {
+          for ( std::map<Tree*, std::map<VarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+            treemapIt->first->UpdateExposure(fPOT,fNReadouts);
+          }
+        }
+      }
+    }
+
+    // Spill Trees
+    for ( auto& [spillcut, treemap] : fSpillTreeDefs ) {
+      for ( std::map<Tree*, std::map<SpillVarOrMultiVar, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+        treemapIt->first->UpdateExposure(fPOT,fNReadouts);
+      }
+    }
+
+    // NSigmasTrees
+    for ( auto& [spillcut, shiftmap] : fNSigmasTreeDefs ) {
+      for ( auto& [shift, cutmap] : shiftmap ) {
+        for ( auto& [cut, treemap] : cutmap ) {
+          for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+            treemapIt->first->UpdateExposure(fPOT,fNReadouts);
+          }
+        }
+      }
+    }
+
+    // NUniversesTrees
+    for ( auto& [spillcut, shiftmap] : fNUniversesTreeDefs ) {
+      for ( auto& [shift, cutmap] : shiftmap ) {
+        for ( auto& [cut, treemap] : cutmap ) {
+          for ( std::map<NUniversesTree*, std::map<std::vector<VarOrMultiVar>, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+            treemapIt->first->UpdateExposure(fPOT,fNReadouts);
           }
         }
       }

@@ -6,6 +6,10 @@ from util import *
 from pid import dedxdf, dedx, hchi2u, hchi2p, scale_recombination
 
 @VAR
+def vabs(s):
+    return np.abs(s)
+
+@VAR
 def npfp(df):
     group = list(range(df.index.nlevels-1))
     s = df.groupby(level=group).size()
