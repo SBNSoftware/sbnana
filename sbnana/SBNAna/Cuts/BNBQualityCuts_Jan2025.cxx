@@ -49,7 +49,7 @@ const double VPTG2_LB = -0.20;  const double VPTG2_UB = +0.30;
 const double BTJT2_LB = 999;  const double BTJT2_UB = 999; // units: deg C
 */
 
-const double THCURR_LB = +173;  const double THCURR_UB = +177 // units: kA
+const double THCURR_LB = +173;  const double THCURR_UB = +177; // units: kA
 
 /* SMITHJA:
    Further cuts on THCURR could/should be made since it was discovered that
