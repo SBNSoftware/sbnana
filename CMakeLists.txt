@@ -17,8 +17,8 @@ cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 # cmake_policy(VERSION 3.19)
 
 
-find_package(cetmodules )
-project(sbnana VERSION 09.78.06 LANGUAGES CXX)
+find_package(cetmodules 3.20.00 REQUIRED )
+project(sbnana VERSION 09.78.07 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 
@@ -55,7 +55,7 @@ find_package( cetlib REQUIRED EXPORT )
 find_package( cetlib_except REQUIRED EXPORT )
 
 #ifdhc
-cet_find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB   NO_DEFAULT_PATH )
+#cet_find_library( IFDH    NAMES ifdh    PATHS ENV IFDHC_LIB   NO_DEFAULT_PATH )
 
 add_subdirectory(sbnana)
 
