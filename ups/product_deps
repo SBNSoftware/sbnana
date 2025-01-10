@@ -312,11 +312,11 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	sbnanaobj	ifdhc		osclib			sbndata	notes
-e26:debug       e26:debug       debug:e26:p3915 e26:n316:stanfree:debug -nq-    -nq-
-e26:prof        e26:prof        e26:p3915:prof  e26:n316:stanfree:prof  -nq-    -nq-
-c14:debug       c14:debug       c14:p3915:debug c14:n316:stanfree:debug -nq-    -nq-
-c14:prof        c14:prof        c14:p3915:prof  c14:n316:stanfree:prof  -nq-    -nq-
+qualifier	sbnanaobj	ifdhc		osclib			cetlib     sbndata notes
+e26:debug       e26:debug       debug:e26:p3915 e26:n316:stanfree:debug e26:debug  -nq-    -nq-
+e26:prof        e26:prof        e26:p3915:prof  e26:n316:stanfree:prof  e26:prof   -nq-    -nq-
+c14:debug       c14:debug       c14:p3915:debug c14:n316:stanfree:debug c14:debug  -nq-    -nq-
+c14:prof        c14:prof        c14:p3915:prof  c14:n316:stanfree:prof  c14:prof   -nq-    -nq-
 end_qualifier_list
 ####################################
 
