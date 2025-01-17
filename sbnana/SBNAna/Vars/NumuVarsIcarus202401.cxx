@@ -279,7 +279,7 @@ const Var kIcarus202401RecoPionE([](const caf::SRSliceProxy* slc){
   return E;
 });
 
-const Var kIcarus202401RecoNuE = kIcarus202401RecoMuonE + kIcarus202401RecoProtonKE + kIcarus202401RecoPionE;
+const Var kIcarus202401RecoENu = kIcarus202401RecoMuonE + kIcarus202401RecoProtonKE + kIcarus202401RecoPionE;
 
 static bool Icarus202401_contained(const caf::SRTrackProxy& trk)
 {
