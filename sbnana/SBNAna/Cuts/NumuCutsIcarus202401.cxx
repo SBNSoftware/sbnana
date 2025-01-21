@@ -15,26 +15,23 @@ static bool Icarus202401contained(const caf::SRTrackProxy& trk)
 	  && trk.end.z > -894.95 + 5 && trk.end.z < 894.95 - 5;
 }
 
-const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
-    for(const auto& match: spill->crtpmt_matches) {
-        if(match.flashGateTime > 0 && match.flashGateTime < 1.6 && match.flashClassification == 0)
-            return true;
-    }
-    return false;
-});
-
-const SpillCut kIcarus202401CRTPMTVetoData([](const caf::SRSpillProxy* spill){
-    for(const auto& match: spill->crtpmt_matches) {
-        if(match.flashGateTime > -0.4 && match.flashGateTime < 1.5 && match.flashClassification == 0)
-            return true;
-    }
-    return false;
-});
-
 const Cut kIcarus202401BaryFMCut([](const caf::SRSliceProxy *slc) {
     return !std::isnan(slc->barycenterFM.deltaZ_Trigger) && 
            slc->barycenterFM.deltaZ_Trigger >= 0 && 
            slc->barycenterFM.deltaZ_Trigger < 100;
+});
+
+const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
+    double min_time = 0, max_time = 1.6;
+    if(!spill->hdr.ismc){min_time = -0.4; max_time = 1.5;}
+    for(const auto& match: spill->crtpmt_matches) {
+        if(match.flashGateTime > min_time && 
+           match.flashGateTime < max_time && 
+           match.flashClassification == 0) {
+            return true;
+        } 
+    }
+    return false;
 });
 
 const Cut kIcarus202401FoundMuon = kIcarus202401MuonIdx >= 0;
