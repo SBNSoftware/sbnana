@@ -20,12 +20,12 @@ namespace ana {
         // parameters
         bool print = false;  // print on terminal
         bool Split = false;  // enable quality cut on hit_comp and E_comp
-        bool DvCut = false;  // enable check on the distance between mc vtx and reco vtx
+        bool DvCut = false;  // enable cut on the distance between mc vtx and reco vtx
         float mcLmin = 50.;  // minimal length of the track on mc
         float Vdist = 15.;   // distance between mc vtx and reco vtx
-        float Tss = 0.7;
-        float thetaM = 35.;
-        float Dss = 0.7;
+        float Tss = 0.7;     // overlap of the segments on the z-axis
+        float thetaM = 35.;  // angle between the directions of the segments
+        float Dss = 0.7;     // 3D distance between the segments
     } // namespace slc
 
     static bool kIcarus202401BaryFMCut(const caf::SRSliceProxy &slc) {
