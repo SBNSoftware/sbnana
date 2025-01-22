@@ -143,7 +143,7 @@ struct Chi2PID {
   TProfile *dedx_range_pro, *dedx_range_ka, *dedx_range_pi, *dedx_range_mu;
 };
 
-static Chi2PID chi2_calculator;
+extern Chi2PID chi2_calculator;
 
 }
 

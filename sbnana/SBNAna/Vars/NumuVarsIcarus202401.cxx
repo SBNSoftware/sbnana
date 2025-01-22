@@ -4,6 +4,12 @@
 
 namespace ana {
 
+namespace chi2pid {
+
+Chi2PID chi2_calculator;
+
+}
+
 static constexpr float mmu = 0.106f;
 static constexpr float mp  = 0.9383f;
 static constexpr float mpi = 0.13957f;
