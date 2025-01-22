@@ -3,6 +3,7 @@
 #include "cetlib/search_path.h"
 #include <cmath>
 #include <iostream>
+#include <cstdlib> // std::abort()
 #include "TMath.h"
 
 namespace ana {
@@ -21,14 +22,22 @@ namespace ana {
 
     std::string kdEdXUncTemplateFileName = "template_dEdXUncertainty.root";
     std::string kdEdXUncTemplateFullFilePath;
-    sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath);
+    if (!sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath)) {
+      std::cerr << "\nana::CalorimetrySyst: failed to locate dE/dx template file '"
+        << kdEdXUncTemplateFileName << "'" << std::endl;
+      std::abort();
+    }
 
     TFile* file_dEdXUncTemplate = TFile::Open(kdEdXUncTemplateFullFilePath.c_str());
     dedx_unc_template = (TGraph2D*)file_dEdXUncTemplate->Get("dEdXRelUncertainty_dEdX_vs_phi");
 
     std::string kChi2TemplateFileName = "dEdxrestemplates.root";
     std::string kChi2TemplateFullFilePath;
-    sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath);
+    if (!sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath)) {
+      std::cerr << "\nana::CalorimetrySyst: failed to locate dE/dx template file '"
+        << kChi2TemplateFileName << "'" << std::endl;
+      std::abort();
+    }
 
     TFile *file_Chi2Template = TFile::Open(kChi2TemplateFullFilePath.c_str());
     dedx_range_pro = (TProfile*)file_Chi2Template->Get("dedx_range_pro");
