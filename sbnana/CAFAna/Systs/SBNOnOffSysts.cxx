@@ -33,7 +33,8 @@ namespace ana
     int i = uo.ClosestShiftIndex(ShortName(), 1, ESide::kBelow, &x1);
     double wgt = wgts[fIdx].univ[i];
 
-    if(x > 0) weight *= x < 1.0 ? x * wgt : wgt;
+    if(x < 0) x *= -1;
+    if(x != 0) weight *= x < 1.0 ? x * wgt : wgt;
   }
 
   // --------------------------------------------------------------------------
