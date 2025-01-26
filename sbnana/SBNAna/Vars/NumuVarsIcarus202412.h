@@ -7,6 +7,6 @@
 
 namespace ana {
 
-    extern const SpillMultiVar kStitchSlc;
+    extern const SpillMultiVar kIcarus202412Stitch;
 
 }
