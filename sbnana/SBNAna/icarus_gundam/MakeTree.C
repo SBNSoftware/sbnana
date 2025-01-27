@@ -29,6 +29,9 @@ void MakeTree(){
   // SpectrumLoader
   SpectrumLoader loader(vec_inputs); //, kBeam, 10);
 
+  //===================================
+  // EVENT SELECTION TREE
+
   // Define Tree variables
   // Example here are defined at sbnana/SBNAna/Vars/NuMIXSecVars.h
   std::vector<std::string> vec_labels_SelectedEvents = {
@@ -150,6 +153,8 @@ void MakeTree(){
     NUniversesNUnivs.push_back( 100 );
   }
 
+  // - Define NUniversesTree
+
   NUniversesTree *tree_SelectedEvents_NUniverses = new ana::NUniversesTree(
     "SelectedEvents_NUniverses",
     NUniversesPsetNames,
@@ -162,6 +167,46 @@ void MakeTree(){
     true, true
   );
 
+  //===================================
+  // EVENT SELECTION TREE
+
+  // Define Tree variables
+  // Example here are defined at sbnana/SBNAna/Vars/NuMIXSecVars.h
+  std::vector<std::string> vec_labels_Truth = {
+    "TrueMuonP",
+    "TrueMuonCos",
+  };
+  std::vector<TruthVar> vec_vars_Truth = {
+    kTruth_MuonP,
+    kTruth_MuonNuCosineTheta,
+  };
+
+  Tree *tree_Truth = new ana::Tree(
+    "trueEvents",
+    vec_labels_Truth,
+    loader,
+    vec_vars_Truth,
+    kNoSpillCut,
+    kTruthCut_IsSignal,
+    kNoCut,
+    kNoShift,
+    true
+  );
+
+  // - Define NSigmasTree
+
+  NSigmasTree *tree_Truth_NSigmas = new ana::NSigmasTree(
+    "trueEvents_NSigmas",
+    NSigmasPsetNames,
+    loader,
+    NSigmasISysts,
+    NSigmas,
+    kTruthCut_IsSignal,
+    kNoShift,
+    true
+  );
+
+
   // Run
 
   loader.Go();
@@ -169,11 +214,13 @@ void MakeTree(){
   // merge trees
 
   tree_SelectedEvents_NSigmas->MergeTree( *tree_SelectedEvents );
+  tree_Truth_NSigmas->MergeTree( *tree_Truth );
 
 
   // Output
 
   TFile *f_out = new TFile("output.root", "RECREATE");
   tree_SelectedEvents_NSigmas->SaveToTClonesArrays(f_out);
+  tree_Truth_NSigmas->SaveTo(f_out);
 
 }
