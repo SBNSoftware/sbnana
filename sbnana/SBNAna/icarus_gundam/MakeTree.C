@@ -168,10 +168,8 @@ void MakeTree(){
   );
 
   //===================================
-  // EVENT SELECTION TREE
+  // TRUTH TREE TREE
 
-  // Define Tree variables
-  // Example here are defined at sbnana/SBNAna/Vars/NuMIXSecVars.h
   std::vector<std::string> vec_labels_Truth = {
     "TrueMuonP",
     "TrueMuonCos",
