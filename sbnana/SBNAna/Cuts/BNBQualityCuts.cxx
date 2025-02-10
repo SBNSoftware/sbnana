@@ -1,5 +1,5 @@
 #include "sbnana/CAFAna/Core/Cut.h"
-#include "sbnana/SBNAna/Cuts/BNBQualityCuts_Jan2025.h"
+#include "sbnana/SBNAna/Cuts/BNBQualityCuts.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include <iostream>
 
@@ -308,17 +308,14 @@ const SpillCut kTHCURR([](const caf::SRSpillProxy* sr){
 // ------------------------------------- */
 
 const SpillCut kBNBQuality_noBPMs_10Feb2025([](const caf::SRSpillProxy* sr) {
-    if( sr.hdr.nbnbinfo){
+    if( sr->hdr.nbnbinfo){
         GLOBAL_SPILL_INFO.clear();
-        for( const auto &bnbinfo : sr->hrd.bnbinfo){
+        for( const auto &bnbinfo : sr->hdr.bnbinfo){
             fill_spill_info( sr->hdr.run, bnbinfo);
         }
     }
     for( const auto& match: GLOBAL_SPILL_INFO) {
         if( match.event != sr->hdr.evt) continue;
-        if( match.TOR860
-
-        if( match.event != sr->hdr.evt) continue; 
         if( match.TOR860 >= TOR860_LB && \
               match.TOR875 >= TOR875_LB && \
               match.LM875A >= LM875A_LB && \
