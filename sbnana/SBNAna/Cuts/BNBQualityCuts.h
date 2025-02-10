@@ -32,5 +32,7 @@ extern const SpillCut kTHCURR;
 
 // ^--- INDIVIDUAL CUTS ; MASTER CUT ---v
 
-extern const SpillCut kBNBQuality_Jan25; // combination of ALL cuts given above
+extern const SpillCut kBNBQuality_noBPMs_10Feb2025;
+extern const SpillCut kBNBQuality; // combination of individual cuts given above
+                                   // NB: NOT IN USE AS OF Feb. 10th, 2025
 }

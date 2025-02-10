@@ -307,7 +307,38 @@ const SpillCut kTHCURR([](const caf::SRSpillProxy* sr){
 //                                        |
 // ------------------------------------- */
 
-const SpillCut kBNBQuality_Jan2025([](const caf::SRSpillProxy* sr){
+const SpillCut kBNBQuality_noBPMs_10Feb2025([](const caf::SRSpillProxy* sr) {
+    if( sr.hdr.nbnbinfo){
+        GLOBAL_SPILL_INFO.clear();
+        for( const auto &bnbinfo : sr->hrd.bnbinfo){
+            fill_spill_info( sr->hdr.run, bnbinfo);
+        }
+    }
+    for( const auto& match: GLOBAL_SPILL_INFO) {
+        if( match.event != sr->hdr.evt) continue;
+        if( match.TOR860
+
+        if( match.event != sr->hdr.evt) continue; 
+        if( match.TOR860 >= TOR860_LB && \
+              match.TOR875 >= TOR875_LB && \
+              match.LM875A >= LM875A_LB && \
+              match.LM875B >= LM875B_LB && \
+              match.LM875C >= LM875C_LB && \
+//              match.HP875  >= HP875_LB  && match.HP875 <= HP875_UB  && 
+//              match.VP875  >= VP875_LB  && match.VP875 <= VP875_UB  && 
+//              match.HPTG1  >= HPTG1_LB  && match.HPTG1 <= HPTG1_UB  && 
+//              match.VPTG1  >= VPTG1_LB  && match.VPTG1 <= VPTG1_UB  && 
+//              match.HPTG2  >= HPTG2_LB  && match.HPTG2 <= HPTG2_UB  && 
+//              match.VPTG2  >= VPTG2_LB  && match.VPTG2 <= VPTG2_UB  && 
+//              match.BTJT2  >= BTJT2_LB  && match.BTJT2  < BTJT2_UB  &&
+              match.THCURR >= THCURR_LB && match.THCURR <= THCURR_UB) {
+            return true;
+        }
+    }
+    return false;
+});
+
+const SpillCut kBNBQuality([](const caf::SRSpillProxy* sr){
     if( sr->hdr.nbnbinfo){
         GLOBAL_SPILL_INFO.clear();
         for( const auto &bnbinfo : sr->hdr.bnbinfo){ 
