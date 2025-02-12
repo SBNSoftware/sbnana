@@ -1,38 +1,31 @@
-#pragma once
+///////////////////////////////////////////////////////////////////////////////
+// File: BNBQualityCuts.h                                                    //
+// Author: Jacob Smith (smithja)                                             //
+// Last edited: March 6th, 2025                                              //
+//                                                                           //
+// Header file to define all of the BNB Quality Cuts for the ICARUS          //
+// experiment.                                                               //
+///////////////////////////////////////////////////////////////////////////////
 
 #include "sbnana/CAFAna/Core/Cut.h"
 
 namespace ana {
+    extern const SpillCut kTOR860Cut;
+    extern const SpillCut kTOR875Cut;
 
-extern const SpillCut kTOR860;
-extern const SpillCut kTOR875;
-
-extern const SpillCut kLM875A;
-extern const SpillCut kLM875B;
-extern const SpillCut kLM875C;
-
-extern const SpillCut kHP875;
-extern const SpillCut kVP875;
-
-extern const SpillCut kHPTG1; 
-extern const SpillCut kVPTG1;
-
-extern const SpillCut kHPTG2;
-extern const SpillCut kVPTG2;
+    extern const SpillCut kLM875ACut;
+    extern const SpillCut kLM875BCut;
+    extern const SpillCut kLM875CCut;
 
 /*
-   This cut is left commented out since it is hard to implement but may be of
-   future use. See the BNBQualityCuts_<Nov2024, Jan2025>.cxx files for more
-   information. -- Jacob Smith
-
-extern const SpillCut kBTJT2; 
+    This cut is left commented out since it is hard to implement but may be of
+    future use. See the BNBQualityCuts.cxx for more information.
 */
+//     extern const SpillCut kBTJT2;
 
-extern const SpillCut kTHCURR;
+    extern const SpillCut kTHCURRCut;
 
-// ^--- INDIVIDUAL CUTS ; MASTER CUT ---v
+    // ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
 
-extern const SpillCut kBNBQuality_noBPMs_10Feb2025;
-extern const SpillCut kBNBQuality; // combination of individual cuts given above
-                                   // NB: NOT IN USE AS OF Feb. 10th, 2025
+    extern const SpillCut kBNBQualityCut;
 }
