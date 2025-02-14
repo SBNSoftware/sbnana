@@ -15,6 +15,10 @@
 
 namespace ana
 {
+    // readout time for a given spill
+    // units: s (i.e. seconds)
+    extern const SpillVar kSpillTimeSec;
+
     // toroid devices: monitor protons on target (POT)
     // units: POT
     extern const SpillVar kSpillTOR860;

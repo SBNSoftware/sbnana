@@ -7,8 +7,6 @@
 // experiment.                                                               //
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
 #include "sbnana/CAFAna/Core/Cut.h"
 
 namespace ana {
@@ -38,15 +36,5 @@ namespace ana {
 
     // ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
 
-    extern const SpillCut kBNBQuality_noBPMs_10Feb2025 = \
-        kTOR860Cut && kTOR875Cut && \
-        kLM875ACut && kLM875BCut && kLM875CCut && \
-//        kBTJT2Cut &&
-        kTHCURRCut;
-
-    extern const SpillCut kBNBQuality = \ // all individual cuts 
-        kBNBQuality_noBPMs_10Feb2025 && \ // NOT IN USE AS OF Feb. 10th, 2025
-        kHP875Cut && kVP875Cut && \
-        kHPTG1Cut && kVPTG1Cut && \
-        kHPTG2Cut && kVPTG2Cut;
+    extern const SpillCut kBNBQualityCut_noBPMs_10Feb2025 = kTOR860Cut && kTOR875Cut && kLM875ACut && kLM875BCut && kLM875CCut && kTHCURRCut;
 }

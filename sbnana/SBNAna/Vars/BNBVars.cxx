@@ -9,9 +9,6 @@
 // creating Spectra (like what is done with regular Cuts).                   //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "sbnana/CAFAna/Core/Var.h"
-#include "sbnana/CAFAna/Core/Cut.h"
-
 #include "sbnana/SBNAna/Vars/BNBVars.h"
 
 #include "sbnana/CAFAna/Core/Utilities.h"
@@ -21,6 +18,10 @@
 
 namespace ana
 {
+    // readout time for a given spill
+    // units: s (i.e. seconds)
+    const SpillVar kSpillTimeSec = SIMPLESPILLVAR( hdr.spillbnbinfo.spill_time_sec);
+
     // toroid devices: monitor protons on target (POT)
     // units: POT
     const SpillVar kSpillTOR860 = SIMPLESPILLVAR( hdr.spillbnbinfo.TOR860);

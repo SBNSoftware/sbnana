@@ -7,7 +7,10 @@
 // experiment.                                                               //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "sbnana/CAFAna/Core/Cut.h"
+
 #include "sbnana/SBNAna/Vars/BNBVars.h"
+#include "sbnana/SBNAna/Cuts/BNBQualityCuts.h"
 
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
@@ -20,12 +23,12 @@ namespace ana { // use namespace ana for entire file
     latest (read 'final') version of a given cut will be the most stringent cut
      we can make with a limited knowledge of the detailed behavior of that cut.
 */
-static constexpr double TOR860_LB = +100e9; // units: POT
-static constexpr double TOR875_LB = +100e9; 
+const double TOR860_LB = +100e9; // units: POT
+const double TOR875_LB = +100e9; 
 
-static constexpr double LM875A_LB = +1e-2; // units: rad/s
-static constexpr double LM875B_LB = +1e-2;
-static constexpr double LM875C_LB = +1e-2;
+const double LM875A_LB = +1e-2; // units: rad/s
+const double LM875B_LB = +1e-2;
+const double LM875C_LB = +1e-2;
 
 /* 
     SMITHJA: I am waiting on the External Beams group to provide a table
@@ -33,12 +36,12 @@ static constexpr double LM875C_LB = +1e-2;
     data runs. Until that time, the cuts for the BPM variables are my personal
     best guess after looking at these variables for ICARUS's Run 2 data. 
 */
-static constexpr double HP875_LB = -0.25, HP875_UB = +0.25; // units: mm
-static constexpr double VP875_LB = -0.25, VP875_UB = +0.30;
-static constexpr double HPTG1_LB = -0.25, HPTG1_UB = +0.25;
-static constexpr double VPTG1_LB = -0.20, VPTG1_UB = +0.30;
-static constexpr double HPTG2_LB = -0.25, HPTG2_UB = +0.25;
-static constexpr double VPTG2_LB = -0.20, VPTG2_UB = +0.30;
+const double HP875_LB = -0.25, HP875_UB = +0.25; // units: mm
+const double VP875_LB = -0.25, VP875_UB = +0.30;
+const double HPTG1_LB = -0.25, HPTG1_UB = +0.25;
+const double VPTG1_LB = -0.20, VPTG1_UB = +0.30;
+const double HPTG2_LB = -0.25, HPTG2_UB = +0.25;
+const double VPTG2_LB = -0.20, VPTG2_UB = +0.30;
 
 /*
     The BTJT2 variable is somewhat unreliable to use as a spill-by-spill cut.
@@ -48,7 +51,7 @@ static constexpr double VPTG2_LB = -0.20, VPTG2_UB = +0.30;
     have diminishing returns compared to other BNB quality variables listed. 
     You may employ cuts on BTJT2 at your own peril.
 */
-// static constexpr double BTJT2_LB = 999, BTJT2_UB = 999; // units: deg C
+// const double BTJT2_LB = 999, BTJT2_UB = 999; // units: deg C
 
 
 /* 
@@ -59,8 +62,8 @@ static constexpr double VPTG2_LB = -0.20, VPTG2_UB = +0.30;
     found that a range of 173 to 177 included the horn currents for a majority
     of ICARUS data runs.
 */
-// static constexpr double THCURR_LB = +173, THCURR_UB = +177; // units: kA
-static constexpr double THCURR_LB = +173, THCURR_UB = +175; // units: kA
+// const double THCURR_LB = +173, THCURR_UB = +177; // units: kA
+const double THCURR_LB = +173, THCURR_UB = +175; // units: kA
 
 //-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
