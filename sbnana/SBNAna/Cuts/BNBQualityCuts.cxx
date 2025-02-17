@@ -85,4 +85,9 @@ const SpillCut kVPTG2Cut = kSpillVPTG2 >= VPTG2_LB && kSpillVPTG2 <= VPTG2_UB;
 //const SpillCut kBTJT2Cut = kSpillBTJT2 >= BTJT2_LB && kSpillBTJT2 <= BTJT2_UB;
 
 const SpillCut kTHCURRCut = kSpillTHCURR >= THCURR_LB && kSpillTHCURR <= THCURR_UB;
+
+// ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
+
+const SpillCut kBNBQualityCut_noBPMs_10Feb2025 = kTOR860Cut && kTOR875Cut && kLM875ACut && kLM875BCut && kLM875CCut && kTHCURRCut;
+
 } // stop using namespace ana

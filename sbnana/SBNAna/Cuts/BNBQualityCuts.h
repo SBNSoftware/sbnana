@@ -36,5 +36,5 @@ namespace ana {
 
     // ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
 
-    extern const SpillCut kBNBQualityCut_noBPMs_10Feb2025 = kTOR860Cut && kTOR875Cut && kLM875ACut && kLM875BCut && kLM875CCut && kTHCURRCut;
+    extern const SpillCut kBNBQualityCut_noBPMs_10Feb2025;
 }
