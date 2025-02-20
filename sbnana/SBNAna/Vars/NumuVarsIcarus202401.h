@@ -20,12 +20,11 @@ namespace chi2pid {
 
 // Adapted from Jaesung's Chi2 Syst
 struct Chi2PID {
-  Chi2PID() : file_dEdXUncTemplate("template_dEdXUncertainty.root"), file_Chi2Template("dEdxrestemplates.root") {
-    dedx_unc_template = (TGraph2D*)file_dEdXUncTemplate.Get("dEdXRelUncertainty_dEdX_vs_phi");
-    dedx_range_pro = (TProfile*)file_Chi2Template.Get("dedx_range_pro");
-    dedx_range_ka  = (TProfile*)file_Chi2Template.Get("dedx_range_ka");
-    dedx_range_pi  = (TProfile*)file_Chi2Template.Get("dedx_range_pi");
-    dedx_range_mu  = (TProfile*)file_Chi2Template.Get("dedx_range_mu");
+  Chi2PID();
+
+  ~Chi2PID() {
+    file_dEdXUncTemplate->Close();
+    file_Chi2Template->Close();
   }
 
   struct Chi2PIDResult {
@@ -138,7 +137,7 @@ struct Chi2PID {
     return output;
   }
 
-  TFile file_dEdXUncTemplate, file_Chi2Template;
+  TFile *file_dEdXUncTemplate, *file_Chi2Template;
   TGraph2D *dedx_unc_template;
   TProfile *dedx_range_pro, *dedx_range_ka, *dedx_range_pi, *dedx_range_mu;
 };

@@ -2,9 +2,32 @@
 #include "sbnana/CAFAna/Core/MultiVar.h"
 #include "sbnana/CAFAna/Core/Var.h"
 
+#include "cetlib/search_path.h"
+
 namespace ana {
 
 namespace chi2pid {
+
+Chi2PID::Chi2PID() {
+  cet::search_path sp("FW_SEARCH_PATH");
+
+  std::string kdEdXUncTemplateFileName = "template_dEdXUncertainty.root";
+  std::string kdEdXUncTemplateFullFilePath;
+  sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath);
+
+  file_dEdXUncTemplate = TFile::Open(kdEdXUncTemplateFullFilePath.c_str());
+  dedx_unc_template = (TGraph2D*)file_dEdXUncTemplate->Get("dEdXRelUncertainty_dEdX_vs_phi");
+
+  std::string kChi2TemplateFileName = "dEdxrestemplates.root";
+  std::string kChi2TemplateFullFilePath;
+  sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath);
+
+  file_Chi2Template = TFile::Open(kChi2TemplateFullFilePath.c_str());
+  dedx_range_pro = (TProfile*)file_Chi2Template->Get("dedx_range_pro");
+  dedx_range_ka  = (TProfile*)file_Chi2Template->Get("dedx_range_ka");
+  dedx_range_pi  = (TProfile*)file_Chi2Template->Get("dedx_range_pi");
+  dedx_range_mu  = (TProfile*)file_Chi2Template->Get("dedx_range_mu");
+}
 
 Chi2PID chi2_calculator;
 
