@@ -200,7 +200,4 @@ extern const Var kIcarus202401MuonChi2Mu;
 extern const Var kIcarus202401LeadingProtonChi2Proton;
 
 extern const Var kIcarus202401BaryFMDeltaZ;
-
 }
-
-

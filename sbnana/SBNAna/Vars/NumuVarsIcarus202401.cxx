@@ -550,9 +550,3 @@ const Var kIcarus202401RecoMuonEndZ([](const caf::SRSliceProxy *slc)->double{
 const Var kIcarus202401BaryFMDeltaZ = SIMPLEVAR(barycenterFM.deltaZ_Trigger);
 
 }
-
-
-
-
-
-
