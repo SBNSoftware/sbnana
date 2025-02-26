@@ -44,6 +44,24 @@ namespace ana{
     }
     );
 
+  const Cut kTrueContainedFDCryo1([](const caf::SRSliceProxy* slc){
+      bool iscont = false;
+      for(unsigned int primid = 0; primid < slc->truth.prim.size(); primid++){
+	  iscont = PtInVol(slc->truth.prim[primid].end, fvfd_cryo1);
+      }
+      return iscont;
+  });
+
+  const Cut kTrueContainedFDCryo2([](const caf::SRSliceProxy* slc){
+      bool iscont = false;
+      for(unsigned int primid = 0; primid < slc->truth.prim.size(); primid++){
+	  iscont = PtInVol(slc->truth.prim[primid].end, fvfd_cryo2);
+      }
+      return iscont;
+  });
+
+  const Cut kTrueContainedFD = kTrueContainedFDCryo1 || kTrueContainedFDCryo2;
+
   const Cut kIsAntiNu([](const caf::SRSliceProxy* slc){
             if(slc->truth.index < 0) return false;
             return slc->truth.pdg < 0;
