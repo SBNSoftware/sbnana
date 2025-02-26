@@ -24,6 +24,10 @@ namespace ana
   extern const Cut kTrueFiducialVolumeFDCryo1;
   extern const Cut kTrueFiducialVolumeFDCryo2;
 
+  extern const Cut kTrueContainedFDCryo1;
+  extern const Cut kTrueContainedFDCryo2;
+  extern const Cut kTrueContainedFD;
+
   extern const Cut kVtxDistMagCut;
 
   extern const Cut kSlcCompletenessCut;
