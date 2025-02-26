@@ -15,9 +15,26 @@
 #include <fstream>
 #include <iomanip>
 
-ofstream output("/outputdir_path/table_output.txt");
+#include <sys/stat.h> // for creating directories
+#include <errno.h>    // for creating directories and tracking errors thereof
+
+ofstream output("tables/table_output.txt");
 
 namespace ana{
+  void create_dir( const std::string* dirname) {
+    const char* char_dirname = dirname->c_str(); // cast as char* for mkdir()
+    int status = mkdir( char_dirname, 0777); // 0777 gives full permissions
+      
+    if( status == 0) {
+      std::cout << "Directory " << *dirname << " created using mkdir." << std::endl;
+    }
+    else if( errno == EEXIST) {
+      std::cerr << "Directory " << *dirname << " already exists." << std::endl;
+    }
+    else {
+      std::cerr << "Error creating directory " << *dirname << "using mkdir.";
+    }
+  }
 
   // ----------------------------------------------------------------------
   // Tables
@@ -267,7 +284,7 @@ namespace ana{
 
   // Efficiency and purity graphs 
   //-----------------------------------------------------------------
-
+/*
   TH1D* EffOrPurHistogram(TH1* hSelSignal, TH1* hSelBack, TH1* hSignal, bool geteff) {
 
     //
@@ -277,6 +294,27 @@ namespace ana{
     hTotal->Add(hSelBack);
 
     TH1D* hPurity = (TH1D*)hSelSignal->Clone();
+    hPurity->Divide(hTotal);
+
+    TH1D* hEfficiency = (TH1D*)hSelSignal->Clone();
+    hEfficiency->Divide(hSignal);
+
+    if ( geteff )
+      return hEfficiency;
+    else
+      return hPurity;
+
+  }
+*/
+  TH1D* EffOrPurHistogram(TH1* hSelSignal, TH1* hSelBack, TH1* hSignal, TH1* hSelSignalPur, bool geteff) {
+
+    //
+    // Make a ROC TGraph for the given signal and background histos
+    //
+    TH1D* hTotal = (TH1D*)hSelSignalPur->Clone();
+    hTotal->Add(hSelBack);
+
+    TH1D* hPurity = (TH1D*)hSelSignalPur->Clone();
     hPurity->Divide(hTotal);
 
     TH1D* hEfficiency = (TH1D*)hSelSignal->Clone();
