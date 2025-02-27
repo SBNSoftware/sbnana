@@ -1338,11 +1338,9 @@ namespace ana
       // Save the weights
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
-        const double lo = fNSigmasLo.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
-        const double hi = fNSigmasHi.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        knob_vals[ fOrderedBranchWeightNames.at(idxBranchWeight) ] = fNSigmas.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         for ( unsigned int idxWt = 0; idxWt < (unsigned int)NSigmas; ++idxWt ) {
           weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxEntry).at(idxWt));
-          knob_vals[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(lo + (hi-lo)*(double)idxWt/(NSigmas-1));
         }
       }
 
