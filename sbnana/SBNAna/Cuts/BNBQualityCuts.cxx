@@ -42,24 +42,24 @@ const double LM875C_LB = +1e-2;
     to use the nominal BPM values from MicroBooNE, these should be encoded in
     the offsets below. These offsets are taken from getFOM2.cxx linked above.
 */
-double hp875_offset = -3.40271; // units: mm
-double vp875_offset = +1.47511;
-double hptg1_offset = +0.457014;
-double vptg1_offset = +0.38914;
-double hptg2_offset = +0.8;
-double vptg2_offset = +1.0;
+//const double hp875_offset = -3.40271; // units: mm
+//const double vp875_offset = +1.47511;
+//const double hptg1_offset = +0.457014;
+//const double vptg1_offset = +0.38914;
+//const double hptg2_offset = +0.8;
+//const double vptg2_offset = +1.0;
 
 /* 
     SMITHJA: The MicroBooNE offsets allow no spills to pass through. We are
-    instead re-setting the offsets to zero and hoping External Beams will 
+    instead setting the offsets to zero and hoping External Beams will 
     come through...
 */
-hp875_offset = 0; // units: mm
-vp875_offset = 0;
-hptg1_offset = 0;
-vptg1_offset = 0;
-hptg2_offset = 0;
-vptg2_offset = 0;
+const double hp875_offset = 0.0; // units: mm
+const double vp875_offset = 0.0;
+const double hptg1_offset = 0.0;
+const double vptg1_offset = 0.0;
+const double hptg2_offset = 0.0;
+const double vptg2_offset = 0.0;
 
 const double HP875_LB = -0.25, HP875_UB = +0.25; // units: mm
 const double VP875_LB = -0.25, VP875_UB = +0.30;
