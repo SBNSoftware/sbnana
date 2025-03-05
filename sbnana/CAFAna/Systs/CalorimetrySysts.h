@@ -6,9 +6,8 @@
 #include "TFile.h"
 #include "TGraph2D.h"
 #include "TProfile.h"
-#include "TMath.h"
 
-#include <vector>
+#include <optional>
 
 namespace ana
 {
@@ -43,14 +42,48 @@ namespace ana
     double gain_err;
     CaloSystMode kCaloSystMode;
 
+    /*
+     * Loading of the information is lazy and happens the first time
+     * `rangeTemplates()` and `dEdXuncTemplates()` are called.
+     * 
+     */
+    
     // dEdX uncertainty template
-    TGraph2D *dedx_unc_template;
+    struct dEdX_uncertainty_t {
+      TGraph2D *templ = nullptr;
+    };
+    
+    struct dEdX_range_templates_t {
+      TProfile *pro = nullptr;    ///< proton template
+      TProfile *ka  = nullptr;    ///< kaon template
+      TProfile *pi  = nullptr;    ///< pion template
+      TProfile *mu  = nullptr;    ///< muon template
+    };
 
-    TProfile *dedx_range_pro;   ///< proton template
-    TProfile *dedx_range_ka;    ///< kaon template
-    TProfile *dedx_range_pi;    ///< pion template
-    TProfile *dedx_range_mu;    ///< muon template
-
+    /// Fetches and stores template information.
+    class cache_t {
+      
+      mutable std::optional<dEdX_uncertainty_t> dedx_unc;       ///< dE/dX uncertainty
+      mutable std::optional<dEdX_range_templates_t> dedx_range; ///< PID uncertainty templates
+      
+      /// Loads and returns the dE/dX uncertainty template(s).
+      dEdX_uncertainty_t load_dEdXuncTemplates() const;
+      
+      /// Loads and returns the range templates.
+      dEdX_range_templates_t load_rangeTemplates() const;
+      
+        public:
+          
+      /// Returns the range templates, loading them if needed.
+      dEdX_uncertainty_t const& dEdXuncTemplates() const;
+      
+      /// Returns the range templates, loading them if needed.
+      dEdX_range_templates_t const& rangeTemplates() const;
+      
+    }; // cache_t
+    
+    cache_t cache; ///< Data cache.
+    
   };
 
   extern const CalorimetrySyst kCalodEdXShiftSyst;
