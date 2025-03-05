@@ -8,25 +8,39 @@ namespace ana {
 
 namespace chi2pid {
 
-Chi2PID::Chi2PID() {
-  cet::search_path sp("FW_SEARCH_PATH");
+void Chi2PID::check_graphs() {
+  if(dedx_range_pro == NULL || dedx_range_ka == NULL ||
+     dedx_range_pi == NULL || dedx_range_mu == NULL) {
+    cet::search_path sp("FW_SEARCH_PATH");
 
-  std::string kdEdXUncTemplateFileName = "template_dEdXUncertainty.root";
-  std::string kdEdXUncTemplateFullFilePath;
-  sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath);
+    std::string kdEdXUncTemplateFileName = "template_dEdXUncertainty.root";
+    std::string kdEdXUncTemplateFullFilePath;
 
-  file_dEdXUncTemplate = TFile::Open(kdEdXUncTemplateFullFilePath.c_str());
-  dedx_unc_template = (TGraph2D*)file_dEdXUncTemplate->Get("dEdXRelUncertainty_dEdX_vs_phi");
+    if (!sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath)) {
+      std::cerr << "ICARUS 202401 numu selection: failed to locate dE/dx template file '"
+        << kdEdXUncTemplateFileName << "'" << std::endl;
+      std::abort();
+    }
 
-  std::string kChi2TemplateFileName = "dEdxrestemplates.root";
-  std::string kChi2TemplateFullFilePath;
-  sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath);
+    file_dEdXUncTemplate = TFile::Open(kdEdXUncTemplateFullFilePath.c_str());
+    dedx_unc_template = file_dEdXUncTemplate->Get<TGraph2D>("dEdXRelUncertainty_dEdX_vs_phi");
 
-  file_Chi2Template = TFile::Open(kChi2TemplateFullFilePath.c_str());
-  dedx_range_pro = (TProfile*)file_Chi2Template->Get("dedx_range_pro");
-  dedx_range_ka  = (TProfile*)file_Chi2Template->Get("dedx_range_ka");
-  dedx_range_pi  = (TProfile*)file_Chi2Template->Get("dedx_range_pi");
-  dedx_range_mu  = (TProfile*)file_Chi2Template->Get("dedx_range_mu");
+    std::string kChi2TemplateFileName = "dEdxrestemplates.root";
+    std::string kChi2TemplateFullFilePath;
+
+    if (!sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath)) {
+      std::cerr << "\nICARUS 202401 numu selection: failed to locate dE/dx template file '"
+        << kChi2TemplateFileName << "'" << std::endl;
+      std::abort();
+    }
+
+    file_Chi2Template = TFile::Open(kChi2TemplateFullFilePath.c_str());
+    dedx_range_pro = file_Chi2Template->Get<TProfile>("dedx_range_pro");
+    dedx_range_ka  = file_Chi2Template->Get<TProfile>("dedx_range_ka");
+    dedx_range_pi  = file_Chi2Template->Get<TProfile>("dedx_range_pi");
+    dedx_range_mu  = file_Chi2Template->Get<TProfile>("dedx_range_mu");
+
+  }
 }
 
 Chi2PID chi2_calculator;

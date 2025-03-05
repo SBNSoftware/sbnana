@@ -20,11 +20,12 @@ namespace chi2pid {
 
 // Adapted from Jaesung's Chi2 Syst
 struct Chi2PID {
-  Chi2PID();
+  Chi2PID() : file_dEdXUncTemplate(NULL), file_Chi2Template(NULL), dedx_unc_template(NULL), 
+  dedx_range_pro(NULL), dedx_range_ka(NULL), dedx_range_pi(NULL), dedx_range_mu(NULL) { }
 
   ~Chi2PID() {
-    file_dEdXUncTemplate->Close();
-    file_Chi2Template->Close();
+    if(file_dEdXUncTemplate) file_dEdXUncTemplate->Close();
+    if(file_Chi2Template) file_Chi2Template->Close();
   }
 
   struct Chi2PIDResult {
@@ -32,7 +33,10 @@ struct Chi2PID {
     int ndof;
   };
 
-  Chi2PIDResult calculate_chi2(const caf::Proxy<caf::SRTrackCalo> &calo) const {
+  void check_graphs();
+
+  Chi2PIDResult calculate_chi2(const caf::Proxy<caf::SRTrackCalo> &calo) {
+    check_graphs();
     int npt = 0;
     double chi2pro = 0;
     double chi2ka = 0;
