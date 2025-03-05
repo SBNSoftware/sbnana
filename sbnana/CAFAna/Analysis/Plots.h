@@ -146,6 +146,10 @@ namespace ana
   THStack* ToTHStack(const std::vector<std::pair<Spectrum, Color_t>>& s,
                      double pot);
 
+  /// Can call like ToTHStack({{h1, kRed}, {h2, kBlue}}, pot, {intime, kViolet}, intime_livetime)
+  THStack* ToTHStack(const std::vector<std::pair<Spectrum, Color_t>>& s,
+                     double pot, std::pair<Spectrum&, Color_t> p, double livetime, 
+                     bool reversed = false);
 
   /// \brief Create a legend, maximizing distance from all histograms
   ///
