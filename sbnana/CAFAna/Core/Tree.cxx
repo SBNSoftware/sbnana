@@ -735,7 +735,7 @@ namespace ana
       fNWeightsExpected[labels.at(i)] = (unsigned int)((nSigma.at(i).second-nSigma.at(i).first) + 1);
       fNSigmas[labels.at(i)] = {};
       for( unsigned int i_sigma=0; i_sigma<fNWeightsExpected[labels.at(i)]; ++i_sigma){
-        fNSigmas[labels.at(i)].push_back( nSigma.at(i).first + i_sigma );
+        fNSigmas[labels.at(i)].push_back( (float)nSigma.at(i).first + (float)i_sigma );
       }
 
     }
