@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File: BNBQualityCuts.h                                                    //
 // Author: Jacob Smith (smithja)                                             //
-// Last edited: February 12th, 2025                                          //
+// Last edited: March 6th, 2025                                              //
 //                                                                           //
 // Header file to define all of the BNB Quality Cuts for the ICARUS          //
 // experiment.                                                               //
@@ -17,15 +17,6 @@ namespace ana {
     extern const SpillCut kLM875BCut;
     extern const SpillCut kLM875CCut;
 
-    extern const SpillCut kHP875Cut;
-    extern const SpillCut kVP875Cut;
-
-    extern const SpillCut kHPTG1Cut; 
-    extern const SpillCut kVPTG1Cut;
-
-    extern const SpillCut kHPTG2Cut;
-    extern const SpillCut kVPTG2Cut;
-
 /*
     This cut is left commented out since it is hard to implement but may be of
     future use. See the BNBQualityCuts.cxx for more information.
@@ -36,5 +27,5 @@ namespace ana {
 
     // ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
 
-    extern const SpillCut kBNBQualityCut_noBPMs_10Feb2025;
+    extern const SpillCut kBNBQualityCut;
 }
