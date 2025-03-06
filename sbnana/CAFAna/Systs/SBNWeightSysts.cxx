@@ -44,6 +44,31 @@ namespace ana
   }
 
   // --------------------------------------------------------------------------
+  double UniverseWeight::operator()(const caf::SRTrueInteractionProxy* nu) const
+  {
+
+    if(fPSetIdx == -1){
+      const UniverseOracle& uo = UniverseOracle::Instance();
+      fPSetIdx = uo.ParameterSetIndex(fPSetName);
+    }
+
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = nu->wgt;
+    if(wgts.empty()) return 1;
+
+    const int Nwgts = wgts[fPSetIdx].univ.size();
+
+    static bool once = true;
+    if(!once && fUnivIdx >= Nwgts){
+      once = false;
+      std::cout << "UniverseWeight: WARNING requesting universe " << fUnivIdx << " in parameter set " << fPSetName << " which only has size " << Nwgts << ". Will wrap-around and suppress future warnings." << std::endl;
+    }
+
+    const unsigned int unividx = fUnivIdx % Nwgts;
+
+    return wgts[fPSetIdx].univ[unividx];
+  }
+
+  // --------------------------------------------------------------------------
   SBNWeightSyst::SBNWeightSyst(const std::string& systName)
     : ISyst(systName, systName),
       fIdx(-1)
@@ -53,11 +78,17 @@ namespace ana
   // --------------------------------------------------------------------------
   void SBNWeightSyst::Shift(double x, caf::SRSliceProxy* sr, double& weight) const
   {
-    if(sr->truth.index < 0) return;
+    this->Shift(x, &sr->truth, weight);
+  }
+
+  // --------------------------------------------------------------------------
+  void SBNWeightSyst::Shift(double x, caf::SRTrueInteractionProxy* nu, double& weight) const
+  {
+    if(nu->index < 0) return;
 
     if(fIdx == -1) fIdx = UniverseOracle::Instance().SystIndex(ShortName());
 
-    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = nu->wgt;
     if(wgts.empty()) return;
 
     const Univs u = GetUnivs(x);

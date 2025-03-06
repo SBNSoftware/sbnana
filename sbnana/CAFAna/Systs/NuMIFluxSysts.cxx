@@ -48,12 +48,17 @@ namespace ana {
   //----------------------------------------------------------------------
   void NuMIFluxSyst::Shift(double sigma, caf::SRSliceProxy* slc, double& weight) const
   {
-    if (slc->truth.index < 0) return; // No neutrino
+    return this->Shift(sigma, &slc->truth, weight);
+  }
+
+  //----------------------------------------------------------------------
+  void NuMIFluxSyst::Shift(double sigma, caf::SRTrueInteractionProxy* nu, double& weight) const
+  {
+    if(nu->index < 0) return; // No neutrino
 
     // TODO switch to regular detector flag as soon as it's filled reliably
-    if (slc->truth.baseline < 500) {
-      std::cout << "Using NuMIFluxSyst on what appears not to be an icarus file (baseline = "
-                << slc->truth.baseline << ")!" << std::endl;
+    if(nu->baseline < 500){
+      std::cout << "Using NuMIFluxSyst on what appears not to be an icarus file (baseline = " << nu->baseline << ")!" << std::endl;
       abort();
     }
 
@@ -93,17 +98,17 @@ namespace ana {
       }
     } // end if
 
-    const int flav = abs(slc->truth.initpdg);
-    if (flav != 12 && flav != 14) return;
+    const int flav = abs(nu->initpdg);
+    if(flav != 12 && flav != 14) return;
 
     const int hcIdx = 0; // TODO TODO always FHC
     const int flavIdx = (flav == 12) ? 0 : 1;
-    const int signIdx = (slc->truth.initpdg > 0) ? 0 : 1;
+    const int signIdx = (nu->initpdg > 0) ? 0 : 1;
 
     TH1* h = fScale[hcIdx][flavIdx][signIdx];
     assert(h);
 
-    const int bin = h->FindBin(slc->truth.E);
+    const int bin = h->FindBin(nu->E);
 
     if (bin == 0 || bin == h->GetNbinsX() + 1) return;
 

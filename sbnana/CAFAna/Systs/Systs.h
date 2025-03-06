@@ -13,8 +13,12 @@ class MECSyst: public ISyst
   MECSyst() : ISyst("mec", "100% MEC Systematic") {}
   void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const override
   {
+    return this->Shift(sigma, &sr->truth, weight);
+  }
+  void Shift(double sigma, caf::SRTrueInteractionProxy* nu, double& weight) const override
+  {
     if(sigma < -1) sigma = -1;
-    if(sr->truth.genie_mode == 10) weight *= 1 + sigma;
+    if(nu->genie_mode == 10) weight *= 1 + sigma;
   }
 };
 
@@ -25,6 +29,10 @@ class POTSyst: public ISyst
   public:
   POTSyst() : ISyst("potsyst", "2% Systematic on POT") {}
   void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const override
+  {
+    return this->Shift(sigma, &sr->truth, weight);
+  }
+  void Shift(double sigma, caf::SRTrueInteractionProxy* nu, double& weight) const override
   {
     weight *= (1.0 + 0.02 * sigma);
   }
