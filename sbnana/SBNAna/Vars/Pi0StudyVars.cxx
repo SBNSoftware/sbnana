@@ -185,7 +185,7 @@ namespace ana {
 
   });
 
-  // MultiVar for the photon candidate indices
+  // MultiVar for the photon candidate indices from reconstruction
   const MultiVar kNuMIPhotonCandidateIdxs([](const caf::SRSliceProxy* slc) -> std::vector<double> {
 
     std::vector<double> rets;

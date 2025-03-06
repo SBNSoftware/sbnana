@@ -4,6 +4,8 @@
 #include <iostream>
 
 namespace ana {
+  /////////////////Spill Cuts///////////////////////////
+  //////////////////////////////////////////////////////
 
   // Cut on having valid trigger time in approx. beam window
   const SpillCut kNuMIValidTrigger ( [](const caf::SRSpillProxy *sr) {
@@ -16,6 +18,9 @@ namespace ana {
     double spillTriggerTime = kNuMISpillTriggerTime(sr);
     return spillTriggerTime > -0.1 && spillTriggerTime < 1.6;
   });
+
+  /////////////////Slice Cuts///////////////////////////
+  //////////////////////////////////////////////////////
 
   // reco vertex fiducial volume cut
   const Cut kNuMIVertexInFV([](const caf::SRSliceProxy* slc) {
@@ -34,7 +39,9 @@ namespace ana {
     return !slc->is_clear_cosmic;
   });
 
-
+  /////////////Particle Cuts///////////////////////////
+  /////////////////////////////////////////////////////
+  
   // Muon candidate
   const Cut kNuMIHasMuonCandidate([](const caf::SRSliceProxy* slc) {
     return ( kNuMIMuonCandidateIdx(slc) >= 0 );
@@ -230,6 +237,9 @@ namespace ana {
 
   });
 
+  ////////////////////////////////////////////////////////////////
+  // Sidebands
+  ////////////////////////////////////////////////////////////////
   /// Pion sideband
   const Cut kNuMIChargedPionSideBand = kNuMIVertexInFV && kNuMINotClearCosmic &&                                                /*Preselection*/
                                        kNuMIHasMuonCandidate && kNuMIHasProtonCandidate && kNuMIProtonCandidateRecoPTreshold && /*Mu, P candidates*/
@@ -317,29 +327,35 @@ namespace ana {
 /// \ref Check 1mu1Pi0X using vector of primaries
   bool Is1mu1Pi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int){
 
+    //From SRTrueInteraction
     if ( true_int.index < 0 ) return false;
 
     if ( abs(true_int.pdg) != 14 ||
          !true_int.iscc ||
          std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z) ||
-         !isInFV(true_int.position.x, true_int.position.y, true_int.position.z) )
+         !isInFV(true_int.position.x, true_int.position.y, true_int.position.z) ||
+         std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z) 
+        )
       return false; // not signal
 
+    //From SRTrueParticle
     unsigned int nMu(0), nP(0), nPi(0), nPi0(0);
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
+      //if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
+      //if (!isInFV(prim.end.x, prim.end.y, prim.end.z)) continue; // FV cut
+      if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
       double energy = prim.genE;
 
       if ( abs(prim.pdg) == 13 && momentum > 0.226 ) nMu+=1;
-
       if ( abs(prim.pdg) == 2212 ) nP+=1;
       if ( abs(prim.pdg) == 211 ) nPi+=1;
       if ( abs(prim.pdg) == 111 && energy > 0.025 ) nPi0+=1;
     }
     //if ( nMu!=1 || nPi0!=1 ) return false;
-    if ( nMu==1 && nPi0==1 ) return true;
+    if ( nMu==1 && nPi0==1 && nPi==0 ) return true;
 
     return false;
 

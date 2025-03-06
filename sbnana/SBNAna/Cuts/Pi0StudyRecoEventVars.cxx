@@ -28,8 +28,6 @@ namespace ana{
     if ( slc->truth.index < 0 ) return -1;
     return PrimaryUtil::NProton_True(slc->truth);
   });
-
-  
   // Number of primary muons
   const Var kNuMITrueNMuon([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
