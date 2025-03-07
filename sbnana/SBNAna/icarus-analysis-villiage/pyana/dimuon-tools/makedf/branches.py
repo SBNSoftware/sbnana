@@ -1,6 +1,20 @@
+mchdrbranches = [
+    "rec.hdr.pot",
+    "rec.hdr.first_in_subrun",
+    "rec.hdr.ismc",
+    "rec.hdr.run",
+    "rec.hdr.subrun",
+    "rec.hdr.ngenevt",
+    "rec.hdr.evt",
+    "rec.hdr.proc",
+    "rec.hdr.cluster",
+    "rec.hdr.fno",
+]
+
 hdrbranches = [
     "rec.hdr.pot",
     "rec.hdr.first_in_subrun",
+    "rec.hdr.ismc",
     "rec.hdr.run",
     "rec.hdr.subrun",
     "rec.hdr.ngenevt",
@@ -91,6 +105,11 @@ trkbranches = [
     trkbranch + "chi2pid.2.pida",
 ] + pfpbranches
 
+trkmcsbranches = [
+  trkbranch + "mcsP.seg_length",
+  trkbranch + "mcsP.seg_scatter_angles",
+]
+
 shwbranches = [
   shwbranch + "len"
 ]
@@ -142,17 +161,22 @@ slcbranches = [
 
 mcbranches = [
     "rec.mc.nu.E",
+    "rec.mc.nu.time",
     "rec.mc.nu.bjorkenX",
     "rec.mc.nu.inelasticityY",
     "rec.mc.nu.Q2",
     "rec.mc.nu.w",
-    "rec.mc.nu.t",
+    "rec.mc.nu.momentum.x",
+    "rec.mc.nu.momentum.y",
+    "rec.mc.nu.momentum.z",
     "rec.mc.nu.position.x",
     "rec.mc.nu.position.y",
     "rec.mc.nu.position.z",
     "rec.mc.nu.pdg",
     "rec.mc.nu.iscc",
-    "rec.mc.nu.genie_mode"
+    "rec.mc.nu.genie_mode",
+    "rec.mc.nu.parent_pdg",
+    "rec.mc.nu.parent_dcy_E",
 ]
 
 mcprimbranches = [
@@ -169,12 +193,14 @@ slc_mcbranches = ["rec.slc.truth." + ".".join(s.split(".")[3:]) for s in mcbranc
 slc_mcprimbranches = ["rec.slc.truth." + ".".join(s.split(".")[3:]) for s in mcprimbranches]
 
 mchbranches = [
+  "rec.mc.prtl.time",
   "rec.mc.prtl.E",
   "rec.mc.prtl.M",
   "rec.mc.prtl.start.x", "rec.mc.prtl.start.y", "rec.mc.prtl.start.z",
   "rec.mc.prtl.enter.x", "rec.mc.prtl.enter.y", "rec.mc.prtl.enter.z",
   "rec.mc.prtl.exit.x", "rec.mc.prtl.exit.y", "rec.mc.prtl.exit.z",
   "rec.mc.prtl.decay_length",
+  "rec.mc.prtl.allowed_decay_fraction",
   "rec.mc.prtl.C1",
   "rec.mc.prtl.C2",
   "rec.mc.prtl.C3",

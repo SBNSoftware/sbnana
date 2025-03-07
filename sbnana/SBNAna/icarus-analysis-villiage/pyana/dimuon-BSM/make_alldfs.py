@@ -7,7 +7,7 @@ import pandas as pd
 
 def main(output, inputs):
     ntuples = NTupleGlob(inputs, None)
-    fs = [make_evtdf, make_mcdf, make_numcdf, make_potdf, make_trunkhitdf, make_branchhitdf] #, make_crthitdf]
+    fs = [make_evtdf, make_mcdf, make_numcdf, make_potdf] #, make_trunkhitdf, make_branchhitdf] #, make_crthitdf]
     keys = ["evtdf", "mcdf", "numcdf", "hdr", "trunk_hitdf", "branch_hitdf"] #, "crtdf"]
 
     dfs = ntuples.dataframes(nproc="auto", fs=fs)

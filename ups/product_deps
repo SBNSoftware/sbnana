@@ -87,7 +87,7 @@
 #>  define_pythonpath
 ####################################
 parent		sbnana
-defaultqual	e20
+defaultqual	e26
 ####################################
 
 ####################################
@@ -252,11 +252,12 @@ libdir	fq_dir		lib
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-ifdhc		v2_6_20		-
-osclib		v00.22		-
-sbnanaobj	v09_21_04	-
-sbndata		v01_05		-
-cetmodules	v3_21_01	-	only_for_build
+ifdhc		v2_7_2		-
+osclib		v00.26		-
+sbnanaobj	v10_00_00	-
+sbndata		v01_07		-
+cetmodules	v3_24_01	-	only_for_build
+cetlib          v3_18_02
 end_product_list
 ####################################
 
@@ -311,11 +312,11 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	sbnanaobj	ifdhc		osclib			sbndata	notes
-c7:debug	c7:debug	c7:p3913:debug	c7:n315:stanfree:debug	-nq-	-nq-
-c7:prof		c7:prof		c7:p3913:prof	c7:n315:stanfree:prof	-nq-	-nq-
-e20:debug	e20:debug	e20:p3913:debug	e20:n315:stanfree:debug	-nq-	-nq-
-e20:prof	e20:prof	e20:p3913:prof	e20:n315:stanfree:prof	-nq-	-nq-
+qualifier	sbnanaobj	ifdhc		osclib			cetlib     sbndata notes
+e26:debug       e26:debug       debug:e26:p3915 e26:n316:stanfree:debug e26:debug  -nq-    -nq-
+e26:prof        e26:prof        e26:p3915:prof  e26:n316:stanfree:prof  e26:prof   -nq-    -nq-
+c14:debug       c14:debug       c14:p3915:debug c14:n316:stanfree:debug c14:debug  -nq-    -nq-
+c14:prof        c14:prof        c14:p3915:prof  c14:n316:stanfree:prof  c14:prof   -nq-    -nq-
 end_qualifier_list
 ####################################
 
