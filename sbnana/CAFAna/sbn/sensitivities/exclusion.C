@@ -35,7 +35,7 @@ void exclusion(const std::string anatype = numuStr)
   const char* name_out;
   if (anatype == numuStr) {
     name_in = "surfaces_numu.root";
-    name_out = "exclusion_numu.pdf";
+    name_out = "exclusion_numu_quick_count.pdf";
   }
   else if (anatype == nueStr) {
     name_in = "surfaces_nue.root";
@@ -47,45 +47,89 @@ void exclusion(const std::string anatype = numuStr)
   }
 
   TFile fin(name_in);  
-  TFile fprop("sterile_3p1_limits.root");
 
-  //Surface& surf_syst_nd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nd_prop_systs")).release(); 
-  //Surface& surf_syst_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/fd_prop_systs")).release(); 
-  //Surface& surf_syst_ub = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/ub_prop_systs")).release(); 
-  Surface& surf_syst_nd_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nd_fd_prop_systs")).release();
-  //Surface& surf_syst_all = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/allexpt_prop_systs")).release(); 
+  std::vector<std::pair<std::string, std::string>> selections{
+    {"", "Fake Reco"},
+    //{"_np", "1#muNp"},
+    //{"_1p", "1#mu1p"}
+  };
 
-  //Surface& surf_nom_nd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom_nd")).release(); 
-  //Surface& surf_nom_ub = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom_ub")).release(); 
-  //Surface& surf_nom_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom_fd")).release(); 
-  Surface& surf_nom_nd_fd = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom_nd_fd")).release(); 
-  //Surface& surf_nom = *ana::LoadFrom<Surface>(fin.GetDirectory("exclusion/nom")).release(); 
+  std::vector<std::vector<std::tuple<std::string, std::string, Color_t>>> plots{
+    {
+      {"xsec only", "_xsec", kBlack}
+    },
+    {
+      {"flux only", "_flux", kBlack}
+    },
+    /*{
+      {"2% normalization only", "_norm", kBlack}
+    },
+    {
+      {"10% normalization only", "_big_norm", kBlack}
+    },
+    {
+      {"energy scale only", "_energy", kBlack}
+    },*/
+    {
+      {"xsec + flux", "_xsec_flux", kBlack},
+      //{"xsec + flux + 2% norm", "_xsec_flux_norm", kBlue},
+      //{"xsec + flux + 2% norm + energy", "_xsec_flux_norm_energy", kRed}
+    },
+    //{
+    //  {"xsec + flux", "_xsec_flux", kBlack},
+    //  {"xsec + flux + 10% norm", "_xsec_flux_big_norm", kBlue},
+    //  {"xsec + flux + 10% norm + energy", "_xsec_flux_big_norm_energy", kRed}
+    //}
+  }; 
 
-  TGraph * proposal_90pctCL  = (TGraph *) fprop.Get( "lim_dis_3p1_sbnproposal_90pctCL"  );
-  TGraph * proposal_3sigCL   = (TGraph *) fprop.Get( "lim_dis_3p1_sbnproposal_3sigCL"   );
-  TGraph * proposal_5sigCL   = (TGraph *) fprop.Get( "lim_dis_3p1_sbnproposal_5sigCL"   );
-  TGraph * minosp_90pctCL       = (TGraph *) fprop.Get( "lim_dis_3p1_minosp_90pctCL"       );
-  TGraph * minisciboone_90pctCL = (TGraph *) fprop.Get( "lim_dis_3p1_minisciboone_90pctCL" );
+  TCanvas c;
+  c.Print((name_out + "["s).c_str());
 
-  TH2* crit5sig = Gaussian5Sigma1D1Sided(surf_nom_nd_fd);
-  TH2* crit3sig = Gaussian3Sigma1D1Sided(surf_nom_nd_fd);
-  TH2* crit90 = Gaussian90Percent1D1Sided(surf_nom_nd_fd);
-  TH2* crit95 = Gaussian95Percent1D1Sided(surf_nom_nd_fd);
-  TH2* crit99 = Gaussian99Percent1D1Sided(surf_nom_nd_fd);
+  for(const auto& [sel_suffix, sel_name]: selections) {
+    Surface& surf_nom = *ana::LoadFrom<Surface>(fin.GetDirectory(("exclusion/nom_fd"+sel_suffix).c_str())).release();
 
-  //surf_nom.SetTitle("90% Exclusion");
- 
-  //surf_nom.DrawContour(crit90, 7, kBlack);
-  surf_nom_nd_fd.DrawContour(crit90, 7, kMagenta);
-  //surf_nom_nd.DrawContour(crit90,7,kRed);
-  //surf_nom_ub.DrawContour(crit90,7,kGreen+3);
-  //surf_nom_fd.DrawContour(crit90, 7, kBlue);
+    TH2* crit5sig = Gaussian5Sigma1D1Sided(surf_nom);
+    TH2* crit3sig = Gaussian3Sigma1D1Sided(surf_nom);
+    TH2* crit90 = Gaussian90Percent1D1Sided(surf_nom);
+    TH2* crit95 = Gaussian95Percent1D1Sided(surf_nom);
+    TH2* crit99 = Gaussian99Percent1D1Sided(surf_nom);
 
-  //surf_syst_all.DrawContour(crit90, kSolid, kBlack);
-  //surf_syst_nd.DrawContour(crit90, kSolid, kRed);
-  //surf_syst_ub.DrawContour(crit90, kSolid, kGreen+3);
-  //surf_syst_fd.DrawContour(crit90, kSolid, kBlue);
-  surf_syst_nd_fd.DrawContour(crit90, kSolid, kMagenta);
+    std::vector<std::tuple<std::string, TH2*>> sigs{
+      {"5#sigma", crit5sig},
+      {"3#sigma", crit3sig},
+      {"99%", crit99},
+      {"95%", crit95},
+      {"90%", crit90}
+    };
+    
+    for(const auto& [sig_name, sig]: sigs) {
+      for(const auto& curves: plots) {
+        surf_nom.SetTitle((sig_name+" Exclusion - " + sel_name).c_str());
+        surf_nom.DrawContour(sig, 7, kBlack);
+
+        TLegend * lgdis = new TLegend(0.15,0.15,0.45,0.45);
+        lgdis->SetFillColor(0);
+        lgdis->SetBorderSize(0);
+        TH1* dummy = new TH1F("", "", 1, 0, 1);
+
+        for(const auto& [leg, ext, col]: curves) {
+          Surface& surf_syst = *ana::LoadFrom<Surface>(fin.GetDirectory(("exclusion/fd"+ext+sel_suffix).c_str())).release(); 
+          surf_syst.DrawContour(sig, kSolid, col);
+          dummy->SetLineColor(col);
+          lgdis->AddEntry(dummy->Clone(), leg.c_str());
+        }
+        dummy->SetLineStyle(7);
+        dummy->SetLineColor(kBlack);
+        lgdis->AddEntry(dummy->Clone(), "Stats Only");
+        lgdis->Draw("same");
+
+        c.Print(name_out);
+        c.Clear();
+      }
+    }
+  }
+
+  c.Print((name_out + "]"s).c_str());
     
   //proposal_90pctCL->SetLineColor(kGreen);
   //proposal_90pctCL->Draw("l");
@@ -94,28 +138,9 @@ void exclusion(const std::string anatype = numuStr)
   //minisciboone_90pctCL->SetLineColor(kOrange);
   //minisciboone_90pctCL->Draw("l");
 
-  TLegend * lgdis = new TLegend(0.11,0.11,0.40,0.40);
-  lgdis->SetFillColor(0);
-  lgdis->SetBorderSize(0);
   //lgdis->AddEntry(proposal_90pctCL, "Proposal 90%");
   //lgdis->AddEntry(minosp_90pctCL, "Minos/Minos+ 90%");
   //lgdis->AddEntry(minisciboone_90pctCL, "MiniBoone/SciBoone 90%");
-  TH1* dummy = new TH1F("", "", 1, 0, 1);
-  dummy->SetLineColor(kRed);
-  lgdis->AddEntry(dummy->Clone(), "SBND");
-  dummy->SetLineColor(kGreen+3);
-  lgdis->AddEntry(dummy->Clone(), "MicroBoone");
-  dummy->SetLineColor(kBlue);
-  lgdis->AddEntry(dummy->Clone(), "Icarus");
-  dummy->SetLineColor(kMagenta);
-  lgdis->AddEntry(dummy->Clone(), "SBND + Icarus");
-  dummy->SetLineColor(kBlack);
-  lgdis->AddEntry(dummy->Clone(), "All");
-  dummy->SetLineStyle(7);
-  lgdis->AddEntry(dummy->Clone(), "Stats Only");
-
-  lgdis->Draw("same");
-  gPad->Print(name_out);
 
 //  TFile fout("exclusion_graphs.root", "RECREATE");
 //  
