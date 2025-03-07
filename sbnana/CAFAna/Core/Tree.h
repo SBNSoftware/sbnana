@@ -94,6 +94,8 @@ namespace ana
                  const std::vector<unsigned int>& nWeights, const bool saveRunSubEvt, const bool saveSliceNum );
     WeightsTree( const std::string name, const std::vector<std::string>& labels,
                  const std::vector<std::pair<int,int>>& nSigma, const bool saveRunSubEvt, const bool saveSliceNum );
+    WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                 const std::vector<std::vector<double>>& nSigma, const bool saveRunSubEvt, const bool saveSliceNum );
     /// Function to merge the WeightsTree with a Tree, assuming both have fSaveRunSubEvt and fSaveSliceNum set to true
     void MergeTree( const Tree& inTree );
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
@@ -104,8 +106,7 @@ namespace ana
     double POT() const {return fPOT;} // as in Spectrum
     double Livetime() const {return fLivetime;} // as in Spectrum
     long long Entries() const {return fNEntries;}
-    int NSigmaLo(const std::string& systToNSigma) const {return fNSigmasLo.at(systToNSigma);}
-    int NSigmaHi(const std::string& systToNSigma) const {return fNSigmasHi.at(systToNSigma);}
+    double GetSigma(const std::string& systToNSigma, unsigned int i_sigma) const {return fNSigmas.at(systToNSigma).at(i_sigma);}
     unsigned int NWeights(const std::string& systToNWts) const {return fNWeightsExpected.at(systToNWts);}
     bool SaveRunSubEvent() const {return fSaveRunSubEvt;}
     bool SaveSliceNum() const {return fSaveSliceNum;}
@@ -115,8 +116,7 @@ namespace ana
   protected:
     std::map< std::string, std::vector<double>> fBranchEntries;
     std::map< std::string, std::vector<std::vector<double>>> fBranchWeightEntries;
-    std::map< std::string, int> fNSigmasLo;
-    std::map< std::string, int> fNSigmasHi;
+    std::map< std::string, std::vector<double>> fNSigmas;
     std::map< std::string, unsigned int> fNWeightsExpected;
     //std::map< std::string, std::vector<double>> fNWeightsThrows; // stores the expected ordering of NSigmas per knob or universe throws per knob.
     std::string fTreeName;
@@ -138,6 +138,15 @@ namespace ana
                  const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
                  const SpillCut& spillcut,
                  const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+
+    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                 SpectrumLoaderBase& loader,
+                 const std::vector<const ISyst*>& systsToStore, const std::vector<std::vector<double>>& nSigma,
+                 const SpillCut& spillcut,
+                 const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    /// constructor with a vector of \ref ISyst, but for TrueTree
+    /// Dedicated for signal efficiency, thus has slightly different behavior
+
     void SaveTo( TDirectory* dir ) const override;
     void SaveToSplines( TDirectory* dir ) const;
     void SaveToGraphs( TDirectory* dir ) const;
