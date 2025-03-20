@@ -79,6 +79,7 @@ pfpbranches = [
     pfpbranch + "parent",
     pfpbranch + "id",
     pfpbranch + "t0",
+    pfpbranch + "ndaughters" # added by JD 100325
 ] + pfobranches
 
 pfp_daughter_branch = [
@@ -90,6 +91,7 @@ trkbranches = [
     trkbranch + "start.x", trkbranch + "start.y", trkbranch + "start.z",
     trkbranch + "end.x", trkbranch + "end.y", trkbranch + "end.z",
     trkbranch + "dir.x", trkbranch + "dir.y", trkbranch + "dir.z",
+    trkbranch + "dir_end.x", trkbranch + "dir_end.y", trkbranch + "dir_end.z", # added by JD 10_03_25 (day/month/year)
     trkbranch + "len",
     trkbranch + "rangeP.p_muon",
     trkbranch + "mcsP.fwdP_muon",

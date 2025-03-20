@@ -73,8 +73,12 @@ for i in range(len(alp_nosup_files)):
 
 #mcfile = "/icarus/data/users/gputnam/DMCP2023G/mc/dfs-wstubs/mcnuphase2_evt_reprodD.df"
 
-nu_files = [nu_file, cohlike_nu_file]
-nu_labels = ["$\\nu$", "Coh-like $\\nu$"]#*len(nu_files)
+nu_files = [nu_file, cohlike_nu_file, cohlike_nu_file_extra_2501, 
+            cohlike_nu_file_extra_2502_12, cohlike_nu_file_extra_2502_34, cohlike_nu_file_extra_2502_5, 
+            cohlike_nu_file_extra_2502_6789]
+nu_labels = ["$\\nu$", "Coh-like $\\nu$", "Coh-like $\\nu$ (ad'l 2501)", 
+             "Coh-like $\\nu$ (ad'l 2502_12)", "Coh-like $\\nu$ (ad'l 2502_34)", "Coh-like $\\nu$ (ad'l 2502_5)",
+             "Coh-like $\\nu$ (ad'l 2502_6789)"]#*len(nu_files)
 nu_masses = [-1]*len(nu_files)
 nu_mcnudfs = [pd.read_hdf(f, key="mcnu") for f in nu_files]
 for df in nu_mcnudfs:
@@ -95,6 +99,12 @@ mcnudfs = higgs_mcnudfs + alp_nosup_mcnudfs + nu_mcnudfs
 ## IF YOU DO NOT CARE ABOUT CV WEIGHTS:
 
 evtdfs = [pd.read_hdf(f, key="evt") for f in df_files]
+
+# Mask out all the cohlike events in the nominal neutrino sample: # Made this fix 2/8/25, updated 2/19/25
+nomnu = evtdfs[-7]
+new_n_incoh = nomnu[~is_coh_like_JD(nomnu)].shape[0]
+print('Percentage of non-cohlike events in the nominal nu sample: ', (nomnu.shape[0]-new_n_incoh)/nomnu.shape[0])
+evtdfs[-7] = nomnu[~is_coh_like_JD(nomnu)]
 
 ## IF YOU DO CARE ABOUT CV WEIGHTS (***): #takes 30 minutes.
 
@@ -153,6 +163,15 @@ pots_notPreferred = [np.sum(hdr.pot * hdr.first_in_subrun) for hdr in hdrs]
 pots = pots_notPreferred # Note: May want to double check that this is consistent with text block below (but I expect it to always be, for MC).
 #mcnudfs = [pd.read_hdf(f, key="mcnu") for f in df_files]
 
+# Make sure your POT-accounting is correct for cohlike events since not all generated at once as a single sample
+total_cohlike_pot = pots[-6] + pots[-5] + pots[-4] + pots[-3] + pots[-2] + pots[-1]
+pots[-6] = total_cohlike_pot
+pots[-5] = total_cohlike_pot
+pots[-4] = total_cohlike_pot
+pots[-3] = total_cohlike_pot
+pots[-2] = total_cohlike_pot
+pots[-1] = total_cohlike_pot
+
 for i in range(len(df_files)):
     evtdfs[i]["scale"] = GOAL_POT / pots[i]
     #mcdfs[i]["scale"] = GOAL_POT / pots[i]
@@ -166,9 +185,9 @@ for i in range(len(df_files)):
     evtdfs[i]["mccoh"] = False
     x = df_files[i].split('/')
     #print(x)
-    if "Higgs" in x[-1]:
+    if ("Higgs" in x[-1]) | ("ms" in x[-1]):
         evtdfs[i]["higgs"] = True
-    if "alp" in x[-1]:
+    if ("alp" in x[-1]) | ("ma" in x[-1]):
         evtdfs[i]["alp"] = True
     if ("Nu" in x[-1]) | ("Coh" in x[-1]):
         evtdfs[i]["nu"] = True
@@ -178,9 +197,9 @@ for i in range(len(df_files)):
             evtdfs[i]["mccoh"] = True
             
 evtdf = jamie_sample_concat(evtdfs)
-print('evtdf.shape before enforcing correct FV w/ uncontained track lenght:', evtdf.shape)
+print('evtdf.shape before enforcing correct FV w/ uncontained track length:', evtdf.shape)
 evtdf = evtdf[satisfies_new_FV(evtdf)]
-print('evtdf.shape after enforcing correct FV w/ uncontained track lenght:', evtdf.shape)
+print('evtdf.shape after enforcing correct FV w/ uncontained track length:', evtdf.shape)
 
 # ADD SOME STUFF TO EVTDF:
 
@@ -188,53 +207,7 @@ print('evtdf.shape after enforcing correct FV w/ uncontained track lenght:', evt
 
 evtdf = add_calculated_evtdf_cols(evtdf)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~~~~~~ Stuff for detector variation studies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Above, I make one evtdf for all the nominal samples.
-# Here, make an evtdf for each detectory variation.
-
-do_detVar_overhead = False
-if do_detVar_overhead:
-
-    sets_of_detVar_files_by_sample = [
-        higgs_220_detVar_files,
-        higgs_240_detVar_files,
-        higgs_260_detVar_files,
-        higgs_280_detVar_files,
-        higgs_300_detVar_files,
-        higgs_340_detVar_files,
-        cohlike_nu_detVar_files
-    ]
-    labels_for_samples_w_dvs = labels[:6]+[labels[-1]]
-    detVar_evtdf = [] # one evtdf for each type of detector variation.
-    for dv, dvl in enumerate(detVar_labels):
-        temp_files = [myset[dv] for myset in sets_of_detVar_files_by_sample]
-        temp_mchdfs = [pd.read_hdf(f, key="mch") for f in temp_files]
-        temp_mcdfs = [pd.read_hdf(f, key="mcnu") for f in temp_files]
-        temp_masses = [int(round(df.iloc[(0)].M*1000.)) for df in temp_mchdfs[:-1]]+[-1]
-        th_or_fa_or_null = [float(df.iloc[(0)].C1) for df in temp_mchdfs[:-1]]+[-1]
-        cAl_or_null = [float(df.iloc[(0)].C1) for df in temp_mchdfs[:-1]]+[-1]
-
-        temp_evtdfs = [pd.read_hdf(f, key="evt") for f in temp_files]
-        temp_hdrs = [pd.read_hdf(f, key="hdr") for f in temp_files]
-        temp_pots_notPreferred = [np.sum(hdr.pot * hdr.first_in_subrun) for hdr in temp_hdrs]
-        temp_pots = temp_pots_notPreferred
-
-        for i, df in enumerate(temp_evtdfs):
-            df["scale"] = GOAL_POT / temp_pots[i]
-            df["bsm_mass"] = temp_masses[i]
-            df["sample"] = labels_for_samples_w_dvs[i]
-            df["higgs"] = False
-            df["alp"] = False
-            df["nu"] = False
-            if '_S' in labels_for_samples_w_dvs[i]: df["higgs"] = True
-            if 'alp' in labels_for_samples_w_dvs[i]: df["alp"] = True
-            if 'nu' in labels_for_samples_w_dvs[i]: df["nu"] = True
-        temp_evtdf = jamie_sample_concat(temp_evtdfs)
-        print('evtdf.shape before enforcing correct FV w/ uncontained track lenght:', temp_evtdf.shape)
-        temp_evtdf = temp_evtdf[satisfies_new_FV(temp_evtdf)]
-        temp_evtdf = add_calculated_evtdf_cols(temp_evtdf)
-        detVar_evtdf.append(temp_evtdf)
-
+# Here, I have made one evtdf for all the nominal samples. 
+# I make dataframes for the detector variation samples in unc_detVar_overhead.py.
 
 

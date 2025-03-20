@@ -11,6 +11,13 @@ from numpy import sqrt, cos, sin
 GOAL_POT = 2.41e20 # combined R1 and R2.
 POTSTR = "2.41e20 POT"
 
+def is_coh_like_JD(df):
+    nmu = df.slc.truth.nmu # df.slc.truth.iscc & ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14))
+    npi = df.slc.truth.npi
+    ns = df.slc.truth.nsm + df.slc.truth.nsp
+    print(type(df.slc.truth.max_proton_ke < 0.05))
+    return (nmu + npi + ns >= 2) & (df.slc.truth.max_proton_ke < 0.05)
+
 def satisfies_new_FV(df): # df should be evtdf
     return ( 
         SlcInFV(df.slc.vertex) & 
@@ -19,14 +26,16 @@ def satisfies_new_FV(df): # df should be evtdf
     ) # each track is either contained, or long enough to be uncontained but still kept.
 # July 22, 2024. This is needed because the FV definition has changed since the preselection was run on the cafs to make the dataframes. It is now more stringent, so there are some slices (tracks) in the dataframes that should not have been selected given the updated FV definition.
 
-def decay_in_icarus(in_dist, out_dist, mean_dist): # same as what Gray defined as "decay weight." I've changed the name bc technically the decay weight also includes a factor of the branching fraction (which is just 1 for hps, where it always decays into muons where we are looking).
+def decay_in_icarus(in_dist, out_dist, mean_dist): # This takes care of the integral in the decay weight. # same as what Gray defined as "decay weight." I've changed the name bc technically the decay weight also includes a factor of the branching fraction (which is just 1 for hps, where it always decays into muons where we are looking).
     return np.exp(-in_dist / mean_dist) - \
           np.exp(-out_dist / mean_dist)
 
 def flux_weight(mixing): 
     return mixing * mixing
 
-def reweight_mixing(newmixing, start, enter, exit, mean_dist, oldmixing=1e-5):# Use this one for HPS. Technically, only scaling 1/fa in the ALPs model also follows this form. But in general, cl can scale too. So use next function when reweighting ALPs.
+def reweight_mixing(newmixing, start, enter, exit, mean_dist, oldmixing=1e-5):
+    # Use this one for HPS. 
+    #Technically, only scaling 1/fa in the ALPs model also follows this form. But in general, cl can scale too. So use next function when reweighting ALPs.
     dist_in = dist(enter, start)
     dist_out = dist(exit, start)
     
@@ -38,12 +47,13 @@ def reweight_mixing(newmixing, start, enter, exit, mean_dist, oldmixing=1e-5):# 
     
     return (new_flux / old_flux) * (new_dcy / old_dcy)
 
-def reweight_alps(old_fa, new_fa, oldcl, newcl, start, enter, exit, mean_dist, f, print_stuff=False): # f is branching fraction.
+def reweight_alps(old_fa, new_fa, oldcl, newcl, start, enter, exit, mean_dist, oldf, print_stuff=False): # f is branching fraction.
+# Use this function to rescale generated alps to different alp benchmarks.
     dist_in = dist(enter, start)
     dist_out = dist(exit, start)
-    old_decay_weight = decay_in_icarus(dist_in, dist_out, mean_dist)*f
-    new_mean_dist = mean_dist*(new_fa**2/old_fa**2)/( (1-f) + (f*newcl**2/oldcl**2) )
-    new_f = (newcl**2/oldcl**2)*f/( (newcl**2/oldcl**2)*f + 1-f )
+    old_decay_weight = decay_in_icarus(dist_in, dist_out, mean_dist)*oldf
+    new_mean_dist = mean_dist*(new_fa**2/old_fa**2)/( (1-oldf) + (oldf*newcl**2/oldcl**2) )
+    new_f = (newcl**2/oldcl**2)*oldf/( (newcl**2/oldcl**2)*oldf + 1-oldf )
     new_decay_weight = decay_in_icarus(dist_in, dist_out, new_mean_dist)*new_f
     
     flux_weight_rescaling = old_fa**2/new_fa**2  
@@ -56,6 +66,40 @@ def reweight_alps(old_fa, new_fa, oldcl, newcl, start, enter, exit, mean_dist, f
         print('f: ', float(new_f))
     
     return flux_weight_rescaling*new_decay_weight/old_decay_weight
+
+# FUNCTION TO REWEIGHT HPSs TO ALPs.
+
+def reweight_hps_to_alps(mass, hps_mix, hps_mean_dist, hps_f, 
+                         alp_fa, alp_cl, alp_f, # ("new" alp_f, cause there is no "old" alp_f when starting with hps)
+                         start, enter, exit, kaon_parent_pdg,
+                         alp_c1=1, alp_c2=1, alp_c3=1,
+                         k_to_alp_strong = True
+                        ): # f's are branching fractions to muons relative to total decay width for hps or alp.
+    dist_in = dist(enter, start)
+    dist_out = dist(exit, start)
+    
+    # Starting up tomorrow (Thursday 10/31/24): fill in alp_flux_weight_piece - strong or weak? Answer: strong!
+    
+    if kaon_parent_pdg == 130: # K0L
+        hps_flux_weight_piece = HPS_KaonLongBranchingRatio(mass, hps_mix) 
+        if k_to_alp_strong:
+            alp_flux_weight_piece =  ALP_KLongStrongBranchingRatio(mass, alp_fa, alp_c3) # strong
+        else:
+            alp_flux_weight_piece = ALP_KLongWeakBranchingRatio(mass, alp_fa, alp_c2) # weak
+    elif abs(kaon_parent_pdg) == 321: # K+/-
+        hps_flux_weight_piece = HPS_KaonPlusBranchingRatio(mass, hps_mix) 
+        if k_to_alp_strong:
+            alp_flux_weight_piece = ALP_KPlusStrongBranchingRatio(mass, alp_fa, alp_c3) # strong
+        else:
+            alp_flux_weight_piece = ALP_KPlusWeakBranchingRatio(mass, alp_fa, alp_c2) # weak
+    else: 
+        print("We've got a problem here!")
+    hps_decay_weight_piece = decay_in_icarus(dist_in, dist_out, hps_mean_dist)*hps_f
+    alp_mean_dist = hps_mean_dist*HPS_total_decay_Width(mass, hps_mix)/ALP_total_decay_Width(mass, alp_fa, alp_cl, alp_c1, alp_c2, alp_c3)
+    alp_decay_weight_piece = decay_in_icarus(dist_in, dist_out, alp_mean_dist)*alp_f
+    
+    return (alp_flux_weight_piece/hps_flux_weight_piece)*(alp_decay_weight_piece/hps_decay_weight_piece)
+   
     
 def jamie_sample_concat(dflist): # dflist should be a list of multi-index dataframes
     master_df = pd.concat(dflist, keys=np.arange(len(dflist)), names=['sample'])
@@ -127,8 +171,8 @@ def simpler_add_hdr_info(df, hdr): # for a single df and its header (not conaten
 # https://htmlcolorcodes.co# Use this to find html hex string color codes: https://htmlcolorcodes.com 
 
 
-blues = ["#B0E0E6", "#87CEEB", "#6495ED", "#1E90FF","#4682B4", "#00008B"]
-greens = ["#CFFCDA", "#8DF9A7", "#72DF8C", "#48B161", "#2C8942", "#145C25", "#054915", "#D1F725"]
+blues = ["#B0E0E6", "#87CEEB", "#6495ED", "#1E90FF","#4682B4", "#00008B", "#0000FF", "#4169E1", "#1E90FF", "#4682B4"]
+greens = ["#CFFCDA", "#8DF9A7", "#72DF8C", "#48B161", "#2C8942", "#145C25", "#054915", "#D1F725", "#00FF00", "#32CD32", "#3CB371", "#008000"]
 purples = ["#D8BFD8", "#9370DB", "#663399"]
 oranges = ["#FECC88", "#FCC171", "#ECA646", "#DE9025", "#CD7A08", "#A15F03"]#, "#", "#"]
 #greens = ["#8FBC8F", "#2E8B57", "#556B2F", "#006400"]
@@ -209,27 +253,27 @@ def make_categories(df, detailed_bsm=False, detailed_nu='none', hps_final_state=
 
     if detailed_nu == 'int_type':
         
-        nu_NC = ((df.slc.truth.iscc == 0) & (df.slc.tmatch.idx >= 0))
+        nu_NC = is_nu & ((df.slc.truth.iscc == 0) & (df.slc.tmatch.idx >= 0))
         nu_NC.name = "$\\nu$ NC"
         nu_NC.color = soladero_lime[0] #"#caa834" #"#EAC387"
         
-        numu_CC_QE_MEC = ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14)) & (df.slc.truth.iscc==1) & ((df.slc.truth.genie_mode == 0) | (df.slc.truth.genie_mode == 10)) # CC QE+MEC
+        numu_CC_QE_MEC = is_nu & ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14)) & (df.slc.truth.iscc==1) & ((df.slc.truth.genie_mode == 0) | (df.slc.truth.genie_mode == 10)) # CC QE+MEC
         numu_CC_QE_MEC.name = "$\\nu_\\mu$ CC QE+MEC"
         numu_CC_QE_MEC.color = soladero_lime[1] 
         
-        numu_CC_RES = ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14)) & (df.slc.truth.iscc==1) & (df.slc.truth.genie_mode == 1) # CC RES
+        numu_CC_RES = is_nu & ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14)) & (df.slc.truth.iscc==1) & (df.slc.truth.genie_mode == 1) # CC RES
         numu_CC_RES.name = "$\\nu_\\mu$ CC RES"
         numu_CC_RES.color = soladero_lime[2]
         
-        numu_CC_DIS = ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14)) & (df.slc.truth.iscc==1) & (df.slc.truth.genie_mode == 2) # CC DIS
+        numu_CC_DIS = is_nu & ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14)) & (df.slc.truth.iscc==1) & (df.slc.truth.genie_mode == 2) # CC DIS
         numu_CC_DIS.name = "$\\nu_\\mu$ CC DIS"
         numu_CC_DIS.color = soladero_lime[3] 
         
-        numu_CC_COH = ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14)) & (df.slc.truth.iscc==1) & (df.slc.truth.genie_mode == 3) # CC COH
+        numu_CC_COH = is_nu & ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14)) & (df.slc.truth.iscc==1) & (df.slc.truth.genie_mode == 3) # CC COH
         numu_CC_COH.name = "$\\nu_\\mu$ CC COH"
         numu_CC_COH.color = soladero_lime[4]
         
-        nu_other = (df.slc.tmatch.idx >= 0) & ~nu_NC & ~numu_CC_QE_MEC & ~numu_CC_RES & ~numu_CC_DIS & ~numu_CC_COH
+        nu_other = is_nu & (df.slc.tmatch.idx >= 0) & ~nu_NC & ~numu_CC_QE_MEC & ~numu_CC_RES & ~numu_CC_DIS & ~numu_CC_COH
         nu_other.name = "$\\nu$ Other"
         nu_other.color = soladero_lime[5]
         
@@ -299,10 +343,13 @@ def make_vtxcategories(df):
 
     
     vtxIDcategories = [
-        trunkIDcategories[0] & branchIDcategories[0],
-        (trunkIDcategories[0] & branchIDcategories[1]) | (trunkIDcategories[1] & branchIDcategories[0]),
-        (trunkIDcategories[0] & branchIDcategories[2]) | (trunkIDcategories[2] & branchIDcategories[0]),
-        (trunkIDcategories[1] & branchIDcategories[2]) | (trunkIDcategories[2] & branchIDcategories[1])
+        trunkIDcategories[0] & branchIDcategories[0], # mu mu
+        (trunkIDcategories[0] & branchIDcategories[1]) | (trunkIDcategories[1] & branchIDcategories[0]), # mu pi+-
+        (trunkIDcategories[0] & branchIDcategories[2]) | (trunkIDcategories[2] & branchIDcategories[0]), # mu p
+        (trunkIDcategories[1] & branchIDcategories[2]) | (trunkIDcategories[2] & branchIDcategories[1]) # p pi+-
+        # mu pi0
+        # mu gamma
+        # pi+- pi+-
     ]
     vtxIDcategories.append(~vtxIDcategories[0] & ~vtxIDcategories[1] & ~vtxIDcategories[2] & ~vtxIDcategories[3])
     
@@ -311,6 +358,71 @@ def make_vtxcategories(df):
     vtxIDcategories[2].name = "$\\mu p$"
     vtxIDcategories[3].name = "$p\\pi$"
     vtxIDcategories[4].name = "other"
+    
+    vtxIDcategories[0].color = southwest[0]
+    vtxIDcategories[1].color = southwest[1]
+    vtxIDcategories[2].color = southwest[2]
+    vtxIDcategories[3].color = '#CE3106' #southwest[3]
+    vtxIDcategories[4].color = southwest[4]
+    
+    return vtxIDcategories
+
+def make_sneakyBG_categories(df):
+    # This funciton is based on Truth, and the categories are not orthogonal.
+    # Categories here are designed to help me see what kinds of background different cuts target.
+    
+    trunkIDcategories = [
+        ( abs(df.trunk.trk.truth.p.pdg) == 13 ), # "$\\mu$"
+        ( abs(df.trunk.trk.truth.p.pdg) == 211), # "$\\pi+-$"
+        (df.trunk.trk.truth.p.pdg == 2212), # "$p$"
+        (df.trunk.trk.truth.p.pdg == 22), # "$\\gamma$" 
+    ]
+    trunkIDcategories.append(
+        ~trunkIDcategories[0] & ~trunkIDcategories[1] & ~trunkIDcategories[2] & ~trunkIDcategories[3]
+    ) # other
+
+    
+    branchIDcategories = [
+        ( abs(df.branch.trk.truth.p.pdg) == 13 ), # "$\\mu$"
+        ( abs(df.branch.trk.truth.p.pdg) == 211), # "$\\pi+-$"
+        (df.branch.trk.truth.p.pdg == 2212), # "$p$"
+        (df.branch.trk.truth.p.pdg == 22), # "$\\gamma$"
+    ]
+    branchIDcategories.append(
+        ~branchIDcategories[0] & ~branchIDcategories[1] & ~branchIDcategories[2] & ~branchIDcategories[3]
+    ) # other
+
+    
+    vtxIDcategories = [
+        branchIDcategories[1] | trunkIDcategories[1], # has a pi+-
+        branchIDcategories[2] | trunkIDcategories[2], # has a p
+        branchIDcategories[3] | trunkIDcategories[3], # has a gamma
+        branchIDcategories[4] | trunkIDcategories[4], # has something other than mu, pi+-, p, or gamma
+        ( df.slc.truth.max_proton_ke > 0. ) & ( df.slc.truth.max_proton_ke < 0.5 ) # has a low E proton
+    ]
+    
+    vtxIDcategories[0].name = "has a $\\pi+-$"
+    vtxIDcategories[1].name = "has a $p$"
+    vtxIDcategories[2].name = "has a $\\gamma$"
+    vtxIDcategories[3].name = "has an exotic" #"has something not $\\mu$, $\\pi+-$, $p$, or $\\gamma$"
+    vtxIDcategories[4].name = "has a low E $p$"
+    
+    #vtxIDcategories = [
+    #    trunkIDcategories[0] & branchIDcategories[0], # mu mu
+    #    (trunkIDcategories[0] & branchIDcategories[1]) | (trunkIDcategories[1] & branchIDcategories[0]), # mu pi+-
+    #    (trunkIDcategories[0] & branchIDcategories[2]) | (trunkIDcategories[2] & branchIDcategories[0]), # mu p
+    #    (trunkIDcategories[1] & branchIDcategories[2]) | (trunkIDcategories[2] & branchIDcategories[1]), # p pi+-
+    #    # mu pi0
+    #    (trunkIDcategories[3] & branchIDcategories[1]) | (trunkIDcategories[3] & branchIDcategories[0]) # mu gamma
+    #    # pi+- pi+-
+    #]
+    #vtxIDcategories.append(~vtxIDcategories[0] & ~vtxIDcategories[1] & ~vtxIDcategories[2] & ~vtxIDcategories[3])
+    
+    #vtxIDcategories[0].name = "$\\mu\\mu$"
+    #vtxIDcategories[1].name = "$\\mu\\pi$"
+    #vtxIDcategories[2].name = "$\\mu p$"
+    #vtxIDcategories[3].name = "$p\\pi$"
+    #vtxIDcategories[4].name = "other"
     
     vtxIDcategories[0].color = southwest[0]
     vtxIDcategories[1].color = southwest[1]
@@ -371,6 +483,9 @@ def apply_cuts(df, cuts, detailed_hps=False, flip_last_cut=False):
     
     return cut_results_df_mc, cut_results_df_pot, cut_results_df_percent, master_mask 
 
+def distance_3d(point1, point2):
+    return np.linalg.norm(point2 - point1)
+
 def angle_between_vecs(a,b, deg=False): #a and b need to be numpy arrays of same length
     rad = np.arccos(a.dot(b)/(np.sqrt(a.dot(a))*np.sqrt(b.dot(b))))
     if deg:
@@ -396,7 +511,7 @@ beamorigin = np.array([4.503730e2, 80.153901e2, 795.112945e2])
 
 BEAMDIR = beam2det.dot(beamorigin) / np.linalg.norm(beam2det.dot(beamorigin)) 
 # this is the vector from NuMI target to ICARUS detector, in ICARUS coordinates.
-print(BEAMDIR)
+#print(BEAMDIR)
 
 NUMIDIR = beam2det.dot(np.array([0,0,1.]))/np.linalg.norm(beam2det.dot(np.array([0,0,1.]))) 
 # This is direction of NuMI beamline, in ICARUS coordinates.
@@ -600,6 +715,7 @@ def getp(track, method): # returns a momentum mabnitude.
 # PHYSICS (Constants and branching ratios) - Use this stuff to reweight HPS from kaons to ALPs from kaons. 
 
 # CONSTANTS
+# convention: masses in GeV
 
 M_PI = np.pi
 elec_mass = 0.0005109989461
@@ -739,6 +855,14 @@ def HPS_PiPlusPartialWidth(higs_mass, mixing):
 def HPS_PiZeroPartialWidth(higs_mass, mixing):
     return HPS_PionPartialWidth(pizero_mass, higs_mass, mixing)
 
+def HPS_total_decay_Width(higs_mass, mixing):
+    return(
+        HPS_ElectronPartialWidth(higs_mass, mixing) +
+        HPS_MuonPartialWidth(higs_mass, mixing) +
+        HPS_PiPlusPartialWidth(higs_mass, mixing) + 
+        HPS_PiZeroPartialWidth(higs_mass, mixing)
+    )
+
 # AXION WIDTHS
 
 # Axion strong production
@@ -831,3 +955,12 @@ def ALP_gg_width(mass, fa, c1, c2, c3, cAu):
     cg2 = np.abs(cg)**2
     
     return fine_structure_constant**2*cg2*mass**3/(256*M_PI**3*fa**2)
+
+def ALP_total_decay_Width(mass, fa, cAu, c1, c2, c3): # JD: Does not include hadronic decays. Decay to pions matters above about 400MeV mass for the ALPs. TODO (if I ever use this): include anything in the alp_make_decay tool in MeVPrtl
+    if mass < 3*pizero_mass:
+        return( ALP_uu_width(mass, fa, cAu) + ALP_gg_width(mass, fa, c1, c2, c3, cAu) )
+    else:
+        print("You can't use this function to get total width! You need to also consider hadronic decays.")
+        return -1
+    
+    

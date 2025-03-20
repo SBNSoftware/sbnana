@@ -34,7 +34,6 @@ def InFV(df, inzback, inx=10, iny=10, inzfront=15):
 
     return fid & ~bad_WW & ~bad_EE
 
-
 def TrkInFV(df):
     return InFV(df, 15.)
 

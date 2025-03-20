@@ -39,8 +39,13 @@ def InFV(df, inzback, inx=10, iny=10, inzfront=10):
     zmin = zmin + inzfront
     zmax = zmax - inzback
 
-    return (((df.x < xmax_C0) & (df.x > xmin_C0)) | ((df.x < xmax_C1) & (df.x > xmin_C1))) &\
+    fid = (((df.x < xmax_C0) & (df.x > xmin_C0)) | ((df.x < xmax_C1) & (df.x > xmin_C1))) &\
         (df.y < ymax) & (df.y > ymin) & (df.z < zmax) & (df.z > zmin)
+
+    bad_WW = (df.x > 210.29) & (df.x < 358.49) & (df.y > 70) & (df.z > 0) # cable
+    bad_EE = (df.x > -358.49) & (df.x < -210.29) & ((df.y > 115) | (df.y < -161.86)) # field cage
+
+    return fid & ~bad_WW & ~bad_EE
 
 def TrkInFV(df):
     return InFV(df, 15.)

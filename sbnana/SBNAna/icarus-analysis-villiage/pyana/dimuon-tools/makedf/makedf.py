@@ -457,7 +457,7 @@ def make_mcdf(f, branches=mcbranches, primbranches=mcprimbranches):
 def make_slc_trkdf_inc(f):
     return make_slc_trkdf(f, trkDistCut=100)
 
-def make_slc_trkdf(f, trkScoreCut=False, trkDistCut=10., cutClearCosmic=True, **trkArgs):
+def make_slc_trkdf(f, trkScoreCut=False, trkDistCut=-1, cutClearCosmic=True, **trkArgs): # trkDistCut=10.
     # load
     trkdf = make_trkdf(f, trkScoreCut, **trkArgs)
     slcdf = make_slcdf(f)
@@ -652,7 +652,7 @@ def make_evt_trkhitdf(f):
 
     return trkhitdf
 
-def make_evtdf(f, load_hits=False):
+def make_evtdf(f, load_hits=False, apply_preselection=True):
     # implement the sideband selection
     def is_muon_contained(trk):
         return (trk.chi2pid.I2.chi2_proton > 80) & (trk.chi2pid.I2.chi2_muon < 30) & TrkInFV(trk.end) & (trk.len > 10)
@@ -666,7 +666,8 @@ def make_evtdf(f, load_hits=False):
         return SlcInFV(df.slc.vertex) & (nmuon >= 2)
 
     trk_slcdf = make_slc_trkdf(f, trkDistCut=-1)
-    trk_slcdf = trk_slcdf[evt_presel(trk_slcdf)]
+    if apply_preselection:
+        trk_slcdf = trk_slcdf[evt_presel(trk_slcdf)]
     slcdf = trk_slcdf.copy()
 
     trklevel = list(range(slcdf.index.nlevels-1))

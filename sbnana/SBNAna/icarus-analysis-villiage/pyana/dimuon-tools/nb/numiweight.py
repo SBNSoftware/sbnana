@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 FSYST = "/icarus/data/users/gputnam/icarus_numi_flux_syst_ana_v2.root"
+# TODO: Replace above with /exp/icarus/data/users/awood/2024-10-03_out_450.37_7991.98_79512.66.root 
 
 def histdf(h):
     values = h.values()
@@ -37,8 +38,9 @@ def cv(nupdg, nuE):
 
     return match_wgts
 
-FLUX_CORRECTION_FILE = "/exp/icarus/data/users/awood/numi_flux_weights_g3Chase/g3Chase_weights.root"
-FLUX_CORRECTION_HIST_PREFIX = "hweights_fhc_"
+#FLUX_CORRECTION_FILE = "/exp/icarus/data/users/awood/numi_flux_weights_g3Chase/g3Chase_weights.root"
+# TODO: get rid of above file and everything below. Was included to change CV according to g3Chase, but now that is just included in the new file Tony sent me.
+#FLUX_CORRECTION_HIST_PREFIX = "hweights_fhc_"
 def concrete_cv(nupdg, nuE):
     pdgs = {
         "numu_total": 14,
