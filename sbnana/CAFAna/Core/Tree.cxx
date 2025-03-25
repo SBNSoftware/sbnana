@@ -21,7 +21,7 @@ namespace ana
               SpectrumLoaderBase& loader,
               const std::vector<Var>& vars, const SpillCut& spillcut,
               const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -53,7 +53,7 @@ namespace ana
               SpectrumLoaderBase& loader,
               const std::vector<MultiVar>& vars, const SpillCut& spillcut,
               const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -84,7 +84,7 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<SpillVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -111,7 +111,7 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -131,6 +131,40 @@ namespace ana
     }
 
     loader.AddTree( *this, labels, vars, spillcut );
+  }
+
+  //----------------------------------------------------------------------
+  // Constructor for a set of TruthVars
+  Tree::Tree( const std::string name, const std::vector<std::string>& labels,
+              SpectrumLoaderBase& loader,
+              const std::vector<TruthVar>& vars, const SpillCut& spillcut,
+              const TruthCut& truthcut,
+              const Cut& SignalSelection,
+              const SystShifts& shift,
+              const bool saveRunSubEvt)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(true), SignalSelection(SignalSelection)
+  {
+    assert( labels.size() == vars.size() );
+
+    fOrderedBranchNames.push_back( "CutType/i" ); fBranchEntries["CutType/i"] = {};
+    fOrderedBranchNames.push_back( "SpillCutType/i" ); fBranchEntries["SpillCutType/i"] = {};
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      fOrderedBranchNames.push_back( labels.at(i) );
+      fBranchEntries[labels.at(i)] = {};
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
+    }
+
+    loader.AddTree( *this, labels, vars, spillcut, truthcut, shift );
   }
 
   //----------------------------------------------------------------------
@@ -504,6 +538,7 @@ namespace ana
     // Let's also save this as a TMatrixD
     // TODO: do I need to save overflow/underflow?
     TArrayD tarray(nBins*nBins);
+
     for ( unsigned int xBin=1; xBin<=nBins; ++xBin ) {
       const unsigned int row = xBin-1;
       for ( unsigned int yBin=1; yBin<=nBins; ++yBin ) {
@@ -663,8 +698,10 @@ namespace ana
       fOrderedBranchWeightNames.push_back( labels.at(i) );
       fBranchWeightEntries[labels.at(i)] = {};
 
-      fNSigmasLo[labels.at(i)] = 0;
-      fNSigmasHi[labels.at(i)] = nWeights.at(i);
+      fNSigmas[labels.at(i)] = {};
+      for( unsigned int i_sigma=0; i_sigma<nWeights.at(i); ++i_sigma){
+        fNSigmas[labels.at(i)].push_back( i_sigma );
+      }
       fNWeightsExpected[labels.at(i)] = nWeights.at(i);
     }
 
@@ -696,9 +733,48 @@ namespace ana
 
       assert( nSigma.at(i).second > nSigma.at(i).first );
 
-      fNSigmasLo[labels.at(i)] = nSigma.at(i).first;
-      fNSigmasHi[labels.at(i)] = nSigma.at(i).second;
       fNWeightsExpected[labels.at(i)] = (unsigned int)((nSigma.at(i).second-nSigma.at(i).first) + 1);
+      fNSigmas[labels.at(i)] = {};
+      for( unsigned int i_sigma=0; i_sigma<fNWeightsExpected[labels.at(i)]; ++i_sigma){
+        fNSigmas[labels.at(i)].push_back( nSigma.at(i).first + i_sigma );
+      }
+
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
+    }
+    if ( saveSliceNum ) {
+      assert( fBranchEntries.find("Slice/i") == fBranchEntries.end() );
+      fOrderedBranchNames.push_back( "Slice/i" ); fBranchEntries["Slice/i"] = {};
+    }
+  }
+
+  //----------------------------------------------------------------------
+  WeightsTree::WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                            const std::vector<std::vector<double>>& nSigma, const bool saveRunSubEvt, const bool saveSliceNum )
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+  {
+    assert( nSigma.size()==labels.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      fOrderedBranchWeightNames.push_back( labels.at(i) );
+      fBranchWeightEntries[labels.at(i)] = {};
+
+      assert( nSigma.at(i).size()>0 );
+
+      fNSigmas[labels.at(i)] = {};
+      for( unsigned int i_sigma=0; i_sigma<nSigma.at(i).size(); ++i_sigma){
+        fNSigmas[labels.at(i)].push_back( nSigma.at(i).at(i_sigma) );
+      }
+      fNWeightsExpected[labels.at(i)] = nSigma.at(i).size();
+
     }
 
     if ( saveRunSubEvt ) {
@@ -807,6 +883,45 @@ namespace ana
 
     loader.AddNSigmasTree( *this, labels, systsToStore, spillcut, cut, shift );
   }
+  //----------------------------------------------------------------------
+  NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                            SpectrumLoaderBase& loader,
+                            const std::vector<const ISyst*>& systsToStore, const std::vector<std::vector<double>>& nSigma,
+                            const SpillCut& spillcut,
+                            const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
+  : WeightsTree(name,labels,nSigma,saveRunSubEvt,saveSliceNum)
+  {
+    assert( labels.size() == systsToStore.size() );
+    assert( nSigma.size() == labels.size() );
+
+    loader.AddNSigmasTree( *this, labels, systsToStore, spillcut, cut, shift );
+  }
+
+
+  //----------------------------------------------------------------------
+  NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                            SpectrumLoaderBase& loader,
+                            const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
+                            const TruthCut& truthcut, const SystShifts& shift, const bool saveRunSubEvt)
+  : WeightsTree(name,labels,nSigma,saveRunSubEvt,false)
+  {
+    assert( labels.size() == systsToStore.size() );
+    assert( nSigma.size() == labels.size() );
+
+    loader.AddNSigmasTree( *this, labels, systsToStore, truthcut, shift );
+  }
+  //----------------------------------------------------------------------
+  NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                            SpectrumLoaderBase& loader,
+                            const std::vector<const ISyst*>& systsToStore, const std::vector<std::vector<double>>& nSigma,
+                            const TruthCut& truthcut, const SystShifts& shift, const bool saveRunSubEvt)
+  : WeightsTree(name,labels,nSigma,saveRunSubEvt,false)
+  {
+    assert( labels.size() == systsToStore.size() );
+    assert( nSigma.size() == labels.size() );
+
+    loader.AddNSigmasTree( *this, labels, systsToStore, truthcut, shift );
+  }
 
   //----------------------------------------------------------------------
   void NSigmasTree::SaveToSplines( TDirectory* dir ) const
@@ -908,7 +1023,7 @@ namespace ana
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         double sigmasArr[NSigmas];
         for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
-          sigmasArr[idxSigma] = double(fNSigmasLo.at( fOrderedBranchWeightNames.at(idxBranchWeight) ) + int(idxSigma));
+          sigmasArr[idxSigma] = fNSigmas.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxSigma);
         }
 
         double weightsArr[NSigmas];
@@ -1030,7 +1145,7 @@ namespace ana
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         double sigmasArr[NSigmas];
         for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
-          sigmasArr[idxSigma] = double(fNSigmasLo.at( fOrderedBranchWeightNames.at(idxBranchWeight) ) + int(idxSigma));
+          sigmasArr[idxSigma] = fNSigmas.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxSigma);
         }
 
         double weightsArr[NSigmas];
@@ -1151,7 +1266,7 @@ namespace ana
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         double sigmasArr[NSigmas];
         for ( unsigned int idxSigma=0; idxSigma<(unsigned int)NSigmas; ++idxSigma ) {
-          sigmasArr[idxSigma] = double(fNSigmasLo.at( fOrderedBranchWeightNames.at(idxBranchWeight) ) + int(idxSigma));
+          sigmasArr[idxSigma] = fNSigmas.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxSigma);
         }
 
         double weightsArr[NSigmas];
@@ -1313,6 +1428,24 @@ namespace ana
     }
 
     loader.AddNUniversesTree( *this, labels, univsKnobs, spillcut, cut, shift );
+  }
+
+  //----------------------------------------------------------------------
+  NUniversesTree::NUniversesTree( const std::string name, const std::vector<std::string>& labels,
+                                  SpectrumLoaderBase& loader,
+                                  const std::vector<std::vector<TruthVar>>& univsKnobs,
+                                  const std::vector<unsigned int>& nUniverses,
+                                  const TruthCut& truthcut,
+                                  const SystShifts& shift, const bool saveRunSubEvt)
+  : WeightsTree(name,labels,nUniverses,saveRunSubEvt,false)
+  {
+    assert( labels.size() == univsKnobs.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      assert( univsKnobs.at(i).size() == nUniverses.at(i) );
+    }
+
+    loader.AddNUniversesTree( *this, labels, univsKnobs, truthcut, shift );
   }
 
   //----------------------------------------------------------------------

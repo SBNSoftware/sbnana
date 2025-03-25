@@ -3,6 +3,7 @@ file(GLOB lib_srcs *.cxx)
 cet_make_library(LIBRARY_NAME SBNAnaCuts
          SOURCE ${lib_srcs}
          LIBRARIES CAFAnaCore
+                   CAFAnaSysts
                    SBNAnaVars
                    sbnanaobj::StandardRecordProxy
         )

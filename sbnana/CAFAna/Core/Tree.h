@@ -39,6 +39,20 @@ namespace ana
     Tree( const std::string name, const std::vector<std::string>& labels,
           SpectrumLoaderBase& loader,
           const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt = false );
+    /// constructor with a vector of \ref TruthVar
+    /// Dedicated for signal efficiency, thus has slightly different behavior
+    /// - spillcut: It does not cut event by spillcut, but creates a branch "SpillCutType"
+    /// - truthcut: Signal definition is defined here. Only the TrueInteraction (=nu) that satisfies truthcut will be filled
+    /// - SignalSelection: Reco cut that defined your signal selection. 
+    ///   For each nu, it loops over reco slices, and find if any matched slice pass this cut, and save this to "CutType" branch
+    Tree( const std::string name, const std::vector<std::string>& labels,
+          SpectrumLoaderBase& loader,
+          const std::vector<TruthVar>& vars, const SpillCut& spillcut,
+          const TruthCut& truthcut,
+          const Cut& SignalSelection,
+          const SystShifts& shift = kNoShift,
+          const bool saveRunSubEvt = false );
+
     // Add functionality to update the protected stuff from elsewhere
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
     virtual void UpdateEntries ( const std::map<std::string, std::vector<double>> valsMap );
@@ -52,6 +66,8 @@ namespace ana
     bool SaveSliceNum() const {return fSaveSliceNum;}
     void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
+    bool SaveTruthCutType() const {return fSaveTruthCutType;}
+    Cut GetSignalSelectionCut() const {return SignalSelection;}
     virtual void SaveTo( TDirectory* dir ) const;
   protected:
     friend class WeightsTree;
@@ -63,6 +79,8 @@ namespace ana
     double fLivetime;
     bool fSaveRunSubEvt;
     bool fSaveSliceNum;
+    bool fSaveTruthCutType;
+    const Cut SignalSelection;
   };
 
   /// Allows to make covariance matrices using \ref Tree objects cleverly
@@ -94,6 +112,8 @@ namespace ana
                  const std::vector<unsigned int>& nWeights, const bool saveRunSubEvt, const bool saveSliceNum );
     WeightsTree( const std::string name, const std::vector<std::string>& labels,
                  const std::vector<std::pair<int,int>>& nSigma, const bool saveRunSubEvt, const bool saveSliceNum );
+    WeightsTree( const std::string name, const std::vector<std::string>& labels,
+                 const std::vector<std::vector<double>>& nSigma, const bool saveRunSubEvt, const bool saveSliceNum );
     /// Function to merge the WeightsTree with a Tree, assuming both have fSaveRunSubEvt and fSaveSliceNum set to true
     void MergeTree( const Tree& inTree );
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
@@ -104,8 +124,7 @@ namespace ana
     double POT() const {return fPOT;} // as in Spectrum
     double Livetime() const {return fLivetime;} // as in Spectrum
     long long Entries() const {return fNEntries;}
-    int NSigmaLo(const std::string& systToNSigma) const {return fNSigmasLo.at(systToNSigma);}
-    int NSigmaHi(const std::string& systToNSigma) const {return fNSigmasHi.at(systToNSigma);}
+    double GetSigma(const std::string& systToNSigma, unsigned int i_sigma) const {return fNSigmas.at(systToNSigma).at(i_sigma);}
     unsigned int NWeights(const std::string& systToNWts) const {return fNWeightsExpected.at(systToNWts);}
     bool SaveRunSubEvent() const {return fSaveRunSubEvt;}
     bool SaveSliceNum() const {return fSaveSliceNum;}
@@ -115,8 +134,7 @@ namespace ana
   protected:
     std::map< std::string, std::vector<double>> fBranchEntries;
     std::map< std::string, std::vector<std::vector<double>>> fBranchWeightEntries;
-    std::map< std::string, int> fNSigmasLo;
-    std::map< std::string, int> fNSigmasHi;
+    std::map< std::string, std::vector<double>> fNSigmas;
     std::map< std::string, unsigned int> fNWeightsExpected;
     //std::map< std::string, std::vector<double>> fNWeightsThrows; // stores the expected ordering of NSigmas per knob or universe throws per knob.
     std::string fTreeName;
@@ -138,6 +156,25 @@ namespace ana
                  const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
                  const SpillCut& spillcut,
                  const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                 SpectrumLoaderBase& loader,
+                 const std::vector<const ISyst*>& systsToStore, const std::vector<std::vector<double>>& nSigma,
+                 const SpillCut& spillcut,
+                 const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    /// constructor with a vector of \ref ISyst, but for TrueTree
+    /// Dedicated for signal efficiency, thus has slightly different behavior
+    /// - Do not take spillcut
+    /// - truthcut: Signal definition is defined here. Only the TrueInteraction (=nu) that satisfies truthcut will be filled
+    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                 SpectrumLoaderBase& loader,
+                 const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
+                 const TruthCut& truthcut,
+                 const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
+    NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                 SpectrumLoaderBase& loader,
+                 const std::vector<const ISyst*>& systsToStore, const std::vector<std::vector<double>>& nSigma,
+                 const TruthCut& truthcut,
+                 const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
     void SaveTo( TDirectory* dir ) const override;
     void SaveToSplines( TDirectory* dir ) const;
     void SaveToGraphs( TDirectory* dir ) const;
@@ -153,6 +190,16 @@ namespace ana
                     const std::vector<std::vector<Var>>& univsKnobs, const std::vector<unsigned int>& nUniverses,
                     const SpillCut& spillcut,
                     const Cut& cut, const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false, const bool saveSliceNum = false );
+    /// constructor with a vector of vectors of \ref Var corresponding to a number of universes for which we want to extract weights, for TrueTree
+    /// Dedicated for signal efficiency, thus has slightly different behavior
+    /// - Do not take spillcut
+    /// - truthcut: Signal definition is defined here. Only the TrueInteraction (=nu) that satisfies truthcut will be filled
+    NUniversesTree( const std::string name, const std::vector<std::string>& labels,
+                    SpectrumLoaderBase& loader,
+                    const std::vector<std::vector<TruthVar>>& univsKnobs, const std::vector<unsigned int>& nUniverses,
+                    const TruthCut& truthcut,
+                    const SystShifts& shift = kNoShift, const bool saveRunSubEvt = false);
+
     void SaveTo( TDirectory* dir ) const override;
   };
 

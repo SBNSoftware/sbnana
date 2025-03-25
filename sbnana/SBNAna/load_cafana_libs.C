@@ -73,13 +73,13 @@ void load_cafana_libs()
       "CAFAnaUnfold",
       "CAFAnaVars",
       "CAFAnaCuts",
-      "SBNAnaVars",
-      "SBNAnaCuts",
       "CAFAnaSysts",
       "CAFAnaExtrap",
       "CAFAnaPrediction",
       "CAFAnaExperiment",
       "CAFAnaAnalysis",
+      "SBNAnaVars",
+      "SBNAnaCuts",
     };
 
   // Actually load the libraries
@@ -98,7 +98,7 @@ void load_cafana_libs()
     gROOT->Macro("${SBNANA_FQ_DIR}/bin/rootlogon.C");
   }
   else{
-    gROOT->Macro("${MRB_BUILDDIR}/sbnana/bin/rootlogon.C");
+    gROOT->Macro("${SBNANA_DIR}/sbnana/CAFAna/rootlogon.C");
   }
   gROOT->ForceStyle();
 
