@@ -40,4 +40,16 @@ class POTSyst: public ISyst
 
 const POTSyst& GetPOTSyst();
 
+class NormSyst: public ISyst
+{
+  public:
+  NormSyst() : ISyst("normsyst", "10% Normalization Systematic") {}
+  void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const override
+  {
+    weight *= (1.0 + 0.1 * sigma);
+  }
+};
+
+const NormSyst& GetNormSyst();
+
 }

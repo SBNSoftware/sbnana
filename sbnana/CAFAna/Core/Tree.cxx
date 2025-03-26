@@ -1370,14 +1370,17 @@ namespace ana
     }
 
     std::map< std::string, std::vector<double> > weights;
+    std::map< std::string, std::vector<double> > knob_vals;
 
     // set up map
     for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
       weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ] = {};
+      knob_vals[ fOrderedBranchWeightNames.at(idxBranchWeight) ] = {};
     }
     // set up branches
     for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
       theTree.Branch( fOrderedBranchWeightNames.at(idxBranchWeight).c_str(), &weights[fOrderedBranchWeightNames.at(idxBranchWeight)] );
+      theTree.Branch( (fOrderedBranchWeightNames.at(idxBranchWeight)+"_sigma").c_str(), &knob_vals[fOrderedBranchWeightNames.at(idxBranchWeight)] );
     }
 
     // Loop over entries
@@ -1394,6 +1397,7 @@ namespace ana
       // Save the weights
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
+        knob_vals[ fOrderedBranchWeightNames.at(idxBranchWeight) ] = fNSigmas.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         for ( unsigned int idxWt = 0; idxWt < (unsigned int)NSigmas; ++idxWt ) {
           weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].push_back(fBranchWeightEntries.at( fOrderedBranchWeightNames.at(idxBranchWeight) ).at(idxEntry).at(idxWt));
         }
@@ -1404,6 +1408,7 @@ namespace ana
       // clear eights vec:
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
         weights[ fOrderedBranchWeightNames.at(idxBranchWeight) ].clear();
+        knob_vals[ fOrderedBranchWeightNames.at(idxBranchWeight) ].clear();
       }
     }
 

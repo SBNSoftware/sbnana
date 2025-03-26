@@ -2,6 +2,7 @@
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "cetlib/search_path.h"
 #include <cmath>
+#include <vector>
 #include <iostream>
 #include "TMath.h"
 
@@ -16,32 +17,14 @@ namespace ana {
      gain_err(0.01),
      kCaloSystMode(mode)
   {
-
-    cet::search_path sp("FW_SEARCH_PATH");
-
-    std::string kdEdXUncTemplateFileName = "template_dEdXUncertainty.root";
-    std::string kdEdXUncTemplateFullFilePath;
-    sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath);
-
-    TFile* file_dEdXUncTemplate = TFile::Open(kdEdXUncTemplateFullFilePath.c_str());
-    dedx_unc_template = (TGraph2D*)file_dEdXUncTemplate->Get("dEdXRelUncertainty_dEdX_vs_phi");
-
-    std::string kChi2TemplateFileName = "dEdxrestemplates.root";
-    std::string kChi2TemplateFullFilePath;
-    sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath);
-
-    TFile *file_Chi2Template = TFile::Open(kChi2TemplateFullFilePath.c_str());
-    dedx_range_pro = (TProfile*)file_Chi2Template->Get("dedx_range_pro");
-    dedx_range_ka  = (TProfile*)file_Chi2Template->Get("dedx_range_ka");
-    dedx_range_pi  = (TProfile*)file_Chi2Template->Get("dedx_range_pi");
-    dedx_range_mu  = (TProfile*)file_Chi2Template->Get("dedx_range_mu");
-
   }
 
   Chi2Results CalorimetrySyst::CalculateChi2(const caf::Proxy<caf::SRTrackCalo>& calo) const {
 
+    dEdX_range_templates_t const& dedx_range = cache.rangeTemplates();
+    
     // copied&modified from https://github.com/LArSoft/larana/blob/develop/larana/ParticleIdentification/Chi2PIDAlg.cxx#L60
-
+    
     int npt = 0;
     double chi2pro = 0;
     double chi2ka = 0;
@@ -64,44 +47,44 @@ namespace ana {
         used_trkres++;
       }
       if (hit_dedx > 1000) continue; //protect against large pulse height
-      int bin = dedx_range_pro->FindBin(hit_rr);
-      if (bin >= 1 && bin <= dedx_range_pro->GetNbinsX()) {
-        double bincpro = dedx_range_pro->GetBinContent(bin);
+      int bin = dedx_range.pro->FindBin(hit_rr);
+      if (bin >= 1 && bin <= dedx_range.pro->GetNbinsX()) {
+        double bincpro = dedx_range.pro->GetBinContent(bin);
         if (bincpro < 1e-6) { //for 0 bin content, using neighboring bins
           bincpro =
-            (dedx_range_pro->GetBinContent(bin - 1) + dedx_range_pro->GetBinContent(bin + 1)) / 2;
+            (dedx_range.pro->GetBinContent(bin - 1) + dedx_range.pro->GetBinContent(bin + 1)) / 2;
         }
-        double bincka = dedx_range_ka->GetBinContent(bin);
+        double bincka = dedx_range.ka->GetBinContent(bin);
         if (bincka < 1e-6) {
           bincka =
-            (dedx_range_ka->GetBinContent(bin - 1) + dedx_range_ka->GetBinContent(bin + 1)) / 2;
+            (dedx_range.ka->GetBinContent(bin - 1) + dedx_range.ka->GetBinContent(bin + 1)) / 2;
         }
-        double bincpi = dedx_range_pi->GetBinContent(bin);
+        double bincpi = dedx_range.pi->GetBinContent(bin);
         if (bincpi < 1e-6) {
           bincpi =
-            (dedx_range_pi->GetBinContent(bin - 1) + dedx_range_pi->GetBinContent(bin + 1)) / 2;
+            (dedx_range.pi->GetBinContent(bin - 1) + dedx_range.pi->GetBinContent(bin + 1)) / 2;
         }
-        double bincmu = dedx_range_mu->GetBinContent(bin);
+        double bincmu = dedx_range.mu->GetBinContent(bin);
         if (bincmu < 1e-6) {
           bincmu =
-            (dedx_range_mu->GetBinContent(bin - 1) + dedx_range_mu->GetBinContent(bin + 1)) / 2;
+            (dedx_range.mu->GetBinContent(bin - 1) + dedx_range.mu->GetBinContent(bin + 1)) / 2;
         }
-        double binepro = dedx_range_pro->GetBinError(bin);
+        double binepro = dedx_range.pro->GetBinError(bin);
         if (binepro < 1e-6) {
           binepro =
-            (dedx_range_pro->GetBinError(bin - 1) + dedx_range_pro->GetBinError(bin + 1)) / 2;
+            (dedx_range.pro->GetBinError(bin - 1) + dedx_range.pro->GetBinError(bin + 1)) / 2;
         }
-        double bineka = dedx_range_ka->GetBinError(bin);
+        double bineka = dedx_range.ka->GetBinError(bin);
         if (bineka < 1e-6) {
-          bineka = (dedx_range_ka->GetBinError(bin - 1) + dedx_range_ka->GetBinError(bin + 1)) / 2;
+          bineka = (dedx_range.ka->GetBinError(bin - 1) + dedx_range.ka->GetBinError(bin + 1)) / 2;
         }
-        double binepi = dedx_range_pi->GetBinError(bin);
+        double binepi = dedx_range.pi->GetBinError(bin);
         if (binepi < 1e-6) {
-          binepi = (dedx_range_pi->GetBinError(bin - 1) + dedx_range_pi->GetBinError(bin + 1)) / 2;
+          binepi = (dedx_range.pi->GetBinError(bin - 1) + dedx_range.pi->GetBinError(bin + 1)) / 2;
         }
-        double binemu = dedx_range_mu->GetBinError(bin);
+        double binemu = dedx_range.mu->GetBinError(bin);
         if (binemu < 1e-6) {
-          binemu = (dedx_range_mu->GetBinError(bin - 1) + dedx_range_mu->GetBinError(bin + 1)) / 2;
+          binemu = (dedx_range.mu->GetBinError(bin - 1) + dedx_range.mu->GetBinError(bin + 1)) / 2;
         }
         //double errke = 0.05*hit_dedx;   //5% KE resolution
         double errdedx = 0.04231 + 0.0001783 * hit_dedx * hit_dedx; //resolution on dE/dx
@@ -146,6 +129,7 @@ namespace ana {
 
   void CalorimetrySyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
   {
+    dEdX_uncertainty_t const& dedx_unc = cache.dEdXuncTemplates();
 
     for(auto& pfp: sr->reco.pfp){
 
@@ -166,7 +150,7 @@ namespace ana {
             pt.dedx = ( std::exp( (1. + sigma*gain_err) * std::log(alpha + (beta/rho/Efield)*this_dedx) ) - alpha ) / (beta/rho/Efield);
           }
           else if(kCaloSystMode==CaloSystMode::kdEdXShift){
-            double this_dedx_relunc = dedx_unc_template->Interpolate(this_dedx, this_phi);
+            double this_dedx_relunc = dedx_unc.templ->Interpolate(this_dedx, this_phi);
             pt.dedx = (1. + sigma*this_dedx_relunc)*this_dedx;
           }
 
@@ -208,6 +192,60 @@ namespace ana {
     }
 
   }
+  
+  auto CalorimetrySyst::cache_t::dEdXuncTemplates() const -> dEdX_uncertainty_t const& {
+    if (!dedx_unc) dedx_unc = load_dEdXuncTemplates();
+    return *dedx_unc;
+  }
+  
+  auto CalorimetrySyst::cache_t::rangeTemplates() const -> dEdX_range_templates_t const& {
+    if (!dedx_range) dedx_range = load_rangeTemplates();
+    return *(dedx_range);
+  }
+  
+  auto CalorimetrySyst::cache_t::load_dEdXuncTemplates() const -> dEdX_uncertainty_t {
+    
+    cet::search_path sp("FW_SEARCH_PATH");
+
+    std::string const kdEdXUncTemplateFileName = "template_dEdXUncertainty.root";
+    std::string kdEdXUncTemplateFullFilePath;
+    if (!sp.find_file(kdEdXUncTemplateFileName, kdEdXUncTemplateFullFilePath)) {
+      std::cerr << "\nana::CalorimetrySyst: failed to locate dE/dx template file '"
+        << kdEdXUncTemplateFileName << "'" << std::endl;
+      std::abort();
+    }
+    
+    TFile* file_dEdXUncTemplate = TFile::Open(kdEdXUncTemplateFullFilePath.c_str()); // leaked
+    
+    dEdX_uncertainty_t dedx_unc;
+    dedx_unc.templ = file_dEdXUncTemplate->Get<TGraph2D>("dEdXRelUncertainty_dEdX_vs_phi");
+
+    return dedx_unc;
+  }
+  
+  auto CalorimetrySyst::cache_t::load_rangeTemplates() const -> dEdX_range_templates_t {
+    
+    cet::search_path sp("FW_SEARCH_PATH");
+
+    std::string const kChi2TemplateFileName = "dEdxrestemplates.root";
+    std::string kChi2TemplateFullFilePath;
+    if (!sp.find_file(kChi2TemplateFileName, kChi2TemplateFullFilePath)) {
+      std::cerr << "\nana::CalorimetrySyst: failed to locate dE/dx template file '"
+        << kChi2TemplateFileName << "'" << std::endl;
+      std::abort();
+    }
+
+    TFile* file_Chi2Template = TFile::Open(kChi2TemplateFullFilePath.c_str()); // leaked
+    
+    dEdX_range_templates_t dedx_range;
+    dedx_range.pro = file_Chi2Template->Get<TProfile>("dedx_range_pro");
+    dedx_range.ka  = file_Chi2Template->Get<TProfile>("dedx_range_ka");
+    dedx_range.pi  = file_Chi2Template->Get<TProfile>("dedx_range_pi");
+    dedx_range.mu  = file_Chi2Template->Get<TProfile>("dedx_range_mu");
+    
+    return dedx_range;
+  }
+
 
   void CalorimetrySyst::Shift(double sigma, caf::SRTrueInteractionProxy *sr, double& weight) const {
 

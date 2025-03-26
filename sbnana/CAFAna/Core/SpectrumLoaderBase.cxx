@@ -598,11 +598,15 @@ namespace ana
   //----------------------------------------------------------------------
   TFile* SpectrumLoaderBase::GetNextFile()
   {
-    TFile* f = fFileSource->GetNextFile();
-    if(!f) return 0; // out of files
+    TFile* f = NULL;
+    TH1* hPOT = NULL;
+    while(!hPOT) {
+      f = fFileSource->GetNextFile();
+      if(!f) return 0; // out of files
 
-    TH1* hPOT = (TH1*)f->Get("TotalPOT");
-    assert(hPOT);
+      hPOT = (TH1*)f->Get("TotalPOT");
+    }
+    //assert(hPOT);
     fPOTFromHist  += hPOT->Integral(0, -1);
 
     return f;
