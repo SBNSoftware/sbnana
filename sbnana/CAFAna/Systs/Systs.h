@@ -46,6 +46,10 @@ class NormSyst: public ISyst
   NormSyst() : ISyst("normsyst", "10% Normalization Systematic") {}
   void Shift(double sigma, caf::SRSliceProxy* sr, double& weight) const override
   {
+    return this->Shift(sigma, &sr->truth, weight);
+  }
+  void Shift(double sigma, caf::SRTrueInteractionProxy* sr, double& weight) const override
+  {
     weight *= (1.0 + 0.1 * sigma);
   }
 };

@@ -17,6 +17,7 @@ namespace ana
     SBNOnOffSyst(const std::string& systName);
 
     void Shift(double x, caf::SRSliceProxy* sr, double& weight) const override;
+    void Shift(double x, caf::SRTrueInteractionProxy* nu, double& weight) const override;
 
   protected:
     mutable int fIdx;
