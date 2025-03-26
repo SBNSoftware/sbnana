@@ -61,6 +61,10 @@ namespace ana {
    
   }
 
+  void EnergyScaleSyst::Shift(double sigma, caf::SRTrueInteractionProxy *nu, double& weight) const
+  {
+  }
+
   void RecoEnergyScaleSyst::Shift(double sigma, caf::SRSliceProxy *sr, double& weight) const
   {
     //auto& det = sr->truth.det;
@@ -132,6 +136,9 @@ namespace ana {
           trk.mcsP.fwdP_pion *= (1+scaleMCSPi);
       }
     }
+  }
+  void RecoEnergyScaleSyst::Shift(double sigma, caf::SRTrueInteractionProxy *nu, double& weight) const
+  {
   }
 
    const EnergyScaleSyst kEnergyScaleMuon(EnergyScaleSystTerm::kConstant, EnergyScaleSystParticle::kMuon, EnergyScaleSystDetector::kAll, 0.02, "EnergyScaleMuon", "Correlated linear E_{#mu} scale");

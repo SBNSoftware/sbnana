@@ -21,11 +21,17 @@ namespace ana
   // --------------------------------------------------------------------------
   void SBNOnOffSyst::Shift(double x, caf::SRSliceProxy* sr, double& weight) const
   {
-    if(sr->truth.index < 0) return;
+    this->Shift(x, &sr->truth, weight);
+  }
+
+  // --------------------------------------------------------------------------
+  void SBNOnOffSyst::Shift(double x, caf::SRTrueInteractionProxy* nu, double& weight) const
+  {
+    if(nu->index < 0) return;
 
     if(fIdx == -1) fIdx = UniverseOracle::Instance().SystIndex(ShortName());
 
-    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = nu->wgt;
     if(wgts.empty()) return;
 
     const UniverseOracle& uo = UniverseOracle::Instance();
