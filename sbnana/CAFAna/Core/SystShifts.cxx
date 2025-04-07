@@ -89,6 +89,12 @@ namespace ana
   }
 
   //----------------------------------------------------------------------
+  void SystShifts::Shift(caf::SRTrueInteractionProxy* nu, double& weight) const
+  {
+    for(auto it: fSysts) it.first->Shift(it.second, nu, weight);
+  }
+
+  //----------------------------------------------------------------------
   std::string SystShifts::ShortName() const
   {
     if(fSysts.empty()) return "nominal";

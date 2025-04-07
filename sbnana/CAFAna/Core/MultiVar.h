@@ -47,6 +47,7 @@ namespace ana
 
   typedef _MultiVar<caf::SRSliceProxy> MultiVar;
   typedef _MultiVar<caf::SRSpillProxy> SpillMultiVar;
+  typedef _MultiVar<caf::SRTrueInteractionProxy> TruthMultiVar;
 
   template<class T> _MultiVar<T>
   MultiVar2D(const _MultiVar<T>& a, const Binning& binsa,

@@ -66,6 +66,57 @@ namespace ana
   //----------------------------------------------------------------------
   Spectrum::Spectrum(const std::string& label, const Binning& bins,
                      SpectrumLoaderBase& loader,
+                     const TruthVar& var,
+                     const TruthCut& truthcut,
+                     const SpillCut& spillcut,
+                     const SystShifts& shift,
+                     const TruthVar& wei)
+    : Spectrum(label, bins)
+  {
+    loader.AddSpectrum(*this, var, truthcut, spillcut, shift, wei);
+  }
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, const Binning& bins,
+                     SpectrumLoaderBase& loader,
+                     const TruthMultiVar& var,
+                     const TruthCut& truthcut,
+                     const SpillCut& spillcut,
+                     const SystShifts& shift,
+                     const TruthVar& wei)
+    : Spectrum(label, bins)
+  {
+    loader.AddSpectrum(*this, var, truthcut, spillcut, shift, wei);
+  }
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, const Binning& bins,
+                     SpectrumLoaderBase& loader,
+                     const TruthVar& var,
+                     const TruthCut& truthcut,
+                     const SpillCut& spillcut,
+                     const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const SystShifts& shift,
+                     const TruthVar& wei)
+    : Spectrum(label, bins)
+  {
+    loader.AddSpectrum(*this, var, truthcut, spillcut, cut, shift, wei);
+  }
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, const Binning& bins,
+                     SpectrumLoaderBase& loader,
+                     const TruthMultiVar& var,
+                     const TruthCut& truthcut,
+                     const SpillCut& spillcut,
+                     const Cut& cut, // loop over reco slices and see if any matched to this truth and pass "cut"
+                     const SystShifts& shift,
+                     const TruthVar& wei)
+    : Spectrum(label, bins)
+  {
+    loader.AddSpectrum(*this, var, truthcut, spillcut, cut, shift, wei);
+  }
+
+  //----------------------------------------------------------------------
+  Spectrum::Spectrum(const std::string& label, const Binning& bins,
+                     SpectrumLoaderBase& loader,
                      const MultiVar& var,
                      const SpillCut& spillcut,
                      const Cut& cut,
