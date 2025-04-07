@@ -1,5 +1,6 @@
 #include "sbnanaobj/StandardRecord/SRTrueInteraction.h"
 #include "sbnana/SBNAna/Vars/Pi0StudyVars.h"
+#include "sbnana/SBNAna/Cuts/Pi0StudyCuts.h"
 
 #include "TVector3.h"
 
@@ -9,6 +10,7 @@ namespace ana {
   bool isInFV (double x, double y, double z)
   {
     if ( std::isnan(x) || std::isnan(y) || std::isnan(z) ) return false;
+    if ( std::isinf(x) || std::isinf(y) || std::isinf(z) ) return false;
 
     return (( ( x < -61.94 - 25 && x > -358.49 + 25 ) ||
               ( x >  61.94 + 25 && x <  358.49 - 25 )) &&
@@ -19,6 +21,7 @@ namespace ana {
   bool isContainedVol (double x, double y, double z)
   {
     if ( std::isnan(x) || std::isnan(y) || std::isnan(z) ) return false;
+    if ( std::isinf(x) || std::isinf(y) || std::isinf(z) ) return false;
 
     return (( ( x < -61.94 - 5. && x > -358.49 + 5. ) ||
               ( x >  61.94 + 5. && x <  358.49 - 5. )) &&
@@ -31,14 +34,14 @@ namespace ana {
   }
 
   bool IsTracklikeTrack( const caf::SRSliceProxy* slice, const unsigned int idxTrk ) {
-    return (!std::isnan(slice->reco.pfp.at(idxTrk).trackScore) && slice->reco.pfp.at(idxTrk).trackScore > 0.45);
+    return (!std::isnan(slice->reco.pfp.at(idxTrk).trackScore) && slice->reco.pfp.at(idxTrk).trackScore > 0.49);
   }
 
   bool IsShowerlike( const caf::SRSliceProxy* slice, const unsigned int idxShw ) {
     return (
             !std::isnan(slice->reco.pfp.at(idxShw).trackScore) && 
             slice->reco.pfp.at(idxShw).trackScore > 0. && 
-            slice->reco.pfp.at(idxShw).trackScore <= 0.45
+            slice->reco.pfp.at(idxShw).trackScore <= 0.5
             );
   }
 
@@ -198,16 +201,18 @@ namespace ana {
       if ( i_pfp == (unsigned int)primaryInd || i_pfp == (unsigned int)primaryProtonInd ) {
         continue; // skip the particle which is the muon or leading proton candidate!
       }
-      if ( !IsShowerlike(slc, i_pfp) ) { 
-        continue; // skip things with track score > 0.45
-      }
+      //if ( !IsShowerlike(slc, i_pfp) ) { 
+      //  continue; // skip things with track score < 0.45
+      //}
       auto const& shw = slc->reco.pfp.at(i_pfp).shw;
 
       // Check if shower fit even seems kind-of valid:
-      if ( std::isnan(shw.start.x) || (shw.start.x > -5.5 && shw.start.x < -4.5) ||
-           std::isnan(shw.len) || shw.len <= 0. ) continue;
-
+      if (    std::isnan(shw.start.x)
+           //|| (shw.start.x > -5.5 && shw.start.x < -4.5)
+           || std::isnan(shw.len) || shw.len <= 0. ) continue;
+      
       // if it meets this then we're not going to cut on it...
+      if ( std::isnan(slc->reco.pfp.at(i_pfp).trackScore) || std::isinf(slc->reco.pfp.at(i_pfp).trackScore) || slc->reco.pfp.at(i_pfp).trackScore <= 0. ) continue;
       if ( std::isnan(shw.plane[2].energy) || std::isinf(shw.plane[2].energy) || shw.plane[2].energy <= 0.0 ) continue;
 
       // and... if it meets then then we're not going to cut on it...
@@ -227,11 +232,83 @@ namespace ana {
 
   });
 
+  // Number of truth-matched photons in reconstruction
+  const Var kNumberTruthMatchRecoPhotons([](const caf::SRSliceProxy* slc) -> int {
+    int nphotons(0);
+
+    for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); ++i_pfp){
+      auto const& shw = slc->reco.pfp.at(i_pfp).shw;
+      
+      // Get truth matched shower pdg
+      if ( std::isnan(shw.truth.p.pdg) || std::isinf(shw.truth.p.pdg) ) continue;
+      if ( abs(shw.truth.p.pdg) != 22 ) continue;
+      if ( shw.truth.p.start_process != 3 ) continue;
+      nphotons++;
+    }
+    return nphotons;
+  });
+
+  const Var kNumberTruthMatchRecoMuons([](const caf::SRSliceProxy* slc) -> int {
+    int nmuons(0);
+    for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); ++i_pfp){
+      auto const& trk = slc->reco.pfp.at(i_pfp).trk;
+      
+      // Get truth matched shower pdg
+      if ( std::isnan(trk.truth.p.pdg) || std::isinf(trk.truth.p.pdg) ) continue;
+      if ( abs(trk.truth.p.pdg) != 13 ) continue;
+      if ( trk.truth.p.start_process != 0 ) continue;
+      nmuons++;
+    }
+    return nmuons;
+  });
+
+  // Leading photon candidate
+  const Var kNuMILeadingPhotonCandidateIdx([](const caf::SRSliceProxy* slc) -> int {
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if ( photon_indices.size() == 0 ) return -5;
+
+    // find the leading photon candidate
+    int leadingPhotonIdx = -1;
+    double leadingPhotonE = -1.;
+    for ( auto const& idx : photon_indices ) {
+      auto const& shw = slc->reco.pfp.at(idx).shw;
+      if ( shw.plane[2].energy > leadingPhotonE ) {
+        leadingPhotonE = shw.plane[2].energy;
+        leadingPhotonIdx = idx;
+      }
+    }
+    return leadingPhotonIdx;
+  });
+
+  // SubLeading photon candidate
+  const Var kNuMISubLeadingPhotonCandidateIdx([](const caf::SRSliceProxy* slc) -> int{
+    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    if ( photon_indices.size() <= 1 ) return -5;
+    int leadingPhotonIdx = kNuMILeadingPhotonCandidateIdx(slc);
+    
+    // find the subleading photon candidate
+    int subleadingPhotonIdx = -5;
+    double subleadingPhotonE = -5.;
+    for ( auto const& idx : photon_indices ) {
+      if ( idx == leadingPhotonIdx ) continue;
+      auto const& shw = slc->reco.pfp.at(idx).shw;
+      if ( shw.plane[2].energy > subleadingPhotonE ) {
+        subleadingPhotonE = shw.plane[2].energy;
+        subleadingPhotonIdx = idx;
+      }
+    }
+    return subleadingPhotonIdx;
+  });
+
   const Var kNumberRecoShowers([](const caf::SRSliceProxy* slc) -> int {
     std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc); //track score > 0.45
     if (std::isnan(photon_indices.size())) return 0;
     int numshowers = photon_indices.size();
     return numshowers;
+  });
+
+  const Var kNumberPFPs([](const caf::SRSliceProxy* slc) -> int {
+    return slc->reco.npfp;
   });
 
   // MultiVar for the track candidate indices
@@ -438,6 +515,27 @@ namespace ana {
     if ( slc->truth.index >= 0 ) costh = PrimaryUtil::MuonCosThBeam_True(slc->truth);
 
     return costh;
+  });
+
+  // Truth angle between photons from neutral pion decay
+  const Var kNuMITrueCosThPhotonPhoton([](const caf::SRSliceProxy* slc) -> float {
+    float costh(-5.f);
+    if ( slc->truth.index >= 0 ) costh = PrimaryUtil::CosThPhotonPhoton_True(slc->truth);
+    return costh;
+  });
+
+  // Leading true photon G4ID
+  const Var kNuMITrueLeadingPhotonG4ID([](const caf::SRSliceProxy* slc) -> int {
+    int g4id(-5);
+    if ( slc->truth.index >= 0 ) g4id = PrimaryUtil::Pi0LeadingPhotonG4ID(slc->truth);
+    return g4id;
+  });
+
+  // Subleading true photon G4ID
+  const Var kNuMITrueSubLeadingPhotonG4ID([](const caf::SRSliceProxy* slc) -> int {
+    int g4id(-5);
+    if ( slc->truth.index >= 0 ) g4id = PrimaryUtil::Pi0SubLeadingPhotonG4ID(slc->truth);
+    return g4id;
   });
 
   // Reco Muon angle w.r.t. numi-to-vtx direction (= proxy of neutrino direction)
@@ -752,148 +850,109 @@ namespace ana {
     return ret;
   });
 
+
+
+  //////////////////////////////
+  //Reco Nu interaction Calcualtions
+  //////////////////////////////
+
+  const Var kSlcVertexX([](const caf::SRSliceProxy* slc) -> float {
+    return slc->vertex.x;
+  });
+
+  const Var kSlcVertexY([](const caf::SRSliceProxy* slc) -> float {
+    return slc->vertex.y;
+  });
+
+  const Var kSlcVertexZ([](const caf::SRSliceProxy* slc) -> float {
+    return slc->vertex.z;
+  });
+
+  //////////////////////////////
+  //Reco Muon Calcualtions
+  //////////////////////////////
+  const Var KMuonCandidateRecoStartX([](const caf::SRSliceProxy* slc) -> float {
+    float ret(-9999.f);
+    int Idx = kNuMIMuonCandidateIdx(slc);
+    auto const& trk = slc->reco.pfp.at(Idx).trk;
+    ret = trk.start.x;
+    return ret;
+  });
+
+  const Var KMuonCandidateRecoStartY([](const caf::SRSliceProxy* slc) -> float {
+    float ret(-9999.f);
+    int Idx = kNuMIMuonCandidateIdx(slc);
+    auto const& trk = slc->reco.pfp.at(Idx).trk;
+    ret = trk.start.y;
+    return ret;
+  });
+
+  const Var KMuonCandidateRecoStartZ([](const caf::SRSliceProxy* slc) -> float {
+    float ret(-9999.f);
+    int Idx = kNuMIMuonCandidateIdx(slc);
+    auto const& trk = slc->reco.pfp.at(Idx).trk;
+    ret = trk.start.z;
+    return ret;
+  });
+
+  const Var kMuonCandidateTrueStartX([](const caf::SRSliceProxy* slc) -> float {
+    int Idx = kNuMIMuonCandidateIdx(slc);
+    if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.start.x) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.start.x) ) return -9999.f;
+    return slc->reco.pfp.at(Idx).trk.truth.p.start.x;
+  });
+
+  const Var kMuonCandidateTrueStartY([](const caf::SRSliceProxy* slc) -> float {
+    int Idx = kNuMIMuonCandidateIdx(slc);
+    if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.start.y) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.start.y) ) return -9999.f;
+    return slc->reco.pfp.at(Idx).trk.truth.p.start.y;
+  });
+
+  const Var kMuonCandidateTrueStartZ([](const caf::SRSliceProxy* slc) -> float {
+    int Idx = kNuMIMuonCandidateIdx(slc);
+    if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.start.z) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.start.z) ) return -9999.f;
+    return slc->reco.pfp.at(Idx).trk.truth.p.start.z;
+  });
+  
+  const Var kMuonCandidatePDG([](const caf::SRSliceProxy* slc) -> float {
+    int Idx = kNuMIMuonCandidateIdx(slc);
+    if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.pdg) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.pdg) ) return -9999.f;
+    return slc->reco.pfp.at(Idx).trk.truth.p.pdg;
+  });
+
+  /////////////////////////////////////////////
+  /////Photon Calculations start here//////////
+  /////////////////////////////////////////////
+
   const Var kNuMILeadingPhotonCandidateE([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()==0) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-
-    return maxE;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    return slc->reco.pfp[idx].shw.plane[2].energy;
   });
 
   const Var kNuMILeadingPhotonCandidateTrueE([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-
-    if ( std::isnan(slc->reco.pfp[idxMaxE].shw.truth.p.genE) || std::isinf(slc->reco.pfp[idxMaxE].shw.truth.p.genE) ) return -5.f;
-    float trueE = slc->reco.pfp[idxMaxE].shw.truth.p.genE;
-
-    return trueE;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.genE) || std::isinf(slc->reco.pfp[idx].shw.truth.p.genE) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.p.genE;
   });
 
-  const Var kNuMISecondaryPhotonCandidateE([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-
-    return scdy;
+  const Var kNuMISubLeadingPhotonCandidateE([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    return slc->reco.pfp[idx].shw.plane[2].energy;
   });
 
-  const Var kNuMISecondaryPhotonCandidateTrueE([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    
-    if ( std::isnan(slc->reco.pfp[idxScdy].shw.truth.p.genE) || std::isinf(slc->reco.pfp[idxScdy].shw.truth.p.genE) ) return -5.f;
-    float trueE = slc->reco.pfp[idxScdy].shw.truth.p.genE;
-    return trueE;
+  const Var kNuMISubLeadingPhotonCandidateTrueE([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.genE) || std::isinf(slc->reco.pfp[idx].shw.truth.p.genE) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.p.genE;
   });
 
   const Var kNuMIPhotonCandidatesOpeningAngle([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( idxMaxE == idxScdy ) return -5.f;
-    if ( maxE < 0. || scdy < 0. ) return -5.f;
+    int idxMaxE = kNuMILeadingPhotonCandidateIdx(slc);
+    int idxScdy = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idxMaxE<0 || idxScdy<0) return -5.f;
 
     // Now get the quantities we want from this, following results of Jamie's w.r.t. the opening angle:
     // Uses vertex to shower:
@@ -909,272 +968,70 @@ namespace ana {
   });
 
   const Var kNuMILeadingPhotonCandidateLen([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()==0) return -5.f;
-
-    //Find length of most energetic shower
-    float len = -5.;
-    float maxE = -5.;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-        len = slc->reco.pfp[idxI].shw.len;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-
-    return len;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    return slc->reco.pfp[idx].shw.len;
   });
 
-  const Var kNuMISecondaryPhotonCandidateLen([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    float len = -5.;
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-        len = slc->reco.pfp[idxI].shw.len; 
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-        len = slc->reco.pfp[idxI].shw.len;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-
-    return len;
+  const Var kNuMISubLeadingPhotonCandidateLen([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    return slc->reco.pfp[idx].shw.len;
   });
 
   const Var kPi0LeadingPhotonCandidateHitCompletenessBestmatch([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    //rec.slc.reco.pfp.shw.truth.bestmatch.hit_completeness
-    if ( std::isnan(slc->reco.pfp[idxMaxE].shw.truth.bestmatch.hit_completeness) || std::isinf(slc->reco.pfp[idxMaxE].shw.truth.bestmatch.hit_completeness) ) return -5.f;
-    float maxPhotonCompleteness = slc->reco.pfp[idxMaxE].shw.truth.bestmatch.hit_completeness;
-    return maxPhotonCompleteness;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.bestmatch.hit_completeness) || std::isinf(slc->reco.pfp[idx].shw.truth.bestmatch.hit_completeness) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.bestmatch.hit_completeness;
   });
 
   const Var kPi0LeadingPhotonCandidateInFV([](const caf::SRSliceProxy* slc) -> float {
-      std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-      if(photon_indices.size()<=1) return -5.f;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    
+    bool IsStartInFV = isInFV(slc->reco.pfp[idx].shw.start.x, slc->reco.pfp[idx].shw.start.y, slc->reco.pfp[idx].shw.start.z);
+    bool IsEndInFV = isInFV(slc->reco.pfp[idx].shw.end.x, slc->reco.pfp[idx].shw.end.y, slc->reco.pfp[idx].shw.end.z);
 
-      // Find 2 most energetic:
-      unsigned int idxMaxE = 0;
-      float maxE = -5.;
-      unsigned int idxScdy = 0;
-      float scdy = -5.;
-      for ( auto const& photon_idx : photon_indices ) {
-        unsigned int idxI = (unsigned int)std::lround(photon_idx);
-        if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-          idxScdy = idxMaxE;
-          scdy = maxE;
-          idxMaxE = idxI;
-          maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-        else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-          idxScdy = idxI;
-          scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-      }
+    float IsShowerInFV = -5.f;
+    if (IsStartInFV && IsEndInFV){
+      IsShowerInFV = 1.f;
+    }else if(IsStartInFV){
+      IsShowerInFV = 0.f;
+    }else{
+      IsShowerInFV = -1.f;
+    }
+    return IsShowerInFV;
+  });
 
-      if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5;
-      if (std::isnan(slc->reco.pfp[idxMaxE].shw.start.x) || std::isnan(slc->reco.pfp[idxMaxE].shw.start.y) || std::isnan(slc->reco.pfp[idxMaxE].shw.start.z)) return -5.f;
-      if (std::isinf(slc->reco.pfp[idxMaxE].shw.start.x) || std::isinf(slc->reco.pfp[idxMaxE].shw.start.y) || std::isinf(slc->reco.pfp[idxMaxE].shw.start.z)) return -5.f;
+  const Var kPi0LeadingPhotonCandidateEnergyCompletenessBestmatch([](const caf::SRSliceProxy* slc) -> float {
+      int idx = kNuMILeadingPhotonCandidateIdx(slc);
+      if(idx<0) return -5.f;
+      if ( std::isnan(slc->reco.pfp[idx].shw.truth.bestmatch.energy_completeness) || std::isinf(slc->reco.pfp[idx].shw.truth.bestmatch.energy_completeness) ) return -5.f;
+      return slc->reco.pfp[idx].shw.truth.bestmatch.energy_completeness;
+  });
 
-      if (std::isnan(slc->reco.pfp[idxMaxE].shw.end.x) || std::isnan(slc->reco.pfp[idxMaxE].shw.end.y) || std::isnan(slc->reco.pfp[idxMaxE].shw.end.z)) return -5.f;
-      if (std::isinf(slc->reco.pfp[idxMaxE].shw.end.x) || std::isinf(slc->reco.pfp[idxMaxE].shw.end.y) || std::isinf(slc->reco.pfp[idxMaxE].shw.end.z)) return -5.f;
+
+  const Var kPi0SubLeadingPhotonCandidateHitCompletenessBestmatch([](const caf::SRSliceProxy* slc) -> float {
+      int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+      if(idx<0) return -5.f;
+      if ( std::isnan(slc->reco.pfp[idx].shw.truth.bestmatch.hit_completeness) || std::isinf(slc->reco.pfp[idx].shw.truth.bestmatch.hit_completeness) ) return -5.f;
+      return slc->reco.pfp[idx].shw.truth.bestmatch.hit_completeness;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateEnergyCompletenessBestmatch([](const caf::SRSliceProxy* slc) -> float {
+      int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+      if(idx<0) return -5.f;
+      if ( std::isnan(slc->reco.pfp[idx].shw.truth.bestmatch.energy_completeness) || std::isinf(slc->reco.pfp[idx].shw.truth.bestmatch.energy_completeness) ) return -5.f;
+      return slc->reco.pfp[idx].shw.truth.bestmatch.energy_completeness;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateInFV([](const caf::SRSliceProxy* slc) -> float {
+      int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+      if(idx<0) return -5.f;
       
-      bool IsStartInFV = isInFV(slc->reco.pfp[idxMaxE].shw.start.x, slc->reco.pfp[idxMaxE].shw.start.y, slc->reco.pfp[idxMaxE].shw.start.z);
-      bool IsEndInFV = isInFV(slc->reco.pfp[idxMaxE].shw.end.x, slc->reco.pfp[idxMaxE].shw.end.y, slc->reco.pfp[idxMaxE].shw.end.z);
-
-      float IsShowerInFV = -5.f;
-      if (IsStartInFV && IsEndInFV){
-        IsShowerInFV = 1.f;
-      }else if(IsStartInFV){
-        IsShowerInFV = 0.f;
-      }else{
-        IsShowerInFV = -1.f;
-      }
-      return IsShowerInFV;
-  });
-
-    const Var kPi0LeadingPhotonCandidateEnergyCompletenessBestmatch([](const caf::SRSliceProxy* slc) -> float {
-      std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-      if(photon_indices.size()<=1) return -5.f;
-
-      // Find 2 most energetic:
-      unsigned int idxMaxE = 0;
-      float maxE = -5.;
-      unsigned int idxScdy = 0;
-      float scdy = -5.;
-      for ( auto const& photon_idx : photon_indices ) {
-        unsigned int idxI = (unsigned int)std::lround(photon_idx);
-        if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-          idxScdy = idxMaxE;
-          scdy = maxE;
-          idxMaxE = idxI;
-          maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-        else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-          idxScdy = idxI;
-          scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-      }
-
-      if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-       //rec.slc.reco.pfp.shw.truth.bestmatch.hit_completeness
-      if ( std::isnan(slc->reco.pfp[idxMaxE].shw.truth.bestmatch.energy_completeness) || std::isinf(slc->reco.pfp[idxMaxE].shw.truth.bestmatch.energy_completeness) ) return -5.f;
-      float maxPhotonCompleteness = slc->reco.pfp[idxMaxE].shw.truth.bestmatch.energy_completeness;
-
-      return maxPhotonCompleteness;
-  });
-
-
-  const Var kPi0SecondaryPhotonCandidateHitCompletenessBestmatch([](const caf::SRSliceProxy* slc) -> float {
-      std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-      if(photon_indices.size()<=1) return -5.f;
-
-      // Find 2 most energetic:
-      unsigned int idxMaxE = 0;
-      float maxE = -5.;
-      unsigned int idxScdy = 0;
-      float scdy = -5.;
-      for ( auto const& photon_idx : photon_indices ) {
-        unsigned int idxI = (unsigned int)std::lround(photon_idx);
-        if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-          idxScdy = idxMaxE;
-          scdy = maxE;
-          idxMaxE = idxI;
-          maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-        else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-          idxScdy = idxI;
-          scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-      }
-
-      if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-
-      //rec.slc.reco.pfp.shw.truth.bestmatch.hit_completeness
-      if ( std::isnan(slc->reco.pfp[idxScdy].shw.truth.bestmatch.hit_completeness) || std::isinf(slc->reco.pfp[idxScdy].shw.truth.bestmatch.hit_completeness) ) return -5.f;
-      float maxPhotonCompleteness = slc->reco.pfp[idxScdy].shw.truth.bestmatch.hit_completeness;
-
-      return maxPhotonCompleteness;
-  });
-
-  const Var kPi0SecondaryPhotonCandidateEnergyCompletenessBestmatch([](const caf::SRSliceProxy* slc) -> float {
-        std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-        if(photon_indices.size()<=1) return -5.f;
-
-        // Find 2 most energetic:
-        unsigned int idxMaxE = 0;
-        float maxE = -5.;
-        unsigned int idxScdy = 0;
-        float scdy = -5.;
-        for ( auto const& photon_idx : photon_indices ) {
-          unsigned int idxI = (unsigned int)std::lround(photon_idx);
-          if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-            idxScdy = idxMaxE;
-            scdy = maxE;
-            idxMaxE = idxI;
-            maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-          }
-          else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-            idxScdy = idxI;
-            scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-          }
-        }
-
-        if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-
-         //rec.slc.reco.pfp.shw.truth.bestmatch.hit_completeness
-        if ( std::isnan(slc->reco.pfp[idxScdy].shw.truth.bestmatch.energy_completeness) || std::isinf(slc->reco.pfp[idxScdy].shw.truth.bestmatch.energy_completeness) ) return -5.f;
-        float maxPhotonCompleteness = slc->reco.pfp[idxScdy].shw.truth.bestmatch.energy_completeness;
-
-        return maxPhotonCompleteness;
-  });
-
-  const Var kPi0SecondaryPhotonCandidateInFV([](const caf::SRSliceProxy* slc) -> float {
-      std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-      if(photon_indices.size()<=1) return -5.f;
-
-      // Find 2 most energetic:
-      unsigned int idxMaxE = 0;
-      float maxE = -5.;
-      unsigned int idxScdy = 0;
-      float scdy = -5.;
-      for ( auto const& photon_idx : photon_indices ) {
-        unsigned int idxI = (unsigned int)std::lround(photon_idx);
-        if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-          idxScdy = idxMaxE;
-          scdy = maxE;
-          idxMaxE = idxI;
-          maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-        else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-          idxScdy = idxI;
-          scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-      }
-
-      if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5;
-      if (std::isnan(slc->reco.pfp[idxScdy].shw.start.x) || std::isnan(slc->reco.pfp[idxScdy].shw.start.y) || std::isnan(slc->reco.pfp[idxScdy].shw.start.z)) return -5.f;
-      if (std::isinf(slc->reco.pfp[idxScdy].shw.start.x) || std::isinf(slc->reco.pfp[idxScdy].shw.start.y) || std::isinf(slc->reco.pfp[idxScdy].shw.start.z)) return -5.f;
-
-      if (std::isnan(slc->reco.pfp[idxScdy].shw.end.x) || std::isnan(slc->reco.pfp[idxScdy].shw.end.y) || std::isnan(slc->reco.pfp[idxScdy].shw.end.z)) return -5.f;
-      if (std::isinf(slc->reco.pfp[idxScdy].shw.end.x) || std::isinf(slc->reco.pfp[idxScdy].shw.end.y) || std::isinf(slc->reco.pfp[idxScdy].shw.end.z)) return -5.f;
-      
-      bool IsStartInFV = isInFV(slc->reco.pfp[idxScdy].shw.start.x, slc->reco.pfp[idxScdy].shw.start.y, slc->reco.pfp[idxScdy].shw.start.z);
-      bool IsEndInFV = isInFV(slc->reco.pfp[idxScdy].shw.end.x, slc->reco.pfp[idxScdy].shw.end.y, slc->reco.pfp[idxScdy].shw.end.z);
+      bool IsStartInFV = isInFV(slc->reco.pfp[idx].shw.start.x, slc->reco.pfp[idx].shw.start.y, slc->reco.pfp[idx].shw.start.z);
+      bool IsEndInFV = isInFV(slc->reco.pfp[idx].shw.end.x, slc->reco.pfp[idx].shw.end.y, slc->reco.pfp[idx].shw.end.z);
 
       float IsShowerInFV = -5.f;
       if (IsStartInFV && IsEndInFV){
@@ -1188,276 +1045,76 @@ namespace ana {
   });
 
   const Var kPi0LeadingPhotonCandidateBestmatchG4ID([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float bestmatchG4ID = slc->reco.pfp[idxMaxE].shw.truth.bestmatch.G4ID;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float bestmatchG4ID = slc->reco.pfp[idx].shw.truth.bestmatch.G4ID;
     if ( std::isnan(bestmatchG4ID) || std::isinf(bestmatchG4ID) ) return -5.f;
-
     return bestmatchG4ID;
   });
 
-  const Var kPi0SecondaryPhotonCandidateBestmatchG4ID([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float bestmatchG4ID = slc->reco.pfp[idxScdy].shw.truth.bestmatch.G4ID;
+  const Var kPi0SubLeadingPhotonCandidateBestmatchG4ID([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float bestmatchG4ID = slc->reco.pfp[idx].shw.truth.bestmatch.G4ID;
     if ( std::isnan(bestmatchG4ID) || std::isinf(bestmatchG4ID) ) return -5.f;
-
     return bestmatchG4ID;
   });
 
 
   const Var kPi0LeadingPhotonCandidateG4ID([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float G4ID = slc->reco.pfp[idxMaxE].shw.truth.p.G4ID;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float G4ID = slc->reco.pfp[idx].shw.truth.p.G4ID;
     if ( std::isnan(G4ID) || std::isinf(G4ID) ) return -5.f;
-
     return G4ID;
   });
 
-  const Var kPi0SecondaryPhotonCandidateG4ID([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float G4ID = slc->reco.pfp[idxScdy].shw.truth.p.G4ID;
+  const Var kPi0SubLeadingPhotonCandidateG4ID([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float G4ID = slc->reco.pfp[idx].shw.truth.p.G4ID;
     if ( std::isnan(G4ID) || std::isinf(G4ID) ) return -5.f;
-
     return G4ID;
   });
 
   const Var kPi0LeadingPhotonCandidateBestplane_Energy([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float bestplane_energy = slc->reco.pfp[idxMaxE].shw.bestplane_energy;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float bestplane_energy = slc->reco.pfp[idx].shw.bestplane_energy;
     if ( std::isnan(bestplane_energy) || std::isinf(bestplane_energy) ) return -5.f;
-
     return bestplane_energy;
   });
 
-  const Var kPi0SecondaryPhotonCandidateBestplane_Energy([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float bestplane_energy = slc->reco.pfp[idxScdy].shw.bestplane_energy;
+  const Var kPi0SubLeadingPhotonCandidateBestplane_Energy([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float bestplane_energy = slc->reco.pfp[idx].shw.bestplane_energy;
     if ( std::isnan(bestplane_energy) || std::isinf(bestplane_energy) ) return -5.f;
-
     return bestplane_energy;
   });
 
   const Var kPi0LeadingPhotonCandidateBestplane_dEdx([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float bestplane_dEdx = slc->reco.pfp[idxMaxE].shw.bestplane_dEdx;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float bestplane_dEdx = slc->reco.pfp[idx].shw.bestplane_dEdx;
     if ( std::isnan(bestplane_dEdx) || std::isinf(bestplane_dEdx) ) return -5.f;
-
     return bestplane_dEdx;
   });
 
-  const Var kPi0SecondaryPhotonCandidateBestplane_dEdx([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float bestplane_dEdx = slc->reco.pfp[idxScdy].shw.bestplane_dEdx;
+  const Var kPi0SubLeadingPhotonCandidateBestplane_dEdx([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float bestplane_dEdx = slc->reco.pfp[idx].shw.bestplane_dEdx;
     if ( std::isnan(bestplane_dEdx) || std::isinf(bestplane_dEdx) ) return -5.f;
-
     return bestplane_dEdx;
   });
 
   const Var kPi0LeadingPhotonCandidateIsContained([](const caf::SRSliceProxy* slc) -> float {
-      std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-      if(photon_indices.size()<=1) return -5.f;
+      int idx = kNuMILeadingPhotonCandidateIdx(slc);
+      if(idx<0) return -5.f;
 
-      // Find 2 most energetic:
-      unsigned int idxMaxE = 0;
-      float maxE = -5.;
-      unsigned int idxScdy = 0;
-      float scdy = -5.;
-      for ( auto const& photon_idx : photon_indices ) {
-        unsigned int idxI = (unsigned int)std::lround(photon_idx);
-        if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-          idxScdy = idxMaxE;
-          scdy = maxE;
-          idxMaxE = idxI;
-          maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-        else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-          idxScdy = idxI;
-          scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-      }
-
-      if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5;
-      if (std::isnan(slc->reco.pfp[idxMaxE].shw.start.x) || std::isnan(slc->reco.pfp[idxMaxE].shw.start.y) || std::isnan(slc->reco.pfp[idxMaxE].shw.start.z)) return -5.f;
-      if (std::isinf(slc->reco.pfp[idxMaxE].shw.start.x) || std::isinf(slc->reco.pfp[idxMaxE].shw.start.y) || std::isinf(slc->reco.pfp[idxMaxE].shw.start.z)) return -5.f;
-
-      if (std::isnan(slc->reco.pfp[idxMaxE].shw.end.x) || std::isnan(slc->reco.pfp[idxMaxE].shw.end.y) || std::isnan(slc->reco.pfp[idxMaxE].shw.end.z)) return -5.f;
-      if (std::isinf(slc->reco.pfp[idxMaxE].shw.end.x) || std::isinf(slc->reco.pfp[idxMaxE].shw.end.y) || std::isinf(slc->reco.pfp[idxMaxE].shw.end.z)) return -5.f;
-      
-      bool IsStartCont = isContainedVol(slc->reco.pfp[idxMaxE].shw.start.x, slc->reco.pfp[idxMaxE].shw.start.y, slc->reco.pfp[idxMaxE].shw.start.z);
-      bool IsEndCont = isContainedVol(slc->reco.pfp[idxMaxE].shw.end.x, slc->reco.pfp[idxMaxE].shw.end.y, slc->reco.pfp[idxMaxE].shw.end.z);
+      bool IsStartCont = isContainedVol(slc->reco.pfp[idx].shw.start.x, slc->reco.pfp[idx].shw.start.y, slc->reco.pfp[idx].shw.start.z);
+      bool IsEndCont = isContainedVol(slc->reco.pfp[idx].shw.end.x, slc->reco.pfp[idx].shw.end.y, slc->reco.pfp[idx].shw.end.z);
 
       float IsShowerCont = -5.f;
       if (IsStartCont && IsEndCont){
@@ -1470,40 +1127,14 @@ namespace ana {
       return IsShowerCont;
   });
 
-  const Var kPi0SecondaryPhotonCandidateIsContained([](const caf::SRSliceProxy* slc) -> float {
-      std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-      if(photon_indices.size()<=1) return -5.f;
-
-      // Find 2 most energetic:
-      unsigned int idxMaxE = 0;
-      float maxE = -5.;
-      unsigned int idxScdy = 0;
-      float scdy = -5.;
-      for ( auto const& photon_idx : photon_indices ) {
-        unsigned int idxI = (unsigned int)std::lround(photon_idx);
-        if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-          idxScdy = idxMaxE;
-          scdy = maxE;
-          idxMaxE = idxI;
-          maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-        else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-          idxScdy = idxI;
-          scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-        }
-      }
-
-      if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5;
-      if (std::isnan(slc->reco.pfp[idxScdy].shw.start.x) || std::isnan(slc->reco.pfp[idxScdy].shw.start.y) || std::isnan(slc->reco.pfp[idxScdy].shw.start.z)) return -5.f;
-      if (std::isinf(slc->reco.pfp[idxScdy].shw.start.x) || std::isinf(slc->reco.pfp[idxScdy].shw.start.y) || std::isinf(slc->reco.pfp[idxScdy].shw.start.z)) return -5.f;
-
-      if (std::isnan(slc->reco.pfp[idxScdy].shw.end.x) || std::isnan(slc->reco.pfp[idxScdy].shw.end.y) || std::isnan(slc->reco.pfp[idxScdy].shw.end.z)) return -5.f;
-      if (std::isinf(slc->reco.pfp[idxScdy].shw.end.x) || std::isinf(slc->reco.pfp[idxScdy].shw.end.y) || std::isinf(slc->reco.pfp[idxScdy].shw.end.z)) return -5.f;
-      
-      bool IsStartCont = isContainedVol(slc->reco.pfp[idxScdy].shw.start.x, slc->reco.pfp[idxScdy].shw.start.y, slc->reco.pfp[idxScdy].shw.start.z);
-      bool IsEndCont = isContainedVol(slc->reco.pfp[idxScdy].shw.end.x, slc->reco.pfp[idxScdy].shw.end.y, slc->reco.pfp[idxScdy].shw.end.z);
+  const Var kPi0SubLeadingPhotonCandidateIsContained([](const caf::SRSliceProxy* slc) -> float {
+      int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+      if(idx<0) return -5.f;      
+      bool IsStartCont = isContainedVol(slc->reco.pfp[idx].shw.start.x, slc->reco.pfp[idx].shw.start.y, slc->reco.pfp[idx].shw.start.z);
+      bool IsEndCont = isContainedVol(slc->reco.pfp[idx].shw.end.x, slc->reco.pfp[idx].shw.end.y, slc->reco.pfp[idx].shw.end.z);
 
       float IsShowerCont = -5.f;
+      // 1 is fully contained, 0 is only start contained, -1 is not contained
       if (IsStartCont && IsEndCont){
         IsShowerCont = 1.f;
       }else if(IsStartCont){
@@ -1513,592 +1144,158 @@ namespace ana {
       }
       return IsShowerCont;
   });
-
 
   const Var kPi0LeadingPhotonCandidateTrackScore([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float trkscore = slc->reco.pfp[idxMaxE].trackScore;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float trkscore = slc->reco.pfp[idx].trackScore;
     if ( std::isnan(trkscore) || std::isinf(trkscore) ) return -5.f;
-
     return trkscore;
   });
 
-  const Var kPi0SecondaryPhotonCandidateTrackScore([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float trkscore = slc->reco.pfp[idxScdy].trackScore;
+  const Var kPi0SubLeadingPhotonCandidateTrackScore([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float trkscore = slc->reco.pfp[idx].trackScore;
     if ( std::isnan(trkscore) || std::isinf(trkscore) ) return -5.f;
-
     return trkscore;
   });
 
   const Var kPi0LeadingPhotonCandidatePur([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float pur = slc->reco.pfp[idxMaxE].shw.truth.pur;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float pur = slc->reco.pfp[idx].shw.truth.pur;
     if ( std::isnan(pur) || std::isinf(pur) ) return -5.f;
-
     return pur;
   });
 
-  const Var kPi0SecondaryPhotonCandidatePur([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float pur = slc->reco.pfp[idxScdy].shw.truth.pur;
+  const Var kPi0SubLeadingPhotonCandidatePur([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float pur = slc->reco.pfp[idx].shw.truth.pur;
     if ( std::isnan(pur) || std::isinf(pur) ) return -5.f;
-
     return pur;
   });
-
 
   const Var kPi0LeadingPhotonCandidateEff([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float eff = slc->reco.pfp[idxMaxE].shw.truth.eff;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float eff = slc->reco.pfp[idx].shw.truth.eff;
     if ( std::isnan(eff) || std::isinf(eff) ) return -5.f;
-
     return eff;
   });
 
-  const Var kPi0SecondaryPhotonCandidateEff([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float eff = slc->reco.pfp[idxScdy].shw.truth.eff;
+  const Var kPi0SubLeadingPhotonCandidateEff([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float eff = slc->reco.pfp[idx].shw.truth.eff;
     if ( std::isnan(eff) || std::isinf(eff) ) return -5.f;
-
     return eff;
   });
-
 
 const Var kPi0LeadingPhotonCandidateStartX([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float start = slc->reco.pfp[idxMaxE].shw.start.x;
-    if ( std::isnan(start) || std::isinf(start) ) return -99999.f;
-
-    return start;
-  });
+   int idx = kNuMILeadingPhotonCandidateIdx(slc);
+   if(idx<0) return -99999.f;
+   float start = slc->reco.pfp[idx].shw.start.x;
+   if ( std::isnan(start) || std::isinf(start) ) return -99999.f;
+   return start;
+ });
 
 const Var kPi0LeadingPhotonCandidateStartY([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    float start = slc->reco.pfp[idxMaxE].shw.start.y;
-    if ( std::isnan(start) || std::isinf(start) ) return -5.f;
-
-    return start;
-  });
+  int idx = kNuMILeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  float start = slc->reco.pfp[idx].shw.start.y;
+  if ( std::isnan(start) || std::isinf(start) ) return -99999.f;
+  return start;
+});
 
 const Var kPi0LeadingPhotonCandidateStartZ([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
+  int idx = kNuMILeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  float start = slc->reco.pfp[idx].shw.start.z;
+  if ( std::isnan(start) || std::isinf(start) ) return -99999.f;
+  return start;
+});
 
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    float start = slc->reco.pfp[idxMaxE].shw.start.z;
-    if ( std::isnan(start) || std::isinf(start) ) return -5.f;
+const Var kPi0SubLeadingPhotonCandidateStartX([](const caf::SRSliceProxy* slc) -> float {
+  int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  float start = slc->reco.pfp[idx].shw.start.x;
+  if ( std::isnan(start) || std::isinf(start) ) return -99999.f;
+  return start;
+});
 
-    return start;
-  });
+const Var kPi0SubLeadingPhotonCandidateStartY([](const caf::SRSliceProxy* slc) -> float {
+  int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+ if(idx<0) return -99999.f;
+ float start = slc->reco.pfp[idx].shw.start.y;
+ if ( std::isnan(start) || std::isinf(start) ) return -99999.f;
+ return start;
+});
 
-const Var kPi0SecondaryPhotonCandidateStartX([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    float start = slc->reco.pfp[idxScdy].shw.start.x;
-    if ( std::isnan(start) || std::isinf(start) ) return -5.f;
-
-    return start;
-  });
-
-const Var kPi0SecondaryPhotonCandidateStartY([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    float start = slc->reco.pfp[idxScdy].shw.start.y;
-    if ( std::isnan(start) || std::isinf(start) ) return -5.f;
-
-    return start;
-  });
-
-const Var kPi0SecondaryPhotonCandidateStartZ([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    float start = slc->reco.pfp[idxScdy].shw.start.z;
-    if ( std::isnan(start) || std::isinf(start) ) return -5.f;
-
-    return start;
-  });
-
+const Var kPi0SubLeadingPhotonCandidateStartZ([](const caf::SRSliceProxy* slc) -> float {
+  int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+ if(idx<0) return -99999.f;
+ float start = slc->reco.pfp[idx].shw.start.z;
+ if ( std::isnan(start) || std::isinf(start) ) return -99999.f;
+ return start;
+});
 
 const Var kPi0LeadingPhotonCandidateTrueStartX([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    if ( std::isnan(slc->reco.pfp[idxMaxE].shw.truth.p.start.x) || std::isinf(slc->reco.pfp[idxMaxE].shw.truth.p.start.x) ) return -99999.f;
-    float start = slc->reco.pfp[idxMaxE].shw.truth.p.start.x;
-
-    return start;
-  });
+  int idx = kNuMILeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.start.x) || std::isinf(slc->reco.pfp[idx].shw.truth.p.start.x) ) return -99999.f;
+  return slc->reco.pfp[idx].shw.truth.p.start.x;
+});
 
 const Var kPi0LeadingPhotonCandidateTrueStartY([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    if ( std::isnan(slc->reco.pfp[idxMaxE].shw.truth.p.start.y) || std::isinf(slc->reco.pfp[idxMaxE].shw.truth.p.start.y) ) return -99999.f;
-    float start = slc->reco.pfp[idxMaxE].shw.truth.p.start.y;
-
-    return start;
-  });
+  int idx = kNuMILeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.start.y) || std::isinf(slc->reco.pfp[idx].shw.truth.p.start.y) ) return -99999.f;
+  return slc->reco.pfp[idx].shw.truth.p.start.y;
+});
 
 const Var kPi0LeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
+  int idx = kNuMILeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.start.z) || std::isinf(slc->reco.pfp[idx].shw.truth.p.start.z) ) return -99999.f;
+  return slc->reco.pfp[idx].shw.truth.p.start.z;
+});
 
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    if ( std::isnan(slc->reco.pfp[idxMaxE].shw.truth.p.start.z) || std::isinf(slc->reco.pfp[idxMaxE].shw.truth.p.start.z) ) return -99999.f;
-    float start = slc->reco.pfp[idxMaxE].shw.truth.p.start.z;
+const Var kPi0SubLeadingPhotonCandidateTrueStartX([](const caf::SRSliceProxy* slc) -> float {
+  int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.start.x) || std::isinf(slc->reco.pfp[idx].shw.truth.p.start.x) ) return -99999.f;
+  return slc->reco.pfp[idx].shw.truth.p.start.x;
+});  
 
-    return start;
-  });
+const Var kPi0SubLeadingPhotonCandidateTrueStartY([](const caf::SRSliceProxy* slc) -> float {
+  int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.start.y) || std::isinf(slc->reco.pfp[idx].shw.truth.p.start.y) ) return -99999.f;
+  return slc->reco.pfp[idx].shw.truth.p.start.y;
+});  
 
-const Var kPi0SecondaryPhotonCandidateTrueStartX([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    if ( std::isnan(slc->reco.pfp[idxScdy].shw.truth.p.start.x) || std::isinf(slc->reco.pfp[idxScdy].shw.truth.p.start.x) ) return -99999.f;
-    float start = slc->reco.pfp[idxScdy].shw.truth.p.start.x;
-
-    return start;
-  });
-
-const Var kPi0SecondaryPhotonCandidateTrueStartY([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    if ( std::isnan(slc->reco.pfp[idxScdy].shw.truth.p.start.y) || std::isinf(slc->reco.pfp[idxScdy].shw.truth.p.start.y) ) return -99999.f;
-    float start = slc->reco.pfp[idxScdy].shw.truth.p.start.y;
-
-    return start;
-  });
-
-const Var kPi0SecondaryPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -99999.f;
-    if ( std::isnan(slc->reco.pfp[idxScdy].shw.truth.p.start.z) || std::isinf(slc->reco.pfp[idxScdy].shw.truth.p.start.z) ) return -99999.f;
-    float start = slc->reco.pfp[idxScdy].shw.truth.p.start.z;
-
-    return start;
-  });
+const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* slc) -> float {
+  int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+  if(idx<0) return -99999.f;
+  if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.start.z) || std::isinf(slc->reco.pfp[idx].shw.truth.p.start.z) ) return -99999.f;
+  return slc->reco.pfp[idx].shw.truth.p.start.z;
+}); 
 
   const Var kPi0LeadingPhotonCandidateConversionGap([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -9999.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float var = slc->reco.pfp[idxMaxE].shw.conversion_gap;
-    if ( std::isnan(var) || std::isinf(var) ) return -5.f;
-
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -9999.f;
+    float var = slc->reco.pfp[idx].shw.conversion_gap;
+    if ( std::isnan(var) || std::isinf(var) ) return -9999.f;
     return var;
   });
 
-  const Var kPi0SecondaryPhotonCandidateConversionGap([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float var = slc->reco.pfp[idxScdy].shw.conversion_gap;
-    if ( std::isnan(var) || std::isinf(var) ) return -5.f;
-
+  const Var kPi0SubLeadingPhotonCandidateConversionGap([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -9999.f;
+    float var = slc->reco.pfp[idx].shw.conversion_gap;
+    if ( std::isnan(var) || std::isinf(var) ) return -9999.f;
     return var;
   });
 
@@ -2119,125 +1316,189 @@ const Var kPi0SecondaryPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* slc
   });
 
   const Var kPi0LeadingPhotonCandidateCosmicDist([](const caf::SRSliceProxy *slc) -> float{
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float var = slc->reco.pfp[idxMaxE].shw.cosmicDist;
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float var = slc->reco.pfp[idx].shw.cosmicDist;
     if ( std::isnan(var) || std::isinf(var) ) return -5.f;
-
     return var;
   });
 
-  const Var kPi0SecondaryPhotonCandidateCosmicDist([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float var = slc->reco.pfp[idxScdy].shw.cosmicDist;
+  const Var kPi0SubLeadingPhotonCandidateCosmicDist([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float var = slc->reco.pfp[idx].shw.cosmicDist;
     if ( std::isnan(var) || std::isinf(var) ) return -5.f;
-
     return var;
   });
 
-   const Var kPi0LeadingPhotonCandidateShowerDensity([](const caf::SRSliceProxy *slc) -> float{
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float var = slc->reco.pfp[idxMaxE].shw.density;
+  const Var kPi0LeadingPhotonCandidateShowerDensity([](const caf::SRSliceProxy *slc) -> float{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float var = slc->reco.pfp[idx].shw.density;
     if ( std::isnan(var) || std::isinf(var) ) return -5.f;
-
     return var;
   });
-
-  const Var kPi0SecondaryPhotonCandidateShowerDensity([](const caf::SRSliceProxy* slc) -> float {
-    std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
-    if(photon_indices.size()<=1) return -5.f;
-
-    // Find 2 most energetic:
-    unsigned int idxMaxE = 0;
-    float maxE = -5.;
-    unsigned int idxScdy = 0;
-    float scdy = -5.;
-    for ( auto const& photon_idx : photon_indices ) {
-      unsigned int idxI = (unsigned int)std::lround(photon_idx);
-      if ( slc->reco.pfp[idxI].shw.plane[2].energy > maxE ) {
-        idxScdy = idxMaxE;
-        scdy = maxE;
-        idxMaxE = idxI;
-        maxE = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-      else if ( slc->reco.pfp[idxI].shw.plane[2].energy > scdy ) {
-        idxScdy = idxI;
-        scdy = slc->reco.pfp[idxI].shw.plane[2].energy;
-      }
-    }
-
-    if ( photon_indices.size()>=2 && idxMaxE == idxScdy ) return -5.f;
-    float var = slc->reco.pfp[idxScdy].shw.density;
-    if ( std::isnan(var) || std::isinf(var) ) return -5.f;
-
-    return var;
-  });
-
-
   
+  const Var kPi0SubLeadingPhotonCandidateShowerDensity([](const caf::SRSliceProxy* slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    float var = slc->reco.pfp[idx].shw.density;
+    if ( std::isnan(var) || std::isinf(var) ) return -5.f;
+    return var;
+  });
+
+  const Var kPi0LeadingPhotonCandidateShowerGenPX([](const caf::SRSliceProxy *slc) -> float{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -99999.f;
+    float var = slc->reco.pfp[idx].shw.truth.p.genp.x;
+    if ( std::isnan(var) || std::isinf(var) ) return -99999.f;
+    return var;
+  });
+  
+  const Var kPi0SubLeadingPhotonCandidateShowerGenPX([](const caf::SRSliceProxy *slc) -> float{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -99999.f;
+    float var = slc->reco.pfp[idx].shw.truth.p.genp.x;
+    if ( std::isnan(var) || std::isinf(var) ) return -99999.f;
+    return var;
+  });
+
+  const Var kPi0LeadingPhotonCandidateShowerGenPY([](const caf::SRSliceProxy *slc) -> float{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -99999.f;
+    float var = slc->reco.pfp[idx].shw.truth.p.genp.y;
+    if ( std::isnan(var) || std::isinf(var) ) return -99999.f;
+    return var;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateShowerGenPY([](const caf::SRSliceProxy *slc) -> float{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -99999.f;
+    float var = slc->reco.pfp[idx].shw.truth.p.genp.y;
+    if ( std::isnan(var) || std::isinf(var) ) return -99999.f;
+    return var;
+  });
+  
+  const Var kPi0LeadingPhotonCandidateShowerGenPZ([](const caf::SRSliceProxy *slc) -> float{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -99999.f;
+    float var = slc->reco.pfp[idx].shw.truth.p.genp.z;
+    if ( std::isnan(var) || std::isinf(var) ) return -99999.f;
+    return var;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateShowerGenPZ([](const caf::SRSliceProxy *slc) -> float{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -99999.f;
+    float var = slc->reco.pfp[idx].shw.truth.p.genp.z;
+    if ( std::isnan(var) || std::isinf(var) ) return -99999.f;
+    return var;
+  });
+
+  const Var kPi0LeadingPhotonCandidateTrueCryostat([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.cryostat) || std::isinf(slc->reco.pfp[idx].shw.truth.p.cryostat) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.p.cryostat;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateTrueCryostat([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.cryostat) || std::isinf(slc->reco.pfp[idx].shw.truth.p.cryostat) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.p.cryostat;
+  });
+
+  const Var kPi0LeadingPhotonCandidateTrueLength([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.length) || std::isinf(slc->reco.pfp[idx].shw.truth.p.length) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.p.length;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateTrueLength([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.length) || std::isinf(slc->reco.pfp[idx].shw.truth.p.length) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.p.length;
+  });
+
+  const Var kPi0LeadingPhotonCandidatePDG([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.pdg) || std::isinf(slc->reco.pfp[idx].shw.truth.p.pdg) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.p.pdg;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidatePDG([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.pdg) || std::isinf(slc->reco.pfp[idx].shw.truth.p.pdg) ) return -5.f;
+    return slc->reco.pfp[idx].shw.truth.p.pdg;
+  });
+
+  const Var kPi0LeadingPhotonCandidateProtonChi2([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateProtonChi2([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton;
+  });
+
+  const Var kPi0LeadingPhotonCandidateMuonChi2([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateMuonChi2([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon;
+  });
+
+  const Var kPi0LeadingPhotonCandidatePionChi2([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidatePionChi2([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion;
+  });
+
+
+  const Var kPi0LeadingPhotonCandidateNHits([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.plane[2].nHits) || std::isinf(slc->reco.pfp[idx].shw.plane[2].nHits) ) return -5.f;
+    return slc->reco.pfp[idx].shw.plane[2].nHits;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateNHits([](const caf::SRSliceProxy *slc) -> int{
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.plane[2].nHits) || std::isinf(slc->reco.pfp[idx].shw.plane[2].nHits) ) return -5.f;
+    return slc->reco.pfp[idx].shw.plane[2].nHits;
+  });
+
+
+  const Var kIsClearCosmic([](const caf::SRSliceProxy *slc) -> float{
+    return slc->is_clear_cosmic;
+  });
+
 }
 
 

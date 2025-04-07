@@ -21,7 +21,7 @@ namespace PrimaryUtil{
     return true_int.targetPDG;
   }
 
-  int NMuon_True(const caf::SRTrueInteractionProxy& true_int){
+  int NMuon_True(const caf::SRTrueInteractionProxy& true_int){ //slc->truth.prim
     int NPtl = 0;
     for ( auto const& prim : true_int.prim ) {
       if ( prim.start_process != 0 ) continue;
@@ -77,6 +77,13 @@ namespace PrimaryUtil{
     }
     return NPtl;
   }
+  int NPhoton_True(const caf::SRTrueInteractionProxy& true_int){
+    int NPtl = 0;
+    for ( auto const& prim : true_int.prim ) {
+      if ( abs(prim.pdg) == 22 && prim.start_process == 3 ) NPtl++;
+    }
+    return NPtl;
+  }
   double Q2_True(const caf::SRTrueInteractionProxy& true_int){
     return true_int.Q2;
   }
@@ -111,6 +118,79 @@ namespace PrimaryUtil{
       }
     }
     return truth_idx;
+  }
+
+  // True Neutral Pion
+
+  int Pi0_G4ID(const caf::SRTrueInteractionProxy& true_int){
+    double max_E(-999);
+    int g4id(-1);
+    for(std::size_t i(0); i < true_int.prim.size(); ++i){
+      // primary
+      if( true_int.prim.at(i).start_process!=0 ) continue;
+      // it decays
+      if( true_int.prim.at(i).end_process!=3 ) continue;
+      // pi0
+      if( abs(true_int.prim.at(i).pdg) != 111 ) continue;
+      // non-nan genE
+      if(isnan(true_int.prim.at(i).genE)) continue;
+      // daughters
+      if(true_int.prim.at(i).daughters.size() != 2) continue;
+
+      double this_E = true_int.prim.at(i).genE;
+      // if larger E, update
+      if(this_E>max_E){
+        max_E = this_E;
+        g4id = true_int.prim.at(i).G4ID;
+      }
+    }
+    return g4id;
+  }
+
+  int Pi0LeadingPhotonG4ID(const caf::SRTrueInteractionProxy& true_int){
+    int parentg4id = Pi0_G4ID(true_int);
+    if(parentg4id<0) return -1;
+    int leadingg4id = -1;
+    double leadingE(-999);
+    for(std::size_t i(0); i < true_int.prim.size(); ++i){
+      // Is Photon
+      if( abs(true_int.prim.at(i).pdg) != 22 ) continue;
+      // non-nan genE
+      if(isnan(true_int.prim.at(i).genE)) continue;
+      // parent G4ID
+      if( (int) true_int.prim.at(i).parent != parentg4id) continue;
+      double this_E = true_int.prim.at(i).genE;
+      // if larger E, update
+      if(this_E>leadingE){
+        leadingE = this_E;
+        leadingg4id = true_int.prim.at(i).G4ID;
+      }
+    }
+    return leadingg4id;
+  }
+
+  int Pi0SubLeadingPhotonG4ID(const caf::SRTrueInteractionProxy& true_int){
+    int parentg4id = Pi0_G4ID(true_int);
+    if(parentg4id<0) return -1;
+    int subleadingg4id = -1;
+    double subleadingE(-999);
+    for(std::size_t i(0); i < true_int.prim.size(); ++i){
+      // Is Photon
+      if( abs(true_int.prim.at(i).pdg) != 22 ) continue;
+      // non-nan genE
+      if(isnan(true_int.prim.at(i).genE)) continue;
+      // parent G4ID
+      if( (int) true_int.prim.at(i).parent != parentg4id) continue;
+      // leading photon
+      if(true_int.prim.at(i).G4ID == Pi0LeadingPhotonG4ID(true_int)) continue;
+      double this_E = true_int.prim.at(i).genE;
+      // if larger E, update
+      if(this_E>subleadingE){
+        subleadingE = this_E;
+        subleadingg4id = true_int.prim.at(i).G4ID;
+      }
+    }
+    return subleadingg4id;
   }
 
   double MuonNuCosineTheta_True(const caf::SRTrueInteractionProxy& true_int){
@@ -529,6 +609,34 @@ namespace PrimaryUtil{
 
     }
 
+    return ret;
+  }
+
+  // Pi0
+  // Truth angle between photons from neutral pion decay
+  double CosThPhotonPhoton_True(const caf::SRTrueInteractionProxy& true_int){
+    if(Pi0_G4ID(true_int)<0) return -999.;
+    if(Pi0LeadingPhotonG4ID(true_int)<0) return -999.;
+    if(Pi0SubLeadingPhotonG4ID(true_int)<0) return -999.;
+    int leadingg4id = Pi0LeadingPhotonG4ID(true_int);
+    int subleadingg4id = Pi0SubLeadingPhotonG4ID(true_int);
+    double ret(-999.f);
+    TVector3 leadingp, subleadingp;
+    for(std::size_t i(0); i < true_int.prim.size(); ++i){
+      if( (int) true_int.prim.at(i).G4ID == leadingg4id ){
+        leadingp.SetXYZ(true_int.prim.at(i).end.x - true_int.prim.at(i).start.x, 
+                        true_int.prim.at(i).end.y - true_int.prim.at(i).start.y,
+                        true_int.prim.at(i).end.z - true_int.prim.at(i).start.z);
+      }
+      if( (int) true_int.prim.at(i).G4ID == subleadingg4id ){
+        subleadingp.SetXYZ(true_int.prim.at(i).end.x - true_int.prim.at(i).start.x, 
+                           true_int.prim.at(i).end.y - true_int.prim.at(i).start.y,
+                           true_int.prim.at(i).end.z - true_int.prim.at(i).start.z);
+      } 
+    }
+    if(leadingp.Mag() > 0 && subleadingp.Mag() > 0){
+      ret = leadingp.Unit().Dot(subleadingp.Unit());
+    }
     return ret;
   }
 

@@ -1,4 +1,5 @@
 #include "sbnana/SBNAna/Cuts/Pi0StudyRecoEventVars.h"
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 namespace ana{
 
@@ -34,7 +35,6 @@ namespace ana{
     return PrimaryUtil::NMuon_True(slc->truth);
   });
   
-
   // Number of primary neutron
   const Var kNuMITrueNNeutron([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
@@ -59,6 +59,11 @@ namespace ana{
   const Var kNuMITrueNpi0_All([](const caf::SRSliceProxy* slc) -> int {
     if ( slc->truth.index < 0 ) return -1;
     return PrimaryUtil::Npi0_True_Any(slc->truth);
+  });
+  // Number of photons from decays
+  const Var kNuMITrueNPhoton([](const caf::SRSliceProxy* slc) -> int {
+    if ( slc->truth.index < 0 ) return -1;
+    return PrimaryUtil::NPhoton_True(slc->truth);
   });
   // Neutrino energy
   const Var kNuMITrueNuE([](const caf::SRSliceProxy* slc) -> double {
@@ -108,15 +113,15 @@ namespace ana{
     return PrimaryUtil::ProtonNuCosineTheta_True(slc->truth);
   });
 
-  // 0: not signal, 1: signal
+  // 0: not signal, 1: signal for 1mu1pi0X study
   const Var kNuMIIsSignal([](const caf::SRSliceProxy* slc) -> int {
-    if( kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold(slc) ) return 1;
+    if( kNuMI_1mu1Pi0XStudy_Signal(slc) ) return 1;
     else return 0;
   });
 
    // 0: not signal, 1: signal
-  const Var kIsPi0Signal([](const caf::SRSliceProxy* slc) -> int {
-    if( kNuMI_1mu1Pi0XStudy_Signal_NoContainment(slc) ) return 1;
+  const Var kIsPi0SignalInSlice([](const caf::SRSliceProxy* slc) -> int {
+    if( kNuMI_1mu1Pi0XStudy_Signal(slc) ) return 1;
     else return 0;
   });
 

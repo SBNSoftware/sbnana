@@ -4,6 +4,8 @@
 
 namespace ana
 {
+  bool Is1mu1Pi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Signal
+  bool Is1muNPi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background
   /// \ref SpillCut on valid trigger
   extern const SpillCut kNuMIValidTrigger;
   extern const SpillCut kBNBValidTrigger;
@@ -24,11 +26,6 @@ namespace ana
   extern const Cut kNuMIHasProtonCandidate;
   //extern const Cut kNuMIProtonCandidateRecoPTreshold;
 
-  /// \ref Cut on the barycenter flash
-  extern const Cut kBaryDeltaZTCut;
-  extern const Cut kBaryRadiusTCut;
-  extern const Cut kBaryFlashFHitCut;
-
   /// \ref Cut on having contained primary hadrons
   extern const Cut kNuMIAllPrimaryHadronsContained;
 
@@ -43,7 +40,6 @@ namespace ana
 
   /// added cosmics and charged pion filters
   extern const Cut kNuMISelection_1muXpi0;
-  
   extern const Cut kNuMISelection_1muXpi0_CosmicFilter;
   extern const Cut kNuMISelection_1muXpi0_ChargedPionFilter;
 
@@ -81,13 +77,20 @@ namespace ana
   extern const Cut kNuMI_IsSlcNotNu;
   /// \ref Check 1muNp0pi using vector of primaries
   bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyProtonPCut);
-  bool Is1mu1Pi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Signal
+  
   inline bool Is1muNp0piWithProtonPcut(const caf::Proxy<caf::SRTrueInteraction>& true_int){ return Is1muNp0pi(true_int, true); }
   extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment;
   extern const Cut kNuMI_1mu1Pi0XStudy_Signal_NoContainment;
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment;
   extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold;
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment_ProtonThreshold;
+
+  extern const Cut kNuMI_1mu1Pi0XStudy_Signal;
+  extern const Cut kNuMI_1mu1Pi0XStudy_CC1muNpi0X;
+  extern const Cut kNuMI_1mu1Pi0XStudy_OtherCCNuMu;
+  extern const Cut kNuMI_1mu1Pi0XStudy_CCNue;
+  extern const Cut kNuMI_1mu1Pi0XStudy_NC;
+  extern const Cut kNuMI_1mu1Pi0XStudy_NotNu;
 
   /// \ref Var for slice type (signal, other NuCC, NuNC, NotNu)
   extern const Var kNuMISliceSignalType;

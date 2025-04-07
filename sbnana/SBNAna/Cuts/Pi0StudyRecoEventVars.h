@@ -20,6 +20,7 @@ namespace ana{
   extern const Var kNuMITrueNpim; //!< Number of primary pi-
   extern const Var kNuMITrueNpi0; //!< Number of primary pi0
   extern const Var kNuMITrueNpi0_All; //!< Number of ALL pi0 (not just primary)
+  extern const Var kNuMITrueNPhoton; //!< Number of photons from decays
   extern const Var kNuMITrueNuE; //!< Neutrino energy
   extern const Var kNuMITrueQ2; //!< Q2
   extern const Var kNuMITrueq0; //!< q0; energy transfer
@@ -33,7 +34,8 @@ namespace ana{
   extern const Var kNuMIProtonNuCosineTheta; //!< True muon cosine angle w.r.t. neutrino
   // - Signal def
   extern const Var kNuMIIsSignal; //!< 0: not signal, 1: signal
-  extern const Var kIsPi0Signal; //!< 0: not signal, 1: signal
+  extern const Var kIsPi0SignalInSlice; //!< 0: not signal, 1: signal
+  //extern const SpillVar kIsPi0SignalInSpill; //!< 0: not signal, 1: signal
 
   // Reco
   // - Muon

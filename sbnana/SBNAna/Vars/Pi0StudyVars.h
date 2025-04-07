@@ -19,6 +19,7 @@ namespace ana
   bool IsShowerlike( const caf::SRSliceProxy* slice, const unsigned int idxShw );
   bool IsPrimaryPFP( const caf::SRSliceProxy* slice, const unsigned int idxTrk );
 
+
   /// \ref Var that is a dummy var that returns 1 for "IsFHC" or 0 for "!IsFHC" for example
   extern const Var kNuMIDummyVar1;
   extern const Var kNuMIDummyVar0;
@@ -38,10 +39,31 @@ namespace ana
   /// \ref MultiVar for the photon candidate indices
   extern const MultiVar kNuMIPhotonCandidateIdxs;
 
-  /// \ref Var for number of showers in event
+  /// \ref Var Number of truth matched photons in reconstruction
+  extern const Var kNumberTruthMatchRecoPhotons;
+
+  /// \ref Var True opening angle between leading and subleading photon candidates
+  extern const Var kNuMITrueCosThPhotonPhoton;
+  /// \ref Var True Leading Photon Candidate G4ID
+  extern const Var kNuMITrueLeadingPhotonG4ID;
+  /// \ref Var True SubLeading Photon Candidate G4ID
+  extern const Var kNuMITrueSubLeadingPhotonG4ID;
+
+  /// \ref Var Number of truth matched muons in reconstruction
+  extern const Var kNumberTruthMatchRecoMuons;
+
+  /// \ref Var for the leading photon candidate index
+  extern const Var kNuMILeadingPhotonCandidateIdx;
+
+  /// \ref Var for the subleading photon candidate index
+  extern const Var kNuMISubLeadingPhotonCandidateIdx;
+
+  /// \ref Var for number of showers in the slice
   extern const Var kNumberRecoShowers;
+  /// \ref Var for number of pfparticles in the slice
+  extern const Var kNumberPFPs;
   
-  /// \ref Var for number of tracks in event
+  /// \ref Var for number of tracks in slice
   extern const Var kNumberRecoTracks;
 
   /// kinematic/output variables
@@ -96,50 +118,66 @@ namespace ana
   extern const Var kNuMIRecodeltaphiT;
   extern const Var kNuMITruedeltaphiT;
 
+  //Reco Nu Vars
+  extern const Var kSlcVertexX;
+  extern const Var kSlcVertexY;
+  extern const Var kSlcVertexZ;
+
+  //Reco Muon Vars
+  extern const Var KMuonCandidateRecoStartX;
+  extern const Var KMuonCandidateRecoStartY;
+  extern const Var KMuonCandidateRecoStartZ;
+
+  //True Muon Vars
+  extern const Var kMuonCandidateTrueStartX;
+  extern const Var kMuonCandidateTrueStartY;
+  extern const Var kMuonCandidateTrueStartZ;
+  extern const Var kMuonCandidatePDG;
+
   // Sideband vars: pi0
   extern const Var kNuMILeadingPhotonCandidateE;
   extern const Var kNuMILeadingPhotonCandidateTrueE;
-  extern const Var kNuMISecondaryPhotonCandidateE;
-  extern const Var kNuMISecondaryPhotonCandidateTrueE;
+  extern const Var kNuMISubLeadingPhotonCandidateE;
+  extern const Var kNuMISubLeadingPhotonCandidateTrueE;
   extern const Var kNuMIPhotonCandidatesOpeningAngle;
   extern const Var kNuMILeadingPhotonCandidateLen;
-  extern const Var kNuMISecondaryPhotonCandidateLen;
+  extern const Var kNuMISubLeadingPhotonCandidateLen;
   extern const Var kPi0LeadingPhotonCandidateHitCompletenessBestmatch;
-  extern const Var kPi0SecondaryPhotonCandidateHitCompletenessBestmatch;
+  extern const Var kPi0SubLeadingPhotonCandidateHitCompletenessBestmatch;
   extern const Var kPi0LeadingPhotonCandidateEnergyCompletenessBestmatch;
-  extern const Var kPi0SecondaryPhotonCandidateEnergyCompletenessBestmatch;
+  extern const Var kPi0SubLeadingPhotonCandidateEnergyCompletenessBestmatch;
   extern const Var kPi0LeadingPhotonCandidateInFV;
-  extern const Var kPi0SecondaryPhotonCandidateInFV;
+  extern const Var kPi0SubLeadingPhotonCandidateInFV;
   extern const Var kPi0LeadingPhotonCandidateBestmatchG4ID;
-  extern const Var kPi0SecondaryPhotonCandidateBestmatchG4ID;
+  extern const Var kPi0SubLeadingPhotonCandidateBestmatchG4ID;
   extern const Var kPi0LeadingPhotonCandidateG4ID;
-  extern const Var kPi0SecondaryPhotonCandidateG4ID;
+  extern const Var kPi0SubLeadingPhotonCandidateG4ID;
   extern const Var kPi0LeadingPhotonCandidateBestplane_Energy;
-  extern const Var kPi0SecondaryPhotonCandidateBestplane_Energy;
+  extern const Var kPi0SubLeadingPhotonCandidateBestplane_Energy;
   extern const Var kPi0LeadingPhotonCandidateBestplane_dEdx;
-  extern const Var kPi0SecondaryPhotonCandidateBestplane_dEdx;
+  extern const Var kPi0SubLeadingPhotonCandidateBestplane_dEdx;
   extern const Var kPi0LeadingPhotonCandidateIsContained;
-  extern const Var kPi0SecondaryPhotonCandidateIsContained;
+  extern const Var kPi0SubLeadingPhotonCandidateIsContained;
   extern const Var kPi0LeadingPhotonCandidateTrackScore;
-  extern const Var kPi0SecondaryPhotonCandidateTrackScore;
+  extern const Var kPi0SubLeadingPhotonCandidateTrackScore;
   extern const Var kPi0LeadingPhotonCandidatePur;
-  extern const Var kPi0SecondaryPhotonCandidatePur;
+  extern const Var kPi0SubLeadingPhotonCandidatePur;
   extern const Var kPi0LeadingPhotonCandidateEff;
-  extern const Var kPi0SecondaryPhotonCandidateEff;
+  extern const Var kPi0SubLeadingPhotonCandidateEff;
   extern const Var kPi0LeadingPhotonCandidateStartX;
   extern const Var kPi0LeadingPhotonCandidateStartY;
   extern const Var kPi0LeadingPhotonCandidateStartZ;
-  extern const Var kPi0SecondaryPhotonCandidateStartX;
-  extern const Var kPi0SecondaryPhotonCandidateStartY;
-  extern const Var kPi0SecondaryPhotonCandidateStartZ;
+  extern const Var kPi0SubLeadingPhotonCandidateStartX;
+  extern const Var kPi0SubLeadingPhotonCandidateStartY;
+  extern const Var kPi0SubLeadingPhotonCandidateStartZ;
   extern const Var kPi0LeadingPhotonCandidateTrueStartX;
   extern const Var kPi0LeadingPhotonCandidateTrueStartY;
   extern const Var kPi0LeadingPhotonCandidateTrueStartZ;
-  extern const Var kPi0SecondaryPhotonCandidateTrueStartX;
-  extern const Var kPi0SecondaryPhotonCandidateTrueStartY;
-  extern const Var kPi0SecondaryPhotonCandidateTrueStartZ;
+  extern const Var kPi0SubLeadingPhotonCandidateTrueStartX;
+  extern const Var kPi0SubLeadingPhotonCandidateTrueStartY;
+  extern const Var kPi0SubLeadingPhotonCandidateTrueStartZ;
   extern const Var kPi0LeadingPhotonCandidateConversionGap;
-  extern const Var kPi0SecondaryPhotonCandidateConversionGap;
+  extern const Var kPi0SubLeadingPhotonCandidateConversionGap;
 
   extern const Var kBaryDeltaY;
   extern const Var kBaryDeltaZ;
@@ -147,7 +185,31 @@ namespace ana
   extern const Var kBaryFlashFirstHit;
 
   extern const Var kPi0LeadingPhotonCandidateCosmicDist;
-  extern const Var kPi0SecondaryPhotonCandidateCosmicDist;
+  extern const Var kPi0SubLeadingPhotonCandidateCosmicDist;
   extern const Var kPi0LeadingPhotonCandidateShowerDensity;
-  extern const Var kPi0SecondaryPhotonCandidateShowerDensity;
+  extern const Var kPi0SubLeadingPhotonCandidateShowerDensity;
+
+  extern const Var kPi0LeadingPhotonCandidateShowerGenPX;
+  extern const Var kPi0LeadingPhotonCandidateShowerGenPY;
+  extern const Var kPi0LeadingPhotonCandidateShowerGenPZ;
+  extern const Var kPi0SubLeadingPhotonCandidateShowerGenPX;
+  extern const Var kPi0SubLeadingPhotonCandidateShowerGenPY;
+  extern const Var kPi0SubLeadingPhotonCandidateShowerGenPZ;
+  extern const Var kPi0LeadingPhotonCandidateTrueCryostat;
+  extern const Var kPi0SubLeadingPhotonCandidateTrueCryostat;
+  extern const Var kPi0LeadingPhotonCandidateTrueLength;
+  extern const Var kPi0SubLeadingPhotonCandidateTrueLength;
+  extern const Var kPi0LeadingPhotonCandidatePDG;
+  extern const Var kPi0SubLeadingPhotonCandidatePDG;
+  extern const Var kPi0LeadingPhotonCandidateProtonChi2;
+  extern const Var kPi0SubLeadingPhotonCandidateProtonChi2;
+  extern const Var kPi0LeadingPhotonCandidateMuonChi2;
+  extern const Var kPi0SubLeadingPhotonCandidateMuonChi2;
+  extern const Var kPi0LeadingPhotonCandidatePionChi2;
+  extern const Var kPi0SubLeadingPhotonCandidatePionChi2;
+  extern const Var kPi0LeadingPhotonCandidateNHits;
+  extern const Var kPi0SubLeadingPhotonCandidateNHits;
+
+  extern const Var kIsClearCosmic;
+
 }

@@ -36,6 +36,7 @@ namespace PrimaryUtil{
   int Npim_True(const caf::SRTrueInteractionProxy& true_int);
   int Npi0_True(const caf::SRTrueInteractionProxy& true_int);
   int Npi0_True_Any(const caf::SRTrueInteractionProxy& true_int);
+  int NPhoton_True(const caf::SRTrueInteractionProxy& true_int);
   double Q2_True(const caf::SRTrueInteractionProxy& true_int);
   double q0_True(const caf::SRTrueInteractionProxy& true_int);
   double q3_True(const caf::SRTrueInteractionProxy& true_int);
@@ -49,6 +50,11 @@ namespace PrimaryUtil{
   double MuonPt_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonKE_True(const caf::SRTrueInteractionProxy& true_int);
   double MuonLength_True(const caf::SRTrueInteractionProxy& true_int);
+
+  // Pi0
+  int Pi0_G4ID(const caf::SRTrueInteractionProxy& true_int);
+  int Pi0LeadingPhotonG4ID(const caf::SRTrueInteractionProxy& true_int);
+  int Pi0SubLeadingPhotonG4ID(const caf::SRTrueInteractionProxy& true_int);
 
   // Proton
   int ProtonIndex_True(const caf::SRTrueInteractionProxy& true_int);
@@ -77,6 +83,8 @@ namespace PrimaryUtil{
   double deltaalphaT_True(const caf::SRTrueInteractionProxy& true_int);
   double deltaphiT_True(const caf::SRTrueInteractionProxy& true_int);
 
+  //Pi0
+  double CosThPhotonPhoton_True(const caf::SRTrueInteractionProxy& true_int);
 
 } // end namespace PrimaryUtil
 
