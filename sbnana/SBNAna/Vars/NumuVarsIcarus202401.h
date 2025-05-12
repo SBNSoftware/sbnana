@@ -52,6 +52,7 @@ struct Chi2PID {
     //ignore the first and the last point
     for(unsigned i = 1; i < calo.points.size() - 1; ++i) { //hits
       const auto& pt = calo.points[i];
+      if(isinf(pt.dedx)) continue;
       double hit_dedx = pt.dedx;
       double hit_rr = pt.rr;
 
