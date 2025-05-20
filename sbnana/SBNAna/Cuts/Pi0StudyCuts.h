@@ -1,0 +1,121 @@
+#pragma once
+
+#include "sbnana/CAFAna/Core/Cut.h"
+
+namespace ana
+{
+  bool Is_1mu_0pipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Signal 1
+  bool Is_1mu_0pipm_1pi0_OOPS(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0 Broken Signal 2
+  bool Is_1mu_0pipm_1pi0_OOFV(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0 Broken Signal 3
+  bool Is_1mu_Npipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 4
+  bool Is_1mu_Npipm_0pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 5
+  bool Is_1mu_Npi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 6
+  bool Is_0mu_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 7
+  //bool Is_1mu_0pipm_0pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 6
+  extern const Cut kNuMI_Is_Other_nu;
+
+  bool Is1muNPi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background
+  /// \ref SpillCut on valid trigger
+  extern const SpillCut kNuMIValidTrigger;
+  extern const SpillCut kBNBValidTrigger;
+
+  extern const SpillCut kIcarus202401CRTPMTVeto;
+
+  /// \ref Cut on vertex reconstruced in FV
+  extern const Cut kNuMIVertexInFV;
+
+  /// \ref Cut on vertex reconstruced in contained Volume
+  extern const Cut kNuMIVertexIsContained;
+
+  /// \ref Cut on reco slice not tagged as clearly cosmic
+  extern const Cut kNuMINotClearCosmic;
+
+  /// \ref Cut on having muon candidate
+  extern const Cut kNuMIHasMuonCandidate;
+
+  /// \ref Cut on having proton candidate
+  extern const Cut kNuMIHasProtonCandidate;
+  //extern const Cut kNuMIProtonCandidateRecoPTreshold;
+
+  /// \ref Cut on having contained primary hadrons
+  extern const Cut kNuMIAllPrimaryHadronsContained;
+
+  /// \ref Cut aimed at charged pion rejection
+  extern const Cut kNuMINoSecondPrimaryMuonlikeTracks;
+
+  /// \ref Cut aimed at pi0 rejection
+  extern const Cut kNuMICutPhotons;
+
+  /// \ref No Cuts
+  extern const Cut kNoCuts;
+
+  ///Base selection of 1muXPi0 for the main 1mu1Pi0 selection
+  extern const Cut kNuMISelection_1muXpi0_Base;
+
+  /// added cosmics and charged pion filters
+  extern const Cut kNuMISelection_1muXpi0;
+  extern const Cut kNuMISelection_1muXpi0_CosmicFilter;
+  extern const Cut kNuMISelection_1muXpi0_ChargedPionFilter;
+
+
+  /// Base selection of 1muNp from which the main selection and current sidebands branch
+  extern const Cut kNuMISelection_1muNp_Base;
+
+  /// Combined selection \ref Cut for 1muNp0pi with contained+exiting muons, without additional shower cut being used
+  extern const Cut kNuMISelection_1muNp0pi_WithoutShowerCut;
+
+  /// Combined selection \ref Cut for 1muNp0pi with contained+exiting muons
+  extern const Cut kNuMISelection_1muNp0pi;
+
+  /// \ref Cut aimed at muon candidate containment, if so desired
+  extern const Cut kNuMIMuonCandidateContained;
+
+  /// \ref Cut aimed at reconstruction quality (e.g. split tracks)
+  extern const Cut kNuMIRejectSplitMuons;
+
+  /// \ref Cut aimed at having TWO photons for better pi0 selection
+  extern const Cut kNuMIHasTwoPhotons;
+
+  /// \ref Cut pion sideband
+  extern const Cut kNuMIChargedPionSideBand;
+  extern const Cut kNuMINeutralPionSideBand;
+  extern const Cut kNuMINeutralPion2phSideBand;
+
+  /// \ref CutType; 1=Signal, 2=pi+- sideband, 3=pi0 sideband (0=other)
+  extern const Var kNuMICutType;
+  extern const Var kNuMICutTypeWithoutShowerCut;
+
+  /// \ref Signal definitions: Neutrino Neutral Current
+  extern const Cut kNuMI_IsSliceNuNC;
+  /// \ref Not nu matched: i.e. cosmic, or noise, or not well-matched to an interaction
+  extern const Cut kNuMI_IsSlcNotNu;
+  /// \ref Check 1muNp0pi using vector of primaries
+  bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyProtonPCut);
+  
+  inline bool Is1muNp0piWithProtonPcut(const caf::Proxy<caf::SRTrueInteraction>& true_int){ return Is1muNp0pi(true_int, true); }
+  extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment;
+  extern const Cut kNuMI_1mu1Pi0XStudy_Signal_NoContainment;
+  extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment;
+  extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment_ProtonThreshold;
+  extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment_ProtonThreshold;
+
+  extern const Cut kNuMI_1mu1Pi0XStudy_Signal;
+  extern const Cut kNuMI_1mu1Pi0XStudy_CC1muNpi0X;
+  extern const Cut kNuMI_1mu1Pi0XStudy_OtherCCNuMu;
+  extern const Cut kNuMI_1mu1Pi0XStudy_CCNue;
+  extern const Cut kNuMI_1mu1Pi0XStudy_NC;
+  extern const Cut kNuMI_1mu1Pi0XStudy_NotNu;
+
+  extern const Cut kNuMI_1mu_0pipm_1pi0_Signal; //#1
+  extern const Cut kNuMI_1mu_0pipm_1pi0_OOPS; //#2
+  extern const Cut kNuMI_1mu_0pipm_1pi0_OOFV; //#3
+  extern const Cut kNuMI_Is_1mu_Npipm_1pi0; //#4
+  extern const Cut kNuMI_Is_1mu_Npipm_0pi0; //#5
+  extern const Cut kNuMI_Is_1mu_Npi0; //#6
+  extern const Cut kNuMI_Is_0mu_1pi0; //#7
+  extern const Cut kNuMI_Is_Other_nu; //#8
+
+  /// \ref Var for slice type (signal, other NuCC, NuNC, NotNu)
+  extern const Var kNuMISliceSignalType;
+
+}
