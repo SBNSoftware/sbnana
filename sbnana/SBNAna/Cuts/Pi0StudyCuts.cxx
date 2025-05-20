@@ -5,6 +5,15 @@
 
 namespace ana {
 
+  ////////////////////CRTPMT FlashMatching//////////////////////
+  ////////////////////////////////////////////////////////////
+  const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
+    for(const auto& match: spill->crtpmt_matches) {
+        if(match.flashGateTime > 0 && match.flashGateTime < 1.6 && match.flashClassification == 0)
+            return true;
+    }
+    return false;
+  });
     
   /////////////////Spill Cuts///////////////////////////
   //////////////////////////////////////////////////////
@@ -23,6 +32,7 @@ namespace ana {
 
   /////////////////Slice Cuts///////////////////////////
   //////////////////////////////////////////////////////
+  const Cut kNoCuts ([](const caf::SRSliceProxy* slc) { return true; });
 
   // reco vertex fiducial volume cut pi0study
   const Cut kNuMIVertexInFV([](const caf::SRSliceProxy* slc) { 
@@ -127,13 +137,14 @@ namespace ana {
   
   // Base selection common to side-bands (cuts back on number of entries one needs to carry):
   //
+
   const Cut kNuMISelection_1muXpi0_Base = kNuMIVertexInFV
-                                          && kNuMIHasMuonCandidate
-                                          && kNuMIAllPrimaryHadronsContained;
+                                          && kNuMIHasMuonCandidate;
+                                          //&& kNuMIAllPrimaryHadronsContained;
 
   const Cut kNuMISelection_1muXpi0_CosmicFilter      = kNuMIVertexInFV
                                                        && kNuMIHasMuonCandidate
-                                                       && kNuMIAllPrimaryHadronsContained
+                                                       //&& kNuMIAllPrimaryHadronsContained
                                                        && kNuMINotClearCosmic;
   
   const Cut kNuMISelection_1muXpi0_ChargedPionFilter = kNuMIVertexInFV &&
@@ -286,8 +297,107 @@ namespace ana {
     return ( slc->truth.index < 0 );
   });
 
-  /// \ref SIGNAL! Check 1mu1Pi0X using vector of primaries pi0study
-  bool Is1mu1Pi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+  /// \ref  #1 SIGNAL! Check 1mu1Pi0X using vector of primaries pi0study
+  bool Is_1mu_0pipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+    //From SRTrueInteraction
+    if ( true_int.index < 0 ) return false;
+    if ( abs(true_int.pdg) != 14
+         || !true_int.iscc
+         || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
+         || !isInFV(true_int.position.x, true_int.position.y, true_int.position.z)
+         || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
+         || (true_int.time < 0.0 || true_int.time > 9.7) // NuMI beam window
+        )
+      return false; // not signal
+
+    //From SRTrueParticle from rec.mc.nu.prim
+    unsigned int nMu(0), nPi(0), nPi0(0); //, nPhoton(0);
+    for ( auto const& prim : true_int.prim ) {
+      //if ( prim.start_process != 0 ) continue;
+      if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
+      //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
+
+      double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
+      double energy = prim.genE;
+      int daughters = prim.daughters.size();
+
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
+      if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
+      //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
+    }
+    if ( nMu==1 && nPi0==1 && nPi==0 ) return true;
+
+    return false;
+  }
+
+    /// \ref 1mu_0pi_1pi0 OOPS NOT SIGNAL! Check 1mu1Pi0X using vector of primaries pi0study
+    bool Is_1mu_0pipm_1pi0_OOPS(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+      //From SRTrueInteraction
+      if ( true_int.index < 0 ) return false;
+      if ( abs(true_int.pdg) != 14
+            || !true_int.iscc
+            || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
+            || !isInFV(true_int.position.x, true_int.position.y, true_int.position.z)
+            || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
+          )
+        return false; // not signal
+  
+      //From SRTrueParticle from rec.mc.nu.prim
+      unsigned int nMu(0), nPi(0), nPi0(0);//, nPhoton(0);
+      for ( auto const& prim : true_int.prim ) {
+        //if ( prim.start_process != 0 ) continue;
+        if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
+        //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
+  
+        //double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
+        //double energy = prim.genE;
+        int daughters = prim.daughters.size();
+  
+        if ( abs(prim.pdg) == 13 && prim.start_process == 0 ) nMu+=1;
+        if ( abs(prim.pdg) == 211 && prim.start_process == 0 ) nPi+=1;
+        if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
+        //if ( abs(prim.pdg) == 22 && prim.start_process == 3 ) nPhoton+=1;
+      }
+      if ( nMu==1 && nPi0==1 && nPi==0 ) return true;
+  
+      return false;
+    }
+    
+
+    /// \ref 1mu_0pi_1pi0 OOFV NOT SIGNAL! Check 1mu1Pi0X using vector of primaries pi0study
+  bool Is_1mu_0pipm_1pi0_OOFV(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+    //From SRTrueInteraction
+    if ( true_int.index < 0 ) return false;
+    if ( abs(true_int.pdg) != 14
+        || !true_int.iscc
+        || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
+        || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
+        )
+      return false; // not signal
+
+    //From SRTrueParticle from rec.mc.nu.prim
+    unsigned int nMu(0), nPi(0), nPi0(0);//, nPhoton(0);
+    for ( auto const& prim : true_int.prim ) {
+      //if ( prim.start_process != 0 ) continue;
+      //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
+
+      double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
+      double energy = prim.genE;
+      int daughters = prim.daughters.size();
+
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
+      if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
+      //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
+    }
+    if ( nMu==1 && nPi0==1 && nPi==0 ) return true;
+
+    return false;
+  }
+
+  /// \ref 1mu_Npipm_1pi0 NOT SIGNAL!
+  bool Is_1mu_Npipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
     //From SRTrueInteraction
     if ( true_int.index < 0 ) return false;
     if ( abs(true_int.pdg) != 14
@@ -299,27 +409,128 @@ namespace ana {
       return false; // not signal
 
     //From SRTrueParticle from rec.mc.nu.prim
-    unsigned int nMu(0), nPi(0), nPi0(0), nPhoton(0);
+    unsigned int nMu(0), nPi(0), nPi0(0);//, nPhoton(0);
     for ( auto const& prim : true_int.prim ) {
       //if ( prim.start_process != 0 ) continue;
       if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
       //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
-      //double energy = prim.genE;
+      double energy = prim.genE;
       int daughters = prim.daughters.size();
 
       if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
-      if ( abs(prim.pdg) == 211 && prim.start_process == 0) nPi+=1;
+      if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
       if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
-      if ( abs(prim.pdg) == 22 && prim.start_process == 3) nPhoton+=1;
+      //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
     }
-    if ( nMu==1 && nPi0==1 && nPi==0 && nPhoton == 2) return true;
+    if ( nMu==1 && nPi >= 1 && nPi0==1 ) return true;
 
     return false;
   }
 
-  /// \ref BACKGROUND Check 1muNPi0X using vector of primaries pi0study background
+  //1mu_Npi_0pi0
+  /// \ref 1mu_Npipm_1pi0 NOT SIGNAL!
+  bool Is_1mu_Npipm_0pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+    //From SRTrueInteraction
+    if ( true_int.index < 0 ) return false;
+    if ( abs(true_int.pdg) != 14
+        || !true_int.iscc
+        || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
+        || !isInFV(true_int.position.x, true_int.position.y, true_int.position.z)
+        || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
+        )
+      return false; // not signal
+
+    //From SRTrueParticle from rec.mc.nu.prim
+    unsigned int nMu(0), nPi(0), nPi0(0);//, nPhoton(0);
+    for ( auto const& prim : true_int.prim ) {
+      //if ( prim.start_process != 0 ) continue;
+      if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
+      //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
+
+      double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
+      double energy = prim.genE;
+      int daughters = prim.daughters.size();
+
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
+      if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
+      //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
+    }
+    if ( nMu==1 && nPi >= 1 && nPi0==0 ) return true;
+
+    return false;
+  }
+
+  /// \ref 1mu_Npi0 NOT SIGNAL!
+  bool Is_1mu_Npi0(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+    //From SRTrueInteraction
+    if ( true_int.index < 0 ) return false;
+    if ( abs(true_int.pdg) != 14
+        || !true_int.iscc
+        || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
+        || !isInFV(true_int.position.x, true_int.position.y, true_int.position.z)
+        || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
+        )
+      return false; // not signal
+
+    //From SRTrueParticle from rec.mc.nu.prim
+    unsigned int nMu(0), nPi(0), nPi0(0);//, nPhoton(0);
+    for ( auto const& prim : true_int.prim ) {
+      //if ( prim.start_process != 0 ) continue;
+      if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
+      //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
+
+      double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
+      double energy = prim.genE;
+      int daughters = prim.daughters.size();
+
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
+      if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
+      //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
+    }
+    if ( nMu==1 && nPi0>=1 ) return true;
+
+    return false;
+  }
+
+    /// \ref 0mu_1pi0 NOT SIGNAL! IS NC
+    bool Is_0mu_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+      //From SRTrueInteraction
+      if ( true_int.index < 0 ) return false;
+      if ( abs(true_int.pdg) != 14
+          || true_int.iscc // is NC
+          || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
+          || !isInFV(true_int.position.x, true_int.position.y, true_int.position.z)
+          || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
+          )
+        return false; // not signal
+  
+      //From SRTrueParticle from rec.mc.nu.prim
+      unsigned int nMu(0), nPi(0), nPi0(0);//, nPhoton(0);
+      for ( auto const& prim : true_int.prim ) {
+        //if ( prim.start_process != 0 ) continue;
+        if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
+        //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
+  
+        double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
+        double energy = prim.genE;
+        int daughters = prim.daughters.size();
+  
+        if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+        if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
+        if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
+        //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
+      }
+      if ( nMu==0 && nPi0 == 1 ) return true;
+  
+      return false;
+    }
+
+
+  /// \ref 1mu_Npi_1Pi0 BACKGROUND Check 1muNPi0X using vector of primaries pi0study background
   bool Is1muNPi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
     //From SRTrueInteraction
     if ( true_int.index < 0 ) return false;
@@ -340,17 +551,51 @@ namespace ana {
       //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
-      //double energy = prim.genE;
+      double energy = prim.genE;
       int daughters = prim.daughters.size();
 
       if ( abs(prim.pdg) == 13 && momentum > 0.226 && prim.start_process == 0 ) nMu+=1;
-      if ( abs(prim.pdg) == 211 && prim.start_process == 0 ) nPi+=1;
+      if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025 ) nPi+=1;
       if ( abs(prim.pdg) == 111 && daughters == 2 ) nPi0+=1;
     }
-    if ( nMu==1 && nPi0 > 1 && nPi==0 ) return true;
+    if ( nMu==1 && nPi==0 && nPi0 > 1) return true; //1mu_Npi0
 
     return false;
   }
+
+    /// \ref BACKGROUND Check 1mu0Pi0X using vector of primaries pi0study background
+    bool Is1mu0Pi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+      //From SRTrueInteraction
+      if ( true_int.index < 0 ) return false;
+      if ( abs(true_int.pdg) != 14
+           || !true_int.iscc
+           || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
+           || !isInFV(true_int.position.x, true_int.position.y, true_int.position.z)
+           || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
+          )
+        return false; // not signal
+  
+      //From SRTrueParticle from rec.mc.nu.prim
+      unsigned int nMu(0), nPi(0), nPi0(0);
+      for ( auto const& prim : true_int.prim ) {
+        //if ( prim.start_process != 0 ) continue;
+        
+        if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
+        //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
+  
+        double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
+        //double energy = prim.genE;
+        int daughters = prim.daughters.size();
+  
+        if ( abs(prim.pdg) == 13 && momentum > 0.226 && prim.start_process == 0 ) nMu+=1;
+        if ( abs(prim.pdg) == 211 && prim.start_process == 0 ) nPi+=1;
+        if ( abs(prim.pdg) == 111 && daughters == 2 ) nPi0+=1;
+      }
+      if ( nMu==1 && nPi0 == 0 && nPi==0 ) return true;
+  
+      return false;
+    }
+
 
   /// \ref Check 1muNp0pi using vector of primaries
   bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyProtonPCut){
@@ -399,26 +644,72 @@ namespace ana {
     return Is1muNp0pi(slc->truth, true);
   });
 
-  // OneMu1Pi0 CC SIGNAL
-  const Cut kNuMI_1mu1Pi0XStudy_Signal([](const caf::SRSliceProxy* slc) {
-    return Is1mu1Pi0X(slc->truth); //pi0study
+  // OneMu1Pi0 CC SIGNAL #1
+  const Cut kNuMI_1mu_0pipm_1pi0_Signal([](const caf::SRSliceProxy* slc) {
+    return Is_1mu_0pipm_1pi0(slc->truth); //pi0study
+    //return Is1mu1Pi0X(slc->truth); //pi0study OLD 
   });
 
-  // CC OneMuNPi0 where (N > 1). THIS IS NOT SIGNAL!!
-  const Cut kNuMI_1mu1Pi0XStudy_CC1muNpi0X([](const caf::SRSliceProxy* slc) {
-    if ( kNuMI_1mu1Pi0XStudy_Signal(slc) ) return false; // covered by signal
-    return Is1muNPi0X(slc->truth);
+  // BROKEN OneMu1Pi0 CC SIGNAL #2
+  const Cut kNuMI_1mu_0pipm_1pi0_OOPS([](const caf::SRSliceProxy* slc) {
+    if ( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return false; // covered by signal
+    return Is_1mu_0pipm_1pi0_OOPS(slc->truth); //pi0study
   });
+
+   // BROKEN OneMu1Pi0 CC SIGNAL #3
+  const Cut kNuMI_1mu_0pipm_1pi0_OOFV([](const caf::SRSliceProxy* slc) {
+    if ( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return false; // covered by signal
+    return Is_1mu_0pipm_1pi0_OOFV(slc->truth); //pi0study
+  });
+
+  // Background Is_1mu_Npipm_1pi0 #4
+  const Cut kNuMI_Is_1mu_Npipm_1pi0([](const caf::SRSliceProxy* slc) {
+    if ( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return false; // covered by signal
+    return Is_1mu_Npipm_1pi0(slc->truth);
+  });
+
+   // Background Is_1mu_Npipm_0pi0 #5
+   const Cut kNuMI_Is_1mu_Npipm_0pi0([](const caf::SRSliceProxy* slc) {
+    if ( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return false; // covered by signal
+    return Is_1mu_Npipm_0pi0(slc->truth);
+  });
+
+    // Background Is_1mu_Npi0 #6
+    const Cut kNuMI_Is_1mu_Npi0([](const caf::SRSliceProxy* slc) {
+      if ( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return false; // covered by signal
+      return Is_1mu_Npi0(slc->truth);
+    });
+
+    // Background Is_0mu_Npi0 #7
+    const Cut kNuMI_Is_0mu_1pi0([](const caf::SRSliceProxy* slc) {
+      if ( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return false; // covered by signal
+      return Is_0mu_1pi0(slc->truth);
+    });
+
+    //Background Is_Other_nu #8
+    const Cut kNuMI_Is_Other_nu([](const caf::SRSliceProxy* slc) {
+      if ( slc->truth.index < 0 ) return false; // not Nu
+      return true;
+    });
+
+  // CC OneMu0Pi0. THIS IS NOT SIGNAL!!
+  //const Cut kNuMI_1mu1Pi0XStudy_CC1mu0pi0X([](const caf::SRSliceProxy* slc) {
+  //  if ( kNuMI_1mu1Pi0XStudy_Signal(slc) ) return false; // covered by signal
+  //  return Is1mu0Pi0X(slc->truth);
+  //});
 
   // CC but not signal: With kinematic threshold of 400MeV/c to 1 GeV/c on proton
+  /*
   const Cut kNuMI_1mu1Pi0XStudy_OtherCCNuMu([](const caf::SRSliceProxy* slc) {
     if ( slc->truth.index < 0 ) return false; // not Nu
     if ( !slc->truth.iscc ) return false; // not CC
     if ( !(abs(slc->truth.pdg) == 14) ) return false; // not NuMu
     if ( kNuMI_1mu1Pi0XStudy_Signal(slc) ) return false; // covered by signal
     if ( kNuMI_1mu1Pi0XStudy_CC1muNpi0X(slc) ) return false; // covered by prev background
+    if ( kNuMI_1mu1Pi0XStudy_CC1mu0pi0X(slc) ) return false; // covered by prev background
     return true;
   });
+    */
 
   // CC but its a nue
   const Cut kNuMI_1mu1Pi0XStudy_CCNue([](const caf::SRSliceProxy* slc) {
@@ -438,15 +729,26 @@ namespace ana {
     return kNuMI_IsSlcNotNu(slc);
   });
 
-  /// CutType; 1=Signal, 2=CC1muNpi0X with N > 1 No PiM or PiP, 3=OtherNuMuCC, 4=CCNue, 5=NC, 6=NotNu, 0=Other
+  /// CutType; 
+  // 1=Signal,
+  // 2=1mu1pi0x_OOPS,
+  // 3=1mu1pi0x_OOFV,
+  // 4=CC1muNpi0X with N > 1 No PiM or PiP, 
+  // 5=CC1mu0pi0X, 
+  // 6=OtherNuMuCC, 
+  // 7=CCNue, 
+  // 8=NC, 
+  // 9=NotNu, 
   /// can be expanded further
   const Var kNuMISliceSignalType([](const caf::SRSliceProxy* slc) -> int {
-    if ( kNuMI_1mu1Pi0XStudy_Signal(slc) ) return 1; //Signal definition from truth
-    else if ( kNuMI_1mu1Pi0XStudy_CC1muNpi0X(slc) ) return 2;
-    else if ( kNuMI_1mu1Pi0XStudy_OtherCCNuMu(slc) ) return 3;
-    else if ( kNuMI_1mu1Pi0XStudy_CCNue(slc) ) return 4;
-    else if ( kNuMI_1mu1Pi0XStudy_NC(slc) ) return 5;
-    else if ( kNuMI_1mu1Pi0XStudy_NotNu(slc) ) return 6;
+    if ( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return 1; //Signal definition from truth
+    else if ( kNuMI_1mu_0pipm_1pi0_OOPS(slc) ) return 2; //Signal definition from truth
+    else if ( kNuMI_1mu_0pipm_1pi0_OOFV(slc) ) return 3; //Signal definition from truth
+    else if ( kNuMI_Is_1mu_Npipm_1pi0(slc) ) return 4;
+    else if ( kNuMI_Is_1mu_Npipm_0pi0(slc) ) return 5;
+    else if ( kNuMI_Is_1mu_Npi0(slc) ) return 6;
+    else if ( kNuMI_Is_0mu_1pi0(slc) ) return 7;
+    else if ( kNuMI_Is_Other_nu(slc) ) return 8;
     else return 0;
   });
 

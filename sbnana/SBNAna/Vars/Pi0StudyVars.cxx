@@ -34,15 +34,69 @@ namespace ana {
   }
 
   bool IsTracklikeTrack( const caf::SRSliceProxy* slice, const unsigned int idxTrk ) {
-    return (!std::isnan(slice->reco.pfp.at(idxTrk).trackScore) && slice->reco.pfp.at(idxTrk).trackScore > 0.49);
+    return (!std::isnan(slice->reco.pfp.at(idxTrk).trackScore) && slice->reco.pfp.at(idxTrk).trackScore > 0.45);
   }
 
   bool IsShowerlike( const caf::SRSliceProxy* slice, const unsigned int idxShw ) {
     return (
             !std::isnan(slice->reco.pfp.at(idxShw).trackScore) && 
             slice->reco.pfp.at(idxShw).trackScore > 0. && 
-            slice->reco.pfp.at(idxShw).trackScore <= 0.5
+            slice->reco.pfp.at(idxShw).trackScore <= 0.45
             );
+  }
+
+  bool IsProtonLike( const caf::SRSliceProxy* slice, const unsigned int idx ) {
+    auto const& trk = slice->reco.pfp.at(idx).trk; //GetTrack( slc, idxTrk );
+    if ( std::isnan(slice->vertex.x) || std::isnan(slice->vertex.y) || std::isnan(slice->vertex.z) ) return false;
+    const float Atslc = std::hypot(slice->vertex.x - trk.start.x,
+                                  slice->vertex.y - trk.start.y,
+                                  slice->vertex.z - trk.start.z);
+    const bool isPrimCandidate = (Atslc < 10. && IsPrimaryPFP(slice,idx));
+    if ( !isPrimCandidate || trk.calo[2].nhit < 5 ) return false;
+    const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
+    const float Chi2Proton = trk.chi2pid[2].chi2_proton;
+    const float Chi2Muon = trk.chi2pid[2].chi2_muon;
+    if ( !(Contained && Chi2Proton < 90. && Chi2Muon > 30. ) ) return false;
+    return true;
+  }
+
+  bool IsMuonLike( const caf::SRSliceProxy* slice, const unsigned int idx ) {
+    auto const& trk = slice->reco.pfp.at(idx).trk; //GetTrack( slc, idxTrk );
+    
+    if ( std::isnan(trk.start.x) || std::isnan(trk.len) || trk.len <= 0. ) return false;
+    if ( std::isnan(slice->vertex.x) || std::isnan(slice->vertex.y) || std::isnan(slice->vertex.z) ) return false;
+    const float Atslc = std::hypot( slice->vertex.x - trk.start.x,
+                                    slice->vertex.y - trk.start.y,
+                                    slice->vertex.z - trk.start.z);
+    const bool isPrimCandidate = (Atslc < 10. && IsPrimaryPFP(slice,idx));
+
+    if ( !isPrimCandidate || trk.calo[2].nhit < 5 ) return false;
+    const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
+    
+    const float Chi2Proton = trk.chi2pid[2].chi2_proton;
+    const float Chi2Muon = trk.chi2pid[2].chi2_muon;
+    //track len of muon
+    if ( (!Contained && trk.len > 5.) || ( Contained && trk.len > 5. && Chi2Proton > 60. && Chi2Muon < 30.) ) return true;
+    return false;
+  }
+
+  bool IsPionLike( const caf::SRSliceProxy* slice, const unsigned int idx ) {
+    auto const& trk = slice->reco.pfp.at(idx).trk; //GetTrack( slc, idxTrk );
+    if ( std::isnan(trk.start.x) || std::isnan(trk.len) || trk.len <= 0. ) return false;
+    if ( std::isnan(slice->vertex.x) || std::isnan(slice->vertex.y) || std::isnan(slice->vertex.z) ) return false;
+    const float Atslc = std::hypot( slice->vertex.x - trk.start.x,
+                                    slice->vertex.y - trk.start.y,
+                                    slice->vertex.z - trk.start.z);
+    const bool isPrimCandidate = (Atslc < 10. && IsPrimaryPFP(slice,idx));
+
+    if ( !isPrimCandidate || trk.calo[2].nhit < 5 ) return false;
+    const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
+    
+    const float Chi2Proton = trk.chi2pid[2].chi2_proton;
+    const float Chi2Muon = trk.chi2pid[2].chi2_muon;
+    //track len of muon
+    if ( Contained && Chi2Proton > 60. && Chi2Muon < 30.) return true;
+    return false;
   }
 
   bool IsPrimaryPFP( const caf::SRSliceProxy* slice, const unsigned int idxTrk ) {
@@ -71,10 +125,17 @@ namespace ana {
     return triggerTime;
   });
 
+  //const SpillVar kCRTMPMT_FlashMatching( [](const caf::SRSpillProxy* sr) -> float {
+  //  const auto& match = sr->crtpmt_matches;
+  //  double flashGateTime = match.flashGateTime;
+  //  return flashGateTime;
+  //});
+
   // Muon candidate
   const Var kNuMIMuonCandidateIdx([](const caf::SRSliceProxy* slc) -> int {
       float Longest(0);
-      int PTrackInd(-1);
+      int PTrackInd(-3);
+      float p(-5.f);
 
       unsigned int idxTrk = 0;
       while ( IsValidTrkIdx(slc, idxTrk) ) {
@@ -95,10 +156,21 @@ namespace ana {
 
         if ( !isPrimCandidate || trk.calo[2].nhit < 5 ) continue;
         const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
+
+        if(Contained) {
+          p = trk.rangeP.p_muon;
+        }else{
+          if(std::isnan(trk.mcsP.fwdP_muon) || std::isinf(trk.mcsP.fwdP_muon) )  p = -5.0;
+          else p = trk.mcsP.fwdP_muon;
+        }
+        
+        if ( p < 0.226 ) continue;
+        
         const float Chi2Proton = trk.chi2pid[2].chi2_proton;
         const float Chi2Muon = trk.chi2pid[2].chi2_muon;
         //track len of muon
-        if ( (!Contained && trk.len > 0.) || (Contained && trk.len > 0. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
+        if (     (!Contained && trk.len > 5.) 
+              || ( Contained && trk.len > 5. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
           if ( trk.len <= Longest ) continue;
           Longest = trk.len;
           PTrackInd = thisIdx;
@@ -113,7 +185,7 @@ namespace ana {
     int primaryInd = kNuMIMuonCandidateIdx(slc);
 
     float Longest(0);
-    int PTrackInd(-1);
+    int PTrackInd(-2);
 
     unsigned int idxTrk = 0;
     while ( IsValidTrkIdx(slc, idxTrk) ) {
@@ -194,17 +266,19 @@ namespace ana {
     std::vector<double> rets;
 
     int primaryInd = kNuMIMuonCandidateIdx(slc);
-    int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
+    //int primaryProtonInd = kNuMIProtonCandidateIdx(slc);
 
     for(unsigned int i_pfp=0; i_pfp<slc->reco.pfp.size(); ++i_pfp){
 
-      if ( i_pfp == (unsigned int)primaryInd || i_pfp == (unsigned int)primaryProtonInd ) {
-        continue; // skip the particle which is the muon or leading proton candidate!
-      }
+      if (     i_pfp == (unsigned int)primaryInd 
+            //|| i_pfp == (unsigned int)primaryProtonInd 
+          ) continue; // skip the particle which is the muon or leading proton candidate!
+      
       //if ( !IsShowerlike(slc, i_pfp) ) { 
       //  continue; // skip things with track score < 0.45
       //}
       auto const& shw = slc->reco.pfp.at(i_pfp).shw;
+      //auto const& trk = slc->reco.pfp.at(i_pfp).trk;
 
       // Check if shower fit even seems kind-of valid:
       if (    std::isnan(shw.start.x)
@@ -213,11 +287,17 @@ namespace ana {
       
       // if it meets this then we're not going to cut on it...
       if ( std::isnan(slc->reco.pfp.at(i_pfp).trackScore) || std::isinf(slc->reco.pfp.at(i_pfp).trackScore) || slc->reco.pfp.at(i_pfp).trackScore <= 0. ) continue;
-      if ( std::isnan(shw.plane[2].energy) || std::isinf(shw.plane[2].energy) || shw.plane[2].energy <= 0.0 ) continue;
+      //if ( std::isnan(shw.plane[2].energy) || std::isinf(shw.plane[2].energy) || shw.plane[2].energy <= 0.02 ) continue;
+      if ( std::isnan(shw.bestplane_energy) || std::isinf(shw.bestplane_energy) || shw.bestplane_energy <= 0.00 ) continue;
 
       // and... if it meets then then we're not going to cut on it...
       if ( std::isnan(shw.conversion_gap) || std::isinf(shw.conversion_gap) || shw.conversion_gap <= 0. ) continue;
-
+      if ( !isInFV(shw.start.x,shw.start.y,shw.start.z) ) continue; //Quality cut
+      //if ( IsProtonLike(slc,i_pfp) ) continue; //Smells like a proton
+      //if ( IsMuonLike(slc,i_pfp) ) continue; //Smells like a muon
+      //if ( IsPionLike(slc,i_pfp) ) continue; //Smells like a pion
+      
+      //if ( std::isnan(trk.chi2pid[2].chi2_proton) || std::isinf(trk.chi2pid[2].chi2_proton) || trk.chi2pid[2].chi2_proton < 120. ) continue; //Cut to reduce protons
       // if we got here, then it should be the case that the fit seems valid and:
       // shwE > 0.040 GeV
       // trackScore < 0.45 (technically <= 0.45)
@@ -270,10 +350,22 @@ namespace ana {
     // find the leading photon candidate
     int leadingPhotonIdx = -1;
     double leadingPhotonE = -1.;
+
     for ( auto const& idx : photon_indices ) {
       auto const& shw = slc->reco.pfp.at(idx).shw;
-      if ( shw.plane[2].energy > leadingPhotonE ) {
-        leadingPhotonE = shw.plane[2].energy;
+      
+      //auto const& trk = slc->reco.pfp.at(idx).trk;
+      //Quality Cuts
+      //if ( std::isnan(trk.chi2pid[2].chi2_proton) || std::isinf(trk.chi2pid[2].chi2_proton) || trk.chi2pid[2].chi2_proton < 90. ) continue; //Cut to reduce protons
+      //if ( shw.plane[2].energy < 0.075 ) continue; //Quality cut
+      //if ( std::isnan(slc->reco.pfp[idx].trackScore) || std::isinf(slc->reco.pfp[idx].trackScore) || slc->reco.pfp[idx].trackScore > 0.55 ) continue; //Quality cut trackScore float trkscore = slc->reco.pfp[idx].trackScore;
+      //if ( shw.plane[2].nHits < 20 ) continue; //Quality cut
+     
+
+      // Find shower with highest energy
+      if ( shw.bestplane_energy > leadingPhotonE ) {
+        //leadingPhotonE = shw.plane[2].energy;
+        leadingPhotonE = shw.bestplane_energy;
         leadingPhotonIdx = idx;
       }
     }
@@ -281,7 +373,7 @@ namespace ana {
   });
 
   // SubLeading photon candidate
-  const Var kNuMISubLeadingPhotonCandidateIdx([](const caf::SRSliceProxy* slc) -> int{
+  const Var kNuMISubLeadingPhotonCandidateIdx([](const caf::SRSliceProxy* slc) -> int {
     std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
     if ( photon_indices.size() <= 1 ) return -5;
     int leadingPhotonIdx = kNuMILeadingPhotonCandidateIdx(slc);
@@ -292,8 +384,16 @@ namespace ana {
     for ( auto const& idx : photon_indices ) {
       if ( idx == leadingPhotonIdx ) continue;
       auto const& shw = slc->reco.pfp.at(idx).shw;
-      if ( shw.plane[2].energy > subleadingPhotonE ) {
-        subleadingPhotonE = shw.plane[2].energy;
+      //auto const& trk = slc->reco.pfp.at(idx).trk;
+
+      //Quality Cuts
+      //if ( shw.plane[2].energy < 0.02 ) continue; //Quality cut
+      //if ( std::isnan(slc->reco.pfp[idx].trackScore) || std::isinf(slc->reco.pfp[idx].trackScore) || slc->reco.pfp[idx].trackScore > 0.6 ) continue; //Quality cut trackScore float trkscore = slc->reco.pfp[idx].trackScore;
+      
+      // Find shower with second highest energy
+      if ( shw.bestplane_energy > subleadingPhotonE ) {
+        //subleadingPhotonE = shw.plane[2].energy;
+        subleadingPhotonE = shw.bestplane_energy;
         subleadingPhotonIdx = idx;
       }
     }
@@ -309,6 +409,13 @@ namespace ana {
 
   const Var kNumberPFPs([](const caf::SRSliceProxy* slc) -> int {
     return slc->reco.npfp;
+  });
+
+  const Var kNumberChargedPions([](const caf::SRSliceProxy* slc) -> int {
+    std::vector<double> chargedpion_indices = kNuMIChargedPionCandidateIdxs(slc);
+    if (std::isnan(chargedpion_indices.size())) return 0;
+    int numchargedpions = chargedpion_indices.size();
+    return numchargedpions;
   });
 
   // MultiVar for the track candidate indices
@@ -354,7 +461,8 @@ namespace ana {
       if(std::isnan(trk.mcsP.fwdP_muon)) return p = -5.0;
       const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
       if(Contained) p = trk.rangeP.p_muon;
-      else p = trk.mcsP.fwdP_muon;
+      //else p = trk.mcsP.fwdP_muon;
+      else p = 1;
     }
     return p;
   });
@@ -857,14 +965,23 @@ namespace ana {
   //////////////////////////////
 
   const Var kSlcVertexX([](const caf::SRSliceProxy* slc) -> float {
+    if (std::isnan(slc->vertex.x) || std::isinf(slc->vertex.x)) {
+      return -9999.f;
+    }
     return slc->vertex.x;
   });
 
   const Var kSlcVertexY([](const caf::SRSliceProxy* slc) -> float {
+    if (std::isnan(slc->vertex.y) || std::isinf(slc->vertex.y)) {
+      return -9999.f;
+    }
     return slc->vertex.y;
   });
 
   const Var kSlcVertexZ([](const caf::SRSliceProxy* slc) -> float {
+    if (std::isnan(slc->vertex.z) || std::isinf(slc->vertex.z)) {
+      return -9999.f;
+    }
     return slc->vertex.z;
   });
 
@@ -874,6 +991,7 @@ namespace ana {
   const Var KMuonCandidateRecoStartX([](const caf::SRSliceProxy* slc) -> float {
     float ret(-9999.f);
     int Idx = kNuMIMuonCandidateIdx(slc);
+    if (Idx < 0) return ret;
     auto const& trk = slc->reco.pfp.at(Idx).trk;
     ret = trk.start.x;
     return ret;
@@ -882,6 +1000,7 @@ namespace ana {
   const Var KMuonCandidateRecoStartY([](const caf::SRSliceProxy* slc) -> float {
     float ret(-9999.f);
     int Idx = kNuMIMuonCandidateIdx(slc);
+    if (Idx < 0) return ret;
     auto const& trk = slc->reco.pfp.at(Idx).trk;
     ret = trk.start.y;
     return ret;
@@ -890,6 +1009,7 @@ namespace ana {
   const Var KMuonCandidateRecoStartZ([](const caf::SRSliceProxy* slc) -> float {
     float ret(-9999.f);
     int Idx = kNuMIMuonCandidateIdx(slc);
+    if (Idx < 0) return ret;
     auto const& trk = slc->reco.pfp.at(Idx).trk;
     ret = trk.start.z;
     return ret;
@@ -897,24 +1017,35 @@ namespace ana {
 
   const Var kMuonCandidateTrueStartX([](const caf::SRSliceProxy* slc) -> float {
     int Idx = kNuMIMuonCandidateIdx(slc);
+    if (Idx < 0) return -9999.f;
     if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.start.x) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.start.x) ) return -9999.f;
     return slc->reco.pfp.at(Idx).trk.truth.p.start.x;
   });
 
   const Var kMuonCandidateTrueStartY([](const caf::SRSliceProxy* slc) -> float {
     int Idx = kNuMIMuonCandidateIdx(slc);
+    if (Idx < 0) return -9999.f;
     if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.start.y) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.start.y) ) return -9999.f;
     return slc->reco.pfp.at(Idx).trk.truth.p.start.y;
   });
 
   const Var kMuonCandidateTrueStartZ([](const caf::SRSliceProxy* slc) -> float {
     int Idx = kNuMIMuonCandidateIdx(slc);
+    if (Idx < 0) return -9999.f;
     if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.start.z) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.start.z) ) return -9999.f;
     return slc->reco.pfp.at(Idx).trk.truth.p.start.z;
   });
   
   const Var kMuonCandidatePDG([](const caf::SRSliceProxy* slc) -> float {
     int Idx = kNuMIMuonCandidateIdx(slc);
+    if (Idx < 0) return -9999.f;
+    if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.pdg) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.pdg) ) return -9999.f;
+    return slc->reco.pfp.at(Idx).trk.truth.p.pdg;
+  });
+
+  const Var kProtonCandidatePDG([](const caf::SRSliceProxy* slc) -> float {
+    int Idx = kNuMIProtonCandidateIdx(slc);
+    if (Idx < 0) return -9999.f;
     if ( std::isnan(slc->reco.pfp.at(Idx).trk.truth.p.pdg) || std::isinf(slc->reco.pfp.at(Idx).trk.truth.p.pdg) ) return -9999.f;
     return slc->reco.pfp.at(Idx).trk.truth.p.pdg;
   });
@@ -926,7 +1057,8 @@ namespace ana {
   const Var kNuMILeadingPhotonCandidateE([](const caf::SRSliceProxy* slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    return slc->reco.pfp[idx].shw.plane[2].energy;
+    //return slc->reco.pfp[idx].shw.plane[2].energy;//shw.plane[2].energy
+    return slc->reco.pfp[idx].shw.bestplane_energy;
   });
 
   const Var kNuMILeadingPhotonCandidateTrueE([](const caf::SRSliceProxy* slc) -> float {
@@ -939,7 +1071,8 @@ namespace ana {
   const Var kNuMISubLeadingPhotonCandidateE([](const caf::SRSliceProxy* slc) -> float {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    return slc->reco.pfp[idx].shw.plane[2].energy;
+    //return slc->reco.pfp[idx].shw.plane[2].energy;
+    return slc->reco.pfp[idx].shw.bestplane_energy;
   });
 
   const Var kNuMISubLeadingPhotonCandidateTrueE([](const caf::SRSliceProxy* slc) -> float {
@@ -1299,23 +1432,23 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
 
-  const Var kBaryDeltaY([](const caf::SRSliceProxy *slc) -> double{
+  const Var kBaryDeltaY([](const caf::SRSliceProxy *slc) -> double {
     return slc->barycenterFM.deltaY_Trigger;
   });
 
-  const Var kBaryDeltaZ([](const caf::SRSliceProxy *slc) -> double{
+  const Var kBaryDeltaZ([](const caf::SRSliceProxy *slc) -> double {
     return slc->barycenterFM.deltaZ_Trigger;
   });
 
-  const Var kBaryRadius([](const caf::SRSliceProxy *slc) -> double{
+  const Var kBaryRadius([](const caf::SRSliceProxy *slc) -> double {
     return slc->barycenterFM.radius_Trigger;
   });
 
-  const Var kBaryFlashFirstHit([](const caf::SRSliceProxy *slc) -> double{
+  const Var kBaryFlashFirstHit([](const caf::SRSliceProxy *slc) -> double {
     return slc->barycenterFM.flashFirstHit;
   });
 
-  const Var kPi0LeadingPhotonCandidateCosmicDist([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0LeadingPhotonCandidateCosmicDist([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
     float var = slc->reco.pfp[idx].shw.cosmicDist;
@@ -1331,7 +1464,7 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
 
-  const Var kPi0LeadingPhotonCandidateShowerDensity([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0LeadingPhotonCandidateShowerDensity([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
     float var = slc->reco.pfp[idx].shw.density;
@@ -1347,7 +1480,7 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
 
-  const Var kPi0LeadingPhotonCandidateShowerGenPX([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0LeadingPhotonCandidateShowerGenPX([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -99999.f;
     float var = slc->reco.pfp[idx].shw.truth.p.genp.x;
@@ -1355,7 +1488,7 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
   
-  const Var kPi0SubLeadingPhotonCandidateShowerGenPX([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0SubLeadingPhotonCandidateShowerGenPX([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -99999.f;
     float var = slc->reco.pfp[idx].shw.truth.p.genp.x;
@@ -1363,7 +1496,7 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
 
-  const Var kPi0LeadingPhotonCandidateShowerGenPY([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0LeadingPhotonCandidateShowerGenPY([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -99999.f;
     float var = slc->reco.pfp[idx].shw.truth.p.genp.y;
@@ -1371,7 +1504,7 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
 
-  const Var kPi0SubLeadingPhotonCandidateShowerGenPY([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0SubLeadingPhotonCandidateShowerGenPY([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -99999.f;
     float var = slc->reco.pfp[idx].shw.truth.p.genp.y;
@@ -1379,7 +1512,7 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
   
-  const Var kPi0LeadingPhotonCandidateShowerGenPZ([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0LeadingPhotonCandidateShowerGenPZ([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -99999.f;
     float var = slc->reco.pfp[idx].shw.truth.p.genp.z;
@@ -1387,7 +1520,7 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
 
-  const Var kPi0SubLeadingPhotonCandidateShowerGenPZ([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0SubLeadingPhotonCandidateShowerGenPZ([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -99999.f;
     float var = slc->reco.pfp[idx].shw.truth.p.genp.z;
@@ -1395,107 +1528,183 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return var;
   });
 
-  const Var kPi0LeadingPhotonCandidateTrueCryostat([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0LeadingPhotonCandidateTrueCryostat([](const caf::SRSliceProxy *slc) -> int {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
     if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.cryostat) || std::isinf(slc->reco.pfp[idx].shw.truth.p.cryostat) ) return -5.f;
     return slc->reco.pfp[idx].shw.truth.p.cryostat;
   });
 
-  const Var kPi0SubLeadingPhotonCandidateTrueCryostat([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0SubLeadingPhotonCandidateTrueCryostat([](const caf::SRSliceProxy *slc) -> int {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
     if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.cryostat) || std::isinf(slc->reco.pfp[idx].shw.truth.p.cryostat) ) return -5.f;
     return slc->reco.pfp[idx].shw.truth.p.cryostat;
   });
 
-  const Var kPi0LeadingPhotonCandidateTrueLength([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0LeadingPhotonCandidateTrueLength([](const caf::SRSliceProxy *slc) -> int {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
     if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.length) || std::isinf(slc->reco.pfp[idx].shw.truth.p.length) ) return -5.f;
     return slc->reco.pfp[idx].shw.truth.p.length;
   });
 
-  const Var kPi0SubLeadingPhotonCandidateTrueLength([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0SubLeadingPhotonCandidateTrueLength([](const caf::SRSliceProxy *slc) -> int {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
     if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.length) || std::isinf(slc->reco.pfp[idx].shw.truth.p.length) ) return -5.f;
     return slc->reco.pfp[idx].shw.truth.p.length;
   });
 
-  const Var kPi0LeadingPhotonCandidatePDG([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0LeadingPhotonCandidatePDG([](const caf::SRSliceProxy *slc) -> int {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
     if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.pdg) || std::isinf(slc->reco.pfp[idx].shw.truth.p.pdg) ) return -5.f;
     return slc->reco.pfp[idx].shw.truth.p.pdg;
   });
 
-  const Var kPi0SubLeadingPhotonCandidatePDG([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0SubLeadingPhotonCandidatePDG([](const caf::SRSliceProxy *slc) -> int {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
     if ( std::isnan(slc->reco.pfp[idx].shw.truth.p.pdg) || std::isinf(slc->reco.pfp[idx].shw.truth.p.pdg) ) return -5.f;
     return slc->reco.pfp[idx].shw.truth.p.pdg;
   });
 
-  const Var kPi0LeadingPhotonCandidateProtonChi2([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0LeadingPhotonCandidateProtonChi2([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton) ) return -5.f;
-    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_proton) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_proton) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_proton;
   });
 
-  const Var kPi0SubLeadingPhotonCandidateProtonChi2([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0SubLeadingPhotonCandidateProtonChi2([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton) ) return -5.f;
-    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_proton;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_proton) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_proton) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_proton;
   });
 
-  const Var kPi0LeadingPhotonCandidateMuonChi2([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0LeadingPhotonCandidateMuonChi2([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon) ) return -5.f;
-    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon;
   });
 
-  const Var kPi0SubLeadingPhotonCandidateMuonChi2([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0SubLeadingPhotonCandidateMuonChi2([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon) ) return -5.f;
-    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_muon;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon;
   });
 
-  const Var kPi0LeadingPhotonCandidatePionChi2([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0LeadingPhotonCandidatePionChi2([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion) ) return -5.f;
-    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion;
   });
 
-  const Var kPi0SubLeadingPhotonCandidatePionChi2([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0SubLeadingPhotonCandidatePionChi2([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion) ) return -5.f;
-    return slc->reco.pfp[idx].trk.chi2pid[2].chi2_pion;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion) ) return -5.f;
+    return slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion;
   });
 
-
-  const Var kPi0LeadingPhotonCandidateNHits([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0LeadingPhotonCandidateMuonPionChi2Diff([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    if ( std::isnan(slc->reco.pfp[idx].shw.plane[2].nHits) || std::isinf(slc->reco.pfp[idx].shw.plane[2].nHits) ) return -5.f;
-    return slc->reco.pfp[idx].shw.plane[2].nHits;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon) ) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion) ) return -5.f;
+    float diff = slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon - slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion;
+    return diff;
   });
 
-  const Var kPi0SubLeadingPhotonCandidateNHits([](const caf::SRSliceProxy *slc) -> int{
+  const Var kPi0SubLeadingPhotonCandidateMuonPionChi2Diff([](const caf::SRSliceProxy *slc) -> float {
     int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    if ( std::isnan(slc->reco.pfp[idx].shw.plane[2].nHits) || std::isinf(slc->reco.pfp[idx].shw.plane[2].nHits) ) return -5.f;
-    return slc->reco.pfp[idx].shw.plane[2].nHits;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon) ) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion) || std::isinf(slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion) ) return -5.f;
+    float diff = slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_muon - slc->reco.pfp[idx].trk.chi2pid[bestplane].chi2_pion;
+    return diff;
   });
 
+  const Var kPi0LeadingPhotonCandidateNHits([](const caf::SRSliceProxy *slc) -> int {
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].shw.plane[bestplane].nHits) || std::isinf(slc->reco.pfp[idx].shw.plane[bestplane].nHits) ) return -5.f;
+    return slc->reco.pfp[idx].shw.plane[bestplane].nHits;
+  });
 
-  const Var kIsClearCosmic([](const caf::SRSliceProxy *slc) -> float{
+  const Var kPi0SubLeadingPhotonCandidateNHits([](const caf::SRSliceProxy *slc) -> int {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].shw.plane[bestplane].nHits) || std::isinf(slc->reco.pfp[idx].shw.plane[bestplane].nHits) ) return -5.f;
+    return slc->reco.pfp[idx].shw.plane[bestplane].nHits;
+  });
+
+  const Var kPi0LeadingPhotonCandidateSqrtEDen([](const caf::SRSliceProxy *slc) -> float {
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.bestplane_energy) || std::isinf(slc->reco.pfp[idx].shw.bestplane_energy) ) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.len) || std::isinf(slc->reco.pfp[idx].shw.len) ) return -5.f;
+    float sqrtEDen = std::sqrt(slc->reco.pfp[idx].shw.bestplane_energy) / slc->reco.pfp[idx].shw.len;
+    if ( std::isnan(sqrtEDen) || std::isinf(sqrtEDen) ) return -5.f;
+    return sqrtEDen;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateSqrtEDen([](const caf::SRSliceProxy *slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.bestplane_energy) || std::isinf(slc->reco.pfp[idx].shw.bestplane_energy) ) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.len) || std::isinf(slc->reco.pfp[idx].shw.len) ) return -5.f;
+    float sqrtEDen = std::sqrt(slc->reco.pfp[idx].shw.bestplane_energy) / slc->reco.pfp[idx].shw.len;
+    if ( std::isnan(sqrtEDen) || std::isinf(sqrtEDen) ) return -5.f;
+    return sqrtEDen;
+  });
+
+  const Var kPi0LeadingPhotonCandidateHitDen([](const caf::SRSliceProxy *slc) -> float {
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].shw.plane[bestplane].nHits) || std::isinf(slc->reco.pfp[idx].shw.plane[bestplane].nHits) ) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.plane[bestplane].wirePitch) || std::isinf(slc->reco.pfp[idx].shw.plane[bestplane].wirePitch)) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.len) || std::isinf(slc->reco.pfp[idx].shw.len) ) return -5.f;
+    float len = slc->reco.pfp[idx].shw.len, nhits = slc->reco.pfp[idx].shw.plane[bestplane].nHits, wirePitch = slc->reco.pfp[idx].shw.plane[bestplane].wirePitch;
+    float wiresHit = len / wirePitch;
+    if ( std::isnan(wiresHit) || std::isinf(wiresHit) ) return -5.f;
+    float hitDen = nhits / wiresHit;
+    if ( std::isnan(hitDen) || std::isinf(hitDen) ) return -5.f;
+    return hitDen;
+  });
+
+  const Var kPi0SubLeadingPhotonCandidateHitDen([](const caf::SRSliceProxy *slc) -> float {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    int bestplane = slc->reco.pfp[idx].shw.bestplane;
+    if ( std::isnan(slc->reco.pfp[idx].shw.plane[bestplane].nHits) || std::isinf(slc->reco.pfp[idx].shw.plane[bestplane].nHits) ) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.plane[bestplane].wirePitch) || std::isinf(slc->reco.pfp[idx].shw.plane[bestplane].wirePitch)) return -5.f;
+    if ( std::isnan(slc->reco.pfp[idx].shw.len) || std::isinf(slc->reco.pfp[idx].shw.len) ) return -5.f;
+    float len = slc->reco.pfp[idx].shw.len, nhits = slc->reco.pfp[idx].shw.plane[bestplane].nHits, wirePitch = slc->reco.pfp[idx].shw.plane[bestplane].wirePitch;
+    float wiresHit = len / wirePitch;
+    if ( std::isnan(wiresHit) || std::isinf(wiresHit) ) return -5.f;
+    float hitDen = nhits / wiresHit;
+    if ( std::isnan(hitDen) || std::isinf(hitDen) ) return -5.f;
+    return hitDen;
+  });
+
+  const Var kIsClearCosmic([](const caf::SRSliceProxy *slc) -> float {
     return slc->is_clear_cosmic;
   });
 

@@ -18,6 +18,9 @@ namespace ana
   bool IsTracklikeTrack( const caf::SRSliceProxy* slice, const unsigned int idxTrk );
   bool IsShowerlike( const caf::SRSliceProxy* slice, const unsigned int idxShw );
   bool IsPrimaryPFP( const caf::SRSliceProxy* slice, const unsigned int idxTrk );
+  bool IsProtonLike( const caf::SRSliceProxy* slice, const unsigned int idx );
+  bool IsMuonLike( const caf::SRSliceProxy* slice, const unsigned int idx );
+  bool IsPionLike( const caf::SRSliceProxy* slice, const unsigned int idx );
 
 
   /// \ref Var that is a dummy var that returns 1 for "IsFHC" or 0 for "!IsFHC" for example
@@ -26,6 +29,7 @@ namespace ana
 
   /// \ref SpillVar for trigger time (check if the implementation is only comaptible for emulated trigger and fix if so...)
   extern const SpillVar kNuMISpillTriggerTime;
+  ///extern const SpillVar kCRTMPMT_FlashMatching;
 
   /// \ref Var for the muon candidate index
   extern const Var kNuMIMuonCandidateIdx;
@@ -62,6 +66,9 @@ namespace ana
   extern const Var kNumberRecoShowers;
   /// \ref Var for number of pfparticles in the slice
   extern const Var kNumberPFPs;
+
+  /// \ref Var for number of charged pions in slice
+  extern const Var kNumberChargedPions;
   
   /// \ref Var for number of tracks in slice
   extern const Var kNumberRecoTracks;
@@ -133,6 +140,7 @@ namespace ana
   extern const Var kMuonCandidateTrueStartY;
   extern const Var kMuonCandidateTrueStartZ;
   extern const Var kMuonCandidatePDG;
+  extern const Var kProtonCandidatePDG;
 
   // Sideband vars: pi0
   extern const Var kNuMILeadingPhotonCandidateE;
@@ -207,8 +215,14 @@ namespace ana
   extern const Var kPi0SubLeadingPhotonCandidateMuonChi2;
   extern const Var kPi0LeadingPhotonCandidatePionChi2;
   extern const Var kPi0SubLeadingPhotonCandidatePionChi2;
+  extern const Var kPi0LeadingPhotonCandidateMuonPionChi2Diff;
+  extern const Var kPi0SubLeadingPhotonCandidateMuonPionChi2Diff;
   extern const Var kPi0LeadingPhotonCandidateNHits;
   extern const Var kPi0SubLeadingPhotonCandidateNHits;
+  extern const Var kPi0LeadingPhotonCandidateSqrtEDen;
+  extern const Var kPi0SubLeadingPhotonCandidateSqrtEDen;
+  extern const Var kPi0LeadingPhotonCandidateHitDen;
+  extern const Var kPi0SubLeadingPhotonCandidateHitDen;
 
   extern const Var kIsClearCosmic;
 

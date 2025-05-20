@@ -4,11 +4,22 @@
 
 namespace ana
 {
-  bool Is1mu1Pi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Signal
+  bool Is_1mu_0pipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Signal 1
+  bool Is_1mu_0pipm_1pi0_OOPS(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0 Broken Signal 2
+  bool Is_1mu_0pipm_1pi0_OOFV(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0 Broken Signal 3
+  bool Is_1mu_Npipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 4
+  bool Is_1mu_Npipm_0pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 5
+  bool Is_1mu_Npi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 6
+  bool Is_0mu_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 7
+  //bool Is_1mu_0pipm_0pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 6
+  extern const Cut kNuMI_Is_Other_nu;
+
   bool Is1muNPi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background
   /// \ref SpillCut on valid trigger
   extern const SpillCut kNuMIValidTrigger;
   extern const SpillCut kBNBValidTrigger;
+
+  extern const SpillCut kIcarus202401CRTPMTVeto;
 
   /// \ref Cut on vertex reconstruced in FV
   extern const Cut kNuMIVertexInFV;
@@ -34,6 +45,9 @@ namespace ana
 
   /// \ref Cut aimed at pi0 rejection
   extern const Cut kNuMICutPhotons;
+
+  /// \ref No Cuts
+  extern const Cut kNoCuts;
 
   ///Base selection of 1muXPi0 for the main 1mu1Pi0 selection
   extern const Cut kNuMISelection_1muXpi0_Base;
@@ -91,6 +105,15 @@ namespace ana
   extern const Cut kNuMI_1mu1Pi0XStudy_CCNue;
   extern const Cut kNuMI_1mu1Pi0XStudy_NC;
   extern const Cut kNuMI_1mu1Pi0XStudy_NotNu;
+
+  extern const Cut kNuMI_1mu_0pipm_1pi0_Signal; //#1
+  extern const Cut kNuMI_1mu_0pipm_1pi0_OOPS; //#2
+  extern const Cut kNuMI_1mu_0pipm_1pi0_OOFV; //#3
+  extern const Cut kNuMI_Is_1mu_Npipm_1pi0; //#4
+  extern const Cut kNuMI_Is_1mu_Npipm_0pi0; //#5
+  extern const Cut kNuMI_Is_1mu_Npi0; //#6
+  extern const Cut kNuMI_Is_0mu_1pi0; //#7
+  extern const Cut kNuMI_Is_Other_nu; //#8
 
   /// \ref Var for slice type (signal, other NuCC, NuNC, NotNu)
   extern const Var kNuMISliceSignalType;

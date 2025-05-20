@@ -115,13 +115,13 @@ namespace ana{
 
   // 0: not signal, 1: signal for 1mu1pi0X study
   const Var kNuMIIsSignal([](const caf::SRSliceProxy* slc) -> int {
-    if( kNuMI_1mu1Pi0XStudy_Signal(slc) ) return 1;
+    if( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return 1;
     else return 0;
   });
 
    // 0: not signal, 1: signal
   const Var kIsPi0SignalInSlice([](const caf::SRSliceProxy* slc) -> int {
-    if( kNuMI_1mu1Pi0XStudy_Signal(slc) ) return 1;
+    if( kNuMI_1mu_0pipm_1pi0_Signal(slc) ) return 1;
     else return 0;
   });
 
