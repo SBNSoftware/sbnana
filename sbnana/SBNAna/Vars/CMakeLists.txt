@@ -5,6 +5,8 @@ cet_make_library(LIBRARY_NAME SBNAnaVars
          LIBRARIES CAFAnaCore
                    sbnanaobj::StandardRecordProxy
                    -L$ENV{OSCLIB_LIB}
+                   cetlib::cetlib
+                   cetlib_except::cetlib_except
                    OscLib
         )
 
