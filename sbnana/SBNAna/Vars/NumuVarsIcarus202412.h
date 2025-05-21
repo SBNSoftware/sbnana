@@ -19,8 +19,8 @@ namespace ana {
         float slcID;
         float id;
 
-        float G4ID;
-        float pdg;
+        int G4ID;
+        int pdg;
         float energy_comp;
         float hit_comp;
     };
