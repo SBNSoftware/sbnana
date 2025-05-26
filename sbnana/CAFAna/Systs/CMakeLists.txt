@@ -10,7 +10,6 @@ cet_make_library(LIBRARY_NAME CAFAnaSysts
                    sbnanaobj::StandardRecordProxy
                    cetlib::cetlib
                    cetlib_except::cetlib_except
-=======
 		   sbnanaobj::StandardRecord
                    SBNAnaVars
         )
