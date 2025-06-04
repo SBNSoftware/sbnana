@@ -51,6 +51,7 @@ const Cut kIcarus202401NumuSelection = kIcarus202401RecoFiducial && kIcarus20240
 const Cut kIcarus202401NoPion = kIcarus202401NumPions == 0;
 const Cut kIcarus202401ContainedHadrons([](const caf::SRSliceProxy* slc){
   auto idx = kIcarus202401MuonIdx(slc);
+  if(idx < 0) return false;
   int muID = -1;
   if (idx >= 0) muID = slc->reco.pfp.at(idx).id;
   for(auto& pfp: slc->reco.pfp) {

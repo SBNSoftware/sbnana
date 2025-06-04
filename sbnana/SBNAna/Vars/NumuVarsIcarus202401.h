@@ -165,6 +165,8 @@ extern const Var kIcarus202401RecoMuonP;
 extern const MultiVar kIcarus202401RecoProtonP;
 extern const MultiVar kIcarus202401RecoPionP;
 
+extern const Var kIcarus202401RecoTransP;
+
 
 }
 

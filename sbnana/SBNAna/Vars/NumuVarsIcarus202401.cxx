@@ -128,6 +128,19 @@ const Var kIcarus202401NumPions([](const caf::SRSliceProxy* slc)
   return count;
 });
 
+template<int pdg, int threshold>
+const MultiVar kTruePrimaryPs([](const caf::SRSliceProxy* slc){
+    std::vector<double> ps;
+    for(size_t i = 0; i < slc->truth.prim.size(); i++) {
+        const auto& p = slc->truth.prim[i];
+        double visE = 0;
+        if(!std::isnan(p.plane[0][2].visE)) visE += p.plane[0][2].visE;
+        if(!std::isnan(p.plane[1][2].visE)) visE += p.plane[1][2].visE;
+        if(std::abs(p.pdg) == pdg && visE >= threshold/1000.0) ps.push_back(i);
+    }
+    return ps;
+});
+
 const Var kIcarus202401NumProtons([](const caf::SRSliceProxy* slc)
 {
   int count = 0;
@@ -234,6 +247,39 @@ const MultiVar kIcarus202401RecoPionP([](const caf::SRSliceProxy* slc){
       Ps.push_back(pfp.trk.rangeP.p_pion);
   }
   return Ps;
+});
+
+const Var kIcarus202401RecoTransP([](const caf::SRSliceProxy *slc){
+  double ret = 0;
+  double p_mu_x = 0; double p_p_x = 0;
+  double p_mu_y = 0; double p_p_y = 0;
+  int mu_idx = kIcarus202401MuonIdx(slc);
+  if(mu_idx < 0) return p_mu_x;
+  const auto &muTrk = slc->reco.pfp.at(kIcarus202401MuonIdx(slc)).trk;
+  if(Icarus202401_contained(muTrk)==false)return p_mu_x;
+  p_mu_x =muTrk.rangeP.p_muon*muTrk.dir.x;
+  p_mu_y =muTrk.rangeP.p_muon*muTrk.dir.y;
+  //float mp = 0.9383;
+  int muID = -1;
+  if(mu_idx >= 0) muID = slc->reco.pfp[mu_idx].id;
+  for(const auto& pfp: slc->reco.pfp) {
+    if(pfp.id == muID) continue;
+    if(pfp.trackScore < 0.4) continue;
+    auto const& trk = pfp.trk;
+    const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
+                                   slc->vertex.y - trk.start.y,
+                                   slc->vertex.z - trk.start.z);
+    if(Icarus202401_proton_cut(pfp.trk) && pfp.parent_is_primary && Atslc < 10.0 && std::hypot(pfp.trk.rangeP.p_proton, mp) - mp > 0.05){
+        p_p_x+=pfp.trk.rangeP.p_proton*pfp.trk.dir.x;
+        p_p_y+=pfp.trk.rangeP.p_proton*pfp.trk.dir.y;
+    }
+  }
+
+  double p_tot_x = p_mu_x + p_p_x;
+  double p_tot_y = p_mu_y + p_p_y;
+  ret = std::hypot(p_tot_x, p_tot_y);
+
+  return ret;
 });
 
 }

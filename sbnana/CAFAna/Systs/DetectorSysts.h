@@ -1,6 +1,11 @@
 #pragma once
 
 #include "sbnana/CAFAna/Core/ISyst.h"
+#include "sbnana/CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/MultiVar.h"
+#include "sbnana/CAFAna/Core/Var.h"
+
+#include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <string>
 #include <vector>
@@ -14,25 +19,32 @@ namespace ana {
         void Shift(double sigma, caf::SRSliceProxy* slc, double& weight) const override;
     protected:
         friend const DetectorSyst* GetDetectorSyst(const std::string&,
+                                               std::string&,
                                                const std::string&,
-                                               const std::string&,
+                                               std::string&,
+                                               Var,
                                                int,
                                                const std::string&
                                                );
         DetectorSyst(const std::string& dir,
-                     const std::string& prefix,
+                     std::string& prefix,
                      const std::string& name,
+                     std::string& variable,
+                     Var var,
                      int fIdx,
                      const std::string& systFile = "");
-        std::string fHistName, fName, fSystFilePath;
+        std::string fHistName, fName, fVariable, fSystFilePath;
+        Var fVar;
         int fDualSided;
     };
 
     const DetectorSyst* GetDetectorSyst(const std::string& dir,
-                                        const std::string& prefix,
+                                        std::string& prefix,
                                         const std::string& name,
+                                        std::string& variable,
+                                        Var var,
                                         int fIdx,
                                         const std::string& systFile = "");
 
-    std::vector<const ISyst*> GetDetectorSysts();
+    std::vector<const ISyst*> GetDetectorSysts(std::string& name_in, Var var_in);
 }
