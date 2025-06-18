@@ -7,16 +7,25 @@ import pandas as pd
 from util import *
 from pyanalib import panda_helpers
 from numpy import sqrt, cos, sin
+import var
 
 GOAL_POT = 2.41e20 # combined R1 and R2.
 POTSTR = "2.41e20 POT"
 
+nmu = var.DF.iscc & ((var.DF.pdg == 14) | (var.DF.pdg == -14))
+npi = var.DF.npi
+ns = var.DF.nsm + var.DF.nsp
+is_coh_like = (nmu + npi + ns >= 2) & (var.DF.max_proton_ke < 0.05)
+
 def is_coh_like_JD(df):
     nmu = df.slc.truth.nmu # df.slc.truth.iscc & ((df.slc.truth.pdg == 14) | (df.slc.truth.pdg == -14))
     npi = df.slc.truth.npi
-    ns = df.slc.truth.nsm + df.slc.truth.nsp
-    print(type(df.slc.truth.max_proton_ke < 0.05))
+    ns = df.slc.truth.nsm + df.slc.truth.nsp # Sigma+ or Sigma-
+    #print(type(df.slc.truth.max_proton_ke < 0.05))
     return (nmu + npi + ns >= 2) & (df.slc.truth.max_proton_ke < 0.05)
+
+def is_NOT_coh_like_JD(df):
+    return ~is_coh_like_JD(df)
 
 def satisfies_new_FV(df): # df should be evtdf
     return ( 
@@ -273,7 +282,7 @@ def make_categories(df, detailed_bsm=False, detailed_nu='none', hps_final_state=
         numu_CC_COH.name = "$\\nu_\\mu$ CC COH"
         numu_CC_COH.color = soladero_lime[4]
         
-        nu_other = is_nu & (df.slc.tmatch.idx >= 0) & ~nu_NC & ~numu_CC_QE_MEC & ~numu_CC_RES & ~numu_CC_DIS & ~numu_CC_COH
+        nu_other = is_nu & ~nu_NC & ~numu_CC_QE_MEC & ~numu_CC_RES & ~numu_CC_DIS & ~numu_CC_COH
         nu_other.name = "$\\nu$ Other"
         nu_other.color = soladero_lime[5]
         

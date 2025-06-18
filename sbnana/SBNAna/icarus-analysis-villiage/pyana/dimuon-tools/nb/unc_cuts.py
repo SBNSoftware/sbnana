@@ -61,11 +61,19 @@ def ok_chi2p(df, thresh = chi2_p_forMuons):
 
 # KINEMATICS:
 
-def numi_angle_mask(df, thresh = NuMI_angle_thresh): # provide thresh in deg, but df has radians
-    return df.Snumi_angle_wgtByLen < thresh*math.pi/180., 'S_NuMI_angle < '+str(thresh)+' deg'#'\u00B0'
+def numi_angle_mask(df, thresh = NuMI_angle_thresh, flip=False): # provide thresh in deg, but df has radians
+    mask = df.Snumi_angle_wgtByLen < thresh*math.pi/180.
+    if flip:
+        return ~mask, 'S_NuMI_angle >= '+str(thresh)+' deg'#'\u00B0'
+    else: 
+        return mask, 'S_NuMI_angle < '+str(thresh)+' deg'#'\u00B0'
 
-def open_angle_mask(df, thresh = open_angle_thresh): # provide thresh in deg, but df has radians
-    return np.arccos(dotdf(df.trunk.trk.dir, df.branch.trk.dir)) < thresh*math.pi/180., 'opening angle < '+str(thresh)+' deg'
+def open_angle_mask(df, thresh = open_angle_thresh, flip=False): # provide thresh in deg, but df has radians
+    mask = np.arccos(dotdf(df.trunk.trk.dir, df.branch.trk.dir)) < thresh*math.pi/180.
+    if flip:
+        return ~mask, 'opening angle >= '+str(thresh)+' deg'
+    else: 
+        return mask, 'opening angle < '+str(thresh)+' deg'
 
 # STUB ID:
 
@@ -82,16 +90,16 @@ def stub_mask(df, flip=False):
 # Recast into separate cuts for optimiztion:
 def not_stub_05(df, thresh = stub_dedx_l0_5cm_thresh):
     hasstub = (df.stub.l0_5cm.dedx > thresh)
-    return ~(hasstub), 'below 0_5cm dEdx <= %a MeV/cm' % stub_dedx_l0_5cm_thresh
+    return ~(hasstub), 'dE/dx <= %a MeV/cm up to 0_5 cm' % stub_dedx_l0_5cm_thresh
 def not_stub_1(df, thresh = stub_dedx_l1cm_thresh):
     hasstub = (df.stub.l1cm.dedx > thresh)
-    return ~(hasstub), 'up to 1cm dEdx <= %a MeV/cm' % stub_dedx_l1cm_thresh
+    return ~(hasstub), 'dE/dx <= %a MeV/cm 0_5-1 cm' % stub_dedx_l1cm_thresh
 def not_stub_2(df, thresh = stub_dedx_l2cm_thresh):
     hasstub = (df.stub.l2cm.dedx > thresh)
-    return ~(hasstub), 'up to 2cm dEdx <= %a MeV/cm' % stub_dedx_l2cm_thresh
+    return ~(hasstub), 'dE/dx <= %a MeV/cm 1-2 cm' % stub_dedx_l2cm_thresh
 def not_stub_3(df, thresh = stub_dedx_l3cm_thresh):
     hasstub = (df.stub.l3cm.dedx > thresh)
-    return ~(hasstub), 'up to 3cmdEdx <= %a MeV/cm' % stub_dedx_l3cm_thresh
+    return ~(hasstub), 'dE/dx <= %a MeV/cm 2-3 cm' % stub_dedx_l3cm_thresh
 
 # OBJECT CUTS:
 
@@ -348,6 +356,66 @@ evtSel_dict = dict([
             13,
             3, 15,
             140.0
+        ]
+     )
+    ),
+    
+    ###
+    # May 19, 2025
+    # Everything above were used in studies I performed Jan/Feb 2025. Don't touch them!
+    # Below here I am playing around with potential near sidebands.
+    ###
+    
+    # check mc sideband in theta_NuMI:
+    ( "J",
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu,
+            open_angle_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            10.0,
+            13,
+            15
+        ]
+     )
+    ),
+    
+    # check mc sideband in theta_mumu:
+    ( "K",
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu,
+            numi_angle_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            10.0,
+            13,
+            3
+        ]
+     )
+    ),
+    
+    # check mc sideband in theta_mumu:
+    ( "L",
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu,
+            numi_angle_mask, open_angle_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            10.0,
+            13,
+            3, 15
         ]
      )
     )

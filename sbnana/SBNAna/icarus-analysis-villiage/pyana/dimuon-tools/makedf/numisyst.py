@@ -2,7 +2,9 @@ import uproot
 import numpy as np
 import pandas as pd
 
-FSYST = "/exp/icarus/data/users/gputnam/thesis-work/icarus_numi_flux_syst_ana_v2.root"
+#FSYST = "/exp/icarus/data/users/gputnam/thesis-work/icarus_numi_flux_syst_ana_v2.root"
+FSYST = "/pnfs/icarus/persistent/users/faabdalr/2025-04-08_out_450.37_7991.98_79512.66.root" # change made June 12, 2025 to update to most recent flux weights from Fatima and Dan. This change takes care of the ppfx weights. (See notes saved to my desktop in muons_analysis folder titled 250611_flux_wgt_update.)
+FSYST = "/exp/icarus/app/users/jdyer/2025-04-08_out_450.37_7991.98_79512.66.root" # This is a copy of above, that I can access.
 
 beam_uncertainties = [
     "beam_div",

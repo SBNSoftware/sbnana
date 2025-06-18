@@ -100,10 +100,11 @@ mcnudfs = higgs_mcnudfs + alp_nosup_mcnudfs + nu_mcnudfs
 
 evtdfs = [pd.read_hdf(f, key="evt") for f in df_files]
 
-# Mask out all the cohlike events in the nominal neutrino sample: # Made this fix 2/8/25, updated 2/19/25
+# MASK OUT COHLIKE EVENTS IN THE NOMINAL NU SAMPLE:
+# Made this fix 2/8/25, updated 2/19/25
 nomnu = evtdfs[-7]
 new_n_incoh = nomnu[~is_coh_like_JD(nomnu)].shape[0]
-print('Percentage of non-cohlike events in the nominal nu sample: ', (nomnu.shape[0]-new_n_incoh)/nomnu.shape[0])
+print('Percentage of non-cohlike events in the nominal nu sample: ', (new_n_incoh)/nomnu.shape[0])
 evtdfs[-7] = nomnu[~is_coh_like_JD(nomnu)]
 
 ## IF YOU DO CARE ABOUT CV WEIGHTS (***): #takes 30 minutes.

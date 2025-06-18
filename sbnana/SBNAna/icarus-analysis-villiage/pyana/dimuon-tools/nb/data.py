@@ -48,10 +48,10 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
         df["mccut"] = mcdfcut
         df = df[df.mccut]
 
-    # Central-Value, if we can
+    # Central-Value (just the ppfx), if we can
     try: 
         cv = math.prod([mcdf[w] for w in weights.cv])
-        cv.name = ("wgt", "cv")
+        cv.name = ("wgt", "cv") # just ppfx here, but will get multiplied by the other cv reweight below.
         df = add_weights(df, pd.DataFrame(cv))
     except:
         if syst_weights:
@@ -59,19 +59,23 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
         else:
             df = multicol_add(df, pd.Series(1, index=df.index, name=("wgt", "cv")))
 
-    # load concrete correction
+    # load other corrections (i.e. concrete, correction for horn 1 and 2 mother volume overlap, and reweighting to a 1.5mm beam spot size -- collectively call this "cv other" (as in not ppfx.)) 
     nuE = mcdf.E
 
-    # apply the concrete weight differently for nuetrinos and scalars
+    # apply the weight differently for nuetrinos and scalars
     # Neutrinos: use the "total" for that pdg
     # Scalars: lookup the weight for the corresponding parent pdg
     # re-weight the 
     nupdg = mcdf.parent_pdg if isscalar else mcdf.pdg
 
-    fluxcorr_wgt = numiweight.concrete_cv(nupdg, nuE) 
-    fluxcorr_wgt.name = ("wgt", "concrete", "cv", "", "", "")
-    df = add_weights(df, pd.DataFrame(fluxcorr_wgt))
-    df[("wgt", "cv", "", "", "", "")] *= df[("wgt", "concrete", "cv", "", "", "")]
+    #fluxcorr_wgt = numiweight.concrete_cv(nupdg, nuE) # JD 6/12/25
+    #fluxcorr_wgt.name = ("wgt", "concrete", "cv", "", "", "") # JD 6/12/25
+    #df = add_weights(df, pd.DataFrame(fluxcorr_wgt)) # JD 6/12/25
+    #df[("wgt", "cv", "", "", "", "")] *= df[("wgt", "concrete", "cv", "", "", "")] # JD 6/12/25
+    fluxcorr_wgt = numiweight.update_flux_version(nupdg, nuE) # JD 6/12/25
+    fluxcorr_wgt.name = ("wgt", "cv", "other_than_ppfx", "", "", "") # JD 6/12/25
+    df = add_weights(df, pd.DataFrame(fluxcorr_wgt)) # JD 6/12/25
+    df[("wgt", "cv", "", "", "", "")] *= df[("wgt", "cv", "other_than_ppfx", "", "", "")]
 
     print("Generating Coh-weights!")
     # generate coherent pion weights

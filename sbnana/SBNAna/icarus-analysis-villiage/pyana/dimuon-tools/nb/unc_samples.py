@@ -118,6 +118,16 @@ alp_nosup_files = [
     #"/exp/icarus/data/users/jdyer/dimuon-data/2501_moreAlps/lostats/presel_applied/ma700_faE6.df"
 ]
 
+alp_300_detVar_files = [
+    "/exp/icarus/data/users/jdyer/dimuon-data/2504_AlpDetectorVariations/Alp_M300_ind1bin0.df", # "Middle Ind. Opaque"
+    "/exp/icarus/data/users/jdyer/dimuon-data/2504_AlpDetectorVariations/Alp_M300_ind1bin14.df", # "Middle Ind. Transparent"
+    "/exp/icarus/data/users/jdyer/dimuon-data/2504_AlpDetectorVariations/Alp_M300_ind0glo.df", # "Front Ind. Gain Low"
+    "/exp/icarus/data/users/jdyer/dimuon-data/2504_AlpDetectorVariations/Alp_M300_ind0ghi.df", # "Front Ind. Gain High"
+    "/exp/icarus/data/users/jdyer/dimuon-data/2504_AlpDetectorVariations/Alp_M300_noiselhi.df", # "Noise 1.2x"
+    "/exp/icarus/data/users/jdyer/dimuon-data/2504_AlpDetectorVariations/Alp_M300_sce2x.df", # "Space Charge 2x"
+    "/exp/icarus/data/users/jdyer/dimuon-data/2504_AlpDetectorVariations/Alp_M300_ind0nom.df" # "Ind 0 Nom"
+]
+
 # Nu Files
 
 nu_file = gray_df_dir + "F-MCNuPhase2_evt.df"
