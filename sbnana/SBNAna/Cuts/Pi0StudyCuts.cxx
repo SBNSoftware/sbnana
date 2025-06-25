@@ -7,18 +7,22 @@ namespace ana {
 
   ////////////////////CRTPMT FlashMatching//////////////////////
   ////////////////////////////////////////////////////////////
-  const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
-    for(const auto& match: spill->crtpmt_matches) {
-        if(match.flashGateTime > 0 && match.flashGateTime < 1.6 && match.flashClassification == 0)
-            return true;
-    }
-    return false;
-  });
+  //const SpillCut kIcarus202401CRTPMTVeto([](const caf::SRSpillProxy* spill){
+  //  for(const auto& match: spill->crtpmt_matches) {
+  //      if(match.flashGateTime > 0 && match.flashGateTime < 1.6 && match.flashClassification == 0)
+  //          return true;
+  //  }
+  //  return false;
+  //});
     
   /////////////////Spill Cuts///////////////////////////
   //////////////////////////////////////////////////////
 
   // Cut on having valid trigger time in approx. beam window pi0study
+  const SpillCut kNoSpillCuts([](const caf::SRSpillProxy* sr) {
+    return true; // No spill cuts
+  });
+
   const SpillCut kNuMIValidTrigger ( [](const caf::SRSpillProxy *sr) {
     double spillTriggerTime = kNuMISpillTriggerTime(sr);
     return spillTriggerTime > -0.1 && spillTriggerTime < 9.7;
@@ -32,7 +36,7 @@ namespace ana {
 
   /////////////////Slice Cuts///////////////////////////
   //////////////////////////////////////////////////////
-  const Cut kNoCuts ([](const caf::SRSliceProxy* slc) { return true; });
+  const Cut kNoSliceCuts ([](const caf::SRSliceProxy* slc) { return true; });
 
   // reco vertex fiducial volume cut pi0study
   const Cut kNuMIVertexInFV([](const caf::SRSliceProxy* slc) { 
@@ -134,16 +138,16 @@ namespace ana {
     else return false;
 
   });
-  
+
   // Base selection common to side-bands (cuts back on number of entries one needs to carry):
   //
 
-  const Cut kNuMISelection_1muXpi0_Base = kNuMIVertexInFV
+  const Cut kNuMISelection_1muXpi0_Base = kNuMIVertexIsContained
                                           && kNuMIHasMuonCandidate;
                                           //&& kNuMIAllPrimaryHadronsContained;
 
-  const Cut kNuMISelection_1muXpi0_CosmicFilter      = kNuMIVertexInFV
-                                                       && kNuMIHasMuonCandidate
+  const Cut kNuMISelection_1muXpi0_CosmicFilter      = kNuMIVertexIsContained
+                                                       //&& kNuMIHasMuonCandidate
                                                        //&& kNuMIAllPrimaryHadronsContained
                                                        && kNuMINotClearCosmic;
   
@@ -306,7 +310,7 @@ namespace ana {
          || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
          || !isInFV(true_int.position.x, true_int.position.y, true_int.position.z)
          || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
-         || (true_int.time < 0.0 || true_int.time > 9.7) // NuMI beam window
+         //|| (true_int.time < 0.0 || true_int.time > 9.7) // NuMI beam window
         )
       return false; // not signal
 

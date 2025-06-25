@@ -28,13 +28,54 @@ namespace ana {
             ( ( y > -181.86 + 5. && y < 134.96 - 5. ) &&
               ( z > -894.95 + 5. && z < 894.95 - 5. ) ));
   }
+  //TEMPORARY
+  /// \ref  #1 SIGNAL! Check 1mu1Pi0X using vector of primaries pi0study
+  bool IsSignal(const caf::Proxy<caf::SRTrueInteraction>& true_int){ //Either from rec.slc.truth or rec.mc.nu
+    //From SRTrueInteraction
+    if ( true_int.index < 0 ) return false;
+    if ( abs(true_int.pdg) != 14
+         || !true_int.iscc
+         || std::isnan(true_int.position.x) || std::isnan(true_int.position.y) || std::isnan(true_int.position.z)
+         || !isInFV(true_int.position.x, true_int.position.y, true_int.position.z)
+         || std::isnan(true_int.prod_vtx.x) || std::isnan(true_int.prod_vtx.y) || std::isnan(true_int.prod_vtx.z)
+         || (true_int.time < 0.0 || true_int.time > 9.7) // NuMI beam window
+        )
+      return false; // not signal
+
+    //From SRTrueParticle from rec.mc.nu.prim
+    unsigned int nMu(0), nPi(0), nPi0(0); //, nPhoton(0);
+    for ( auto const& prim : true_int.prim ) {
+      //if ( prim.start_process != 0 ) continue;
+      if (!isInFV(prim.start.x, prim.start.y, prim.start.z)) continue; // FV cut
+      //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
+
+      double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
+      double energy = prim.genE;
+      int daughters = prim.daughters.size();
+
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
+      if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
+      //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
+    }
+    if ( nMu==1 && nPi0==1 && nPi==0 ) return true;
+
+    return false;
+  }
+  // TEMPORARY END
+
+
+
 
   bool IsValidTrkIdx( const caf::SRSliceProxy* slice, const unsigned int idxTrk ) {
     return slice->reco.npfp > idxTrk;
   }
 
   bool IsTracklikeTrack( const caf::SRSliceProxy* slice, const unsigned int idxTrk ) {
-    return (!std::isnan(slice->reco.pfp.at(idxTrk).trackScore) && slice->reco.pfp.at(idxTrk).trackScore > 0.45);
+    return (
+          !std::isnan(slice->reco.pfp.at(idxTrk).trackScore)
+          //&& slice->reco.pfp.at(idxTrk).trackScore > 0.45
+        );
   }
 
   bool IsShowerlike( const caf::SRSliceProxy* slice, const unsigned int idxShw ) {
@@ -135,7 +176,7 @@ namespace ana {
   const Var kNuMIMuonCandidateIdx([](const caf::SRSliceProxy* slc) -> int {
       float Longest(0);
       int PTrackInd(-3);
-      float p(-5.f);
+      //float p(-5.f);
 
       unsigned int idxTrk = 0;
       while ( IsValidTrkIdx(slc, idxTrk) ) {
@@ -146,7 +187,7 @@ namespace ana {
         auto const& trk = slc->reco.pfp.at(idxTrk).trk;
         unsigned int thisIdx = idxTrk;
         idxTrk+=1;
-
+        /*
         if ( std::isnan(trk.start.x) || std::isnan(trk.len) || trk.len <= 0. ) continue;
         if ( std::isnan(slc->vertex.x) || std::isnan(slc->vertex.y) || std::isnan(slc->vertex.z) ) return -1;
         const float Atslc = std::hypot(slc->vertex.x - trk.start.x,
@@ -155,23 +196,37 @@ namespace ana {
         const bool isPrimCandidate = (Atslc < 10. && IsPrimaryPFP(slc,thisIdx));
 
         if ( !isPrimCandidate || trk.calo[2].nhit < 5 ) continue;
+        */
+        /*
         const bool Contained = isContainedVol(trk.end.x,trk.end.y,trk.end.z);
-
         if(Contained) {
           p = trk.rangeP.p_muon;
         }else{
           if(std::isnan(trk.mcsP.fwdP_muon) || std::isinf(trk.mcsP.fwdP_muon) )  p = -5.0;
           else p = trk.mcsP.fwdP_muon;
         }
-        
         if ( p < 0.226 ) continue;
-        
-        const float Chi2Proton = trk.chi2pid[2].chi2_proton;
-        const float Chi2Muon = trk.chi2pid[2].chi2_muon;
+        */
+        if ( 
+        !( (slc->reco.pfp.at(thisIdx).ngscore.sem_cat == 0)
+          || (slc->reco.pfp.at(thisIdx).ngscore.sem_cat != 0 && slc->reco.pfp.at(thisIdx).trackScore > 0.55))
+
+        ) continue;
+        if (slc->reco.pfp.at(thisIdx).ngscore.sem_cat == 1) continue;
+        //const float Chi2Proton = trk.chi2pid[2].chi2_proton;
+        //const float Chi2Muon = trk.chi2pid[2].chi2_muon;
         //track len of muon
-        if (     (!Contained && trk.len > 5.) 
-              || ( Contained && trk.len > 5. && Chi2Proton > 60. && Chi2Muon < 30.) ) {
+        /*
+        if(     ( !Contained && trk.len > 5.) 
+              || ( Contained && trk.len > 5. && Chi2Proton > 60. && Chi2Muon < 30.) 
+          ){
           if ( trk.len <= Longest ) continue;
+          Longest = trk.len;
+          PTrackInd = thisIdx;
+        }
+        */
+        if(isnan(trk.len) || isinf(trk.len) || trk.len <= 0.) continue;
+        if(trk.len >= Longest){
           Longest = trk.len;
           PTrackInd = thisIdx;
         }
@@ -281,22 +336,34 @@ namespace ana {
       //auto const& trk = slc->reco.pfp.at(i_pfp).trk;
 
       // Check if shower fit even seems kind-of valid:
-      if (    std::isnan(shw.start.x)
+      //if (    std::isnan(shw.start.x)
            //|| (shw.start.x > -5.5 && shw.start.x < -4.5)
-           || std::isnan(shw.len) || shw.len <= 0. ) continue;
+           //|| std::isnan(shw.len) || shw.len <= 0. 
+      //    ) continue;
       
       // if it meets this then we're not going to cut on it...
-      if ( std::isnan(slc->reco.pfp.at(i_pfp).trackScore) || std::isinf(slc->reco.pfp.at(i_pfp).trackScore) || slc->reco.pfp.at(i_pfp).trackScore <= 0. ) continue;
+      if ( 
+           std::isnan(slc->reco.pfp.at(i_pfp).trackScore) 
+        || std::isinf(slc->reco.pfp.at(i_pfp).trackScore) 
+        //|| slc->reco.pfp.at(i_pfp).trackScore <= 0. 
+      ) continue;
       //if ( std::isnan(shw.plane[2].energy) || std::isinf(shw.plane[2].energy) || shw.plane[2].energy <= 0.02 ) continue;
-      if ( std::isnan(shw.bestplane_energy) || std::isinf(shw.bestplane_energy) || shw.bestplane_energy <= 0.00 ) continue;
+      if ( std::isnan(shw.bestplane_energy) 
+        || std::isinf(shw.bestplane_energy) 
+        || shw.bestplane_energy < 0.
+        ) continue;
 
       // and... if it meets then then we're not going to cut on it...
-      if ( std::isnan(shw.conversion_gap) || std::isinf(shw.conversion_gap) || shw.conversion_gap <= 0. ) continue;
-      if ( !isInFV(shw.start.x,shw.start.y,shw.start.z) ) continue; //Quality cut
-      //if ( IsProtonLike(slc,i_pfp) ) continue; //Smells like a proton
-      //if ( IsMuonLike(slc,i_pfp) ) continue; //Smells like a muon
-      //if ( IsPionLike(slc,i_pfp) ) continue; //Smells like a pion
-      
+      //if ( !isInFV(shw.start.x,shw.start.y,shw.start.z) ) continue; //Quality cut
+      if ( 
+        //slc->reco.pfp.at(i_pfp).ngscore.sem_cat != 2 
+        //|| (slc->reco.pfp.at(i_pfp).ngscore.sem_cat != -1 && slc->reco.pfp.at(i_pfp).trackScore > 0.45)
+        !( (slc->reco.pfp.at(i_pfp).ngscore.sem_cat == 2)
+          || (slc->reco.pfp.at(i_pfp).ngscore.sem_cat != 2 && slc->reco.pfp.at(i_pfp).trackScore <= 0.55))
+
+      ) continue;
+    
+      //std::cout << "Sem_cat: " << slc->reco.pfp.at(i_pfp).ngscore.sem_cat << " TrackScore: " << slc->reco.pfp.at(i_pfp).trackScore << std::endl;
       //if ( std::isnan(trk.chi2pid[2].chi2_proton) || std::isinf(trk.chi2pid[2].chi2_proton) || trk.chi2pid[2].chi2_proton < 120. ) continue; //Cut to reduce protons
       // if we got here, then it should be the case that the fit seems valid and:
       // shwE > 0.040 GeV
@@ -345,12 +412,16 @@ namespace ana {
   // Leading photon candidate
   const Var kNuMILeadingPhotonCandidateIdx([](const caf::SRSliceProxy* slc) -> int {
     std::vector<double> photon_indices = kNuMIPhotonCandidateIdxs(slc);
+    //bool isThisSignal = IsSignal(slc->truth);
+    //if(isThisSignal ) std::cout << "Number of photon candidates: " << photon_indices.size() << ", npfps:" <<  slc->reco.pfp.size() << std::endl;
+    
     if ( photon_indices.size() == 0 ) return -5;
 
     // find the leading photon candidate
     int leadingPhotonIdx = -1;
     double leadingPhotonE = -1.;
 
+    
     for ( auto const& idx : photon_indices ) {
       auto const& shw = slc->reco.pfp.at(idx).shw;
       
@@ -360,7 +431,7 @@ namespace ana {
       //if ( shw.plane[2].energy < 0.075 ) continue; //Quality cut
       //if ( std::isnan(slc->reco.pfp[idx].trackScore) || std::isinf(slc->reco.pfp[idx].trackScore) || slc->reco.pfp[idx].trackScore > 0.55 ) continue; //Quality cut trackScore float trkscore = slc->reco.pfp[idx].trackScore;
       //if ( shw.plane[2].nHits < 20 ) continue; //Quality cut
-     
+      //if(isThisSignal ) std::cout << "Best plane energy: " << shw.bestplane_energy << ", Plane 2 energy: " << shw.plane[2].energy << ", pdg: " << shw.truth.p.pdg << std::endl;
 
       // Find shower with highest energy
       if ( shw.bestplane_energy > leadingPhotonE ) {
@@ -369,6 +440,7 @@ namespace ana {
         leadingPhotonIdx = idx;
       }
     }
+    //if(isThisSignal) std::cout << "================END================" << std::endl;
     return leadingPhotonIdx;
   });
 
@@ -409,6 +481,16 @@ namespace ana {
 
   const Var kNumberPFPs([](const caf::SRSliceProxy* slc) -> int {
     return slc->reco.npfp;
+  });
+
+  const Var kIsNuVertexContained([](const caf::SRSliceProxy* slc) -> int {
+    if ( std::isnan(slc->vertex.x) || std::isnan(slc->vertex.y) || std::isnan(slc->vertex.z) ) return false;
+    return isContainedVol(slc->vertex.x, slc->vertex.y, slc->vertex.z);
+  });
+
+  const Var kIsNuVertexInFV([](const caf::SRSliceProxy* slc) -> int {
+    if ( std::isnan(slc->vertex.x) || std::isnan(slc->vertex.y) || std::isnan(slc->vertex.z) ) return false;
+    return isInFV(slc->vertex.x, slc->vertex.y, slc->vertex.z);
   });
 
   const Var kNumberChargedPions([](const caf::SRSliceProxy* slc) -> int {
@@ -1043,6 +1125,13 @@ namespace ana {
     return slc->reco.pfp.at(Idx).trk.truth.p.pdg;
   });
 
+  const Var kMuonCandidate_SemCat([](const caf::SRSliceProxy* slc) -> int {
+    int Idx = kNuMIMuonCandidateIdx(slc);
+    if (Idx < 0) return -9999.f;
+    if ( std::isnan(slc->reco.pfp[Idx].ngscore.sem_cat) || std::isinf(slc->reco.pfp[Idx].ngscore.sem_cat) ) return -9999.f;
+    return slc->reco.pfp[Idx].ngscore.sem_cat;
+  });
+
   const Var kProtonCandidatePDG([](const caf::SRSliceProxy* slc) -> float {
     int Idx = kNuMIProtonCandidateIdx(slc);
     if (Idx < 0) return -9999.f;
@@ -1122,7 +1211,9 @@ namespace ana {
   const Var kPi0LeadingPhotonCandidateInFV([](const caf::SRSliceProxy* slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
     if(idx<0) return -5.f;
-    
+    if( std::isnan(slc->reco.pfp[idx].shw.end.x), std::isnan(slc->reco.pfp[idx].shw.end.y), std::isnan(slc->reco.pfp[idx].shw.end.z) ) return -5.f;
+    if( std::isinf(slc->reco.pfp[idx].shw.end.x), std::isinf(slc->reco.pfp[idx].shw.end.y), std::isinf(slc->reco.pfp[idx].shw.end.z) ) return -5.f;
+
     bool IsStartInFV = isInFV(slc->reco.pfp[idx].shw.start.x, slc->reco.pfp[idx].shw.start.y, slc->reco.pfp[idx].shw.start.z);
     bool IsEndInFV = isInFV(slc->reco.pfp[idx].shw.end.x, slc->reco.pfp[idx].shw.end.y, slc->reco.pfp[idx].shw.end.z);
 
@@ -1162,7 +1253,8 @@ namespace ana {
   const Var kPi0SubLeadingPhotonCandidateInFV([](const caf::SRSliceProxy* slc) -> float {
       int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
       if(idx<0) return -5.f;
-      
+      if( std::isnan(slc->reco.pfp[idx].shw.end.x), std::isnan(slc->reco.pfp[idx].shw.end.y), std::isnan(slc->reco.pfp[idx].shw.end.z) ) return -5.f;
+      if( std::isinf(slc->reco.pfp[idx].shw.end.x), std::isinf(slc->reco.pfp[idx].shw.end.y), std::isinf(slc->reco.pfp[idx].shw.end.z) ) return -5.f;
       bool IsStartInFV = isInFV(slc->reco.pfp[idx].shw.start.x, slc->reco.pfp[idx].shw.start.y, slc->reco.pfp[idx].shw.start.z);
       bool IsEndInFV = isInFV(slc->reco.pfp[idx].shw.end.x, slc->reco.pfp[idx].shw.end.y, slc->reco.pfp[idx].shw.end.z);
 
@@ -1245,7 +1337,8 @@ namespace ana {
   const Var kPi0LeadingPhotonCandidateIsContained([](const caf::SRSliceProxy* slc) -> float {
       int idx = kNuMILeadingPhotonCandidateIdx(slc);
       if(idx<0) return -5.f;
-
+      if( std::isnan(slc->reco.pfp[idx].shw.end.x), std::isnan(slc->reco.pfp[idx].shw.end.y), std::isnan(slc->reco.pfp[idx].shw.end.z) ) return -5.f;
+      if( std::isinf(slc->reco.pfp[idx].shw.end.x), std::isinf(slc->reco.pfp[idx].shw.end.y), std::isinf(slc->reco.pfp[idx].shw.end.z) ) return -5.f;
       bool IsStartCont = isContainedVol(slc->reco.pfp[idx].shw.start.x, slc->reco.pfp[idx].shw.start.y, slc->reco.pfp[idx].shw.start.z);
       bool IsEndCont = isContainedVol(slc->reco.pfp[idx].shw.end.x, slc->reco.pfp[idx].shw.end.y, slc->reco.pfp[idx].shw.end.z);
 
@@ -1262,7 +1355,9 @@ namespace ana {
 
   const Var kPi0SubLeadingPhotonCandidateIsContained([](const caf::SRSliceProxy* slc) -> float {
       int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
-      if(idx<0) return -5.f;      
+      if(idx<0) return -5.f;
+      if( std::isnan(slc->reco.pfp[idx].shw.end.x), std::isnan(slc->reco.pfp[idx].shw.end.y), std::isnan(slc->reco.pfp[idx].shw.end.z) ) return -5.f;
+      if( std::isinf(slc->reco.pfp[idx].shw.end.x), std::isinf(slc->reco.pfp[idx].shw.end.y), std::isinf(slc->reco.pfp[idx].shw.end.z) ) return -5.f;
       bool IsStartCont = isContainedVol(slc->reco.pfp[idx].shw.start.x, slc->reco.pfp[idx].shw.start.y, slc->reco.pfp[idx].shw.start.z);
       bool IsEndCont = isContainedVol(slc->reco.pfp[idx].shw.end.x, slc->reco.pfp[idx].shw.end.y, slc->reco.pfp[idx].shw.end.z);
 
@@ -1293,6 +1388,8 @@ namespace ana {
     if ( std::isnan(trkscore) || std::isinf(trkscore) ) return -5.f;
     return trkscore;
   });
+
+
 
   const Var kPi0LeadingPhotonCandidatePur([](const caf::SRSliceProxy* slc) -> float {
     int idx = kNuMILeadingPhotonCandidateIdx(slc);
@@ -1704,8 +1801,32 @@ const Var kPi0SubLeadingPhotonCandidateTrueStartZ([](const caf::SRSliceProxy* sl
     return hitDen;
   });
 
+  const Var kPi0LeadingPhoton_SemCat([](const caf::SRSliceProxy *slc) -> int {
+    int idx = kNuMILeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    //int sem_cat = slc->reco.pfp[idx].ngscore.sem_cat;
+    if ( std::isnan(slc->reco.pfp[idx].ngscore.sem_cat) || std::isinf(slc->reco.pfp[idx].ngscore.sem_cat) ) return -5.f;
+    return slc->reco.pfp[idx].ngscore.sem_cat;
+  });
+
+  const Var kPi0SubLeadingPhoton_SemCat([](const caf::SRSliceProxy *slc) -> int {
+    int idx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if(idx<0) return -5.f;
+    //int sem_cat = slc->reco.pfp[idx].ngscore.sem_cat;
+    if ( std::isnan(slc->reco.pfp[idx].ngscore.sem_cat) || std::isinf(slc->reco.pfp[idx].ngscore.sem_cat) ) return -5.f;
+    return slc->reco.pfp[idx].ngscore.sem_cat;
+  });
+
   const Var kIsClearCosmic([](const caf::SRSliceProxy *slc) -> float {
     return slc->is_clear_cosmic;
+  });
+
+  const Var kNGFiltPassFrac([](const caf::SRSliceProxy *slc) -> float {
+    return slc->ng_filt_pass_frac; //slice.ng_filt_pass_frac
+  });
+
+  const Var kNuMINuScore([](const caf::SRSliceProxy *slc) -> float {
+    return slc->nu_score;
   });
 
 }

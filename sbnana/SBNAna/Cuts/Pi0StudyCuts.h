@@ -15,11 +15,15 @@ namespace ana
   extern const Cut kNuMI_Is_Other_nu;
 
   bool Is1muNPi0X(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background
+  /// \ref SpillCuts
+  extern const SpillCut kNoSpillCuts;
+
   /// \ref SpillCut on valid trigger
   extern const SpillCut kNuMIValidTrigger;
   extern const SpillCut kBNBValidTrigger;
 
-  extern const SpillCut kIcarus202401CRTPMTVeto;
+
+  //extern const SpillCut kIcarus202401CRTPMTVeto;
 
   /// \ref Cut on vertex reconstruced in FV
   extern const Cut kNuMIVertexInFV;
@@ -47,7 +51,7 @@ namespace ana
   extern const Cut kNuMICutPhotons;
 
   /// \ref No Cuts
-  extern const Cut kNoCuts;
+  extern const Cut kNoSliceCuts;
 
   ///Base selection of 1muXPi0 for the main 1mu1Pi0 selection
   extern const Cut kNuMISelection_1muXpi0_Base;

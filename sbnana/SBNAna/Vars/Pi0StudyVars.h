@@ -4,6 +4,7 @@
 #include "sbnana/CAFAna/Core/MultiVar.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 #include "sbnana/SBNAna/Vars/PrimaryUtils.h"
+#include "sbnana/SBNAna/Cuts/Pi0StudyCuts.h"
 
 namespace ana
 {
@@ -21,6 +22,7 @@ namespace ana
   bool IsProtonLike( const caf::SRSliceProxy* slice, const unsigned int idx );
   bool IsMuonLike( const caf::SRSliceProxy* slice, const unsigned int idx );
   bool IsPionLike( const caf::SRSliceProxy* slice, const unsigned int idx );
+  bool IsSignal(const caf::Proxy<caf::SRTrueInteraction>& true_int); //TEMPORARY
 
 
   /// \ref Var that is a dummy var that returns 1 for "IsFHC" or 0 for "!IsFHC" for example
@@ -66,6 +68,10 @@ namespace ana
   extern const Var kNumberRecoShowers;
   /// \ref Var for number of pfparticles in the slice
   extern const Var kNumberPFPs;
+  /// \ref Var for containement of vertex
+  extern const Var kIsNuVertexContained;
+  /// \ref Var for fiducial volume of vertex
+  extern const Var kIsNuVertexInFV;
 
   /// \ref Var for number of charged pions in slice
   extern const Var kNumberChargedPions;
@@ -134,6 +140,7 @@ namespace ana
   extern const Var KMuonCandidateRecoStartX;
   extern const Var KMuonCandidateRecoStartY;
   extern const Var KMuonCandidateRecoStartZ;
+  extern const Var kMuonCandidate_SemCat;
 
   //True Muon Vars
   extern const Var kMuonCandidateTrueStartX;
@@ -224,6 +231,11 @@ namespace ana
   extern const Var kPi0LeadingPhotonCandidateHitDen;
   extern const Var kPi0SubLeadingPhotonCandidateHitDen;
 
+  extern const Var kPi0LeadingPhoton_SemCat;
+  extern const Var kPi0SubLeadingPhoton_SemCat;
+
   extern const Var kIsClearCosmic;
+  extern const Var kNGFiltPassFrac;
+  extern const Var kNuMINuScore;
 
 }
