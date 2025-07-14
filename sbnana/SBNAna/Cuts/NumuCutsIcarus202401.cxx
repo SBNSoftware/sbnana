@@ -19,7 +19,7 @@ static bool Icarus202401contained(const caf::SRTrackProxy& trk)
 
   // Check triangles at corners of the detector
   bool in_corner = y <  1.732007 * z - 1687.5114 
-                || y < -1.732007 * z + 1640.6114
+                || y > -1.732007 * z + 1640.6114
                 || y >  1.732007 * z + 1640.6114 
                 || y < -1.732007 * z - 1687.5114;
 
