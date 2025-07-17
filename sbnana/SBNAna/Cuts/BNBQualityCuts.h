@@ -1,11 +1,10 @@
-///////////////////////////////////////////////////////////////////////////////
-// File: BNBQualityCuts.h                                                    //
-// Author: Jacob Smith (smithja)                                             //
-// Last edited: March 6th, 2025                                              //
-//                                                                           //
-// Header file to define all of the BNB Quality Cuts for the ICARUS          //
-// experiment.                                                               //
-///////////////////////////////////////////////////////////////////////////////
+//! ////////////////////////////////////////////////////////////////////////////
+//! @file: BNBQualityCuts.h                                                    
+//! @author: Jacob Smith (smithja)  
+//! @email: jacob.a.smith@stonybrook.edu                                           
+//!                                                                           
+//! @brief Header file to define BNB Quality Cuts for SBN experiments.
+//! ////////////////////////////////////////////////////////////////////////////
 
 #include "sbnana/CAFAna/Core/Cut.h"
 
@@ -17,15 +16,20 @@ namespace ana {
     extern const SpillCut kLM875BCut;
     extern const SpillCut kLM875CCut;
 
-/*
+/**
     This cut is left commented out since it is hard to implement but may be of
     future use. See the BNBQualityCuts.cxx for more information.
 */
-//     extern const SpillCut kBTJT2;
+//!    extern const SpillCut kBTJT2;
 
     extern const SpillCut kTHCURRCut;
 
-    // ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
+    //! Figure(s) of Merit: @see getBNBFoM.cxx (and getBNBFoM2.cxx) for details
+    extern const SpillCut kFoMCut; 
+    extern const SpillCut kFoM2Cut;
 
-    extern const SpillCut kBNBQualityCut;
+    //! ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
+
+    extern const SpillCut kBNBQualityCut_FoM1;
+    extern const SpillCut kBNBQualityCut_FoM2;
 }

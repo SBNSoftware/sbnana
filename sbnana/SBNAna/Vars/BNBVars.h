@@ -1,11 +1,11 @@
-///////////////////////////////////////////////////////////////////////////////
-// File: BNBVars.h                                                           //
-// Author: Jacob Smith (smithja)                                             //
-// Last edited: February 12th, 2025                                          //
-//                                                                           //
-// Header file to define all of the variables used in BNB Quality Cuts for   //
-// the ICARUS experiment.                                                    //
-///////////////////////////////////////////////////////////////////////////////
+//! ////////////////////////////////////////////////////////////////////////////
+//! @file: BNBVars.h                                                           
+//! @author: Jacob Smith (smithja)
+//! @email: jacob.a.smith@stonybrook.edu                                       
+//!                                                                           
+//! @brief Header file to define variables used in BNB Quality Cuts for the 
+//! SBN experiments.                                                    
+//! ////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
@@ -15,46 +15,69 @@
 
 namespace ana
 {
-    // readout time for a given spill
-    // units: s (i.e. seconds)
+    //! Readout time for a given spill.
+    //! units: s (i.e. seconds)
     extern const SpillVar kSpillTimeSec;
 
-    // toroid devices: monitor protons on target (POT)
-    // units: POT
+    //! Toroid Devices: monitor protons on target (POT)
+    //! units: POT
     extern const SpillVar kSpillTOR860;
     extern const SpillVar kSpillTOR875;
+    extern const SpillVar kSpillTOR;
     
-    // loss monitors: measure backscattering of beam just upstream of target
-    // NB: larger reading is better, implies beam is hitting more of target
-    // units: rad / s (i.e. rads per second)
+    //! Loss Monitors: measure backscattering of beam just upstream of target
+    //! @note larger reading is better, implies beam is hitting more of target
+    //! units: rad / s (i.e. rads per second)
     extern const SpillVar kSpillLM875A;
     extern const SpillVar kSpillLM875B;
     extern const SpillVar kSpillLM875C;
-    
-    // beam position monitors: measure beam position at different points upstream
-    // of target
-    // NB: not always centered at (0, 0); check SBNAna/Cuts/BNBQualityCuts.cxx
-    //     for information on nominal beam position for different runs
-    // units: mm
+    extern const SpillVar kSpillLM875;
+
+    //! Beam Position Monitors: measure beam position at different points
+    //! upstream of target
+    //! @note not always centered at (0, 0); @see SBNAna/Cuts/BNBQualityCuts.cxx
+    //! for information on nominal beam position for different runs
+    //! @note VPTG1 and VPTG2 unreliable for ICARUS (and presumably SBND) runs;
+    //! VP873 identified as a suitable replacement
+    //! units: mm
     extern const SpillVar kSpillHP875;
     extern const SpillVar kSpillVP875;
     
     extern const SpillVar kSpillHPTG1;
-    extern const SpillVar kSpillVPTG1;
+ //!   extern const SpillVar kSpillVPTG1;
     
     extern const SpillVar kSpillHPTG2;
-    extern const SpillVar kSpillVPTG2;
+ //!   extern const SpillVar kSpillVPTG2;
+
+    extern const SpillVar kSpillVP873;
+
+    //! @deprecated
+    //! Temperature reading near target.
+    //! @note this beam monitoring device provided diminishing returns when 
+    //! combined with all of the other devices listed here. additionally, 
+    //! temperature readings can be correlated between spills if they are close 
+    //! enough in time
+    //! units: degrees celsius
+//!    extern const SpillVar kSpillBTJT2;
     
-    // DEPRECIATED, SEE NB
-    // temperature reading near target
-    // NB: this beam monitoring device provided diminishing returns when combined
-    //     with all of the other devices listed here. additionally, temperature
-    //     readings can be correlated between spills if they are close enough in
-    //     time
-    // units: degrees celsius
-//    extern const SpillVar kSpillBTJT2;
-    
-    // focusing horn current
-    // units: kA
+    //! Focusing Horn Current
+    //! units: kA
     extern const SpillVar kSpillTHCURR;
+
+    //! Multi-wire Readout Fit Parameters:
+    //! @note We determine beam width primarily by fitting gaussian curves to
+    //! multi-wire device data; we can also extract beam position from fits.
+    //! Beam position should be taken from beam position monitor variables
+    //! above, but can be taken from below if needed.
+    //! @note Widths and positions provided for both horizontal and vertical
+    //! directions perpendicular to the beam direction.
+    //! units: mm
+    extern const SpillVar kSpillMW875HorWidth;
+    extern const SpillVar kSpillMW875VerWidth;
+    extern const SpillVar kSpillMW876HorWidth;
+    extern const SpillVar kSpillMW876VerWidth;
+
+    //! Figure(s) of Merit: @see getBNBFoM.cxx (and getBNBFoM2.cxx) for details
+    extern const SpillVar kSpillFoM;
+    extern const SpillVar kSpillFoM2;
 }
