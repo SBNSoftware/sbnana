@@ -36,7 +36,7 @@
  * Position Monitors.
  */
 struct OffsetData {
-    std::vector<Int64_t> Times; //! non-leap seconds since UNIX epoch
+    std::vector<int> Times; //! non-leap seconds since UNIX epoch
     std::vector<Double_t> Vals; //! transverse distance from BNB beamline [mm]
 };
 
@@ -99,7 +99,35 @@ std::vector<Double_t> p875y = { 0.279128, 0.337048, 0};
 std::vector<Double_t> p876x = { 0.166172, 0.30999,  -0.00630299};
 std::vector<Double_t> p876y = { 0.13425,  0.580862, 0};
 
-/** @fn getValidCalibVal()
+/** @fn expandWidth()
+ * @brief Utilizing BNB studies (see notes around p876x, etc.), calculate
+ * the BNB width at the nuclear target up to an N-th order expansion
+ * @return BNB width at the nuclear target
+ */
+static std::optional<Double_t> expandWidth(const Double_t width, const std::vector<Double_t>& coeff, const size_t N) {
+    if (N > coeff.size()) {
+        std::cerr << "[WARN] Requested expansion order " << N 
+                  << " exceeds number of coefficients (" << coeff.size() 
+                  << ")." << std::endl;
+        return std::nullopt;
+    }
+    Double_t result = coeff[0];
+    for (size_t i = 1; i < N; ++i) {
+        result += coeff[i] * std::pow(width, i);
+    }
+    return result;
+}
+
+/** @fn isReasonable()
+ * @brief tests if a BNB width is within the given bounds
+ * @return boolean indicating if given width is within given bounds
+ */
+static bool isReasonable( const Double_t width, const Double_t lower, const Double_t upper) {
+    if ( width >= lower && width <= upper) return true;
+    return false;
+}
+
+/** @fn getValidBPMCalibVal()
  * @brief Return the latest calibration value before or at a given timestamp for
  * a specific device.
  * 
@@ -109,7 +137,7 @@ std::vector<Double_t> p876y = { 0.13425,  0.580862, 0};
  * @return Optional value: for given timestamp, most recent valid calibration 
  * value [mm] (or std::nullopt).
  */
-std::optional<Double_t> getValidCalibVal(const Int64_t& timestamp,
+std::optional<Double_t> getValidBPMCalibVal(const int& timestamp,
                                         const std::string& device) {
     const auto& times = offsets.at(device).Times;
     const auto& vals  = offsets.at(device).Vals;
@@ -122,11 +150,11 @@ std::optional<Double_t> getValidCalibVal(const Int64_t& timestamp,
         return std::nullopt; //! No value at or before timestamp
     } 
 
-    size_t idx = std::distance(times.begin(), it) - 1;
+    int idx = std::distance(times.begin(), it) - 1;
     return vals[idx]; //! Latest valid value
 }
 
-/** @fn getValidCalibTime()
+/** @fn getValidBPMCalibTime()
  * @brief Return the latest timestamp of a calibration value before or at a 
  * given timestamp for a specific device.
  * 
@@ -136,7 +164,7 @@ std::optional<Double_t> getValidCalibVal(const Int64_t& timestamp,
  * @return Optional value: for given timestamp, most recent timestamp of a 
  * valid calibration value [mm] (or std::nullopt).
  */
-std::optional<Double_t> getValidCalibTime(const Int64_t& timestamp,
+std::optional<Double_t> getValidBPMCalibTime(const int& timestamp,
                                         const std::string& device) {
     const auto& times = offsets.at(device).Times;
 
@@ -148,7 +176,7 @@ std::optional<Double_t> getValidCalibTime(const Int64_t& timestamp,
         return std::nullopt; //! No valid value at or before timestamp
     } 
 
-    size_t idx = std::distance(times.begin(), it) - 1;
+    int idx = std::distance(times.begin(), it) - 1;
     return times[idx]; //! Latest timestamp for a valid value
 }
 
@@ -215,8 +243,8 @@ Double_t funcIntBivar(const Double_t cx,
                         const Double_t rho) {
     const Double_t dbin = 0.1, r = 4.75, rr = r * r;
     const Double_t rho2 = rho * rho;
-    const Int_t imax = static_cast<int>(round((2.0 * r) / dbin));
-    const Int_t jmax = static_cast<int>(round((2.0 * r) / dbin));
+    const int imax = static_cast<int>(round((2.0 * r) / dbin));
+    const int jmax = static_cast<int>(round((2.0 * r) / dbin));
     Double_t sum = 0.0;
 
     for (unsigned int i = 0; i <= imax; ++i) {
@@ -307,12 +335,14 @@ Double_t calcFoM(const Double_t horPos,
         {0.00000, 0.00000, 0.00000, 0.00000, 0.00000, 1.00000}
     };
 
-    Double_t cnttoups[6][6] = {{0}}, cnttodns[6][6] = {{0}};
+    Double_t cnttoups[6][6] = {{0}};
+    Double_t cnttodns[6][6] = {{0}};
     Double_t identity[6][6] = {{0}};
-    Doublt_t begtoups[6][6] = {{0}}, begtodns[6][6] = {{0}};
+    Double_t begtoups[6][6] = {{0}};
+    Double_t begtodns[6][6] = {{0}};
 
-    for (unsigned unsigned int i = 0; i < 6; ++i) {
-        for (unsigned unsigned int j = 0; j < 6; ++j) {
+    for (unsigned int i = 0; i < 6; ++i) {
+        for (unsigned int j = 0; j < 6; ++j) {
             identity[i][j] = (i == j);
             cnttoups[i][j] = (i == j);
             cnttodns[i][j] = (i == j);
@@ -321,9 +351,9 @@ Double_t calcFoM(const Double_t horPos,
     cnttoups[0][1] = cnttoups[2][3] = -0.35710;
     cnttodns[0][1] = cnttodns[2][3] = +0.35710;
 
-    for (unsigned unsigned int i = 0; i < 6; ++i) {
-        for (unsigned unsigned int j = 0; j < 6; ++j) {
-            for (unsigned unsigned int k = 0; k < 6; ++k) {
+    for (unsigned int i = 0; i < 6; ++i) {
+        for (unsigned int j = 0; j < 6; ++j) {
+            for (unsigned int k = 0; k < 6; ++k) {
                 begtoups[i][k] += cnttoups[i][j] * begtocnt[j][k];
                 begtodns[i][k] += cnttodns[i][j] * begtocnt[j][k];
             }
@@ -426,12 +456,14 @@ Double_t calcFoM2(const Double_t horPos,
         {0.00000, 0.00000, 0.00000, 0.00000, 0.00000, 1.00000}
     };
 
-    Double_t cnttoups[6][6] = {{0}}, cnttodns[6][6] = {{0}};
+    Double_t cnttoups[6][6] = {{0}};
+    Double_t cnttodns[6][6] = {{0}};
     Double_t identity[6][6] = {{0}};
-    Doublt_t begtoups[6][6] = {{0}}, begtodns[6][6] = {{0}};
+    Double_t begtoups[6][6] = {{0}};
+    Double_t begtodns[6][6] = {{0}};
 
-    for (unsigned unsigned int i = 0; i < 6; ++i) {
-        for (unsigned unsigned int j = 0; j < 6; ++j) {
+    for (unsigned int i = 0; i < 6; ++i) {
+        for (unsigned int j = 0; j < 6; ++j) {
             identity[i][j] = (i == j);
             cnttoups[i][j] = (i == j);
             cnttodns[i][j] = (i == j);
@@ -440,9 +472,9 @@ Double_t calcFoM2(const Double_t horPos,
     cnttoups[0][1] = cnttoups[2][3] = -0.35710;
     cnttodns[0][1] = cnttodns[2][3] = +0.35710;
 
-    for (unsigned unsigned int i = 0; i < 6; ++i) {
-        for (unsigned unsigned int j = 0; j < 6; ++j) {
-            for (unsigned unsigned int k = 0; k < 6; ++k) {
+    for (unsigned int i = 0; i < 6; ++i) {
+        for (unsigned int j = 0; j < 6; ++j) {
+            for (unsigned int k = 0; k < 6; ++k) {
                 begtoups[i][k] += cnttoups[i][j] * begtocnt[j][k];
                 begtodns[i][k] += cnttodns[i][j] * begtocnt[j][k];
             }
@@ -513,13 +545,40 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
      * HPTG1TimeDiff == HPTG2TimeDiff since HPTG2 is marginally closer to the
      * nuclear target. This helps to give the most accurate horAng and 
      * tgtHorPos when projecting from HP875.
-    */
-    Double_t HP875TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "HP875");
-    Double_t HPTG1TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "HPTG1");
-    Double_t HPTG2TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "HPTG2");
+     */
+    Double_t HP875TimeDiff = -1.;
+    Double_t HPTG1TimeDiff = -1.;
+    Double_t HPTG2TimeDiff = -1.;
+    Double_t VP873TimeDiff = -1.;
+    Double_t VP875TimeDiff = -1.;
 
-    Double_t VP873TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "VP873");
-    Double_t VP875TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "VP875");
+    std::optional<Double_t> HP875CalibTime = getValidBPMCalibTime( spillTimeSec, "HP875");
+    std::optional<Double_t> HPTG1CalibTime = getValidBPMCalibTime( spillTimeSec, "HPTG1");
+    std::optional<Double_t> HPTG2CalibTime = getValidBPMCalibTime( spillTimeSec, "HPTG2");
+
+    std::optional<Double_t> VP873CalibTime = getValidBPMCalibTime( spillTimeSec, "VP873");
+    std::optional<Double_t> VP875CalibTime = getValidBPMCalibTime( spillTimeSec, "VP875");
+
+    if (HP875CalibTime.has_value()) {
+        HP875TimeDiff = spillTimeSec - HP875CalibTime.value();
+    }
+
+    if (HPTG1CalibTime.has_value()) {
+        HPTG1TimeDiff = spillTimeSec - HPTG1CalibTime.value();
+    }
+
+    if (HPTG2CalibTime.has_value()) {
+        HPTG2TimeDiff = spillTimeSec - HPTG2CalibTime.value();
+    }
+
+    if (VP873CalibTime.has_value()) {
+        VP873TimeDiff = spillTimeSec - VP873CalibTime.value();
+    }
+
+    if (VP875CalibTime.has_value()) {
+        VP875TimeDiff = spillTimeSec - VP875CalibTime.value();
+    }
+
 
     /** @warning
      * If both HPTG1TimeDiff and HPTG2TimeDiff are negative (very unlikely),
@@ -532,7 +591,7 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
      * HP875 is theoretically valid for all ICARUS timestamps, we also assert
      * we could not calculate a (meaningful) Figure of Merit if HP875 *ever*
      * has a negative time difference for a given spillTimeSec timestamp.
-    */
+     */
     if ( (HPTG1TimeDiff < 0 && HPTG2TimeDiff < 0)
             || (HP875TimeDiff < 0 || VP873TimeDiff < 0 || VP875TimeDiff < 0)) { 
         return -2.;
@@ -540,22 +599,27 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
     
     //! Get most recent calibration position of Beam Position Monitor (BPM) 
     //! devices and calculate offset from calibration position.
-    Double_t HP875Offset = HP875 - getValidCalibVal( spillTimeSec, "HP875");
+    std::optional<Double_t> HP875CalibVal = getValidBPMCalibVal( spillTimeSec, "HP875");
+    Double_t HP875Offset = HP875 - HP875CalibVal.value();
 
-    std::optional<Double_t> HPTGXOffset = std::nullopt; //! 'X' is stand-in 
-    std::optional<Double_t> HPTGXZpos = std::nullopt;   //! char for '1' or '2'
+    Double_t HPTGXOffset = -999; //! 'X' is stand-in 
+    Double_t HPTGXZPos = -999;   //! char for '1' or '2'
     if (HPTG2TimeDiff <= HPTG1TimeDiff) { //! prefer HPTG2 if time diffs match
-        HPTGXOffset = HPTG2 - getValidCalibVal( spillTimeSec, "HPTG2");
-        HPTGXZpos = HPTG2Zpos;
+        std::optional<Double_t> HPTG2CalibVal = getValidBPMCalibVal( spillTimeSec, "HPTG2");
+        HPTGXOffset = HPTG2 - HPTG2CalibVal.value();        
+        HPTGXZPos = HPTG2ZPos;
     }
     else {
-        HPTGXOffset = HPTG1 - getValidCalibVal( spillTimeSec, "HPTG1");
-        HPTGXZpos = HPTG1ZPos;
+        std::optional<Double_t> HPTG1CalibVal = getValidBPMCalibVal( spillTimeSec, "HPTG1");
+        HPTGXOffset = HPTG1 - HPTG1CalibVal.value();        
+        HPTGXZPos = HPTG1ZPos;
     }
 
-    Double_t VP873Offset = VP873 - getValidCalibVal( spillTimeSec, "VP873");
-    Double_t VP875Offset = VP875 - getValidCalibVal( spillTimeSec, "VP875");
-
+    std::optional<Double_t> VP873CalibVal = getValidBPMCalibVal( spillTimeSec, "VP873");
+    Double_t VP873Offset = VP873 - VP873CalibVal.value();    
+    
+    std::optional<Double_t> VP875CalibVal = getValidBPMCalibVal( spillTimeSec, "VP875");
+    Double_t VP875Offset = VP875 - VP875CalibVal.value();
     /**
      * Calculate angles between horizontal/vertical BPMs and project the BNB 
      * to the transverse plane intersecting the center of the nuclear target 
@@ -569,7 +633,7 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
      * 
      * Order of horizontal BPMs: HP875, HPTG1, HPTG2
      * Order of vertical BPMs: VP873, VP875
-    */
+     */
     Double_t horAng = (HPTGXOffset - HP875Offset) / (HPTGXZPos - HP875ZPos);
     horAng = atan(horAng);
     Double_t tgtHorPos = HP875Offset + horAng * (targetCenterZPos - HP875ZPos);
@@ -652,13 +716,39 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
      * HPTG1TimeDiff == HPTG2TimeDiff since HPTG2 is marginally closer to the
      * nuclear target. This helps to give the most accurate horAng and 
      * tgtHorPos when projecting from HP875.
-    */
-    Double_t HP875TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "HP875");
-    Double_t HPTG1TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "HPTG1");
-    Double_t HPTG2TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "HPTG2");
+     */
+    Double_t HP875TimeDiff = -1.;
+    Double_t HPTG1TimeDiff = -1.;
+    Double_t HPTG2TimeDiff = -1.;
+    Double_t VP873TimeDiff = -1.;
+    Double_t VP875TimeDiff = -1.;
 
-    Double_t VP873TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "VP873");
-    Double_t VP875TimeDiff = spillTimeSec - getValidCalibTime( spillTimeSec, "VP875");
+    std::optional<Double_t> HP875CalibTime = getValidBPMCalibTime( spillTimeSec, "HP875");
+    std::optional<Double_t> HPTG1CalibTime = getValidBPMCalibTime( spillTimeSec, "HPTG1");
+    std::optional<Double_t> HPTG2CalibTime = getValidBPMCalibTime( spillTimeSec, "HPTG2");
+
+    std::optional<Double_t> VP873CalibTime = getValidBPMCalibTime( spillTimeSec, "VP873");
+    std::optional<Double_t> VP875CalibTime = getValidBPMCalibTime( spillTimeSec, "VP875");
+
+    if (HP875CalibTime.has_value()) {
+        HP875TimeDiff = spillTimeSec - HP875CalibTime.value();
+    }
+
+    if (HPTG1CalibTime.has_value()) {
+        HPTG1TimeDiff = spillTimeSec - HPTG1CalibTime.value();
+    }
+
+    if (HPTG2CalibTime.has_value()) {
+        HPTG2TimeDiff = spillTimeSec - HPTG2CalibTime.value();
+    }
+
+    if (VP873CalibTime.has_value()) {
+        VP873TimeDiff = spillTimeSec - VP873CalibTime.value();
+    }
+
+    if (VP875CalibTime.has_value()) {
+        VP875TimeDiff = spillTimeSec - VP875CalibTime.value();
+    }
 
     /** @warning
      * If both HPTG1TimeDiff and HPTG2TimeDiff are negative (very unlikely),
@@ -671,7 +761,7 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
      * HP875 is theoretically valid for all ICARUS timestamps, we also assert
      * we could not calculate a (meaningful) Figure of Merit if HP875 *ever*
      * has a negative time difference for a given spillTimeSec timestamp.
-    */
+     */
     if ( (HPTG1TimeDiff < 0 && HPTG2TimeDiff < 0)
             || (HP875TimeDiff < 0 || VP873TimeDiff < 0 || VP875TimeDiff < 0)) { 
         return -2.;
@@ -679,22 +769,27 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
     
     //! Get most recent calibration position of Beam Position Monitor (BPM) 
     //! devices and calculate offset from calibration position.
-    Double_t HP875Offset = HP875 - getValidCalibVal( spillTimeSec, "HP875");
+    std::optional<Double_t> HP875CalibVal = getValidBPMCalibVal( spillTimeSec, "HP875");
+    Double_t HP875Offset = HP875 - HP875CalibVal.value();
 
-    std::optional<Double_t> HPTGXOffset = std::nullopt; //! 'X' is stand-in 
-    std::optional<Double_t> HPTGXZpos = std::nullopt;   //! char for '1' or '2'
+    Double_t HPTGXOffset = -999; //! 'X' is stand-in 
+    Double_t HPTGXZPos = -999;   //! char for '1' or '2'
     if (HPTG2TimeDiff <= HPTG1TimeDiff) { //! prefer HPTG2 if time diffs match
-        HPTGXOffset = HPTG2 - getValidCalibVal( spillTimeSec, "HPTG2");
+        std::optional<Double_t> HPTG2CalibVal = getValidBPMCalibVal( spillTimeSec, "HPTG2");
+        HPTGXOffset = HPTG2 - HPTG2CalibVal.value();  
         HPTGXZPos = HPTG2ZPos;
     }
     else {
-        HPTGXOffset = HPTG1 - getValidCalibVal( spillTimeSec, "HPTG1");
-        HPTGXZPos = HPTG1Zpos;
+        std::optional<Double_t> HPTG1CalibVal = getValidBPMCalibVal( spillTimeSec, "HPTG1");
+        HPTGXOffset = HPTG1 - HPTG1CalibVal.value();
+        HPTGXZPos = HPTG1ZPos;
     }
 
-    Double_t VP873Offset = VP873 - getValidCalibVal( spillTimeSec, "VP873");
-    Double_t VP875Offset = VP875 - getValidCalibVal( spillTimeSec, "VP875");
-
+    std::optional<Double_t> VP873CalibVal = getValidBPMCalibVal( spillTimeSec, "VP873");
+    Double_t VP873Offset = VP873 - VP873CalibVal.value();
+    
+    std::optional<Double_t> VP875CalibVal = getValidBPMCalibVal( spillTimeSec, "VP875");
+    Double_t VP875Offset = VP875 - VP875CalibVal.value();
     /**
      * Calculate angles between horizontal/vertical BPMs and project the BNB 
      * to the transverse plane intersecting the center of the nuclear target 
@@ -725,41 +820,7 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
      * @note What counts as "reasonable" is up to interpretation. For the time
      * being, we use the hard-coded values that MicroBooNE used ( @see
      * getFOM2.cxx in MicroBooNE's ubraw GitHub repository for details).
-    */
-
-    /** @fn isReasonable()
-     * @brief tests if a BNB width is within the given bounds
-     * @return boolean indicating if given width is within given bounds
      */
-    static bool isReasonable( const Double_t width, 
-                                const Double_t lower, 
-                                const Double_t upper) {
-        if ( width >= lower && width <= upper) return true;
-        return false;
-    }
-
-    /** @fn expandWidth()
-     * @brief Utilizing BNB studies (see notes around p876x, etc.), calculate
-     * the BNB width at the nuclear target up to an N-th order expansion
-     * @return BNB width at the nuclear target
-     */
-    static std::optional<Double_t> expandWidth(const Double_t width, 
-                                const std::vector<Double_t>& coeff, 
-                                const size_t N) {
-        if (N > coeff.size()) {
-            std::cerr << "[WARN] Requested expansion order " << N 
-                      << " exceeds number of coefficients (" << coeff.size() 
-                      << ")." << std::endl;
-            return std::nullopt;
-        }
-
-        Double_t result = coeff[0];
-        for (size_t i = 1; i < N; ++i) {
-            result += coeff[i] * std::pow(width, i);
-        }
-        return result;
-    }
-
 
     std::optional<Double_t> tgtHorWidth = std::nullopt, tgtVerWidth = std::nullopt;
     if ( isReasonable( MW876HorWidth, 0.5, 10) 
@@ -770,8 +831,8 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
             /** @warning 
              * If specified N for expansion is greater than the number of
              * available coefficents, cannot calculate Figure of Merit
-            */
-            if ( !tgtHorWidth || !tgtVerWidth) {
+             */
+            if ( !tgtHorWidth.has_value() || !tgtVerWidth.has_value()) {
                 return -1.;
             }
     }
@@ -783,19 +844,23 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
             /** @warning 
              * If specified N for expansion is greater than the number of
              * available coefficents, cannot calculate Figure of Merit
-            */
-            if ( !tgtHorWidth || !tgtVerWidth) {
+             */
+            if ( !tgtHorWidth.has_value() || !tgtVerWidth.has_value()) {
                 return -1.;
             }
     }
     else { 
         //! @warning defaulting to Figure of Merit without multi-wire data
-        std::cerr << "[WARNING] No reliable multi-wire data, defaulting to calcFoM()."
+        std::cerr << "[WARNING] No reliable multi-wire data, defaulting to calcFoM()." << std::endl;
         return calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR);
     }
 
+    //! Extract values from std::optional objects
+    Double_t tgtHorWidthVal = tgtHorWidth.value();
+    Double_t tgtVerWidthVal = tgtVerWidth.value();
+
     return calcFoM2( tgtHorPos, horAng, tgtVerPos, verAng, 
-        TOR, tgtHorWidth, tgtVerWidth);
+        TOR, tgtHorWidthVal, tgtVerWidthVal);
 }
 
 

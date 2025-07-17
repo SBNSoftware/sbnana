@@ -11,13 +11,13 @@
 
 #include "TROOT.h"
 
-std::optional<Double_t> getValidCalibVal( 
-    const Int64_t& timestamp, 
+std::optional<Double_t> getValidBPMCalibVal( 
+    const int& timestamp, 
     const std::string& device
 );
 
-std::optional<Double_t> getValidCalibTime( 
-    const Int64_t& timestamp, 
+std::optional<Double_t> getValidBPMCalibTime( 
+    const int& timestamp, 
     const std::string& device
 );
     
