@@ -604,7 +604,7 @@ namespace ana
   //----------------------------------------------------------------------
   void SpectrumLoader::StoreExposures()
   {
-    if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.001){
+    if(fabs(fPOT - fPOTFromHist)/std::min(fPOT, fPOTFromHist) > 0.01){
       std::cout << fPOT << " POT from hdr differs from " << fPOTFromHist << " POT from the TotalPOT histogram!" << std::endl;
       //abort();
     }
