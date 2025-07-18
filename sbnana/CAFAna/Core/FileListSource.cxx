@@ -99,7 +99,7 @@ namespace ana
 
     fFile = TFile::Open(loc.c_str()); // This pattern allows xrootd
     if (!fFile) {
-      std::cerr << "Possible assertion fail in file << " << loc << std::endl;
+      std::cerr << "Error opening ROOT input file '" << loc << "'" << std::endl;
     }
     assert(fFile);
 
