@@ -9,7 +9,7 @@
 
 #include "sbnana/CAFAna/Core/Var.h"
 
-namespace caf{class StandardRecord; class SRSpill; class SRSpillTruthBranch; class SRSlice;}
+namespace caf{class StandardRecord; class SRSpill; class SRTrueInteraction; class SRSlice;}
 
 namespace ana
 {
@@ -103,7 +103,7 @@ namespace ana
 
   /// \brief Cut designed to be used over the nuTree, ie all neutrinos, not
   /// just those that got slices.
-  typedef _Cut<caf::SRSpillTruthBranch> SpillTruthCut;
+  typedef _Cut<caf::SRTrueInteractionProxy> TruthCut;
 
   template<class T> _Cut<T> operator>(const _Var<T>& v, double c);
   template<class T> _Cut<T> operator<(const _Var<T>& v, double c);
@@ -130,4 +130,7 @@ namespace ana
 
   /// The simplest possible cut: pass everything, used as a default
   const SpillCut kNoSpillCut([](const caf::SRSpillProxy*){return true;});
+
+  /// The simplest possible cut: pass everything, used as a default
+  const TruthCut kNoTruthCut([](const caf::SRTrueInteractionProxy*){return true;});
 } // namespace

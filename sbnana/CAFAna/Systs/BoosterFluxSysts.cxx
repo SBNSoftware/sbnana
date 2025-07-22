@@ -20,8 +20,14 @@ BoosterFluxHadronSyst::~BoosterFluxHadronSyst()
 //----------------------------------------------------------------------
 void BoosterFluxHadronSyst::Shift(double sigma, caf::SRSliceProxy* slc, double &weight) const
 {
+  return this->Shift(sigma, &slc->truth, weight);
+}
+
+//----------------------------------------------------------------------
+void BoosterFluxHadronSyst::Shift(double sigma, caf::SRTrueInteractionProxy* nu, double &weight) const
+{
   // Only implemented for numus so far
-  if(/*sr->mc.nnu == 0 ||*/ slc->truth.initpdg != 14) return;
+  if(nu->initpdg != 14) return;
 
   if(!fScale[0]){
     TFile f((FindCAFAnaDir() + "/Systs/booster_flux_shifts.root").c_str());
@@ -44,7 +50,7 @@ void BoosterFluxHadronSyst::Shift(double sigma, caf::SRSliceProxy* slc, double &
 
   // TODO use the regular detector flag as soon as it's filled reliably
   int det;
-  const double L = slc->truth.baseline;
+  const double L = nu->baseline;
   if(L < 150) det = 0;
   else if(L < 500) det = 1;
   else det = 2;
@@ -52,7 +58,7 @@ void BoosterFluxHadronSyst::Shift(double sigma, caf::SRSliceProxy* slc, double &
   TH1* h = fScale[det];
   assert(h);
 
-  const int bin = h->FindBin(slc->truth.E);
+  const int bin = h->FindBin(nu->E);
 
   if(bin == 0 || bin == h->GetNbinsX()+1) return;
 

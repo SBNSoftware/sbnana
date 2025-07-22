@@ -21,7 +21,7 @@ namespace ana
               SpectrumLoaderBase& loader,
               const std::vector<Var>& vars, const SpillCut& spillcut,
               const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -53,7 +53,7 @@ namespace ana
               SpectrumLoaderBase& loader,
               const std::vector<MultiVar>& vars, const SpillCut& spillcut,
               const Cut& cut, const SystShifts& shift, const bool saveRunSubEvt, const bool saveSliceNum )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(saveSliceNum), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -84,7 +84,7 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<SpillVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -111,7 +111,7 @@ namespace ana
   Tree::Tree( const std::string name, const std::vector<std::string>& labels,
               SpectrumLoaderBase& loader,
               const std::vector<SpillMultiVar>& vars, const SpillCut& spillcut, const bool saveRunSubEvt )
-    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(false), SignalSelection(kNoCut)
   {
     assert( labels.size() == vars.size() );
 
@@ -131,6 +131,40 @@ namespace ana
     }
 
     loader.AddTree( *this, labels, vars, spillcut );
+  }
+
+  //----------------------------------------------------------------------
+  // Constructor for a set of TruthVars
+  Tree::Tree( const std::string name, const std::vector<std::string>& labels,
+              SpectrumLoaderBase& loader,
+              const std::vector<TruthVar>& vars, const SpillCut& spillcut,
+              const TruthCut& truthcut,
+              const Cut& SignalSelection,
+              const SystShifts& shift,
+              const bool saveRunSubEvt)
+    : fTreeName(name), fNEntries(0), fPOT(0), fLivetime(0), fSaveRunSubEvt(saveRunSubEvt), fSaveSliceNum(false), fSaveTruthCutType(true), SignalSelection(SignalSelection)
+  {
+    assert( labels.size() == vars.size() );
+
+    fOrderedBranchNames.push_back( "CutType/i" ); fBranchEntries["CutType/i"] = {};
+    fOrderedBranchNames.push_back( "SpillCutType/i" ); fBranchEntries["SpillCutType/i"] = {};
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      fOrderedBranchNames.push_back( labels.at(i) );
+      fBranchEntries[labels.at(i)] = {};
+    }
+
+    if ( saveRunSubEvt ) {
+      assert( fBranchEntries.find("Run/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Subrun/i") == fBranchEntries.end() &&
+              fBranchEntries.find("Evt/i") == fBranchEntries.end() );
+
+      fOrderedBranchNames.push_back( "Run/i" ); fBranchEntries["Run/i"] = {};
+      fOrderedBranchNames.push_back( "Subrun/i" ); fBranchEntries["Subrun/i"] = {};
+      fOrderedBranchNames.push_back( "Evt/i" ); fBranchEntries["Evt/i"] = {};
+    }
+
+    loader.AddTree( *this, labels, vars, spillcut, truthcut, shift );
   }
 
   //----------------------------------------------------------------------
@@ -864,6 +898,31 @@ namespace ana
 
 
   //----------------------------------------------------------------------
+  NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                            SpectrumLoaderBase& loader,
+                            const std::vector<const ISyst*>& systsToStore, const std::vector<std::pair<int,int>>& nSigma,
+                            const TruthCut& truthcut, const SystShifts& shift, const bool saveRunSubEvt)
+  : WeightsTree(name,labels,nSigma,saveRunSubEvt,false)
+  {
+    assert( labels.size() == systsToStore.size() );
+    assert( nSigma.size() == labels.size() );
+
+    loader.AddNSigmasTree( *this, labels, systsToStore, truthcut, shift );
+  }
+  //----------------------------------------------------------------------
+  NSigmasTree::NSigmasTree( const std::string name, const std::vector<std::string>& labels,
+                            SpectrumLoaderBase& loader,
+                            const std::vector<const ISyst*>& systsToStore, const std::vector<std::vector<double>>& nSigma,
+                            const TruthCut& truthcut, const SystShifts& shift, const bool saveRunSubEvt)
+  : WeightsTree(name,labels,nSigma,saveRunSubEvt,false)
+  {
+    assert( labels.size() == systsToStore.size() );
+    assert( nSigma.size() == labels.size() );
+
+    loader.AddNSigmasTree( *this, labels, systsToStore, truthcut, shift );
+  }
+
+  //----------------------------------------------------------------------
   void NSigmasTree::SaveToSplines( TDirectory* dir ) const
   {
     std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;
@@ -943,7 +1002,7 @@ namespace ana
 
     TSpline3 *splinesArr[NBranchesWeights];
     for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
-      splinesArr[ idxBranchWeight ] = nullptr;
+      splinesArr[idxBranchWeight] = nullptr;
       theTree.Branch( fOrderedBranchWeightNames.at(idxBranchWeight).c_str(), &splinesArr[idxBranchWeight] );
     }
 
@@ -958,7 +1017,7 @@ namespace ana
           if ( idxEntry==0 ) std::cout << "ERROR!! Branch " << fOrderedBranchNames.at(idxBranch) << " wants to fill as int and long..." << std::endl;
         }
       }
-      // Fill the splines
+      // Make the splines
       for ( unsigned int idxBranchWeight=0; idxBranchWeight<fOrderedBranchWeightNames.size(); ++idxBranchWeight ) {
         const int NSigmas = fNWeightsExpected.at( fOrderedBranchWeightNames.at(idxBranchWeight) );
         double sigmasArr[NSigmas];
@@ -1240,7 +1299,7 @@ namespace ana
     std::cout << "WRITING A TTree FOR THIS Tree OBJECT WITH:" << std::endl;
     std::cout << "  " << fNEntries << " Entries" << std::endl;
     std::cout << "  For " << fPOT << " POT and " << fLivetime << " Livetime" << std::endl;
-    std::cout << "  Containing " << fOrderedBranchWeightNames.size() << " values per entry..." << std::endl;
+    std::cout << "  Containing " << fOrderedBranchWeightNames.size() << " splines per entry..." << std::endl;
 
     // Check (and assert) that the branches all have fNEntries
     for ( auto const& [branch, values] : fBranchEntries ){
@@ -1373,6 +1432,24 @@ namespace ana
     }
 
     loader.AddNUniversesTree( *this, labels, univsKnobs, spillcut, cut, shift );
+  }
+
+  //----------------------------------------------------------------------
+  NUniversesTree::NUniversesTree( const std::string name, const std::vector<std::string>& labels,
+                                  SpectrumLoaderBase& loader,
+                                  const std::vector<std::vector<TruthVar>>& univsKnobs,
+                                  const std::vector<unsigned int>& nUniverses,
+                                  const TruthCut& truthcut,
+                                  const SystShifts& shift, const bool saveRunSubEvt)
+  : WeightsTree(name,labels,nUniverses,saveRunSubEvt,false)
+  {
+    assert( labels.size() == univsKnobs.size() );
+
+    for ( unsigned int i=0; i<labels.size(); ++i ) {
+      assert( univsKnobs.at(i).size() == nUniverses.at(i) );
+    }
+
+    loader.AddNUniversesTree( *this, labels, univsKnobs, truthcut, shift );
   }
 
   //----------------------------------------------------------------------
