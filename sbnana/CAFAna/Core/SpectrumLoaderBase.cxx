@@ -453,6 +453,9 @@ namespace ana
     TH1* hPOT = NULL;
     while(!hPOT) {
       f = fFileSource->GetNextFile();
+      if(f) std::cout << "found file " << std::endl;
+      if(!f) std::cout << "file not found " << std::endl;
+
       if(!f) return 0; // out of files
 
       hPOT = (TH1*)f->Get("TotalPOT");

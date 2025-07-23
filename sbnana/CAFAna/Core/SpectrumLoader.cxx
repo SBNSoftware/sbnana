@@ -68,6 +68,7 @@ namespace ana
   //----------------------------------------------------------------------
   void SpectrumLoader::Go()
   {
+   std::cout << " spectrumloader " << std::endl;
     if(fGone){
       std::cerr << "Error: can only call Go() once on a SpectrumLoader" << std::endl;
       abort();
@@ -94,15 +95,17 @@ namespace ana
     int fileIdx = -1;
     while(TFile* f = GetNextFile()){
       ++fileIdx;
-
+      std::cout << " handling file " << f->GetName() <<  std::endl;
       if(Nfiles >= 0 && !prog) prog = new Progress(TString::Format("Filling %lu spectra from %d files matching '%s'", fHistDefs.TotalSize(), Nfiles, fWildcard.c_str()).Data());
 
       HandleFile(f, Nfiles == 1 ? prog : 0);
 
-      if(Nfiles > 1 && prog) prog->SetProgress((fileIdx+1.)/Nfiles);
+     // if(Nfiles > 1 && prog) prog->SetProgress((fileIdx+1.)/Nfiles);
+      
     } // end for fileIdx
 
     if(prog){
+         std::cout << " progging file " << std::endl;
       prog->Done();
       delete prog;
     }
@@ -114,6 +117,7 @@ namespace ana
 
     fSpillHistDefs.RemoveLoader(this);
     fSpillHistDefs.Clear();
+         std::cout << " end going " << std::endl;
 
   }
 
@@ -123,7 +127,9 @@ namespace ana
     assert(!f->IsZombie());
 
     TTree* tr = (TTree*)f->Get("recTree");
+
     assert(tr);
+std::cout << " asserted tree " << std::endl;
 
     // We try to access this field for every record. It was only added to the
     // files in late 2021, and we don't want to render all earlier files
@@ -137,6 +143,7 @@ namespace ana
 
     long Nentries = tr->GetEntries();
     if (max_entries != 0 && max_entries < Nentries) Nentries = max_entries;
+    std::cout << " Nentries " << Nentries << has_husk << std::endl;
 
     for(long n = 0; n < Nentries; ++n){
       tr->LoadTree(n);
@@ -148,6 +155,7 @@ namespace ana
 
       if(prog) prog->SetProgress(double(n)/Nentries);
     } // end for n
+    
   }
 
   //----------------------------------------------------------------------
@@ -373,7 +381,6 @@ namespace ana
               std::map<std::string, std::vector<double>> recordVals;
               unsigned int numEntries=0;
               for ( auto& [varormulti, varname] : treemapIt->second ) {
-                //std::cout << "SpillCut " << idxSpillCut << " Slice " << idxSlice << " Shift " << idxShift << " Cut " << idxCut << " Tree " << idxTree << " Var " << idxVar << std::endl;
                 if(varormulti.IsMulti()){
                   auto const& vals = varormulti.GetMultiVar()(&slc);
                   for(double val: vals) recordVals[varname].push_back(val);
@@ -486,13 +493,14 @@ namespace ana
             if(!pass) continue;
 
             for ( std::map<NSigmasTree*, std::map<const ISyst*, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
-
+               
               std::map<std::string, std::vector<double>> headerVals;
               std::map<std::string, std::vector<double>> recordVals;
               for ( auto& [syst, systname] : treemapIt->second ) {
                 for ( unsigned int i_sigma=0; i_sigma<treemapIt->first->NWeights(systname); ++i_sigma){
+                  
                   double sigma = treemapIt->first->GetSigma(systname, i_sigma);
-
+                  //std::cout << " sigma " << sigma << std::endl;
                   // Need to provide a clean slate for each new set of systematic
                   // shifts to work from. Copying the whole StandardRecord is pretty
                   // expensive, so modify it in place and revert it afterwards.
@@ -507,12 +515,15 @@ namespace ana
                   // Now shift for the weight we want to save
                   const SystShifts& shiftSigma = SystShifts(syst,sigma);
                   double systWeightSigma = 1;
+                 // std::cout << " systname " << systname << " " << systWeightSigma << std::endl;
+                  
                   shiftSigma.Shift(&slc, systWeightSigma);
 
                   recordVals[systname].push_back(systWeightSigma);
 
                   // Reset shifts to get the next sigma
                   caf::SRProxySystController::Rollback();
+                  
                 }
               }
               // If fSaveRunSubrunEvt then fill these entries...
@@ -527,6 +538,7 @@ namespace ana
 
               treemapIt->first->UpdateEntries(headerVals,recordVals);
             } // end for tree
+             
           } // end for cut
         } // end for shift
         idxSlice+=1;
