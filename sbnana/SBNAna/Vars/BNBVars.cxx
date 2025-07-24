@@ -60,7 +60,7 @@ namespace ana {
     */
 
     /** @var kSpillMW875HorWidth */
-    const SpillVar kSpillMW875HorWidth([](const caf::SRSpillProxy *sr) {
+    const SpillVar kSpillMW875HorWidth([](const caf::SRSpillProxy *sr) -> double {
         if (sr->hdr.nbnbinfo) { //! non-zero nbnbinfo -> new subrun
             globalSpillInfo.clear(); //! discard spills from previous subrun
             for (const auto &bnbinfo: sr->hdr.bnbinfo) { //! fill in this event's
@@ -71,12 +71,13 @@ namespace ana {
         //! Select last spill with matching event. This is the triggering spill.
         for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
             if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M875HS);
+            return it->MW875HS;
         }
+        return -999.0;
     });
 
     /** @var kSpillMW875VerWidth */
-    const SpillVar kSpillMW875VerWidth([](const caf::SRSpillProxy *sr) {
+    const SpillVar kSpillMW875VerWidth([](const caf::SRSpillProxy *sr) -> double {
         if (sr->hdr.nbnbinfo) { //! non-zero nbnbinfo -> new subrun
             globalSpillInfo.clear(); //! discard spills from previous subrun
             for (const auto &bnbinfo: sr->hdr.bnbinfo) { //! fill in this event's
@@ -87,12 +88,13 @@ namespace ana {
         //! Select last spill with matching event. This is the triggering spill.
         for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
             if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M875VS);
+            return it->MW875VS;
         }
+        return -999.0;
     });
 
     /** @var kSpillMW876HorWidth */
-    const SpillVar kSpillMW876HorWidth([](const caf::SRSpillProxy *sr) {
+    const SpillVar kSpillMW876HorWidth([](const caf::SRSpillProxy *sr) -> double {
         if (sr->hdr.nbnbinfo) { //! non-zero nbnbinfo -> new subrun
             globalSpillInfo.clear(); //! discard spills from previous subrun
             for (const auto &bnbinfo: sr->hdr.bnbinfo) { //! fill in this event's
@@ -103,12 +105,13 @@ namespace ana {
         //! Select last spill with matching event. This is the triggering spill.
         for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
             if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M876HS);
+            return it->MW876HS;
         }
+        return -999.0;
     });
 
     /** @var kSpillMW876VerWidth */
-    const SpillVar kSpillMW876VerWidth([](const caf::SRSpillProxy *sr) {
+    const SpillVar kSpillMW876VerWidth([](const caf::SRSpillProxy *sr) -> double {
         if (sr->hdr.nbnbinfo) { //! non-zero nbnbinfo -> new subrun
             globalSpillInfo.clear(); //! discard spills from previous subrun
             for (const auto &bnbinfo: sr->hdr.bnbinfo) { //! fill in this event's
@@ -119,8 +122,9 @@ namespace ana {
         //! Select last spill with matching event. This is the triggering spill.
         for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
             if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M876VS);
+            return it->MW876VS;
         }
+        return -999.0;
     });
 
     //! ////////////////////////////////////////////////////////////////////////
