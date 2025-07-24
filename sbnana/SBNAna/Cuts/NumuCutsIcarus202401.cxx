@@ -9,10 +9,22 @@ namespace ana {
 
 static bool Icarus202401contained(const caf::SRTrackProxy& trk)
 {
-  return ((trk.end.x < -61.94 - 5 && trk.end.x > -358.49 + 5)
-	  || (trk.end.x > 61.94 + 5 && trk.end.x < 358.49 - 5))
-           && trk.end.y > -181.86 + 5 && trk.end.y < 134.96 - 5
-	  && trk.end.z > -894.95 + 5 && trk.end.z < 894.95 - 5;
+  const double x = trk.end.x, y = trk.end.y, z = trk.end.z;
+  if(std::isnan(x) || std::isnan(y) || std::isnan(z)) return false;
+
+  bool x_contained_E = x <  -61.94 - 5 && x > -358.49 + 5;
+  bool x_contained_W = x >   61.94 + 5 && x <  358.49 - 5;
+  bool y_contained   = y > -181.86 + 5 && y <  134.96 - 5;
+  bool z_contained   = z > -894.95 + 5 && z <  894.95 - 5;
+
+  // Check triangles at corners of the detector
+  bool in_corner = y <  1.732007 * z - 1687.5114 
+                || y > -1.732007 * z + 1640.6114
+                || y >  1.732007 * z + 1640.6114 
+                || y < -1.732007 * z - 1687.5114;
+
+  return (x_contained_E || x_contained_W) && y_contained && z_contained 
+         && !in_corner;
 }
 
 const Cut kIcarus202401BaryFMCut([](const caf::SRSliceProxy *slc) {
