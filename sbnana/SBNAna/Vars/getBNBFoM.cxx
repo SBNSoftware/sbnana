@@ -851,7 +851,7 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
     }
     else { 
         //! @warning defaulting to Figure of Merit without multi-wire data
-        std::cerr << "[WARNING] No reliable multi-wire data, defaulting to calcFoM()." << std::endl;
+        std::cerr << "[WARNING] No reliable multi-wire data, defaulting to calcFoM(), which does not make use of BNB width data via multi-wire devices." << std::endl;
         return calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR);
     }
 

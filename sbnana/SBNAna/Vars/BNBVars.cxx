@@ -19,34 +19,8 @@
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <iostream>
-#include <vector>
-#include <algorithm> //! for using reverse iterators
 
 namespace ana {
-    /** @struct FlatCAF variables in hdr.spillbnbinfo are logged for an event's
-     * triggering spill. As of July 16th, 2025, we were only able to populate
-     * the multi-wire fit parameters (from IFBeam) in hdr.bnbinfo, which logs
-     * information for all spills, including those that don't have a trigger.
-     * Use of this structure and a globally accessible vector is required to
-     * select triggering spills from hdr.bnbinfo.
-    */
-    struct SpillInfo {
-        float MW876HS, MW876VS, MW875HS, MW875VS;
-        unsigned int run, event;
-    };
-
-    static std::vector<SpillInfo> globalSpillInfo;
-
-    void FillSpillInfo(unsigned int run, const caf::Proxy<caf::SRBNBInfo> &info) {
-        globalSpillInfo.emplace_back();
-        globalSpillInfo.back().run = run;
-        globalSpillInfo.back().event = info.event;
-        globalSpillInfo.back().MW876HS = info.M876HS;
-        globalSpillInfo.back().MW876VS = info.M876VS;
-        globalSpillInfo.back().MW875HS = info.M875HS;
-        globalSpillInfo.back().MW875VS = info.M875VS;
-    }
-
     /** Multi-wire Readout Fit Parameters:
      * @note We determine beam width primarily by fitting gaussian curves to
      * multi-wire device data; we can also extract beam position from fits.
@@ -60,68 +34,16 @@ namespace ana {
     */
 
     /** @var kSpillMW875HorWidth */
-    const SpillVar kSpillMW875HorWidth([](const caf::SRSpillProxy *sr) {
-        if (sr->hdr.nbnbinfo) { //! non-zero nbnbinfo -> new subrun
-            globalSpillInfo.clear(); //! discard spills from previous subrun
-            for (const auto &bnbinfo: sr->hdr.bnbinfo) { //! fill in this event's
-                FillSpillInfo( sr->hdr.run, bnbinfo);    //!   spill information
-            }
-        }
-
-        //! Select last spill with matching event. This is the triggering spill.
-        for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
-            if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M875HS);
-        }
-    });
+    const SpillVar kSpillMW875HorWidth = SIMPLESPILLVAR( hdr.spillbnbinfo.M875HS);
 
     /** @var kSpillMW875VerWidth */
-    const SpillVar kSpillMW875VerWidth([](const caf::SRSpillProxy *sr) {
-        if (sr->hdr.nbnbinfo) { //! non-zero nbnbinfo -> new subrun
-            globalSpillInfo.clear(); //! discard spills from previous subrun
-            for (const auto &bnbinfo: sr->hdr.bnbinfo) { //! fill in this event's
-                FillSpillInfo( sr->hdr.run, bnbinfo);    //!   spill information
-            }
-        }
-
-        //! Select last spill with matching event. This is the triggering spill.
-        for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
-            if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M875VS);
-        }
-    });
+    const SpillVar kSpillMW875VerWidth = SIMPLESPILLVAR( hdr.spillbnbinfo.M875VS);
 
     /** @var kSpillMW876HorWidth */
-    const SpillVar kSpillMW876HorWidth([](const caf::SRSpillProxy *sr) {
-        if (sr->hdr.nbnbinfo) { //! non-zero nbnbinfo -> new subrun
-            globalSpillInfo.clear(); //! discard spills from previous subrun
-            for (const auto &bnbinfo: sr->hdr.bnbinfo) { //! fill in this event's
-                FillSpillInfo( sr->hdr.run, bnbinfo);    //!   spill information
-            }
-        }
-
-        //! Select last spill with matching event. This is the triggering spill.
-        for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
-            if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M876HS);
-        }
-    });
+    const SpillVar kSpillMW876HorWidth = SIMPLESPILLVAR( hdr.spillbnbinfo.M876HS);
 
     /** @var kSpillMW876VerWidth */
-    const SpillVar kSpillMW876VerWidth([](const caf::SRSpillProxy *sr) {
-        if (sr->hdr.nbnbinfo) { //! non-zero nbnbinfo -> new subrun
-            globalSpillInfo.clear(); //! discard spills from previous subrun
-            for (const auto &bnbinfo: sr->hdr.bnbinfo) { //! fill in this event's
-                FillSpillInfo( sr->hdr.run, bnbinfo);    //!   spill information
-            }
-        }
-
-        //! Select last spill with matching event. This is the triggering spill.
-        for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
-            if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M876VS);
-        }
-    });
+    const SpillVar kSpillMW876VerWidth = SIMPLESPILLVAR( hdr.spillbnbinfo.M876VS);
 
     //! ////////////////////////////////////////////////////////////////////////
     //!   ^--- Multi-wire Fit Parameters ; Other BNB Variables ---v
