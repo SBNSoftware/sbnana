@@ -9,6 +9,8 @@
 #ifndef _GETBNBFOM_H
 #define _GETBNBFOM_H
 
+#include <optional>
+
 #include "TROOT.h"
 
 std::optional<Double_t> getValidBPMCalibVal( 

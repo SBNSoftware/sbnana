@@ -16,6 +16,7 @@
 #include "sbnana/SBNAna/Vars/getBNBFoM.h"
 
 #include "sbnana/CAFAna/Core/Utilities.h"
+#include "sbnana/CAFAna/Core/Defaults.h"
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
 
 #include <iostream>
@@ -69,10 +70,12 @@ namespace ana {
         }
 
         //! Select last spill with matching event. This is the triggering spill.
+        float MW875HS = LargeDefault;
         for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
             if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M875HS);
+            MW875HS = it->MW875HS;
         }
+        return MW875HS;
     });
 
     /** @var kSpillMW875VerWidth */
@@ -85,10 +88,12 @@ namespace ana {
         }
 
         //! Select last spill with matching event. This is the triggering spill.
+        float MW875VS = LargeDefault;
         for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
             if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M875VS);
+            MW875VS = it->MW875VS;
         }
+        return MW875VS;
     });
 
     /** @var kSpillMW876HorWidth */
@@ -101,10 +106,12 @@ namespace ana {
         }
 
         //! Select last spill with matching event. This is the triggering spill.
+        float MW876HS = LargeDefault;
         for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
             if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M876HS);
+            MW876HS = it->MW876HS;
         }
+        return MW876HS;
     });
 
     /** @var kSpillMW876VerWidth */
@@ -117,10 +124,12 @@ namespace ana {
         }
 
         //! Select last spill with matching event. This is the triggering spill.
+        float MW876VS = LargeDefault;
         for (auto it = globalSpillInfo.rbegin(); it != globalSpillInfo.rend(); ++it) {
             if ( it->event != sr->hdr.evt) continue;
-            return SIMPLESPILLVAR( hdr.bnbinfo.M876VS);
+            MW876VS = it->MW876VS;
         }
+        return MW876VS;
     });
 
     //! ////////////////////////////////////////////////////////////////////////
