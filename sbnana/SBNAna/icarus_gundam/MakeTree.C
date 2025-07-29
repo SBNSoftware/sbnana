@@ -5,10 +5,11 @@
 #include "sbnana/CAFAna/Systs/SBNWeightSysts.h"
 
 #include "sbnana/SBNAna/Vars/NuMIXSecVars.h"
+#include "sbnana/SBNAna/Vars/NuMIFlux.h"
+
 #include "sbnana/SBNAna/Cuts/NuMIXSecCuts.h"
 
 #include "TFile.h"
-
 #include "GUNDAMUtils.h"
 
 using namespace ana;
@@ -23,11 +24,24 @@ void MakeTree(){
 
   // Define inputfiles
   std::vector<std::string> vec_inputs;
-  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/archive/sam_managed_users/jskim/data/4/0/0/d/5a420bc4-9fd8-43cd-b7d0-4dbf5dc50127-flatcaf_SBNNuSyst_0.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/000d2fcf-6e3b-4f86-a84b-ee676dbb89a7-flatcaf_SBNNuSyst_383.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/002799ea-7b9a-4687-a804-91f0bda84090-flatcaf_SBNNuSyst_41.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/003b40f8-1a5c-4f6c-a543-66077c0c8446-flatcaf_SBNNuSyst_29.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/00bc1b3d-5d5b-41cf-b39f-660c355dcee2-flatcaf_SBNNuSyst_427.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/01eb6788-e9e3-4316-a423-2dac41cab8ef-flatcaf_SBNNuSyst_76.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/039f09a1-1551-4042-aaea-eae8be942899-flatcaf_SBNNuSyst_110.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/03bd5678-0472-4e77-8586-e5804fe8b0cd-flatcaf_SBNNuSyst_218.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/04155113-0115-4d87-ba79-a30cd26072ab-flatcaf_SBNNuSyst_345.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/048f63e1-cd90-4981-acfc-3a75b26d028d-flatcaf_SBNNuSyst_86.root");
+  vec_inputs.push_back("root://fndcadoor.fnal.gov:1094/pnfs/fnal.gov/usr/icarus/scratch/users/jskim/2023A_NuMI/v09_72_00_08_AddingG4Reweight/MC/NuMI_MC_Nu_Phase2_v09_72_00_03p01_deduped_Merged_flatcaf_ReNuSyst250403_WithTrackSplit_BNBFixedProb/053cdbd0-51cf-4cac-8db5-ce86907799e3-flatcaf_SBNNuSyst_464.root");
+
   bool IsData = false;
+
+  std::string samdef_MC = "jskim_2023A_NuMI_Reproc_v09_72_00_08_CustomG4RW_NuMI_MC_Nu_Phase2_2023ANuMIReproc_CAFTypeCommonRemerge_ReNuSyst250403_WithTrackSplit_BNBFixedProb";
 
   // SpectrumLoader
   SpectrumLoader loader(vec_inputs); //, kBeam, 10);
+  //SpectrumLoader loader(samdef_MC);
 
   //===================================
   // EVENT SELECTION TREE
@@ -40,6 +54,7 @@ void MakeTree(){
     "RecoMuonP", "TrueMuonP",
     "RecoMuonCos", "TrueMuonCos",
     "LeadingChargedPionCandidateLength",
+    "NuMIFluxCorrection",
   };
   std::vector<Var> vec_vars_SelectedEvents = {
     kNuMICutType,
@@ -47,6 +62,7 @@ void MakeTree(){
     kNuMIMuonCandidateRecoP, kNuMIMuonTrueP,
     kNuMIRecoCosThVtx, kNuMITrueCosThVtx,
     kNuMILeadingChargedPionCandidateLength,
+    kGetNuMIFluxCorrection,
   };
 
   if(IsData){
@@ -107,7 +123,7 @@ void MakeTree(){
   // - Morph (defeind between sigma = 0~1; we mirror them to negative values)
   // - Also it was noted that adding sigma = +-0.5 helps making the spline smoother
 
-  std::vector<std::string>  GENIEMorphKnobNames = ICARUSGUNDAM::GetGENIEMorphKnobNames();
+  std::vector<std::string> GENIEMorphKnobNames = ICARUSGUNDAM::GetGENIEMorphKnobNames();
   for(unsigned int i=0; i<GENIEMorphKnobNames.size(); i++){
     NSigmasPsetNames.push_back( GENIEMorphKnobNames.at(i) );
 
@@ -115,6 +131,19 @@ void MakeTree(){
     NSigmasISysts.push_back( new SBNWeightMirrorSyst(psetname) );
 
     NSigmas.push_back( {-1, -0.5, 0, 0.5, 1} );
+  }
+  // - From NuSyst (you may not have this if your CAFs did not run on nusystemaitcs (sbnnusyst)
+
+
+  std::vector<std::string> GENIENuSystKnobNames = ICARUSGUNDAM::GetNuSystZExpPCANames();
+  for(unsigned int i=0; i<GENIENuSystKnobNames.size(); i++){
+    NSigmasPsetNames.push_back( GENIENuSystKnobNames.at(i) );
+
+    std::string psetname = "ZExpPCAWeighter_SBNNuSyst_ZExpPCA_multisigma_"+GENIEMorphKnobNames.at(i);
+    NSigmasISysts.push_back( new SBNWeightSyst(psetname) );
+
+    NSigmas.push_back( {-3, -2, -1, 0, 1, 2, 3} );
+
   }
 
   // - Define NSigmasTree
@@ -217,7 +246,7 @@ void MakeTree(){
 
   // Output
 
-  TFile *f_out = new TFile("output.root", "RECREATE");
+  TFile *f_out = new TFile("MCTree.root", "RECREATE");
   tree_SelectedEvents_NSigmas->SaveToTClonesArrays(f_out);
   tree_Truth_NSigmas->SaveTo(f_out);
 
