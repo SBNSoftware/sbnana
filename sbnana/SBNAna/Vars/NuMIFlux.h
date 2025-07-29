@@ -12,20 +12,33 @@ class TH1;
 namespace ana
 {
 
-  class NuMIPpfxFluxWeight
+  //===============================================================
+  // 05/19/25 JK) This one uses "2025-04-08_out_450.37_7991.98_79512.66.root",
+  //              to provide a CV correction of beam width setting 1.5mm/1.4mm;
+  //              NuMI2023 reprocessing simulation was done with CV beam width of 1.4mm,
+  //              but the data is more like 1.5mm.
+  class NuMIFluxCorrection
   {
   public:
-    NuMIPpfxFluxWeight();
-    ~NuMIPpfxFluxWeight();
+    NuMIFluxCorrection();
+    ~NuMIFluxCorrection();
+
+    double GetWeightFromSRTrueInt(const caf::SRTrueInteractionProxy* nu) const;
+    unsigned int ParentPDGToIdx(int pdg) const;
+
+    // PPFX correction
     mutable TH1* fWeight[2][2][2]; // [fhc/rhc][nue/numu][nu/nubar]
+    // Additional CV correction from NuMI reproc-to-PPFXCalculationNominal of this file
+    mutable TH1* fWeightCVCorr[2][2][2][4]; // [fhc/rhc][nue/numu][nu/nubar][parent pid (pipm/kpm/k0l/mu)]
+
+    static NuMIFluxCorrection& Instance();
 
   protected:
     std::string fFluxFilePath;
   };
 
-  // set up to use the flux weight
-  static const NuMIPpfxFluxWeight FluxWeightNuMI;
-  extern const Var kGetNuMIFluxWeight;
-  extern const TruthVar kGetTruthNuMIFluxWeight;
+  extern const Var kGetNuMIFluxCorrection;
+  extern const TruthVar kGetTruthNuMIFluxCorrection;
+
 
 }
