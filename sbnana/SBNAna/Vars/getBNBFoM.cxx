@@ -19,8 +19,9 @@
 //! suite referenced in the above files that makes its way into FoM calculations.
 //! ////////////////////////////////////////////////////////////////////////////
 
-bool debug = false; //! displays helpful output for debugging; must recompile
-                    //! SBNAna for change to take affect.
+//! @note You must recompile SBNAna after makeing any changes to this file.
+bool verbose = false; //! displays details about function execution
+bool debug = false; //! displays helpful output for debugging
 
 #include "getBNBFoM.h"
 
@@ -977,7 +978,11 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
     }
     else { 
         //! @warning defaulting to Figure of Merit without multi-wire data
-        std::cerr << "[WARNING] No reliable multi-wire data, defaulting to calcFoM(), which does not make use of BNB width data via multi-wire devices." << std::endl;
+        if (verbose) {
+            std::cerr << "[WARNING] No reliable multi-wire data, defaulting ";
+            std::cerr << "[WARNING] to calcFoM(), which does not make use of BNB width ";
+            std::cerr << "[WARNING] data via multi-wire devices." << std::endl;
+        }
         Double_t fom = 1 - pow(10, calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR));
         return fom;
     }
