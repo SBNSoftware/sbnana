@@ -15,9 +15,13 @@
 //! geometric overlap of the BNB with the beamline's nuclear target. There are 
 //! separate cuts placed on the protons per pulse (PPP) and horn current in the 
 //! BNBVars<.h, .cxx> and BNBQualityCuts<.h, .cxx> files. The PPP––via 
-//! kSpillTOR875 (and secondarily kSpillTOR876)-––is the only quantity from the
+//! kSpillTOR875 (and secondarily kSpillTOR860)-––is the only quantity from the
 //! suite referenced in the above files that makes its way into FoM calculations.
 //! ////////////////////////////////////////////////////////////////////////////
+
+bool debug = false; //! displays helpful output for debugging; must recompile
+                    //! SBNAna for change to take affect.
+
 #include "getBNBFoM.h"
 
 #include <vector>
@@ -223,6 +227,15 @@ void swimBNB(const Double_t centroid1[6],
     sx = std::sqrt(sigma2[0][0]) * 1000.0;
     sy = std::sqrt(sigma2[2][2]) * 1000.0;
     rho = sigma2[0][2] / std::sqrt(sigma2[0][0] * sigma2[2][2]);
+
+    if (debug) {
+        std::cout << "[DEBUG] At end of swimBNB()...\n";
+        std::cout << "[DEBUG] cx  = " << cx << std::endl;
+        std::cout << "[DEBUG] cy  = " << cy << std::endl;
+        std::cout << "[DEBUG] sx  = " << sx << std::endl;
+        std::cout << "[DEBUG] sy  = " << sy << std::endl;
+        std::cout << "[DEBUG] rho = " << rho << std::endl;
+    }
 }
 
 /** @fn funcIntBivar()
@@ -234,7 +247,7 @@ void swimBNB(const Double_t centroid1[6],
  * @param sy Beam sigma-y [mm]
  * @param rho Beam correlation coefficient
  * 
- * @return log10(1 - overlap fraction), or -10000 if integral is unphysical
+ * @return log10(1 - overlap fraction), or -10000. if integral is unphysical
  */
 Double_t funcIntBivar(const Double_t cx, 
                         const Double_t cy,
@@ -261,6 +274,8 @@ Double_t funcIntBivar(const Double_t cx,
     }
 
     sum *= dbin * dbin / (2.0 * 3.14159 * sx * sy * std::sqrt(1.0 - rho2));
+
+    //! add guard for double precision
     return (sum >= 1.0) ? -10000. : std::log10(1.0 - sum);
 }
 
@@ -281,13 +296,22 @@ Double_t funcIntBivar(const Double_t cx,
  * @param verAng BNB's vertical angle at nuclear target [rad]
  * @param PPP Protons per pulse (used for emittance and momentum spread)
  * 
- * @return Double representing log10(1 - overlap-fraction), or -10000 if invalid.
+ * @return Double representing log10(1 - overlap-fraction), or -4 if invalid.
  */
 Double_t calcFoM(const Double_t horPos, 
                     const Double_t horAng, 
                     const Double_t verPos, 
                     const Double_t verAng,
                     const Double_t PPP) {
+    if (debug) {
+        std::cout << "[DEBUG] calcFoM() called with...\n";
+        std::cout << "[DEBUG] horPos = " << horPos << std::endl;
+        std::cout << "[DEBUG] horAng = " << horAng << std::endl;
+        std::cout << "[DEBUG] verPos = " << verPos << std::endl;
+        std::cout << "[DEBUG] verAng = " << verAng << std::endl;
+        std::cout << "[DEBUG] PPP    = " << PPP << std::endl;
+    }
+    
     //! Beam Twiss parameters and dispersions from MiniBooNE AnalysisFramework
     //! Code from DQ_BeamLine_twiss_init.F
     const Double_t bx = 4.68, ax = 0.0389, gx = (1 + ax * ax) / bx;
@@ -297,9 +321,11 @@ Double_t calcFoM(const Double_t horPos,
 
     //! LIKELY emittance and momentum spread as functions of protons-per-pulse
     //! Code from DQ_BeamLine_make_tgt_fom2.F
-    const Double_t ex = 0.1775E-06 + 0.1827E-07 * PPP;
-    const Double_t ey = 0.1382E-06 + 0.2608E-08 * PPP;
-    const Double_t dp = 0.4485E-03 + 0.6100E-04 * PPP;
+    //! @note Figure of Merit calculations expect PPP to be in units of e12
+    //! protons on target (POT); PPP passed must be scaled down
+    const Double_t ex = 0.1775E-06 + 0.1827E-07 * PPP / 1e12;
+    const Double_t ey = 0.1382E-06 + 0.2608E-08 * PPP / 1e12;
+    const Double_t dp = 0.4485E-03 + 0.6100E-04 * PPP / 1e12;
 
     Double_t tex = ex, tey = ey, tdp = dp;
 
@@ -327,12 +353,12 @@ Double_t calcFoM(const Double_t horPos,
     sigma1[5][3] = sigma1[3][5];
 
     const Double_t begtocnt[6][6] = {
-        {0.65954, 0.43311, 0.00321, 0.10786, 0.00000, 1.97230},
-        {0.13047, 1.60192, 0.00034, 0.00512, 0.00000, 1.96723},
-        {-0.00287, -0.03677, -0.35277, -4.68056, 0.00000, 0.68525},
-        {-0.00089, -0.00430, -0.17722, -5.18616, 0.00000, 0.32300},
-        {-0.00104, 0.00232, -0.00001, -0.00224, 1.00000, -0.00450},
-        {0.00000, 0.00000, 0.00000, 0.00000, 0.00000, 1.00000}
+        { 0.65954,  0.43311,  0.00321,  0.10786, 0.00000,  1.97230},
+        { 0.13047,  1.60192,  0.00034,  0.00512, 0.00000,  1.96723},
+        {-0.00287, -0.03677, -0.35277, -4.68056, 0.00000,  0.68525},
+        {-0.00089, -0.00430, -0.17722, -5.18616, 0.00000,  0.32300},
+        {-0.00104,  0.00232, -0.00001, -0.00224, 1.00000, -0.00450},
+        { 0.00000,  0.00000,  0.00000,  0.00000, 0.00000,  1.00000}
     };
 
     Double_t cnttoups[6][6] = {{0}};
@@ -374,13 +400,23 @@ Double_t calcFoM(const Double_t horPos,
     swimBNB(centroid1, sigma1, cnttodns, begtodns, cx, cy, sx, sy, rho);
     Double_t fom_c = funcIntBivar(cx, cy, sx, sy, rho);
 
-    if (fom_a <= -10000. 
+    if (fom_a <= -10000.
         || fom_b <= -10000. 
         || fom_c <= -10000.) {
-            return -10000.;
+            return -4.0;
     }
 
-    return fom_a * 0.6347 + fom_b * 0.2812 + fom_c * 0.0841;
+    Double_t fom =  fom_a * 0.6347 + fom_b * 0.2812 + fom_c * 0.0841;
+
+
+    if (debug) {
+        std::cout << "[DEBUG] fom_a = " << fom_a << std::endl;
+        std::cout << "[DEBUG] fom_b = " << fom_b << std::endl;
+        std::cout << "[DEBUG] fom_c = " << fom_c << std::endl;
+        std::cout << "[DEBUG] fom   = " << fom << std::endl;
+    }
+
+    return fom;
 }
 
 /** @fn calcFoM2()
@@ -400,7 +436,7 @@ Double_t calcFoM(const Double_t horPos,
  * @param tgtHorWidth Horizontal width of the BNB at the nuclear target [mm]
  * @param tgtVerWidth Vertical width of the BNB at the nuclear target [mm]
  * 
- * @return Double representing log10(1 - overlap-fraction), or -10000 if invalid.
+ * @return Double representing log10(1 - overlap-fraction), or -4 if invalid.
  */
 Double_t calcFoM2(const Double_t horPos, 
                     const Double_t horAng, 
@@ -409,6 +445,16 @@ Double_t calcFoM2(const Double_t horPos,
                     const Double_t PPP, 
                     const Double_t tgtHorWidth, 
                     const Double_t tgtVerWidth) {
+    if (debug) {
+        std::cout << "[DEBUG] calcFoM2() called with...\n";
+        std::cout << "[DEBUG] horPos      = " << horPos << std::endl;
+        std::cout << "[DEBUG] horAng      = " << horAng << std::endl;
+        std::cout << "[DEBUG] verPos      = " << verPos << std::endl;
+        std::cout << "[DEBUG] verAng      = " << verAng << std::endl;
+        std::cout << "[DEBUG] PPP         = " << PPP << std::endl;
+        std::cout << "[DEBUG] tgtHorWidth = " << tgtHorWidth << std::endl;
+        std::cout << "[DEBUG] tgtVerWidth = " << tgtVerWidth << std::endl;
+    }
     //! Beam Twiss parameters and dispersions from MiniBooNE AnalysisFramework
     //! Code from DQ_BeamLine_twiss_init.F
     const Double_t bx = 4.68, ax = 0.0389, gx = (1 + ax * ax) / bx;
@@ -418,9 +464,11 @@ Double_t calcFoM2(const Double_t horPos,
 
     //! LIKELY emittance and momentum spread as functions of protons-per-pulse
     //! Code from DQ_BeamLine_make_tgt_fom2.F
-    const Double_t ex = 0.1775E-06 + 0.1827E-07 * PPP;
-    const Double_t ey = 0.1382E-06 + 0.2608E-08 * PPP;
-    const Double_t dp = 0.4485E-03 + 0.6100E-04 * PPP;
+    //! @note Figure of Merit calculations expect PPP to be in units of e12
+    //! protons on target (POT); PPP passed must be scaled down
+    const Double_t ex = 0.1775E-06 + 0.1827E-07 * PPP / 1e12;
+    const Double_t ey = 0.1382E-06 + 0.2608E-08 * PPP / 1e12;
+    const Double_t dp = 0.4485E-03 + 0.6100E-04 * PPP / 1e12;
 
     Double_t tex = ex, tey = ey, tdp = dp;
 
@@ -448,12 +496,12 @@ Double_t calcFoM2(const Double_t horPos,
     sigma1[5][3] = sigma1[3][5];
 
     const Double_t begtocnt[6][6] = {
-        {0.65954, 0.43311, 0.00321, 0.10786, 0.00000, 1.97230},
-        {0.13047, 1.60192, 0.00034, 0.00512, 0.00000, 1.96723},
-        {-0.00287, -0.03677, -0.35277, -4.68056, 0.00000, 0.68525},
-        {-0.00089, -0.00430, -0.17722, -5.18616, 0.00000, 0.32300},
-        {-0.00104, 0.00232, -0.00001, -0.00224, 1.00000, -0.00450},
-        {0.00000, 0.00000, 0.00000, 0.00000, 0.00000, 1.00000}
+        { 0.65954,  0.43311,  0.00321,  0.10786, 0.00000,  1.97230},
+        { 0.13047,  1.60192,  0.00034,  0.00512, 0.00000,  1.96723},
+        {-0.00287, -0.03677, -0.35277, -4.68056, 0.00000,  0.68525},
+        {-0.00089, -0.00430, -0.17722, -5.18616, 0.00000,  0.32300},
+        {-0.00104,  0.00232, -0.00001, -0.00224, 1.00000, -0.00450},
+        { 0.00000,  0.00000,  0.00000,  0.00000,  0.00000,  1.00000}
     };
 
     Double_t cnttoups[6][6] = {{0}};
@@ -487,27 +535,35 @@ Double_t calcFoM2(const Double_t horPos,
     swimBNB(centroid1, sigma1, cnttoups, begtoups, cx, cy, sx, sy, rho);
     scalex = tgtHorWidth / sx;
     scaley = tgtVerWidth / sy;
-    Double_t fom_a = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
+    Double_t fom2_a = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
     //! swim to center of target
     swimBNB(centroid1, sigma1, identity, begtocnt, cx, cy, sx, sy, rho);
     scalex = tgtHorWidth / sx;
     scaley = tgtVerWidth / sy;
-    Double_t fom_b = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
+    Double_t fom2_b = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
     //! swim to downstream of target
     swimBNB(centroid1, sigma1, cnttodns, begtodns, cx, cy, sx, sy, rho);
     scalex = tgtHorWidth / sx;
     scaley = tgtVerWidth / sy;
-    Double_t fom_c = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
+    Double_t fom2_c = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
-    if (fom_a <= -10000. 
-        || fom_b <= -10000. 
-        || fom_c <= -10000.) {
-            return -10000.;
+    if (fom2_a <= -10000.
+        || fom2_b <= -10000. 
+        || fom2_c <= -10000.) {
+            return -4.0;
     }
 
-    return fom_a * 0.6347 + fom_b * 0.2812 + fom_c * 0.0841;
+    Double_t fom2 =  fom2_a * 0.6347 + fom2_b * 0.2812 + fom2_c * 0.0841;
+
+    if (debug) {
+        std::cout << "[DEBUG] fom2_a = " << fom2_a << std::endl;
+        std::cout << "[DEBUG] fom2_b = " << fom2_b << std::endl;
+        std::cout << "[DEBUG] fom2_c = " << fom2_c << std::endl;
+        std::cout << "[DEBUG] fom2   = " << fom2 << std::endl;
+    }
+    return fom2;
 }
 
 /** @fn getBNBFoM()
@@ -530,12 +586,22 @@ Double_t calcFoM2(const Double_t horPos,
  * devices
  */
 Double_t getBNBFoM( const Double_t spillTimeSec,
-                      const Double_t TOR,
+                      const Double_t TOR860,
+                      const Double_t TOR875,
                       const Double_t HP875, 
                       const Double_t HPTG1,
                       const Double_t HPTG2,
                       const Double_t VP873,
                       const Double_t VP875) {
+    /**
+     * Use POT-monitoring device closest to the nuclear target. If no device
+     * registers non-zero POT, return -1 as a sentinal error value.
+     */
+    double_t TOR;
+    if (TOR875 > 0) TOR = TOR875;
+    else if (TOR860 > 0) TOR = TOR860;
+    else return -1.0;
+    
     /** 
      * HPTG1 and HPTG2 calibration positions are expected to be complementary, 
      * i.e. when one has a valid calibration position the other does not. To
@@ -546,11 +612,11 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
      * nuclear target. This helps to give the most accurate horAng and 
      * tgtHorPos when projecting from HP875.
      */
-    Double_t HP875TimeDiff = -1.;
-    Double_t HPTG1TimeDiff = -1.;
-    Double_t HPTG2TimeDiff = -1.;
-    Double_t VP873TimeDiff = -1.;
-    Double_t VP875TimeDiff = -1.;
+    Double_t HP875TimeDiff = -1.0;
+    Double_t HPTG1TimeDiff = -1.0;
+    Double_t HPTG2TimeDiff = -1.0;
+    Double_t VP873TimeDiff = -1.0;
+    Double_t VP875TimeDiff = -1.0;
 
     std::optional<Double_t> HP875CalibTime = getValidBPMCalibTime( spillTimeSec, "HP875");
     std::optional<Double_t> HPTG1CalibTime = getValidBPMCalibTime( spillTimeSec, "HPTG1");
@@ -608,18 +674,29 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
         std::optional<Double_t> HPTG2CalibVal = getValidBPMCalibVal( spillTimeSec, "HPTG2");
         HPTGXOffset = HPTG2 - HPTG2CalibVal.value();        
         HPTGXZPos = HPTG2ZPos;
+        if (debug) std::cout << "[DEBUG] Using HPTG2 for target's horizontal offset." << std::endl;
     }
     else {
         std::optional<Double_t> HPTG1CalibVal = getValidBPMCalibVal( spillTimeSec, "HPTG1");
         HPTGXOffset = HPTG1 - HPTG1CalibVal.value();        
         HPTGXZPos = HPTG1ZPos;
+        if (debug) std::cout << "[DEBUG] Using HPTG1 for target's horizontal offset." << std::endl;
     }
 
     std::optional<Double_t> VP873CalibVal = getValidBPMCalibVal( spillTimeSec, "VP873");
-    Double_t VP873Offset = VP873 - VP873CalibVal.value();    
+    Double_t VP873Offset = VP873 - VP873CalibVal.value();  
     
     std::optional<Double_t> VP875CalibVal = getValidBPMCalibVal( spillTimeSec, "VP875");
     Double_t VP875Offset = VP875 - VP875CalibVal.value();
+
+
+    if (debug) {
+        std::cout << "[DEBUG] HP875Offset     = " << HP875Offset << std::endl;  
+        std::cout << "[DEBUG] HPTG<1,2>Offset = " << HPTGXOffset << std::endl;
+        std::cout << "[DEBUG] VP873Offset     = " << VP873Offset << std::endl;  
+        std::cout << "[DEBUG] VP875Offset     = " << VP875Offset << std::endl;  
+    }
+
     /**
      * Calculate angles between horizontal/vertical BPMs and project the BNB 
      * to the transverse plane intersecting the center of the nuclear target 
@@ -640,7 +717,14 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
 
     Double_t verAng = (VP875Offset - VP873Offset) / (VP875ZPos - VP873ZPos);
     verAng = atan(verAng);
-    Double_t tgtVerPos = VP873Offset + horAng * (targetCenterZPos - HP875ZPos);
+    Double_t tgtVerPos = VP873Offset + verAng * (targetCenterZPos - VP875ZPos);
+
+    if (debug) {
+        std::cout << "[DEBUG] horAng    = " << horAng << std::endl;
+        std::cout << "[DEBUG] tgtHorPos = " << tgtHorPos << std::endl;
+        std::cout << "[DEBUG] verAng    = " << verAng << std::endl;
+        std::cout << "[DEBUG] tgtVerPos = " << tgtVerPos << std::endl;
+    }
 
     /**
      * Calculating a Figure of Merit without the use of multi-wire data amounts
@@ -665,7 +749,8 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
      * concerned ourselves too much with what constant value we set 
      * tgtHorWidth = sx.
      */
-    return calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR);
+    Double_t fom = 1 - pow(10, calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR));
+    return fom;
 }
 
 /** @fn getBNBFoM2()
@@ -697,7 +782,8 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
  * devices.
  */
 Double_t getBNBFoM2( const Double_t spillTimeSec,
-                      const Double_t TOR,
+                      const Double_t TOR860,
+                      const Double_t TOR875,
                       const Double_t HP875, 
                       const Double_t HPTG1,
                       const Double_t HPTG2,
@@ -707,6 +793,15 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
                       const Double_t MW875VerWidth,
                       const Double_t MW876HorWidth,
                       const Double_t MW876VerWidth) {
+    /**
+     * Use POT-monitoring device closest to the nuclear target. If no device
+     * registers non-zero POT, return -1 as a sentinal error value.
+     */
+    double_t TOR;
+    if (TOR875 > 0) TOR = TOR875;
+    else if (TOR860 > 0) TOR = TOR860;
+    else return -1.0;
+    
     /** 
      * HPTG1 and HPTG2 calibration positions are expected to be complementary, 
      * i.e. when one has a valid calibration position the other does not. To
@@ -717,11 +812,11 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
      * nuclear target. This helps to give the most accurate horAng and 
      * tgtHorPos when projecting from HP875.
      */
-    Double_t HP875TimeDiff = -1.;
-    Double_t HPTG1TimeDiff = -1.;
-    Double_t HPTG2TimeDiff = -1.;
-    Double_t VP873TimeDiff = -1.;
-    Double_t VP875TimeDiff = -1.;
+    Double_t HP875TimeDiff = -1.0;
+    Double_t HPTG1TimeDiff = -1.0;
+    Double_t HPTG2TimeDiff = -1.0;
+    Double_t VP873TimeDiff = -1.0;
+    Double_t VP875TimeDiff = -1.0;
 
     std::optional<Double_t> HP875CalibTime = getValidBPMCalibTime( spillTimeSec, "HP875");
     std::optional<Double_t> HPTG1CalibTime = getValidBPMCalibTime( spillTimeSec, "HPTG1");
@@ -778,11 +873,13 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
         std::optional<Double_t> HPTG2CalibVal = getValidBPMCalibVal( spillTimeSec, "HPTG2");
         HPTGXOffset = HPTG2 - HPTG2CalibVal.value();  
         HPTGXZPos = HPTG2ZPos;
+        if (debug) std::cout << "[DEBUG] Using HPTG2 for target's horizontal offset." << std::endl;
     }
     else {
         std::optional<Double_t> HPTG1CalibVal = getValidBPMCalibVal( spillTimeSec, "HPTG1");
         HPTGXOffset = HPTG1 - HPTG1CalibVal.value();
         HPTGXZPos = HPTG1ZPos;
+        if (debug) std::cout << "[DEBUG] Using HPTG1 for target's horizontal offset." << std::endl;
     }
 
     std::optional<Double_t> VP873CalibVal = getValidBPMCalibVal( spillTimeSec, "VP873");
@@ -790,6 +887,14 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
     
     std::optional<Double_t> VP875CalibVal = getValidBPMCalibVal( spillTimeSec, "VP875");
     Double_t VP875Offset = VP875 - VP875CalibVal.value();
+
+    if (debug) {
+        std::cout << "[DEBUG] HP875Offset     = " << HP875Offset << std::endl;  
+        std::cout << "[DEBUG] HPTG<1,2>Offset = " << HPTGXOffset << std::endl;
+        std::cout << "[DEBUG] VP873Offset     = " << VP873Offset << std::endl;  
+        std::cout << "[DEBUG] VP875Offset     = " << VP875Offset << std::endl;  
+    }
+
     /**
      * Calculate angles between horizontal/vertical BPMs and project the BNB 
      * to the transverse plane intersecting the center of the nuclear target 
@@ -808,7 +913,14 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
 
     Double_t verAng = (VP875Offset - VP873Offset) / (VP875ZPos - VP873ZPos);
     verAng = atan(verAng);
-    Double_t tgtVerPos = VP873Offset + horAng * (targetCenterZPos - HP875ZPos);
+    Double_t tgtVerPos = VP873Offset + verAng * (targetCenterZPos - VP875ZPos);
+
+    if (debug) {
+        std::cout << "[DEBUG] horAng    = " << horAng << std::endl;
+        std::cout << "[DEBUG] tgtHorPos = " << tgtHorPos << std::endl;
+        std::cout << "[DEBUG] verAng    = " << verAng << std::endl;
+        std::cout << "[DEBUG] tgtVerPos = " << tgtVerPos << std::endl;
+    }
 
     /**
      * Prioritize using MW876 data if it has reasonable fit parameters.
@@ -823,8 +935,10 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
      */
 
     std::optional<Double_t> tgtHorWidth = std::nullopt, tgtVerWidth = std::nullopt;
-    if ( isReasonable( MW876HorWidth, 0.5, 10) 
-        && isReasonable( MW876VerWidth, 0.3, 10) ) {
+    Double_t mw876Hor_lb=0.5, mw876Hor_ub=10, mw876Ver_lb=0.3, mw876Ver_ub=10;
+    Double_t mw875Hor_lb=0.5, mw875Hor_ub=10, mw875Ver_lb=0.3, mw875Ver_ub=10;
+    if ( isReasonable( MW876HorWidth, mw876Hor_lb, mw876Hor_ub) 
+        && isReasonable( MW876VerWidth, mw876Ver_lb, mw876Ver_ub) ) {
             tgtHorWidth = expandWidth( MW876HorWidth, p876x, 2);
             tgtVerWidth = expandWidth( MW876VerWidth, p876y, 2);
 
@@ -833,11 +947,17 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
              * available coefficents, cannot calculate Figure of Merit
              */
             if ( !tgtHorWidth.has_value() || !tgtVerWidth.has_value()) {
-                return -1.;
+                return -3.0;
+            }
+
+            if (debug) {
+                std::cout << "[DEBUG] Using MW876." << std::endl;
+                std::cout << "[DEBUG] tgtHorWidth = " << tgtHorWidth.value() << std::endl;
+                std::cout << "[DEBUG] tgtVerWidth = " << tgtVerWidth.value() << std::endl;
             }
     }
-    else if ( isReasonable( MW875HorWidth, 0.5, 10) 
-        && isReasonable(MW875VerWidth, 0.3, 10) ) {
+    else if ( isReasonable( MW875HorWidth, mw875Hor_lb, mw875Hor_ub) 
+        && isReasonable(MW875VerWidth, mw875Ver_lb, mw875Ver_ub) ) {
             tgtHorWidth = expandWidth( MW875HorWidth, p875x, 2);
             tgtVerWidth = expandWidth( MW875VerWidth, p875y, 2);
 
@@ -846,21 +966,30 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
              * available coefficents, cannot calculate Figure of Merit
              */
             if ( !tgtHorWidth.has_value() || !tgtVerWidth.has_value()) {
-                return -1.;
+                return -3.0;
+            }
+
+            if (debug) {
+                std::cout << "[DEBUG] Using MW876." << std::endl;
+                std::cout << "[DEBUG] tgtHorWidth = " << tgtHorWidth.value() << std::endl;
+                std::cout << "[DEBUG] tgtVerWidth = " << tgtVerWidth.value() << std::endl;
             }
     }
     else { 
         //! @warning defaulting to Figure of Merit without multi-wire data
         std::cerr << "[WARNING] No reliable multi-wire data, defaulting to calcFoM(), which does not make use of BNB width data via multi-wire devices." << std::endl;
-        return calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR);
+        Double_t fom = 1 - pow(10, calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR));
+        return fom;
     }
 
     //! Extract values from std::optional objects
     Double_t tgtHorWidthVal = tgtHorWidth.value();
     Double_t tgtVerWidthVal = tgtVerWidth.value();
 
-    return calcFoM2( tgtHorPos, horAng, tgtVerPos, verAng, 
-        TOR, tgtHorWidthVal, tgtVerWidthVal);
+    Double_t fom2 = 1 - pow(10, calcFoM2( tgtHorPos, horAng, tgtVerPos, verAng, 
+                                    TOR, tgtHorWidthVal, tgtVerWidthVal));
+    return fom2;
+    
 }
 
 
@@ -885,5 +1014,5 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
  * the BNBVars.cxx and BNBVars.h files.
  */
 void processMWRProfile() {
-    std::cout << "Placeholder: extract gaussian fit params from MWR device \n";
+    std::cout << "[ERROR] Placeholder: extract gaussian fit params from MWR device \n";
 }

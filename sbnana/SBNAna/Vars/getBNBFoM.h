@@ -63,7 +63,8 @@ Double_t calcFoM2(
 
 Double_t getBNBFoM( 
     const Double_t spillTimeSec,
-    const Double_t TOR,
+    const Double_t TOR860,
+    const Double_t TOR875,
     const Double_t HP875, 
     const Double_t HPTG1,
     const Double_t HPTG2,
@@ -73,7 +74,8 @@ Double_t getBNBFoM(
 
 Double_t getBNBFoM2( 
     const Double_t spillTimeSec,
-    const Double_t TOR,
+    const Double_t TOR860,
+    const Double_t TOR875,
     const Double_t HP875,
     const Double_t HPTG1, 
     const Double_t HPTG2,

@@ -173,14 +173,16 @@ namespace ana {
         //! Extract variables used in FoM calculations and cast as double
         //! for compatibility with getBNBFoM().
         double kSpillTimeSecVal = kSpillTimeSec(sr);
-        double kSpillTORVal     = kSpillTOR(sr);
+        double kSpillTOR860Val  = kSpillTOR860(sr);
+        double kSpillTOR875Val  = kSpillTOR875(sr);
         double kSpillHP875Val   = kSpillHP875(sr);
         double kSpillHPTG1Val   = kSpillHPTG1(sr);
         double kSpillHPTG2Val   = kSpillHPTG2(sr);
         double kSpillVP873Val   = kSpillVP873(sr);
         double kSpillVP875Val   = kSpillVP875(sr);
 
-        double fom = getBNBFoM( kSpillTimeSecVal, kSpillTORVal,
+        double fom = getBNBFoM( kSpillTimeSecVal, 
+            kSpillTOR860Val, kSpillTOR875Val,
             kSpillHP875Val, kSpillHPTG1Val, kSpillHPTG2Val,
             kSpillVP873Val, kSpillVP875Val);
         return fom;
@@ -192,7 +194,8 @@ namespace ana {
         //! Extract variables used in FoM calculations and cast as double
         //! for compatibility with getBNBFoM2().
         double kSpillTimeSecVal       = kSpillTimeSec(sr);
-        double kSpillTORVal           = kSpillTOR(sr);
+        double kSpillTOR860Val        = kSpillTOR860(sr);
+        double kSpillTOR875Val        = kSpillTOR875(sr);
         double kSpillHP875Val         = kSpillHP875(sr);
         double kSpillHPTG1Val         = kSpillHPTG1(sr);
         double kSpillHPTG2Val         = kSpillHPTG2(sr);
@@ -203,7 +206,8 @@ namespace ana {
         double kSpillMW876HorWidthVal = kSpillMW876HorWidth(sr);
         double kSpillMW876VerWidthVal = kSpillMW876VerWidth(sr);
 
-        double fom2 = getBNBFoM2( kSpillTimeSecVal, kSpillTORVal,
+        double fom2 = getBNBFoM2( kSpillTimeSecVal, 
+            kSpillTOR860Val, kSpillTOR875Val,
             kSpillHP875Val, kSpillHPTG1Val, kSpillHPTG2Val,
             kSpillVP873Val, kSpillVP875Val,
             kSpillMW875HorWidthVal, kSpillMW875VerWidthVal,
