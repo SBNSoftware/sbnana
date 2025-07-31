@@ -58,7 +58,7 @@ const double THCURR_LB = +173, THCURR_UB = +175; //! units: kA
     acts as a measure of the geometric overlap of the BNB with the beamline's 
     nuclear target.
 */
-const double FoM_LB = 0.85;
+const double FoM_LB = 0.98;
 
 //!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
