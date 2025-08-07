@@ -57,8 +57,8 @@ Double_t calcFoM2(
     const Double_t verPos, 
     const Double_t verAng, 
     const Double_t PPP, 
-    const Double_t tgtHorWidth, 
-    const Double_t tgtVerWidth
+    const Double_t tgtHorSigma, 
+    const Double_t tgtVerSigma
 );
 
 Double_t getBNBFoM( 
@@ -81,10 +81,10 @@ Double_t getBNBFoM2(
     const Double_t HPTG2,
     const Double_t VP873,
     const Double_t VP875,
-    const Double_t MW875HorWidth,
-    const Double_t MW875VerWidth,
-    const Double_t MW876HorWidth,
-    const Double_t MW876VerWidth
+    const Double_t MW875HorSigma,
+    const Double_t MW875VerSigma,
+    const Double_t MW876HorSigma,
+    const Double_t MW876VerSigma
 );
 
 #endif

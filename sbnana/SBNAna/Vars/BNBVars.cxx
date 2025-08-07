@@ -22,28 +22,28 @@
 
 namespace ana {
     /** Multi-wire Readout Fit Parameters:
-     * @note We determine beam width primarily by fitting gaussian curves to
+     * @note We determine beam sigma primarily by fitting gaussian curves to
      * multi-wire device data; we can also extract beam position from fits.
      * Beam position should be taken from beam position monitor variables
      * above, but can be taken from below if needed.
      *
-     * @note Widths and positions provided for both horizontal and vertical
+     * @note Sigmas and positions provided for both horizontal and vertical
      * directions perpendicular to the beam direction.
      * 
      * units: mm
     */
 
-    /** @var kSpillMW875HorWidth */
-    const SpillVar kSpillMW875HorWidth = SIMPLESPILLVAR( hdr.spillbnbinfo.M875HS);
+    /** @var kSpillMW875HorSigma */
+    const SpillVar kSpillMW875HorSigma = SIMPLESPILLVAR( hdr.spillbnbinfo.M875HS);
 
-    /** @var kSpillMW875VerWidth */
-    const SpillVar kSpillMW875VerWidth = SIMPLESPILLVAR( hdr.spillbnbinfo.M875VS);
+    /** @var kSpillMW875VerSigma */
+    const SpillVar kSpillMW875VerSigma = SIMPLESPILLVAR( hdr.spillbnbinfo.M875VS);
 
-    /** @var kSpillMW876HorWidth */
-    const SpillVar kSpillMW876HorWidth = SIMPLESPILLVAR( hdr.spillbnbinfo.M876HS);
+    /** @var kSpillMW876HorSigma */
+    const SpillVar kSpillMW876HorSigma = SIMPLESPILLVAR( hdr.spillbnbinfo.M876HS);
 
-    /** @var kSpillMW876VerWidth */
-    const SpillVar kSpillMW876VerWidth = SIMPLESPILLVAR( hdr.spillbnbinfo.M876VS);
+    /** @var kSpillMW876VerSigma */
+    const SpillVar kSpillMW876VerSigma = SIMPLESPILLVAR( hdr.spillbnbinfo.M876VS);
 
     //! ////////////////////////////////////////////////////////////////////////
     //!   ^--- Multi-wire Fit Parameters ; Other BNB Variables ---v
@@ -201,17 +201,17 @@ namespace ana {
         double kSpillHPTG2Val         = kSpillHPTG2(sr);
         double kSpillVP873Val         = kSpillVP873(sr);
         double kSpillVP875Val         = kSpillVP875(sr);
-        double kSpillMW875HorWidthVal = kSpillMW875HorWidth(sr);
-        double kSpillMW875VerWidthVal = kSpillMW875VerWidth(sr);
-        double kSpillMW876HorWidthVal = kSpillMW876HorWidth(sr);
-        double kSpillMW876VerWidthVal = kSpillMW876VerWidth(sr);
+        double kSpillMW875HorSigmaVal = kSpillMW875HorSigma(sr);
+        double kSpillMW875VerSigmaVal = kSpillMW875VerSigma(sr);
+        double kSpillMW876HorSigmaVal = kSpillMW876HorSigma(sr);
+        double kSpillMW876VerSigmaVal = kSpillMW876VerSigma(sr);
 
         double fom2 = getBNBFoM2( kSpillTimeSecVal, 
             kSpillTOR860Val, kSpillTOR875Val,
             kSpillHP875Val, kSpillHPTG1Val, kSpillHPTG2Val,
             kSpillVP873Val, kSpillVP875Val,
-            kSpillMW875HorWidthVal, kSpillMW875VerWidthVal,
-            kSpillMW876HorWidthVal, kSpillMW876VerWidthVal
+            kSpillMW875HorSigmaVal, kSpillMW875VerSigmaVal,
+            kSpillMW876HorSigmaVal, kSpillMW876VerSigmaVal
         );
         return fom2;
     });

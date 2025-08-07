@@ -92,7 +92,7 @@ Double_t HPTG1ZPos         = 2048.33267;
 Double_t HPTG2ZPos         = 2052.40662;
 Double_t targetCenterZPos  = 2068.70895;
 
-//! Numbers for beam width measurements from M875BB and M876BB.
+//! Numbers for beam sigma measurements from M875BB and M876BB.
 //! These are used in 0th, 1st, and 2nd order expansions when
 //! determining beam width quantities.
 //! Study done by Zarko Pavlovic (zarko) to obtain these numbers.
@@ -104,12 +104,12 @@ std::vector<Double_t> p875y = { 0.279128, 0.337048, 0};
 std::vector<Double_t> p876x = { 0.166172, 0.30999,  -0.00630299};
 std::vector<Double_t> p876y = { 0.13425,  0.580862, 0};
 
-/** @fn expandWidth()
+/** @fn expandSigma()
  * @brief Utilizing BNB studies (see notes around p876x, etc.), calculate
- * the BNB width at the nuclear target up to an N-th order expansion
- * @return BNB width at the nuclear target
+ * the BNB sigma at the nuclear target up to an N-th order expansion
+ * @return BNB sigma at the nuclear target
  */
-static std::optional<Double_t> expandWidth(const Double_t width, const std::vector<Double_t>& coeff, const size_t N) {
+static std::optional<Double_t> expandSigma(const Double_t sigma, const std::vector<Double_t>& coeff, const size_t N) {
     if (N > coeff.size()) {
         std::cerr << "[WARN] Requested expansion order " << N 
                   << " exceeds number of coefficients (" << coeff.size() 
@@ -118,17 +118,17 @@ static std::optional<Double_t> expandWidth(const Double_t width, const std::vect
     }
     Double_t result = coeff[0];
     for (size_t i = 1; i < N; ++i) {
-        result += coeff[i] * std::pow(width, i);
+        result += coeff[i] * std::pow(sigma, i);
     }
     return result;
 }
 
 /** @fn isReasonable()
- * @brief tests if a BNB width is within the given bounds
- * @return boolean indicating if given width is within given bounds
+ * @brief tests if a BNB sigma is within the given bounds
+ * @return boolean indicating if given sigma is within given bounds
  */
-static bool isReasonable( const Double_t width, const Double_t lower, const Double_t upper) {
-    if ( width >= lower && width <= upper) return true;
+static bool isReasonable( const Double_t sigma, const Double_t lower, const Double_t upper) {
+    if ( sigma >= lower && sigma <= upper) return true;
     return false;
 }
 
@@ -434,8 +434,8 @@ Double_t calcFoM(const Double_t horPos,
  * @param verPos BNB's vertical position at nuclear target [mm]
  * @param verAng BNB's vertical angle at nuclear target [rad]
  * @param PPP Protons per pulse (used for emittance and momentum spread)
- * @param tgtHorWidth Horizontal width of the BNB at the nuclear target [mm]
- * @param tgtVerWidth Vertical width of the BNB at the nuclear target [mm]
+ * @param tgtHorSigma Horizontal sigma of the BNB at the nuclear target [mm]
+ * @param tgtVerSigma Vertical sigma of the BNB at the nuclear target [mm]
  * 
  * @return Double representing log10(1 - overlap-fraction), or -4 if invalid.
  */
@@ -444,8 +444,8 @@ Double_t calcFoM2(const Double_t horPos,
                     const Double_t verPos, 
                     const Double_t verAng,
                     const Double_t PPP, 
-                    const Double_t tgtHorWidth, 
-                    const Double_t tgtVerWidth) {
+                    const Double_t tgtHorSigma, 
+                    const Double_t tgtVerSigma) {
     if (debug) {
         std::cout << "[DEBUG] calcFoM2() called with...\n";
         std::cout << "[DEBUG] horPos      = " << horPos << std::endl;
@@ -453,8 +453,8 @@ Double_t calcFoM2(const Double_t horPos,
         std::cout << "[DEBUG] verPos      = " << verPos << std::endl;
         std::cout << "[DEBUG] verAng      = " << verAng << std::endl;
         std::cout << "[DEBUG] PPP         = " << PPP << std::endl;
-        std::cout << "[DEBUG] tgtHorWidth = " << tgtHorWidth << std::endl;
-        std::cout << "[DEBUG] tgtVerWidth = " << tgtVerWidth << std::endl;
+        std::cout << "[DEBUG] tgtHorSigma = " << tgtHorSigma << std::endl;
+        std::cout << "[DEBUG] tgtVerSigma = " << tgtVerSigma << std::endl;
     }
     //! Beam Twiss parameters and dispersions from MiniBooNE AnalysisFramework
     //! Code from DQ_BeamLine_twiss_init.F
@@ -534,20 +534,20 @@ Double_t calcFoM2(const Double_t horPos,
 
     //! swim to upstream of target
     swimBNB(centroid1, sigma1, cnttoups, begtoups, cx, cy, sx, sy, rho);
-    scalex = tgtHorWidth / sx;
-    scaley = tgtVerWidth / sy;
+    scalex = tgtHorSigma / sx;
+    scaley = tgtVerSigma / sy;
     Double_t fom2_a = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
     //! swim to center of target
     swimBNB(centroid1, sigma1, identity, begtocnt, cx, cy, sx, sy, rho);
-    scalex = tgtHorWidth / sx;
-    scaley = tgtVerWidth / sy;
+    scalex = tgtHorSigma / sx;
+    scaley = tgtVerSigma / sy;
     Double_t fom2_b = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
     //! swim to downstream of target
     swimBNB(centroid1, sigma1, cnttodns, begtodns, cx, cy, sx, sy, rho);
-    scalex = tgtHorWidth / sx;
-    scaley = tgtVerWidth / sy;
+    scalex = tgtHorSigma / sx;
+    scaley = tgtVerSigma / sy;
     Double_t fom2_c = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
     if (fom2_a <= -10000.
@@ -731,24 +731,24 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
      * Calculating a Figure of Merit without the use of multi-wire data amounts
      * to setting scalex and scaley both equal to 1 (see documentation on
      * getBNBFoM() and getBNBFoM2() for more details).
-     * scalex = tgtHorWidth / sx, i.e. the x-scale is the width of the BNB at 
-     * the center of the nuclear target divided by the width of the BNB at at 
+     * scalex = tgtHorSigma / sx, i.e. the x-scale is the stdev of the BNB at 
+     * the center of the nuclear target divided by the stdev of the BNB at at 
      * one of the positions you can "swim" to (see swimBNB for details on this).
-     * In general, we have that tgtHorWidth = sx for a given timestamp. At this
+     * In general, we have that tgtHorSigma = sx for a given timestamp. At this
      * timestamp, we can "swim" to different locations to get different sx, but
-     * tgtHorWidth is constant at a given timestamp. We set tgtHorWidth = sx = 1 
+     * tgtHorSigma is constant at a given timestamp. We set tgtHorSigma = sx = 1 
      * for this Figure of Merit calculation that does not make use of the 
-     * multi-wire data. tgtHorWidth = sx = 1 is done inside calcFoM(), and thus 
+     * multi-wire data. tgtHorSigma = sx = 1 is done inside calcFoM(), and thus 
      * we do not pass BNB width data to the calcFoM() below. For a Figure of 
      * Merit that makes use of BNB width data, please see getBNBFoM2() and
      * calcFoM2().
      *
      * @note One could do studies to come up with a better value for 
-     * tgtHorWidth = sx by, e.g., visually inspecting the (hopefully) gaussian 
+     * tgtHorSigma = sx by, e.g., visually inspecting the (hopefully) gaussian 
      * profiles of the multi-wire devices. However, since the goal in SBN is to 
      * use a Figure of Merit that *does* use multi-wire data, we have not 
      * concerned ourselves too much with what constant value we set 
-     * tgtHorWidth = sx.
+     * tgtHorSigma = sx.
      */
     Double_t fom = 1 - pow(10, calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR));
     return fom;
@@ -770,10 +770,10 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
  * @param HPTG2 Horizontal position of BNB upstream of nuclear target [mm]
  * @param VP873 Vertical position of BNB upstream of nuclear target [mm]
  * @param VP875 Vertical position of BNB upstream of nuclear target [mm]
- * @param MW875HorWidth Horizontal width of the BNB upstream of target [mm]
- * @param MW875VerWidth Vertical width of the BNB upstream of target [mm]
- * @param MW876HorWidth Horizontal width of the BNB upstream of target [mm]
- * @param MW876VerWidth Vertical width of the BNB upstream of target [mm]
+ * @param MW875HorSigma Horizontal sigma of the BNB upstream of target [mm]
+ * @param MW875VerSigma Vertical sigma of the BNB upstream of target [mm]
+ * @param MW876HorSigma Horizontal sigma of the BNB upstream of target [mm]
+ * @param MW876VerSigma Vertical sigma of the BNB upstream of target [mm]
  * 
  * Order of horizontal BPMs: HP875, HPTG1, HPTG2
  * Order of vertical BPMs: VP873, VP875
@@ -790,10 +790,10 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
                       const Double_t HPTG2,
                       const Double_t VP873,
                       const Double_t VP875,
-                      const Double_t MW875HorWidth,
-                      const Double_t MW875VerWidth,
-                      const Double_t MW876HorWidth,
-                      const Double_t MW876VerWidth) {
+                      const Double_t MW875HorSigma,
+                      const Double_t MW875VerSigma,
+                      const Double_t MW876HorSigma,
+                      const Double_t MW876VerSigma) {
     /**
      * Use POT-monitoring device closest to the nuclear target. If no device
      * registers non-zero POT, return -1 as a sentinal error value.
@@ -935,45 +935,45 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
      * getFOM2.cxx in MicroBooNE's ubraw GitHub repository for details).
      */
 
-    std::optional<Double_t> tgtHorWidth = std::nullopt, tgtVerWidth = std::nullopt;
+    std::optional<Double_t> tgtHorSigma = std::nullopt, tgtVerSigma = std::nullopt;
     Double_t mw876Hor_lb=0.5, mw876Hor_ub=10, mw876Ver_lb=0.3, mw876Ver_ub=10;
     Double_t mw875Hor_lb=0.5, mw875Hor_ub=10, mw875Ver_lb=0.3, mw875Ver_ub=10;
-    if ( isReasonable( MW876HorWidth, mw876Hor_lb, mw876Hor_ub) 
-        && isReasonable( MW876VerWidth, mw876Ver_lb, mw876Ver_ub) ) {
-            tgtHorWidth = expandWidth( MW876HorWidth, p876x, 2);
-            tgtVerWidth = expandWidth( MW876VerWidth, p876y, 2);
+    if ( isReasonable( MW876HorSigma, mw876Hor_lb, mw876Hor_ub) 
+        && isReasonable( MW876VerSigma, mw876Ver_lb, mw876Ver_ub) ) {
+            tgtHorSigma = expandSigma( MW876HorSigma, p876x, 2);
+            tgtVerSigma = expandSigma( MW876VerSigma, p876y, 2);
 
             /** @warning 
              * If specified N for expansion is greater than the number of
              * available coefficents, cannot calculate Figure of Merit
              */
-            if ( !tgtHorWidth.has_value() || !tgtVerWidth.has_value()) {
+            if ( !tgtHorSigma.has_value() || !tgtVerSigma.has_value()) {
                 return -3.0;
             }
 
             if (debug) {
                 std::cout << "[DEBUG] Using MW876." << std::endl;
-                std::cout << "[DEBUG] tgtHorWidth = " << tgtHorWidth.value() << std::endl;
-                std::cout << "[DEBUG] tgtVerWidth = " << tgtVerWidth.value() << std::endl;
+                std::cout << "[DEBUG] tgtHorSigma = " << tgtHorSigma.value() << std::endl;
+                std::cout << "[DEBUG] tgtVerSigma = " << tgtVerSigma.value() << std::endl;
             }
     }
-    else if ( isReasonable( MW875HorWidth, mw875Hor_lb, mw875Hor_ub) 
-        && isReasonable(MW875VerWidth, mw875Ver_lb, mw875Ver_ub) ) {
-            tgtHorWidth = expandWidth( MW875HorWidth, p875x, 2);
-            tgtVerWidth = expandWidth( MW875VerWidth, p875y, 2);
+    else if ( isReasonable( MW875HorSigma, mw875Hor_lb, mw875Hor_ub) 
+        && isReasonable(MW875VerSigma, mw875Ver_lb, mw875Ver_ub) ) {
+            tgtHorSigma = expandSigma( MW875HorSigma, p875x, 2);
+            tgtVerSigma = expandSigma( MW875VerSigma, p875y, 2);
 
             /** @warning 
              * If specified N for expansion is greater than the number of
              * available coefficents, cannot calculate Figure of Merit
              */
-            if ( !tgtHorWidth.has_value() || !tgtVerWidth.has_value()) {
+            if ( !tgtHorSigma.has_value() || !tgtVerSigma.has_value()) {
                 return -3.0;
             }
 
             if (debug) {
                 std::cout << "[DEBUG] Using MW876." << std::endl;
-                std::cout << "[DEBUG] tgtHorWidth = " << tgtHorWidth.value() << std::endl;
-                std::cout << "[DEBUG] tgtVerWidth = " << tgtVerWidth.value() << std::endl;
+                std::cout << "[DEBUG] tgtHorSigma = " << tgtHorSigma.value() << std::endl;
+                std::cout << "[DEBUG] tgtVerSigma = " << tgtVerSigma.value() << std::endl;
             }
     }
     else { 
@@ -988,11 +988,11 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
     }
 
     //! Extract values from std::optional objects
-    Double_t tgtHorWidthVal = tgtHorWidth.value();
-    Double_t tgtVerWidthVal = tgtVerWidth.value();
+    Double_t tgtHorSigmaVal = tgtHorSigma.value();
+    Double_t tgtVerSigmaVal = tgtVerSigma.value();
 
     Double_t fom2 = 1 - pow(10, calcFoM2( tgtHorPos, horAng, tgtVerPos, verAng, 
-                                    TOR, tgtHorWidthVal, tgtVerWidthVal));
+                                    TOR, tgtHorSigmaVal, tgtVerSigmaVal));
     return fom2;
     
 }
@@ -1015,7 +1015,7 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
  * @note This function should only be implemented if it is found that the
  * multi-wire fit parameters on IFBeam are not reliable. There's no sense in
  * re-fitting if we trust the IFBeam fit parameters. The IFBeam fit parameters
- * are what is referenced as kSpillMW875HorWidth, kSpillMW876VerPos, etc., in
+ * are what is referenced as kSpillMW875HorSigma, kSpillMW876VerPos, etc., in
  * the BNBVars.cxx and BNBVars.h files.
  */
 void processMWRProfile() {

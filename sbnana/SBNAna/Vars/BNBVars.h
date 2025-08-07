@@ -65,17 +65,17 @@ namespace ana
     extern const SpillVar kSpillTHCURR;
 
     //! Multi-wire Readout Fit Parameters:
-    //! @note We determine beam width primarily by fitting gaussian curves to
+    //! @note We determine beam sigma primarily by fitting gaussian curves to
     //! multi-wire device data; we can also extract beam position from fits.
     //! Beam position should be taken from beam position monitor variables
     //! above, but can be taken from below if needed.
-    //! @note Widths and positions provided for both horizontal and vertical
+    //! @note Sigmas and positions provided for both horizontal and vertical
     //! directions perpendicular to the beam direction.
     //! units: mm
-    extern const SpillVar kSpillMW875HorWidth;
-    extern const SpillVar kSpillMW875VerWidth;
-    extern const SpillVar kSpillMW876HorWidth;
-    extern const SpillVar kSpillMW876VerWidth;
+    extern const SpillVar kSpillMW875HorSigma;
+    extern const SpillVar kSpillMW875VerSigma;
+    extern const SpillVar kSpillMW876HorSigma;
+    extern const SpillVar kSpillMW876VerSigma;
 
     //! Figure(s) of Merit: @see getBNBFoM.cxx (and getBNBFoM2.cxx) for details
     extern const SpillVar kSpillFoM;
