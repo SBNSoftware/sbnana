@@ -18,21 +18,17 @@ namespace ana {
 
     namespace slc {
         // parameters
-        bool print = false;  // print on terminal
+        bool print = false;   // print on terminal
         bool EHcomp = false;  // enable quality cut on hit_comp and E_comp
-        bool DvCut = false;  // enable cut on the distance between mc vtx and reco vtx
-        float mcLmin = 50.;  // minimal length of the track on mc
-        float Vdist = 15.;   // distance between mc vtx and reco vtx
-        float Tss = 0.7;     // overlap of the segments on the z-axis
-        float thetaM = 35.;  // angle between the directions of the segments
-        float Dss = 0.7;     // 3D distance between the segments
+        bool DvCut = false;   // enable cut on the distance between mc vtx and reco vtx
+        float mcLmin = 50.;   // minimal length of the track on mc
+        float trkLmin = 20.;  // minimal length of the reconstructed track
+        float trkScore = 0.4; // The MVA score that determines how track/shower like a PFP is
+        float Vdist = 15.;    // distance between mc vtx and reco vtx
+        float Tss = 0.7;      // overlap of the segments on the z-axis
+        float thetaM = 35.;   // angle between the directions of the segments
+        float Dss = 0.7;      // 3D distance between the segments
     } // namespace slc
-
-    static bool kIcarus202401BaryFMCut(const caf::SRSliceProxy &slc) {
-        return !std::isnan(slc.barycenterFM.deltaZ_Trigger) && 
-            slc.barycenterFM.deltaZ_Trigger >= 0 && 
-            slc.barycenterFM.deltaZ_Trigger < 100;
-    }
 
     // sort start and end points of the track according to the distance from the vertex
     void Icarus202412SortPFP(PFP &a, const caf::SRVector3DProxy &vtx) {
@@ -52,7 +48,7 @@ namespace ana {
         // check if the slice is associated with an OptFlash
         if(!kIcarus202401BaryFMCut(slc)) return stitch;
         // check if the slice is in the fiducial volume
-        if(!kIcarus202401RecoFiducial(slc)) return stitch;
+        if(!kIcarus202412RecoFiducial(slc)) return stitch;
         auto const& vtx = slc.vertex;
         // MC
         if(mc) {
@@ -77,7 +73,7 @@ namespace ana {
         std::vector<PFP> pfp;
         for(size_t i=0; i<slc.reco.npfp; i++) {
             // check if the pfp is a muon
-            if(!kIcarus202401MuonTrack(slc.reco.pfp.at(i))) continue;
+            if(!kIcarus202401MuonTrack(slc.reco.pfp.at(i), slc::trkScore, slc::trkLmin)) continue;
             PFP P;
             P.start.x = slc.reco.pfp.at(i).trk.start.x;
             P.start.y = slc.reco.pfp.at(i).trk.start.y;
