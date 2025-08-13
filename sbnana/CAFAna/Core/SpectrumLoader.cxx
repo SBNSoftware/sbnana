@@ -411,7 +411,7 @@ namespace ana
                               << " returned from a TruthVar. The input variable(s) could "
                               << "be NaN in the CAF, or perhaps your "
                               << "Var code computed 0/0?";
-                    std::cout << " Not filling into this histogram for this slice." << std::endl;
+                    std::cout << " Not filling into this histogram for this True Interaction." << std::endl;
                     continue;
                   }
 
