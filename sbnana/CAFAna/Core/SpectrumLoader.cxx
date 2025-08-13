@@ -835,7 +835,18 @@ namespace ana
       for( caf::SRSliceProxy& slc: sr->slc ) {
         for ( auto& [shift, cutmap] : shiftmap ) {
           for ( auto& [cut, treemap] : cutmap ) {
+
+            // Shift here (in case we have lateral shift) before checking Cut
+            // We have to Rollback here and shift again for each sigma
+            caf::SRProxySystController::BeginTransaction();
+            double tmp_systWeight = 1;
+            // Can special-case nominal to not pay cost of Shift()
+            if(!shift.IsNominal()){
+              shift.Shift(&slc, tmp_systWeight);
+            }
             const bool pass = cut(&slc);
+            caf::SRProxySystController::Rollback();
+
             // Cut failed, skip all the histograms that depended on it
             if(!pass) continue;
 
@@ -889,10 +900,21 @@ namespace ana
 
     // Truth Sigma knobs
     // NB: We DON'T keep track of Nominal Cut/Var/etc. because we want to shift/reset shifts for the weight saving... We sacrifice potential speed here by choice.
-    for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
-      for ( auto& [shift, truthcutmap] : fTruthNSigmasTreeDefs ) {
+    for ( auto& [shift, truthcutmap] : fTruthNSigmasTreeDefs ) {
+      for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
         for ( auto& [truthcut, treemap] : truthcutmap ) {
+
+          // Shift here (in case we have lateral shift) before checking Cut
+          // We have to Rollback here and shift again for each sigma
+          caf::SRProxySystController::BeginTransaction();
+          double tmp_systWeight = 1;
+          // Can special-case nominal to not pay cost of Shift()
+          if(!shift.IsNominal()){
+            shift.Shift(&nu, tmp_systWeight);
+          }
           const bool pass = truthcut(&nu);
+          caf::SRProxySystController::Rollback();
+
           // Cut failed, skip all the histograms that depended on it
           if(!pass) continue;
 
@@ -1006,61 +1028,65 @@ namespace ana
     } // end for spillcut
 
     // Universe knobs, Truth
-    for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
-      // Some shifts only adjust the weight, so they're effectively nominal,
-      // but aren't grouped with the other nominal histograms. Keep track of
-      // the results for nominals in these caches to speed those systs up.
-      CutVarCache<bool, TruthCut, caf::SRTrueInteractionProxy> nomTruthCutCache;
+    // Check if any Tree defined first
+    if(fTruthNUniversesTreeDefs.size()>0){
 
-      for ( auto& [shift, truthcutmap] : fTruthNUniversesTreeDefs ) {
-        // Need to provide a clean slate for each new set of systematic
-        // shifts to work from. Copying the whole StandardRecord is pretty
-        // expensive, so modify it in place and revert it afterwards.
-        caf::SRProxySystController::BeginTransaction();
+      for(caf::SRTrueInteractionProxy& nu: sr->mc.nu){
+        // Some shifts only adjust the weight, so they're effectively nominal,
+        // but aren't grouped with the other nominal histograms. Keep track of
+        // the results for nominals in these caches to speed those systs up.
+        CutVarCache<bool, TruthCut, caf::SRTrueInteractionProxy> nomTruthCutCache;
 
-        bool shifted = false;
+        for ( auto& [shift, truthcutmap] : fTruthNUniversesTreeDefs ) {
+          // Need to provide a clean slate for each new set of systematic
+          // shifts to work from. Copying the whole StandardRecord is pretty
+          // expensive, so modify it in place and revert it afterwards.
+          caf::SRProxySystController::BeginTransaction();
 
-        double systWeight = 1;
-        // Can special-case nominal to not pay cost of Shift()
-        if(!shift.IsNominal()){
-          shift.Shift(&nu, systWeight);
-          // If there were only weighting systs applied then the cached
-          // nominal values are still valid.
-          shifted = caf::SRProxySystController::AnyShifted();
-        }
+          bool shifted = false;
 
-        for ( auto& [truthcut, treemap] : truthcutmap ) {
-          const bool pass = shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
-          // Cut failed, skip all the histograms that depended on it
-          if(!pass) continue;
+          double systWeight = 1;
+          // Can special-case nominal to not pay cost of Shift()
+          if(!shift.IsNominal()){
+            shift.Shift(&nu, systWeight);
+            // If there were only weighting systs applied then the cached
+            // nominal values are still valid.
+            shifted = caf::SRProxySystController::AnyShifted();
+          }
 
-          for ( std::map<NUniversesTree*, std::map<std::vector<TruthVarOrMultiVar>, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
-            std::map<std::string, std::vector<double>> headerVals;
-            std::map<std::string, std::vector<double>> recordVals;
-            for ( auto& [universes, systname] : treemapIt->second ) {
-              for ( auto const& truthvar : universes ) {
-                double truthval = truthvar.GetVar()(&nu);
-                recordVals[systname].push_back(truthval);
+          for ( auto& [truthcut, treemap] : truthcutmap ) {
+            const bool pass = shifted ? truthcut(&nu) : nomTruthCutCache.Get(truthcut, &nu);
+            // Cut failed, skip all the histograms that depended on it
+            if(!pass) continue;
+
+            for ( std::map<NUniversesTree*, std::map<std::vector<TruthVarOrMultiVar>, std::string>>::iterator treemapIt=treemap.begin(); treemapIt!=treemap.end(); ++treemapIt ) {
+              std::map<std::string, std::vector<double>> headerVals;
+              std::map<std::string, std::vector<double>> recordVals;
+              for ( auto& [universes, systname] : treemapIt->second ) {
+                for ( auto const& truthvar : universes ) {
+                  double truthval = truthvar.GetVar()(&nu);
+                  recordVals[systname].push_back(truthval);
+                }
               }
-            }
-            // If fSaveRunSubrunEvt then fill these entries...
-            if ( treemapIt->first->SaveRunSubEvent() ) {
-              headerVals["Run/i"].push_back( sr->hdr.run );
-              headerVals["Subrun/i"].push_back( sr->hdr.subrun );
-              headerVals["Evt/i"].push_back( sr->hdr.evt );
-            }
+              // If fSaveRunSubrunEvt then fill these entries...
+              if ( treemapIt->first->SaveRunSubEvent() ) {
+                headerVals["Run/i"].push_back( sr->hdr.run );
+                headerVals["Subrun/i"].push_back( sr->hdr.subrun );
+                headerVals["Evt/i"].push_back( sr->hdr.evt );
+              }
 
-            treemapIt->first->UpdateEntries(headerVals,recordVals);
-          } // end for tree
-        } // end for truthcut
+              treemapIt->first->UpdateEntries(headerVals,recordVals);
+            } // end for tree
+          } // end for truthcut
 
-        // Return StandardRecord to its unshifted form ready for the next
-        // histogram.
-        caf::SRProxySystController::Rollback();
-      } // end for shift
+          // Return StandardRecord to its unshifted form ready for the next
+          // histogram.
+          caf::SRProxySystController::Rollback();
+        } // end for shift
 
-    } // end for nu
+      } // end for nu
 
+    } // Check if any Truth Tree was defined
 
   }
 
