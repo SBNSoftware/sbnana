@@ -478,6 +478,8 @@ namespace ana
               else if ( slc.truth.index != nu.index ) continue;
               if( cut(&slc) ){
                 HasMatchedSlicePassCut = true;
+                // make sure to Rollback before break
+                caf::SRProxySystController::Rollback();
                 break;
               }
               caf::SRProxySystController::Rollback();
