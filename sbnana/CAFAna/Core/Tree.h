@@ -66,6 +66,8 @@ namespace ana
     bool SaveSliceNum() const {return fSaveSliceNum;}
     void OverridePOT(double newpot) {fPOT = newpot;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
     void OverrideLivetime(double newlive) {fLivetime = newlive;} // as in Spectrum: DO NOT USE UNLESS CERTAIN THERE ISN'T A BETTER WAY!
+    // Option for Truth-based Tree; Not looping and checking over reco slices to fill CutType
+    void SetSaveTruthCutType(bool _b) {fSaveTruthCutType = _b;}
     bool SaveTruthCutType() const {return fSaveTruthCutType;}
     Cut GetSignalSelectionCut() const {return SignalSelection;}
     virtual void SaveTo( TDirectory* dir ) const;
