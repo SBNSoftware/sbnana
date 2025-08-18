@@ -799,11 +799,10 @@ namespace ana
                 }
                 int tmp_CutType = HasMatchedSlicePassCut ? 1 : 0;
                 recordVals["CutType/i"].push_back( tmp_CutType );
-
-                int tmp_SpillCutType = spillpass ? 1 : 0;
-                recordVals["SpillCutType/i"].push_back( tmp_SpillCutType );
-
               }
+
+              int tmp_SpillCutType = spillpass ? 1 : 0;
+              recordVals["SpillCutType/i"].push_back( tmp_SpillCutType );
 
 
 

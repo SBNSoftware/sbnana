@@ -51,7 +51,8 @@ namespace ana
           const TruthCut& truthcut,
           const Cut& SignalSelection,
           const SystShifts& shift = kNoShift,
-          const bool saveRunSubEvt = false );
+          const bool saveRunSubEvt = false,
+          const bool saveTruthCutType = true);
 
     // Add functionality to update the protected stuff from elsewhere
     /// Function to update protected members (the branches). DO NOT USE outside of the filling.
@@ -81,7 +82,7 @@ namespace ana
     double fLivetime;
     bool fSaveRunSubEvt;
     bool fSaveSliceNum;
-    bool fSaveTruthCutType;
+    bool fSaveTruthCutType{false};
     const Cut SignalSelection;
   };
 
