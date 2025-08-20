@@ -11,7 +11,7 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "sbnana/CAFAna/Core/Spectrum.h"
 
-#include "helper_nuesel_icarus.h"
+#include "helper_nuesel_icarus.h" //! contains Spectrum creation templates
 #include "tools_nuesel_icarus.h"
 
 #include "TFile.h"
