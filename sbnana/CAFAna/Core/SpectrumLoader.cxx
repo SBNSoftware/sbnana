@@ -658,7 +658,7 @@ namespace ana
           } // end for cut
 
           // Return StandardRecord to its unshifted form ready for the next
-          // histogram.
+          // Tree.
           caf::SRProxySystController::Rollback();
 
           //idxShift+=1;
@@ -813,7 +813,7 @@ namespace ana
           } // end for cut
 
           // Return StandardRecord to its unshifted form ready for the next
-          // histogram.
+          // Tree.
           caf::SRProxySystController::Rollback();
 
           //idxShift+=1;
@@ -1019,7 +1019,7 @@ namespace ana
           } // end for cut
 
           // Return StandardRecord to its unshifted form ready for the next
-          // histogram.
+          // Tree.
           caf::SRProxySystController::Rollback();
         } // end for shift
         idxSlice+=1;
@@ -1079,7 +1079,7 @@ namespace ana
           } // end for truthcut
 
           // Return StandardRecord to its unshifted form ready for the next
-          // histogram.
+          // Tree.
           caf::SRProxySystController::Rollback();
         } // end for shift
 
