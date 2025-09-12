@@ -22,12 +22,19 @@ namespace ana
   {
     if(sr->truth.index < 0) return 1;
 
+    return operator()(&(sr->truth));
+  }
+
+  // --------------------------------------------------------------------------
+  double UniverseWeight::operator()(const caf::SRTrueInteractionProxy* nu) const
+  {
+
     if(fPSetIdx == -1){
       const UniverseOracle& uo = UniverseOracle::Instance();
       fPSetIdx = uo.ParameterSetIndex(fPSetName);
     }
 
-    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = nu->wgt;
     if(wgts.empty()) return 1;
 
     const int Nwgts = wgts[fPSetIdx].univ.size();
@@ -53,11 +60,17 @@ namespace ana
   // --------------------------------------------------------------------------
   void SBNWeightSyst::Shift(double x, caf::SRSliceProxy* sr, double& weight) const
   {
-    if(sr->truth.index < 0) return;
+    this->Shift(x, &sr->truth, weight);
+  }
+
+  // --------------------------------------------------------------------------
+  void SBNWeightSyst::Shift(double x, caf::SRTrueInteractionProxy* nu, double& weight) const
+  {
+    if(nu->index < 0) return;
 
     if(fIdx == -1) fIdx = UniverseOracle::Instance().SystIndex(ShortName());
 
-    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = sr->truth.wgt;
+    const caf::Proxy<std::vector<caf::SRMultiverse>>& wgts = nu->wgt;
     if(wgts.empty()) return;
 
     const Univs u = GetUnivs(x);

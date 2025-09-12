@@ -14,6 +14,7 @@ public:
   virtual ~BoosterFluxHadronSyst();
 
   void Shift(double sigma, caf::SRSliceProxy* slc, double& weight) const override;
+  void Shift(double sigma, caf::SRTrueInteractionProxy* nu, double& weight) const override;
 
 protected:
   friend const BoosterFluxHadronSyst* GetBoosterFluxHadronSyst(unsigned int);
