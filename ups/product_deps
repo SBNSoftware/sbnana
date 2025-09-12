@@ -254,8 +254,8 @@ libdir	fq_dir		lib
 product		version		qual	flags		<table_format=2>
 ifdhc		v2_8_0		-
 osclib		v00.26		-
-sbnanaobj	v10_00_05	-
-sbndata		v01_07		-
+sbnanaobj	v10_00_07	-
+sbndata		v01_08		-
 cetmodules	v3_24_01	-	only_for_build
 cetlib          v3_18_02
 end_product_list
