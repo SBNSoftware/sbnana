@@ -1,7 +1,7 @@
 //! ////////////////////////////////////////////////////////////////////////////
 //! Authors: Diana Patricia Mendez, Jacob Smith (smithja)                     //
 //! Contact: jacob.a.smith@stonybrook.edu                                     //
-//! Last edited: February 24th, 2025                                          //   
+//! Last edited: September 22nd, 2025                                         //   
 //!                                                                           // 
 //! Makes Spectra of the variables defined in helper with specific            // 
 //! cuts applied to the sample(s).                                            //
@@ -11,41 +11,192 @@
 #include "sbnana/CAFAna/Core/SpectrumLoader.h"
 #include "sbnana/CAFAna/Core/Spectrum.h"
 
-#include "helper_nuesel_icarus.h" //! contains Spectrum creation templates
+#include "helper_nuesel_icarus.h" //! @note contains Spectrum creation templates
 #include "tools_nuesel_icarus.h"
 
 #include "TFile.h"
 #include "TTreeReader.h"
 
+#include <filesystem>
+#include <iostream>
+#include <string>
+
 using namespace ana;
+
+//! ////////////////////////////////////////////////////////////////////////////
+//! Binnings:
+//! -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
+const Binning kEnergyBinning        = Binning::Simple(40,0.,3.); //! @todo to define
+const Binning kDedxBinning          = Binning::Simple(40,0.,10); //! @todo to define
+const Binning kGapBinning           = Binning::Simple(40,0.,10);
+const Binning kDensityBinning       = Binning::Simple(50,0.,10);
+const Binning kOpenAngleBinning     = Binning::Simple(60,0.,1.5);
+const Binning kLengthBinning        = Binning::Simple(40,0.,200);
+const Binning kPEBinning            = Binning::Simple(60,0.,600);
+const Binning kTimeBinning          = Binning::Simple(155,-1550.,1550.);
+const Binning kFlashBinning         = Binning::Simple(40,-6.f,34.f);
+const Binning kShowerEnergyBinning  = Binning::Simple( 20, 0., 1000.); // MeV
+const Binning kBarycenterFMBinning  = Binning::Simple( 41,-5., 200.);
+const Binning kFMScoreBinning       = Binning::Simple( 30,  0.,   15.);
+const Binning kFMTimeBinning        = Binning::Simple( 30,  -1.,   2.);
+//! ////////////////////////////////////////////////////////////////////////////
+
+
+//! ////////////////////////////////////////////////////////////////////////////
+//! Plots
+std::vector<PlotDef> plots_slice = {
+  {"NumberOfSlices",                     Binning::Simple(3,0,3), kCounting},
+  {"OpeningAngle",                       kOpenAngleBinning,      kRecoShower_OpenAngle},
+  {"RecoShowerStartX_cm",                kPositionXFDBinning,    kRecoShower_StartX},
+  {"RecoShowerStartY_cm",                kPositionYFDBinning,    kRecoShower_StartY},
+  {"RecoShowerStartZ_cm",                kPositionZFDBinning,    kRecoShower_StartZ},
+  {"RecoShowerEndX_cm",                  kPositionXFDBinning,    kRecoShower_EndX},
+  {"RecoShowerEndY_cm",                  kPositionYFDBinning,    kRecoShower_EndY},
+  {"RecoShowerEndZ_cm",                  kPositionZFDBinning,    kRecoShower_EndZ},
+  {"SliceVertexX_cm",                    kPositionXFDBinning,    kSlcVtxX},
+  {"SliceVertexY_cm",                    kPositionYFDBinning,    kSlcVtxY},
+  {"SliceVertexZ_cm",                    kPositionZFDBinning,    kSlcVtxZ},
+  {"RecoShowerConversionGap_cm",         kGapBinning,            kRecoShower_ConversionGap},
+  {"RecoShowerBestPlane_dEdx_MeV",       kDedxBinning,           kRecoShower_BestdEdx},  
+  {"RecoShowerBestPlaneEnergy_MeV",      kEnergyBinning,         kRecoShower_BestEnergy},  
+  {"RecoShowerShowerDensity_MeV_per_cm", kDensityBinning,        kRecoShower_Density},
+  {"RecoShowerShowerEnergy_MeV",         kShowerEnergyBinning,   kRecoShower_Energy},
+  {"RecoShowerShowerLength_cm",          kLengthBinning,         kRecoShower_Length},
+  {"LongestTrackLength_cm",              kLengthBinning,         kLongestTrackLength},
+  {"BarycenterDeltaZTrigger",            kBarycenterFMBinning,   kBarycenterFM},
+  {"FlashScore_SLICE",                   kFlashBinning,          kSlcFlashScore},
+  {"TrueEnergy_GeV",                     kLowEnergyGeVBinning,   kTruthEnergy}
+};
+
+std::vector<PlotDefSpill> plots_spill = {
+  {"NumberOfSpills",         Binning::Simple(3,0,3), kSpillCounting},
+  {"TrueNeutrinoEnergy_GeV", kLowEnergyGeVBinning,   kTruthNuEnergy},
+  {"TrueLeptonEnergy_GeV",   kLowEnergyGeVBinning,   kTruthLeptonEnergy}
+};
+
+std::vector<PlotDefMultiVar> crtplots_spill = {
+  {"CRTHitX_cm",      kCRTXFDBinning, kCRTHitX},
+  {"CRTHitY_cm",      kCRTYFDBinning, kCRTHitY},
+  {"CRTHitZ_cm",      kCRTZFDBinning, kCRTHitZ},
+  {"CRTHitTimeMus",   kTimeBinning,   kCRTHitTimeFD},
+  {"CRTPE",           kPEBinning,     kCRTHitPE}
+};
+//! ////////////////////////////////////////////////////////////////////////////
+
+
+//! ////////////////////////////////////////////////////////////////////////////
+//! Interaction types:
+std::vector<SelDef> types_slice = {
+  {"NuECCTrueContained",      kSlcIsRecoNu && kNueCC && kTrueContainedFD,                                         color_nue},
+  {"NuECCTrueFV",             kSlcIsRecoNu && kNueCC && kTrueFVFD,                                                color_nue},
+  {"NuECCTrueAndRecoFV",      kSlcIsRecoNu && kNueCC && kTrueFVFD && kRecoFVFD,                                   color_nue},
+  {"NuECCTrueContainedAndFV", kSlcIsRecoNu && kNueCC && kTrueContainedFD && kTrueFVFD,                            color_nue},
+  {"NuECCMess",               kSlcIsRecoNu && kNueCC && kTrueContainedFD && kContained && kTrueFVFD && kRecoFVFD, color_nue},
+  {"NuECC",                   kSlcIsRecoNu && kNueCC,                                                             color_nue},
+  {"NuMuCC",                  kSlcIsRecoNu && kNumuCC,                                                            color_numu},
+  {"NC",                      kSlcIsRecoNu && kNC,                                                                color_nc},
+  {"Total",                   kSlcIsRecoNu,                                                                       color_other},
+  {"Cosmic",                  kSlcIsRecoNu && kIsCosmic,                                                          color_cos}
+};
+
+//! @note kSlcIsRecoNu is already included in the spill cuts from sels_spill
+std::vector<SelDefSpill> types_spill = {
+  {"NuECC",  kNueCCSpill,      color_nue},
+  {"NuMuCC", kNumuCCSpill,     color_numu},
+  {"NC",     kNCSpill,         color_nc},
+  {"Total",  kTotalSpill,      color_other},
+  {"Cosmic", kIsCosmicSpill,   color_cos}
+};
+
+//! ////////////////////////////////////////////////////////////////////////////
+//! Cuts:
+std::vector<SelDef> sels_slice = {
+  {"NoCut",       kNoCut,            kBlack},
+  {"Containment", kContained,        kBlack},
+  {"FlashScore",  kSlcFlashMatchCut, kBlack},
+  //! Subcuts that go into the fiducial volume reco cut:
+  {"RecoShower",      kRecoShower,       kBlack},
+  {"NumberOfShowers", kNueNumShowersCut, kBlack},
+  {"Shower_dEdx",     kShowerdEdxCut,    kBlack},
+  {"ConversionGap",   kShowerConvGapCut, kBlack},
+  {"TrackLength",     kNueTrackLenCut,   kBlack},
+  {"ShowerDensity",   kShowerDensityCut, kBlack},
+  {"ShowerEnergy",    kShowerEnergyCut,  kBlack},
+  {"RecoAll",         kRecoCut,          kBlack},
+  {"Barycenter",      kBarycenterFMFDCut,kBlack},
+  {"FullSelection",   kFullCut,          kBlack},
+  //! N-1 cuts:
+  {"N-1_Containment",     kN1Contained,  kBlack},
+  {"N-1_FlashScore",      kN1Flash,      kBlack},
+  {"N-1_RecoShower",      kN1RecoShower, kBlack},
+  {"N-1_NumberOfShowers", kN1NumShowers, kBlack},
+  {"N-1_Shower_dEdx",     kN1Dedx,       kBlack},
+  {"N-1_ConversionGap",   kN1ConvGap,    kBlack},
+  {"N-1_TrackLength",     kN1TrkLen,     kBlack},
+  {"N-1_ShowerDensity",   kN1Density,    kBlack},
+  {"N-1_ShowerEnergy",    kN1Energy,     kBlack},
+  {"N-1_Barycenter",      kN1Barycenter, kBlack},
+  {"N-1_RecoAll",         kN1Reco,       kBlack}
+};
+
+std::vector<SelDefSpill> sels_spill = {
+  {"NoSpillCut",         kNoSpillCut,         kBlack},
+  {"ContainmentSpill",   kContainedSpill,     kBlack},
+  {"FlashScoreSpill",    kFlashMatchSpillCut, kBlack},
+  {"RecoAllSpill",       kRecoSpillCut,       kBlack},
+  {"FullSelectionSpill", kFullSpillCut,       kBlack}
+};
+
+std::vector<SelDefSpill> crtsels_spill = {
+  {"AllSlices", kNoSpillCut,   kBlack},
+  {"CRTVeto",   kCRTHitVetoFD, kBlue}
+};
+//! ////////////////////////////////////////////////////////////////////////////
+
+
+std::string removeFileExtension(const std::string& filename) {
+    size_t lastDotPos = filename.rfind('.');
+    if (lastDotPos != std::string::npos) {
+        return filename.substr(0, lastDotPos);
+    }
+    return filename; // No extension found
+}
 
 void make_spectra_nuesel_icarus( std::string finname = "nus", 
                                  int setno = 1, 
-                                 bool selspill = false) {
+                                 bool selspill = false,
+                                 int rank = 0,
+                                 int nRanks = 1) {
   std::string settag = std::to_string(setno);
-
-  //! Create input and output directories and files.
-  std::string findir = "/inputdir_path/";
-  std::string *pindir = &findir;
-  create_dir( pindir);
   std::string foutdir = "outputs/";
-  std::string *poutdir = &foutdir;
-  create_dir( poutdir);
 
   const std::string finsample = "refactored_g4_icarus_step2_g4step2_detsim_"
                                 "stage0_stage1_13629324_0.flat.caf"
                                 "-e8a8c7bb-7ad3-46b2-a5a6-2496ffc7199f.root"; 
-//  const std::string finsample = findir + finname + "_hadded" + settag + ".flatcaf.root";
 //  const std::string finsample = "icaruspro_production_v09_89_01_01_2024A_ICARUS_MC_Sys_NuCos_2024A_MC_Sys_NuCos_CV_flatcaf";
 
-//! Create the output filename with the "spill" tag if setno is declared.
-//! @note Since setno has a default value of 1 in the make_spectra_nuesel_icarus()
-//!       function, you will likely have to delete setno to use set the output
-//!       file name to have the "slice" tag.
-  const std::string foutname = foutdir + finsample + "_OUTPUT_SPECTRA.root";
-//  const std::string foutname = foutdir + finname + "_spectra_hadded" + settag + (selspill ? "_spill" : "_slice") + ".root";
+  //! Create the output filename with the "spill" tag if setno is declared.
+  //! @note Since setno has a default value of 1 in the make_spectra_nuesel_icarus()
+  //!       function, you will likely have to delete setno to use set the output
+  //!       file name to have the "slice" tag.
+  const std::string foutname = foutdir + removeFileExtension(finsample) + 
+      TString::Format("_OUTPUT_SPECTRA_rank%d_of_%d.root", rank, nRanks).Data();
 
   SpectrumLoader loader( finsample);
+
+  TFile* fout = TFile::Open(foutname.c_str(), "RECREATE");
+  if( !fout->IsOpen()) {
+    std::cout << "[ERROR] Output file (" << fout->GetName() << ") not open, aborting." << std::endl;
+  }
+  else if( !fout->IsWritable()) {
+    std::cout << "[ERROR] Output file (" << fout->GetName() << ") open but not writable, aborting." << std::endl;
+  }
+  else {
+    fout->cd();
+  }
+
+  std::cout << "[DEBUG] Setting gDirectory as output file " << fout->GetName() << std::endl;
+  gDirectory = fout;
 
   //////////////////////////////////////////////////////////////////////////////
   //! Pseudo-scale Cosmics:
@@ -98,142 +249,36 @@ void make_spectra_nuesel_icarus( std::string finname = "nus",
   std::cout << "Spills per cosmic Trigger: " << spills_per_cos_trig << std::endl;
   //////////////////////////////////////////////////////////////////////////////
 
-  std::vector<PlotDef> plots;
-  std::vector<SelDef> types;
-  std::vector<SelDef> sels;
+  //! Select all slices or a single slice per spill for the regular and veto
+  //! Spectra. Most of this is abstracted away to helper_nuesel_icarus.h 
+  std::vector<std::vector<std::vector<Spectrum*>>> specs;
+  std::vector<std::vector<std::vector<Spectrum*>>> specs_veto;
+  std::vector<std::vector<Spectrum*>> specs_crt;  //! @note CRT Spectra always built/saved
 
-  //! Select all slices or a single slice per spill.
+
   if( selspill){
-    //! @note may not work due to differences in structure of slice/spill objects
-    plots = plots_spill;
-    types = types_spill;
-    sels  = sels_spill;
+    specs      = buildSpectra( plots_spill, sels_spill, types_spill, loader, rank, nRanks);
+    specs_veto = buildSpectraVeto( plots_spill, sels_spill, types_spill, loader, rank, nRanks);
   }
-  else{ // using slices
-    plots = plots_slice;
-    types = types_slice;
-    sels  = sels_slice;
+  else{ //! using slices
+    specs      = buildSpectra( plots_slice, sels_slice, types_slice, loader, rank, nRanks);
+    specs_veto = buildSpectraVeto( plots_slice, sels_slice, types_slice, loader, rank, nRanks);
   }
-
-  //! Since we're making Spectra of all the different combinations of variables, 
-  //! selection criteria, and interaction type, define the total numbers of
-  //! these Spectra:
-  const unsigned int kNVar = plots.size();
-  const unsigned int kNSel = sels.size();
-  const unsigned int kNType = types.size();
-
-  //! @note These variables are declared in helper_nuesel_icarus.h
-  const unsigned int kNVarCRTSpill = crtplots_spill.size();
-  const unsigned int kNSelCRTSpill = crtsels_spill.size();
-
-  //! Make an array of Spectra with each selection-type-var combination:
-
-  //! @note Declaring these Spectra as arrays of pointers likely improves
-  //!       the speed of this program by A LOT given the number of Spectra
-  //!       we're making.
-  //!
-  //!       HOWEVER, doing so leads to memory leaks. It does not seem to affect
-  //!       the output file containing all of the Spectra. The error, a 
-  //!       "double free or corruption (!prev)" error, indicates this.
-  //!       
-  //!       I (Jacob Smith, smithja) RECOMMEND TROUBLESHOOTING THESE MEMORY
-  //!       ERRORS BEFORE INCORPORATING THIS SCRIPT INTO A LARGER FRAMEWORK.
-  //!       This would likely be done easiest with std::vectors.
-
-  Spectrum *specs[kNSel][kNType][kNVar];
-  Spectrum *specsveto[kNSel][kNType][kNVar];
-
-  Spectrum *specscrtspill[kNSelCRTSpill][kNVarCRTSpill];
-
-
-  for( unsigned int iSel = 0; iSel < kNSel; ++iSel) {
-    for( unsigned int iType = 0; iType < kNType; ++iType) {
-      for( unsigned int iVar = 0; iVar < kNVar; ++iVar) {
-        //! Spectra WITHOUT CRT veto:
-        specs[iSel][iType][iVar] = new Spectrum(
-          plots[iVar].label, 
-          plots[iVar].bins, 
-          loader, 
-          plots[iVar].var, 
-          sels[iSel].cut && types[iType].cut );
-
-        //! Spectra WITH CRT veto (kCRTHitVetoFD):
-        specsveto[iSel][iType][iVar] = new Spectrum(
-          plots[iVar].label, 
-          plots[iVar].bins, 
-          loader, 
-          plots[iVar].var, 
-          kCRTHitVetoFD, 
-          sels[iSel].cut && types[iType].cut );
-      }
-    }
-  }
-
-  for( unsigned int iSel = 0; iSel < kNSelCRTSpill; ++iSel) {
-    for( unsigned int iVar = 0; iVar < kNVarCRTSpill; ++iVar) {
-      specscrtspill[iSel][iVar] = new Spectrum(
-        crtplots_spill[iVar].label, 
-        crtplots_spill[iVar].bins, 
-        loader, 
-        crtplots_spill[iVar].var, 
-        crtsels_spill[iSel].cut);
-    }
-  }
+  specs_crt  = buildCRTSpectra( crtplots_spill, crtsels_spill, loader, rank, nRanks, kCRTHitVetoFD);
 
   //! This line is what actually fills all of the Spectra.
   loader.Go();
 
-  //! Save the Spectra to a file so we can plot them later.
-  TFile fout(foutname.c_str(), "RECREATE");
-
-  for( unsigned int iSel = 0; iSel < kNSel; ++iSel ){
-    for(unsigned int iType = 0; iType < kNType; ++iType){
-      for( unsigned int iVar = 0; iVar < kNVar; ++iVar ){
-        Spectrum *spec      = specs[iSel][iType][iVar];
-        Spectrum *spec_veto = specsveto[iSel][iType][iVar];
-
-        std::string mysuffix = types[iType].suffix + "_" + 
-                               sels[iSel].suffix + "_" + 
-                               plots[iVar].suffix;
-        std::string mysuffixveto = types[iType].suffix + "_" + 
-                                   sels[iSel].suffix + "_veto_" + 
-                                   plots[iVar].suffix;
-
-        std::cout << "Saving spectra: " << mysuffix << std::endl;
-
-        ////////////////////////////////////////////////////////////////////////
-        //! Pseudo-scale Cosmics
-        
-        //! If we are dealing with cosmic data, apply cosmic POT defined above.
-        if( finname == "cosmics") {
-          std::cout << "Fake POT scale cosmics!" << std::endl;
-          const double thisPOT( spec->POT());
-
-          //! If this Spectra's POT is smaller than the minimum perceptible
-          //! difference for C++, overwrite the POT as defined above.
-          if( thisPOT < std::numeric_limits<double>::epsilon()){
-            spec->OverridePOT( cosmicPOT);
-            spec_veto->OverridePOT( cosmicPOT);
-          }
-	      }
-        ////////////////////////////////////////////////////////////////////////
-
-        spec->SaveTo( fout.mkdir( mysuffix.c_str()));
-        spec_veto->SaveTo( fout.mkdir( mysuffixveto.c_str()));
-      }
-    }
+  if( selspill){
+    saveSpectra( *fout, specs, plots_spill, sels_spill, types_spill, rank, nRanks, "noVetoApplied");
+    saveSpectra( *fout, specs_veto, plots_spill, sels_spill, types_spill, rank, nRanks, "kCRTHitVetoFD");
   }
-
-  for( unsigned int iSel = 0; iSel < kNSelCRTSpill; ++iSel ){
-    for( unsigned int iVar = 0; iVar < kNVarCRTSpill; ++iVar ){
-      std::string mysuffix = crtsels_spill[iSel].suffix + "_" + 
-                             crtplots_spill[iVar].suffix;
-
-      std::cout << "Saving spectra: " << mysuffix << std::endl;
-
-      specscrtspill[iSel][iVar]->SaveTo( fout.mkdir( mysuffix.c_str()));
-
-    }
+  else{
+    saveSpectra( *fout, specs, plots_slice, sels_slice, types_slice, rank, nRanks, "noVetoApplied");
+    saveSpectra( *fout, specs_veto, plots_slice, sels_slice, types_slice, rank, nRanks, "kCRTHitVetoFD");
   }
-  fout.Close();
+  saveCRTSpectra( *fout, specs_crt, crtplots_spill, crtsels_spill, rank, nRanks);
+
+  fout->Write();
+  fout->Close();
 }
