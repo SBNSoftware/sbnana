@@ -109,7 +109,7 @@ namespace ana
   {
     //try to keep things in the same order, otherwise it gets very complicated but it should work as is
     
-    static std::map<std::string, int> syst_names; 
+    std::map<std::string, int> syst_names; 
     /*
     syst_names.insert(std::make_pair("var1_untunedtpcsigshape", 0));
     syst_names.insert(std::make_pair("var2_tpcind2transparency", 1));
@@ -159,15 +159,14 @@ namespace ana
     if(name_in == "recoE") 
       syst_names.insert(std::make_pair("collgain", 0));
 
-
-    std::vector<const ISyst*> ret;
-    if(!ret.empty()) return ret;
+    static std::map<std::string, std::vector<const ISyst*>> ret;
+    if(!ret[name_in].empty()) return ret[name_in];
 
     std::string histname = "ratio_";
 
     for(auto [name, mode]: syst_names)
-      ret.push_back(GetIcarusRun2DetectorSyst("detector_systematic_shifts", histname , name, name_in, var_in, mode));
+      ret[name_in].push_back(GetIcarusRun2DetectorSyst("detector_systematic_shifts", histname , name, name_in, var_in, mode));
 
-    return ret;
+    return ret[name_in];
   }
 }
