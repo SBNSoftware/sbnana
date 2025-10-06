@@ -1,6 +1,4 @@
-#include "sbnana/CAFAna/Systs/DetectorSysts.h"
-
-#include "sbnana/SBNAna/Vars/NumuVarsIcarus202401.h"
+#include "sbnana/CAFAna/Systs/IcarusRun2DetectorSysts.h"
 
 #include "TFile.h"
 #include "TH1.h"
@@ -11,7 +9,7 @@
 
 namespace ana 
 {
-  DetectorSyst::DetectorSyst(const std::string &dir,
+  IcarusRun2DetectorSyst::IcarusRun2DetectorSyst(const std::string &dir,
   std::string &prefix,
   const std::string &name,
   std::string &variable,
@@ -30,7 +28,7 @@ namespace ana
       fSystFilePath = FindCAFAnaDir() + "/Systs/IcarusRun2NumuDisDetSystRatios.root";
     }
   }
-  void DetectorSyst::Shift(double sigma, caf::SRSliceProxy* slc, double &weight) const
+  void IcarusRun2DetectorSyst::Shift(double sigma, caf::SRSliceProxy* slc, double &weight) const
   {
     if (slc->truth.index < 0) return; //No neutrino
 
@@ -39,7 +37,7 @@ namespace ana
 
     TFile f(fSystFilePath.c_str());
     if (f.IsZombie()) {
-        std::cout << "DetectorModelSysts: Failed to open " << fSystFilePath << std::endl;
+        std::cout << "IcarusRun2DetectorSysts: Failed to open " << fSystFilePath << std::endl;
         abort();
     }
     std::string hName = "";
@@ -62,9 +60,8 @@ namespace ana
     }
     TH1* h = (TH1*)f.Get(hName.c_str());
 
-    //double recoENu = kIcarus202401RecoENu(slc);
     double inputvar = fVar(slc);
-      const int bin = h->FindBin(inputvar);
+    const int bin = h->FindBin(inputvar);
    
     if (bin == 0 || bin == h->GetNbinsX() + 1) return;
     // attempt to not change any weight if the value is inf or nan, just continue with weight as-is... 
@@ -91,7 +88,7 @@ namespace ana
     }
   }   
 
-  const DetectorSyst* GetDetectorSyst(const std::string& dir,
+  const IcarusRun2DetectorSyst* GetIcarusRun2DetectorSyst(const std::string& dir,
                                       std::string& prefix,
                                       const std::string& name,
                                       std::string& variable,
@@ -100,15 +97,15 @@ namespace ana
                                       const std::string& systFile /* = "" */)
   {
     // Make sure we always give the same one back                                                                                                                
-    static std::map<std::string, const DetectorSyst*> cache;
+    static std::map<std::string, const IcarusRun2DetectorSyst*> cache;
 
     const std::string key = dir + "/" + prefix + name + variable;
-    if (cache.count(key) == 0) cache[key] = new DetectorSyst(dir, prefix, name, variable, var, fIdx, systFile);
+    if (cache.count(key) == 0) cache[key] = new IcarusRun2DetectorSyst(dir, prefix, name, variable, var, fIdx, systFile);
 
     return cache[key];
   }
 
-  std::vector<const ISyst*> GetDetectorSysts(std::string name_in, Var var_in)
+  std::vector<const ISyst*> GetIcarusRun2DetectorSysts(std::string name_in, Var var_in)
   {
     //try to keep things in the same order, otherwise it gets very complicated but it should work as is
     
@@ -169,7 +166,7 @@ namespace ana
     std::string histname = "ratio_";
 
     for(auto [name, mode]: syst_names)
-      ret.push_back(GetDetectorSyst("detector_systematic_shifts", histname , name, name_in, var_in, mode));
+      ret.push_back(GetIcarusRun2DetectorSyst("detector_systematic_shifts", histname , name, name_in, var_in, mode));
 
     return ret;
   }
