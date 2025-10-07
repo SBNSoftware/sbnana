@@ -60,7 +60,9 @@ namespace ana {
   
   // Muon candidate
   const Cut kNuMIHasMuonCandidate([](const caf::SRSliceProxy* slc) {
-    return ( kNuMIMuonCandidateIdx(slc) >= 0 );
+    int id = kNuMIMuonCandidateIdx(slc);
+    if (id < 0) return false;
+    return (slc->reco.pfp.at(id).trackScore > 0.45 && slc->reco.pfp.at(id).parent_is_primary && slc->reco.pfp.at(id).trk.len > 50.0);
   });
 
   // Proton candidate
@@ -123,6 +125,12 @@ namespace ana {
 
   });
 
+  const Cut kBaryCenterCut([](const caf::SRSliceProxy* slc) {
+    double bary = kBaryRadius(slc);
+    if (bary > 100 || bary < 0) return false;
+    return true;
+  });
+
   // Cut on showers aiming at rejecting pi0
   
   const Cut kNuMICutPhotons([](const caf::SRSliceProxy* slc) {
@@ -139,16 +147,30 @@ namespace ana {
 
   });
 
+  const Cut kHasPhotonCandidates([](const caf::SRSliceProxy* slc) {
+    int leadingPhotonIdx = kNuMILeadingPhotonCandidateIdx(slc);
+    int subleadingPhotonIdx = kNuMISubLeadingPhotonCandidateIdx(slc);
+    if ( leadingPhotonIdx >= 0 && subleadingPhotonIdx >= 0 ) return true;
+    return false;
+  });
+
   // Base selection common to side-bands (cuts back on number of entries one needs to carry):
   //
 
+  const Cut kPi0Sel_AllCuts = kNuMINotClearCosmic
+                           && kNuMIVertexInFV
+                           && kNuMIHasMuonCandidate
+                           && kNuMINoSecondPrimaryMuonlikeTracks
+                           && kBaryCenterCut
+                           && kHasPhotonCandidates;
+
   const Cut kNuMISelection_1muXpi0_Base = kNuMIVertexIsContained
-                                          && kNuMIHasMuonCandidate;
-                                          //&& kNuMIAllPrimaryHadronsContained;
+                                          && kNuMIHasMuonCandidate
+                                          && kNuMIAllPrimaryHadronsContained;
 
   const Cut kNuMISelection_1muXpi0_CosmicFilter      = kNuMIVertexIsContained
-                                                       //&& kNuMIHasMuonCandidate
-                                                       //&& kNuMIAllPrimaryHadronsContained
+                                                       && kNuMIHasMuonCandidate
+                                                       && kNuMIAllPrimaryHadronsContained
                                                        && kNuMINotClearCosmic;
   
   const Cut kNuMISelection_1muXpi0_ChargedPionFilter = kNuMIVertexInFV &&
@@ -322,10 +344,10 @@ namespace ana {
       //if (!isInFV(prim.gen.x, prim.gen.y, prim.gen.z)) continue; // FV cut
 
       double momentum = sqrt( (prim.genp.x*prim.genp.x) + (prim.genp.y*prim.genp.y) + (prim.genp.z*prim.genp.z) );
-      double energy = prim.genE;
+      double energy = prim.genE; //from sr: Energy at generation pt [GeV]
       int daughters = prim.daughters.size();
 
-      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && energy >= 0.143425 && momentum > 0.226) nMu+=1; 
       if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
       if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
       //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
@@ -390,7 +412,7 @@ namespace ana {
       double energy = prim.genE;
       int daughters = prim.daughters.size();
 
-      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && energy >= 0.143425 && momentum > 0.226) nMu+=1;
       if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
       if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
       //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
@@ -423,7 +445,7 @@ namespace ana {
       double energy = prim.genE;
       int daughters = prim.daughters.size();
 
-      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && energy >= 0.143425 && momentum > 0.226) nMu+=1;
       if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
       if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
       //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
@@ -457,7 +479,7 @@ namespace ana {
       double energy = prim.genE;
       int daughters = prim.daughters.size();
 
-      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && energy >= 0.143425 && momentum > 0.226) nMu+=1;
       if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
       if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
       //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
@@ -490,7 +512,7 @@ namespace ana {
       double energy = prim.genE;
       int daughters = prim.daughters.size();
 
-      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+      if ( abs(prim.pdg) == 13 && prim.start_process == 0 && energy >= 0.143425 && momentum > 0.226) nMu+=1;
       if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
       if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
       //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
@@ -523,7 +545,7 @@ namespace ana {
         double energy = prim.genE;
         int daughters = prim.daughters.size();
   
-        if ( abs(prim.pdg) == 13 && prim.start_process == 0 && momentum > 0.226) nMu+=1;
+        if ( abs(prim.pdg) == 13 && prim.start_process == 0 && energy >= 0.143425 && momentum > 0.226) nMu+=1;
         if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025) nPi+=1;
         if ( abs(prim.pdg) == 111 && daughters == 2 && prim.start_process == 0) nPi0+=1;
         //if ( abs(prim.pdg) == 22 && prim.start_process == 3 && energy > 0.020) nPhoton+=1;
@@ -558,7 +580,7 @@ namespace ana {
       double energy = prim.genE;
       int daughters = prim.daughters.size();
 
-      if ( abs(prim.pdg) == 13 && momentum > 0.226 && prim.start_process == 0 ) nMu+=1;
+      if ( abs(prim.pdg) == 13 && energy >= 0.143425 && momentum > 0.226 && prim.start_process == 0 ) nMu+=1;
       if ( abs(prim.pdg) == 211 && prim.start_process == 0 && energy > 0.025 ) nPi+=1;
       if ( abs(prim.pdg) == 111 && daughters == 2 ) nPi0+=1;
     }

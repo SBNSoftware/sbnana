@@ -4,13 +4,13 @@
 
 namespace ana
 {
-  bool Is_1mu_0pipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Signal 1
-  bool Is_1mu_0pipm_1pi0_OOPS(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0 Broken Signal 2
-  bool Is_1mu_0pipm_1pi0_OOFV(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0 Broken Signal 3
-  bool Is_1mu_Npipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 4
-  bool Is_1mu_Npipm_0pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 5
-  bool Is_1mu_Npi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 6
-  bool Is_0mu_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 7
+  bool Is_1mu_0pipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Signal 1 Green
+  bool Is_1mu_0pipm_1pi0_OOPS(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0 Broken Signal 2 Green
+  bool Is_1mu_0pipm_1pi0_OOFV(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0 Broken Signal 3 Green
+  bool Is_1mu_Npipm_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 4 Blue
+  bool Is_1mu_Npipm_0pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 5 Blue
+  bool Is_1mu_Npi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 6 Blue
+  bool Is_0mu_1pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 7 Brownish
   //bool Is_1mu_0pipm_0pi0(const caf::Proxy<caf::SRTrueInteraction>& true_int); //Pi0Background 6
   extern const Cut kNuMI_Is_Other_nu;
 
@@ -79,6 +79,7 @@ namespace ana
 
   /// \ref Cut aimed at having TWO photons for better pi0 selection
   extern const Cut kNuMIHasTwoPhotons;
+  extern const Cut kHasPhotonCandidates; //IVAN
 
   /// \ref Cut pion sideband
   extern const Cut kNuMIChargedPionSideBand;
@@ -97,6 +98,7 @@ namespace ana
   bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyProtonPCut);
   
   inline bool Is1muNp0piWithProtonPcut(const caf::Proxy<caf::SRTrueInteraction>& true_int){ return Is1muNp0pi(true_int, true); }
+  extern const Cut kPi0Sel_AllCuts;
   extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment;
   extern const Cut kNuMI_1mu1Pi0XStudy_Signal_NoContainment;
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment;

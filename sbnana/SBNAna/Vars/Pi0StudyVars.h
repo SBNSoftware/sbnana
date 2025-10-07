@@ -140,7 +140,7 @@ namespace ana
   extern const Var KMuonCandidateRecoStartX;
   extern const Var KMuonCandidateRecoStartY;
   extern const Var KMuonCandidateRecoStartZ;
-  extern const Var kMuonCandidate_SemCat;
+  //extern const Var kMuonCandidate_SemCat;
 
   //True Muon Vars
   extern const Var kMuonCandidateTrueStartX;
@@ -231,8 +231,8 @@ namespace ana
   extern const Var kPi0LeadingPhotonCandidateHitDen;
   extern const Var kPi0SubLeadingPhotonCandidateHitDen;
 
-  extern const Var kPi0LeadingPhoton_SemCat;
-  extern const Var kPi0SubLeadingPhoton_SemCat;
+  //extern const Var kPi0LeadingPhoton_SemCat;
+  //extern const Var kPi0SubLeadingPhoton_SemCat;
 
   extern const Var kIsClearCosmic;
   extern const Var kNGFiltPassFrac;
