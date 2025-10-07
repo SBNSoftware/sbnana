@@ -165,6 +165,41 @@ extern const Var kIcarus202401RecoMuonP;
 extern const MultiVar kIcarus202401RecoProtonP;
 extern const MultiVar kIcarus202401RecoPionP;
 
+extern const Var kIcarus202401RecoTransP;
+
+extern const Var kICARUS202401TrueLeadingProtonMomentum;
+extern const Var kICARUS202401TrueLeadingProtonCosTheta;
+
+extern const Var kIcarus202401TrueMuonP;
+extern const Var kIcarus202401TrueMuonCosTheta;
+
+extern const Var kIcarus202401RecoMuonLen;
+extern const Var kIcarus202401RecoMuonCosTheta;
+extern const Var kIcarus202401RecoMuonPhi;
+extern const Var kIcarus202401RecoMuonDirX;
+extern const Var kIcarus202401RecoMuonDirY;
+extern const Var kIcarus202401RecoMuonDirZ;
+extern const Var kIcarus202401RecoMuonEndX;
+extern const Var kIcarus202401RecoMuonEndY;
+extern const Var kIcarus202401RecoMuonEndZ;
+
+extern const Var kIcarus202401RecoLeadingProtonLen;
+extern const Var kIcarus202401RecoLeadingProtonP;
+extern const Var kIcarus202401RecoLeadingProtonCosTheta;
+extern const Var kIcarus202401RecoLeadingProtonPhi;
+extern const Var kIcarus202401RecoLeadingProtonDirX;
+extern const Var kIcarus202401RecoLeadingProtonDirY;
+extern const Var kIcarus202401RecoLeadingProtonDirZ;
+extern const Var kIcarus202401RecoLeadingProtonEndX;
+extern const Var kIcarus202401RecoLeadingProtonEndY;
+extern const Var kIcarus202401RecoLeadingProtonEndZ;
+
+extern const Var kIcarus202401RecoMuLeadPOpeningAngle;
+
+extern const Var kIcarus202401MuonChi2Mu;
+extern const Var kIcarus202401LeadingProtonChi2Proton;
+
+extern const Var kIcarus202401BaryFMDeltaZ;
 
 }
 
