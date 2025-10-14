@@ -43,7 +43,7 @@ Double_t funcIntbivar(
     const Double_t rho
 );
 
-Double_t calcFoM(
+Double_t calcFoM_noMultiWire(
     const Double_t horPos, 
     const Double_t horAng, 
     const Double_t verPos, 
@@ -51,7 +51,7 @@ Double_t calcFoM(
     const Double_t PPP
 );
 
-Double_t calcFoM2(
+Double_t calcFoM(
     const Double_t horPos, 
     const Double_t horAng, 
     const Double_t verPos, 
@@ -61,7 +61,7 @@ Double_t calcFoM2(
     const Double_t tgtVerSigma
 );
 
-Double_t getBNBFoM( 
+Double_t getBNBFoM_noMultiWire( 
     const Double_t spillTimeSec,
     const Double_t TOR860,
     const Double_t TOR875,
@@ -72,7 +72,7 @@ Double_t getBNBFoM(
     const Double_t VP875
 );
 
-Double_t getBNBFoM2( 
+Double_t getBNBFoM( 
     const Double_t spillTimeSec,
     const Double_t TOR860,
     const Double_t TOR875,

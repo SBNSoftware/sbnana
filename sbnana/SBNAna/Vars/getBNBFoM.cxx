@@ -8,7 +8,8 @@
 //!
 //! @note This code is almost entirely based off MicroBooNE's getFOM2 code in 
 //! the ubraw GitHub repo. How we calculate our Figure of Merit (FoM) is almost
-//! identical to what's done in getFOM2.cxx. See below for further details.
+//! identical to what's done in MicroBooNE's getFOM2.cxx. 
+//! See below for further details.
 //!
 //! @details Calculates the Booster Neutrino Beam (BNB) Figure of Merit (FoM),
 //! which is a score on the interval [0, 1] that acts as a measure of the 
@@ -199,7 +200,7 @@ std::optional<Double_t> getValidBPMCalibTime(const int& timestamp,
  * @param rho Output beam correlation coefficient
  * 
  * @post Beam centriod and sigma parameters as well as beam correlation 
- * coefficent are modifed in the body of calcFoM() or @calcFoM2()
+ * coefficent are modifed in the body of calcFoM_noMultiWire() or calcFoM()
  */
 void swimBNB(const Double_t centroid1[6], 
                 const Double_t sigma1[6][6],
@@ -280,7 +281,7 @@ Double_t funcIntBivar(const Double_t cx,
     return (sum >= 1.0) ? -10000. : std::log10(1.0 - sum);
 }
 
-/** @fn calcFoM()
+/** @fn calcFoM_noMultiWire()
  * @brief Calculate the Figure of Merit for BNB alignment WITHOUT use of 
  * multi-wire data.
  * 
@@ -289,7 +290,8 @@ Double_t funcIntBivar(const Double_t cx,
  * downstream) of the target, computes overlap integrals with a cylindrical 
  * target, and forms a weighted sum.
  * 
- * @note calcFoM() is the same as calcFoM2() but with scalex = scaley = 1 
+ * @note calcFoM_noMultiWire() is the same as calcFoM() 
+ * but with scalex = scaley = 1 
  * 
  * @param horPos BNB's horizontal position at nuclear target [mm]
  * @param horAng BNB's horizontal angle at nuclear target [rad]
@@ -299,13 +301,13 @@ Double_t funcIntBivar(const Double_t cx,
  * 
  * @return Double representing log10(1 - overlap-fraction), or -4 if invalid.
  */
-Double_t calcFoM(const Double_t horPos, 
+Double_t calcFoM_noMultiWire(const Double_t horPos, 
                     const Double_t horAng, 
                     const Double_t verPos, 
                     const Double_t verAng,
                     const Double_t PPP) {
     if (debug) {
-        std::cout << "[DEBUG] calcFoM() called with...\n";
+        std::cout << "[DEBUG] calcFoM_noMultiWire() called with...\n";
         std::cout << "[DEBUG] horPos = " << horPos << std::endl;
         std::cout << "[DEBUG] horAng = " << horAng << std::endl;
         std::cout << "[DEBUG] verPos = " << verPos << std::endl;
@@ -420,7 +422,7 @@ Double_t calcFoM(const Double_t horPos,
     return fom;
 }
 
-/** @fn calcFoM2()
+/** @fn calcFoM()
  * @brief Calculate the Figure of Merit for BNB alignment WITH the use of 
  * multi-wire data.
  * 
@@ -439,7 +441,7 @@ Double_t calcFoM(const Double_t horPos,
  * 
  * @return Double representing log10(1 - overlap-fraction), or -4 if invalid.
  */
-Double_t calcFoM2(const Double_t horPos, 
+Double_t calcFoM(const Double_t horPos, 
                     const Double_t horAng, 
                     const Double_t verPos, 
                     const Double_t verAng,
@@ -447,7 +449,7 @@ Double_t calcFoM2(const Double_t horPos,
                     const Double_t tgtHorSigma, 
                     const Double_t tgtVerSigma) {
     if (debug) {
-        std::cout << "[DEBUG] calcFoM2() called with...\n";
+        std::cout << "[DEBUG] calcFoM() called with...\n";
         std::cout << "[DEBUG] horPos      = " << horPos << std::endl;
         std::cout << "[DEBUG] horAng      = " << horAng << std::endl;
         std::cout << "[DEBUG] verPos      = " << verPos << std::endl;
@@ -536,38 +538,38 @@ Double_t calcFoM2(const Double_t horPos,
     swimBNB(centroid1, sigma1, cnttoups, begtoups, cx, cy, sx, sy, rho);
     scalex = tgtHorSigma / sx;
     scaley = tgtVerSigma / sy;
-    Double_t fom2_a = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
+    Double_t fom_a = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
     //! swim to center of target
     swimBNB(centroid1, sigma1, identity, begtocnt, cx, cy, sx, sy, rho);
     scalex = tgtHorSigma / sx;
     scaley = tgtVerSigma / sy;
-    Double_t fom2_b = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
+    Double_t fom_b = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
     //! swim to downstream of target
     swimBNB(centroid1, sigma1, cnttodns, begtodns, cx, cy, sx, sy, rho);
     scalex = tgtHorSigma / sx;
     scaley = tgtVerSigma / sy;
-    Double_t fom2_c = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
+    Double_t fom_c = funcIntBivar(cx, cy, sx*scalex, sy*scaley, rho);
 
-    if (fom2_a <= -10000.
-        || fom2_b <= -10000. 
-        || fom2_c <= -10000.) {
+    if (fom_a <= -10000.
+        || fom_b <= -10000. 
+        || fom_c <= -10000.) {
             return -4.0;
     }
 
-    Double_t fom2 =  fom2_a * 0.6347 + fom2_b * 0.2812 + fom2_c * 0.0841;
+    Double_t fom =  fom_a * 0.6347 + fom_b * 0.2812 + fom_c * 0.0841;
 
     if (debug) {
-        std::cout << "[DEBUG] fom2_a = " << fom2_a << std::endl;
-        std::cout << "[DEBUG] fom2_b = " << fom2_b << std::endl;
-        std::cout << "[DEBUG] fom2_c = " << fom2_c << std::endl;
-        std::cout << "[DEBUG] fom2   = " << fom2 << std::endl;
+        std::cout << "[DEBUG] fom_a = " << fom_a << std::endl;
+        std::cout << "[DEBUG] fom_b = " << fom_b << std::endl;
+        std::cout << "[DEBUG] fom_c = " << fom_c << std::endl;
+        std::cout << "[DEBUG] fom   = " << fom << std::endl;
     }
-    return fom2;
+    return fom;
 }
 
-/** @fn getBNBFoM()
+/** @fn getBNBFoM_noMultiWire()
  * @brief Identifies and calculates necessary quantities to calculate a Figure
  * of Merit then returns the Figure of Merit.
  * 
@@ -586,7 +588,7 @@ Double_t calcFoM2(const Double_t horPos,
  * @return BNB Figure of Merit not utilizing beam width data from multi-wire
  * devices
  */
-Double_t getBNBFoM( const Double_t spillTimeSec,
+Double_t getBNBFoM_noMultiWire( const Double_t spillTimeSec,
                       const Double_t TOR860,
                       const Double_t TOR875,
                       const Double_t HP875, 
@@ -730,7 +732,7 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
     /**
      * Calculating a Figure of Merit without the use of multi-wire data amounts
      * to setting scalex and scaley both equal to 1 (see documentation on
-     * getBNBFoM() and getBNBFoM2() for more details).
+     * getBNBFoM_noMultiWire() and getBNBFoM() for more details).
      * scalex = tgtHorSigma / sx, i.e. the x-scale is the stdev of the BNB at 
      * the center of the nuclear target divided by the stdev of the BNB at at 
      * one of the positions you can "swim" to (see swimBNB for details on this).
@@ -738,10 +740,10 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
      * timestamp, we can "swim" to different locations to get different sx, but
      * tgtHorSigma is constant at a given timestamp. We set tgtHorSigma = sx = 1 
      * for this Figure of Merit calculation that does not make use of the 
-     * multi-wire data. tgtHorSigma = sx = 1 is done inside calcFoM(), and thus 
-     * we do not pass BNB width data to the calcFoM() below. For a Figure of 
-     * Merit that makes use of BNB width data, please see getBNBFoM2() and
-     * calcFoM2().
+     * multi-wire data. tgtHorSigma = sx = 1 is done inside 
+     * calcFoM_noMultiWire(), and thus we do not pass BNB width data to the 
+     * this function call below. For a Figure of Merit that makes use of BNB 
+     * width data, please see getBNBFoM() and calcFoM().
      *
      * @note One could do studies to come up with a better value for 
      * tgtHorSigma = sx by, e.g., visually inspecting the (hopefully) gaussian 
@@ -750,17 +752,17 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
      * concerned ourselves too much with what constant value we set 
      * tgtHorSigma = sx.
      */
-    Double_t fom = 1 - pow(10, calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR));
+    Double_t fom = 1 - pow(10, calcFoM_noMultiWire( tgtHorPos, horAng, tgtVerPos, verAng, TOR));
     return fom;
 }
 
-/** @fn getBNBFoM2()
+/** @fn getBNBFoM()
  * @brief Identifies and calculates necessary quantities to calculate a Figure
  * of Merit then returns the Figure of Merit.
  * 
  * @note If there is not good multi-wire fit parameters, this function defaults
  * to returning a Figure of Merit that does not use multi-wire data, i.e.
- * calcFoM().
+ * calcFoM_noMultiWire().
  * 
  * @param spillTimeSec readout timestamp for given spill [non-leap seconds
  * since UNIX epoch (Jan 1, 1970 at midnight UTC/GMT)]
@@ -782,7 +784,7 @@ Double_t getBNBFoM( const Double_t spillTimeSec,
  * @return BNB Figure of Merit utilizing beam width data from multi-wire
  * devices.
  */
-Double_t getBNBFoM2( const Double_t spillTimeSec,
+Double_t getBNBFoM( const Double_t spillTimeSec,
                       const Double_t TOR860,
                       const Double_t TOR875,
                       const Double_t HP875, 
@@ -926,9 +928,9 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
     /**
      * Prioritize using MW876 data if it has reasonable fit parameters.
      * Otherwise, prioritize using MW875 data. If none of the multi-wire 
-     * devices have reasonable fit parameters, default to using calcFoM()
-     * instead of calcFoM2(). Note calcFoM() does not make use of any 
-     * multi-wire data.
+     * devices have reasonable fit parameters, default to using 
+     * calcFoM_noMultiWire() instead of calcFoM(). Note calcFoM_noMultiWire() 
+     * does not make use of any multi-wire data.
      * 
      * @note What counts as "reasonable" is up to interpretation. For the time
      * being, we use the hard-coded values that MicroBooNE used ( @see
@@ -980,10 +982,11 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
         //! @warning defaulting to Figure of Merit without multi-wire data
         if (verbose) {
             std::cerr << "[WARNING] No reliable multi-wire data, defaulting ";
-            std::cerr << "[WARNING] to calcFoM(), which does not make use of BNB width ";
-            std::cerr << "[WARNING] data via multi-wire devices." << std::endl;
+            std::cerr << "[WARNING] to calcFoM_noMultiWire(), which does not ";
+            std::cerr << "[WARNING] make use of BNB width data via the ";
+            std::cerr << "[WARNING] multi-wire devices." << std::endl;
         }
-        Double_t fom = 1 - pow(10, calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, TOR));
+        Double_t fom = 1 - pow(10, calcFoM_noMultiWire( tgtHorPos, horAng, tgtVerPos, verAng, TOR));
         return fom;
     }
 
@@ -991,9 +994,9 @@ Double_t getBNBFoM2( const Double_t spillTimeSec,
     Double_t tgtHorSigmaVal = tgtHorSigma.value();
     Double_t tgtVerSigmaVal = tgtVerSigma.value();
 
-    Double_t fom2 = 1 - pow(10, calcFoM2( tgtHorPos, horAng, tgtVerPos, verAng, 
+    Double_t fom = 1 - pow(10, calcFoM( tgtHorPos, horAng, tgtVerPos, verAng, 
                                     TOR, tgtHorSigmaVal, tgtVerSigmaVal));
-    return fom2;
+    return fom;
     
 }
 

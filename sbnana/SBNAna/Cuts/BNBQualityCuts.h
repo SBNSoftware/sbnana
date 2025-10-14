@@ -24,12 +24,12 @@ namespace ana {
 
     extern const SpillCut kTHCURRCut;
 
-    //! Figure(s) of Merit: @see getBNBFoM.cxx (and getBNBFoM2.cxx) for details
-    extern const SpillCut kFoMCut; 
-    extern const SpillCut kFoM2Cut;
+    //! Figure(s) of Merit: @see getBNBFoM.cxx for details
+    extern const SpillCut kFoMCut_noMultiWire; 
+    extern const SpillCut kFoMCut;
 
     //! ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
 
-    extern const SpillCut kBNBQualityCut_FoM1;
-    extern const SpillCut kBNBQualityCut_FoM2;
+    extern const SpillCut kBNBQualityCut_noMultiWire;
+    extern const SpillCut kBNBQualityCut;
 }

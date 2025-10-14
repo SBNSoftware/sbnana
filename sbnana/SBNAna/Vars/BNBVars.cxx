@@ -164,14 +164,14 @@ namespace ana {
 
 
     //!/////////////////////////////////////////////////////////////////////////
-    //! Figure(s) of Merit: @see getBNBFoM.cxx (and getBNBFoM2.cxx) for details
+    //! Figure(s) of Merit: @see getBNBFoM.cxx for details
     //!/////////////////////////////////////////////////////////////////////////
 
     //! @note This Figure of Merit DOES NOT take BNB width into account.
-    /** @var kSpillFoM */
-    const SpillVar kSpillFoM([](const caf::SRSpillProxy *sr) {
+    /** @var kSpillFoM_noMultiWire */
+    const SpillVar kSpillFoM_noMultiWire([](const caf::SRSpillProxy *sr) {
         //! Extract variables used in FoM calculations and cast as double
-        //! for compatibility with getBNBFoM().
+        //! for compatibility with getBNBFoM_noMultiWire().
         double kSpillTimeSecVal = kSpillTimeSec(sr);
         double kSpillTOR860Val  = kSpillTOR860(sr);
         double kSpillTOR875Val  = kSpillTOR875(sr);
@@ -181,7 +181,7 @@ namespace ana {
         double kSpillVP873Val   = kSpillVP873(sr);
         double kSpillVP875Val   = kSpillVP875(sr);
 
-        double fom = getBNBFoM( kSpillTimeSecVal, 
+        double fom = getBNBFoM_noMultiWire( kSpillTimeSecVal, 
             kSpillTOR860Val, kSpillTOR875Val,
             kSpillHP875Val, kSpillHPTG1Val, kSpillHPTG2Val,
             kSpillVP873Val, kSpillVP875Val);
@@ -189,10 +189,10 @@ namespace ana {
     });
 
     //! @note This Figure of Merit DOES take BNB width into account.
-    /** @var kSpillFoM2 */
-    const SpillVar kSpillFoM2([](const caf::SRSpillProxy *sr) {
+    /** @var kSpillFoM */
+    const SpillVar kSpillFoM([](const caf::SRSpillProxy *sr) {
         //! Extract variables used in FoM calculations and cast as double
-        //! for compatibility with getBNBFoM2().
+        //! for compatibility with getBNBFoM().
         double kSpillTimeSecVal       = kSpillTimeSec(sr);
         double kSpillTOR860Val        = kSpillTOR860(sr);
         double kSpillTOR875Val        = kSpillTOR875(sr);
@@ -206,13 +206,13 @@ namespace ana {
         double kSpillMW876HorSigmaVal = kSpillMW876HorSigma(sr);
         double kSpillMW876VerSigmaVal = kSpillMW876VerSigma(sr);
 
-        double fom2 = getBNBFoM2( kSpillTimeSecVal, 
+        double fom = getBNBFoM( kSpillTimeSecVal, 
             kSpillTOR860Val, kSpillTOR875Val,
             kSpillHP875Val, kSpillHPTG1Val, kSpillHPTG2Val,
             kSpillVP873Val, kSpillVP875Val,
             kSpillMW875HorSigmaVal, kSpillMW875VerSigmaVal,
             kSpillMW876HorSigmaVal, kSpillMW876VerSigmaVal
         );
-        return fom2;
+        return fom;
     });
 }

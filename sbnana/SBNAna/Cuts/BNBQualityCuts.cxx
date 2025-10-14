@@ -52,7 +52,7 @@ const double LM875C_LB = +1e-2;
 const double THCURR_LB = +173, THCURR_UB = +175; //! units: kA
 
 /**
-    Figure(s) of Merit: @see getBNBFoM.cxx (and getBNBFoM2.cxx) for details
+    Figure(s) of Merit: @see getBNBFoM.cxx for details
     
     @details The Figure of Merit (FoM) is a score on the interval [0, 1] that
     acts as a measure of the geometric overlap of the BNB with the beamline's 
@@ -74,13 +74,13 @@ const SpillCut kLM875CCut = kSpillLM875C >= LM875C_LB;
 
 const SpillCut kTHCURRCut = kSpillTHCURR >= THCURR_LB && kSpillTHCURR <= THCURR_UB;
 
+const SpillCut kFoMCut_noMultiWire = kSpillFoM_noMultiWire >= FoM_LB;
 const SpillCut kFoMCut = kSpillFoM >= FoM_LB;
-const SpillCut kFoM2Cut = kSpillFoM2 >= FoM_LB;
 
 //! ^--- INDIVIDUAL CUTS ; COMBINATION CUTS ---v
 
-const SpillCut kBNBQualityCut_FoM1 = kTOR860Cut && kTOR875Cut && kLM875ACut && kLM875BCut && kLM875CCut && kTHCURRCut && kFoMCut;
+const SpillCut kBNBQualityCut_noMultiWire = kTOR860Cut && kTOR875Cut && kLM875ACut && kLM875BCut && kLM875CCut && kTHCURRCut && kFoMCut_noMultiWire;
 
-const SpillCut kBNBQualityCut_FoM2 = kTOR860Cut && kTOR875Cut && kLM875ACut && kLM875BCut && kLM875CCut && kTHCURRCut && kFoM2Cut;
+const SpillCut kBNBQualityCut = kTOR860Cut && kTOR875Cut && kLM875ACut && kLM875BCut && kLM875CCut && kTHCURRCut && kFoMCut;
 
 } //! stop using namespace ana

@@ -77,7 +77,7 @@ namespace ana
     extern const SpillVar kSpillMW876HorSigma;
     extern const SpillVar kSpillMW876VerSigma;
 
-    //! Figure(s) of Merit: @see getBNBFoM.cxx (and getBNBFoM2.cxx) for details
+    //! Figure(s) of Merit: @see getBNBFoM.cxx for details
+    extern const SpillVar kSpillFoM_noMultiWire;
     extern const SpillVar kSpillFoM;
-    extern const SpillVar kSpillFoM2;
 }
