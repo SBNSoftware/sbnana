@@ -39,7 +39,10 @@ bool debug = false; //! displays helpful output for debugging
 
 
 /** @struct OffsetData Holds the timestamped calibration positions of Beam
- * Position Monitors.
+ * Position Monitors. This data was obtained by Zarko Pavlovic via IFBeam.
+ * These Beam Position Monitor offsets come from the autotune program,
+ * which is the program responsible for keeping the BNB focused on the
+ * nuclear target.
  */
 struct OffsetData {
     std::vector<int> Times; //! non-leap seconds since UNIX epoch
@@ -409,6 +412,14 @@ Double_t calcFoM_noMultiWire(const Double_t horPos,
             return -4.0;
     }
 
+    //! @note: These Figure of Merit weights are from a MiniBooNE-era
+    //! study. While the details of this study are lost to time, the
+    //! general idea behind these weights is as follows: the BNB will
+    //! have exponentially fewer interactions with the nuclear target
+    //! as you move down the beamline. Thus, we want to have our
+    //! Figure of Merit weighted towards where the majority of 
+    //! BNB-target interactions are located, i.e. the front of the 
+    //! target.
     Double_t fom =  fom_a * 0.6347 + fom_b * 0.2812 + fom_c * 0.0841;
 
 
