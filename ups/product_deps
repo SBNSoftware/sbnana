@@ -253,8 +253,8 @@ libdir	fq_dir		lib
 ####################################
 product		version		qual	flags		<table_format=2>
 ifdhc		v2_8_0		-
-osclib		v00.26		-
-sbnanaobj	v10_00_09	-
+osclib		v00.29		-
+sbnanaobj	v10_00_11	-
 sbndata		v01_08		-
 cetmodules	v3_24_01	-	only_for_build
 cetlib          v3_18_02
@@ -313,10 +313,10 @@ end_product_list
 #
 ####################################
 qualifier	sbnanaobj	ifdhc		osclib			cetlib     sbndata notes
-e26:debug       e26:debug       debug:e26:p3915 e26:n316:stanfree:debug e26:debug  -nq-    -nq-
-e26:prof        e26:prof        e26:p3915:prof  e26:n316:stanfree:prof  e26:prof   -nq-    -nq-
-c14:debug       c14:debug       c14:p3915:debug c14:n316:stanfree:debug c14:debug  -nq-    -nq-
-c14:prof        c14:prof        c14:p3915:prof  c14:n316:stanfree:prof  c14:prof   -nq-    -nq-
+e26:debug       e26:debug       debug:e26:p3915 e26:n319:stanfree:debug e26:debug  -nq-    -nq-
+e26:prof        e26:prof        e26:p3915:prof  e26:n319:stanfree:prof  e26:prof   -nq-    -nq-
+c14:debug       c14:debug       c14:p3915:debug c14:n319:stanfree:debug c14:debug  -nq-    -nq-
+c14:prof        c14:prof        c14:p3915:prof  c14:n319:stanfree:prof  c14:prof   -nq-    -nq-
 end_qualifier_list
 ####################################
 
