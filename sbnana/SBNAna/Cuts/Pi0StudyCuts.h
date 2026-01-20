@@ -28,6 +28,10 @@ namespace ana
   /// \ref Cut on vertex reconstruced in FV
   extern const Cut kNuMIVertexInFV;
 
+  /// \ref Cut on the Flash timing
+  extern const Cut kTrigFlashMatch;
+  extern const Cut kBaryCFM_radius_TriggerCut;
+
   /// \ref Cut on vertex reconstruced in contained Volume
   extern const Cut kNuMIVertexIsContained;
 
@@ -80,6 +84,7 @@ namespace ana
   /// \ref Cut aimed at having TWO photons for better pi0 selection
   extern const Cut kNuMIHasTwoPhotons;
   extern const Cut kHasPhotonCandidates; //IVAN
+  extern const Cut kHasLeadingPhotonCandidate; //IVAN
 
   /// \ref Cut pion sideband
   extern const Cut kNuMIChargedPionSideBand;
@@ -98,7 +103,9 @@ namespace ana
   bool Is1muNp0pi(const caf::Proxy<caf::SRTrueInteraction>& true_int, bool ApplyProtonPCut);
   
   inline bool Is1muNp0piWithProtonPcut(const caf::Proxy<caf::SRTrueInteraction>& true_int){ return Is1muNp0pi(true_int, true); }
-  extern const Cut kPi0Sel_AllCuts;
+  //extern const Cut kPi0Sel_AllCuts;
+  extern const Cut kPi0Sel_PreSelCuts;
+  extern const Cut kPi0Sel_FullSelCuts;
   extern const Cut kNuMI_1muNp0piStudy_Signal_NoContainment;
   extern const Cut kNuMI_1mu1Pi0XStudy_Signal_NoContainment;
   extern const Cut kNuMI_1muNp0piStudy_OtherNuCC_NoContainment;

@@ -155,6 +155,7 @@ namespace ana
   extern const Var kNuMISubLeadingPhotonCandidateE;
   extern const Var kNuMISubLeadingPhotonCandidateTrueE;
   extern const Var kNuMIPhotonCandidatesOpeningAngle;
+  extern const Var kNuMIDiPhotonMass;
   extern const Var kNuMILeadingPhotonCandidateLen;
   extern const Var kNuMISubLeadingPhotonCandidateLen;
   extern const Var kPi0LeadingPhotonCandidateHitCompletenessBestmatch;
@@ -171,6 +172,8 @@ namespace ana
   extern const Var kPi0SubLeadingPhotonCandidateBestplane_Energy;
   extern const Var kPi0LeadingPhotonCandidateBestplane_dEdx;
   extern const Var kPi0SubLeadingPhotonCandidateBestplane_dEdx;
+  extern const Var kPi0LeadingPhotonCandidateColPlane_dEdx;
+  extern const Var kPi0SubLeadingPhotonCandidateColPlane_dEdx;
   extern const Var kPi0LeadingPhotonCandidateIsContained;
   extern const Var kPi0SubLeadingPhotonCandidateIsContained;
   extern const Var kPi0LeadingPhotonCandidateTrackScore;
@@ -194,10 +197,13 @@ namespace ana
   extern const Var kPi0LeadingPhotonCandidateConversionGap;
   extern const Var kPi0SubLeadingPhotonCandidateConversionGap;
 
-  extern const Var kBaryDeltaY;
-  extern const Var kBaryDeltaZ;
-  extern const Var kBaryRadius;
-  extern const Var kBaryFlashFirstHit;
+  extern const Var kBaryCFM_deltaY_Trigger;
+  extern const Var kBaryCFM_deltaZ_Trigger;
+  extern const Var kBaryCFM_radius_Trigger;
+  extern const Var kBaryCFM_deltaY;
+  extern const Var kBaryCFM_deltaZ;
+  extern const Var kBaryCFM_radius;
+  extern const Var kBaryCFM_flashFirstHit;
 
   extern const Var kPi0LeadingPhotonCandidateCosmicDist;
   extern const Var kPi0SubLeadingPhotonCandidateCosmicDist;

@@ -62,7 +62,7 @@ namespace ana {
   const Cut kNuMIHasMuonCandidate([](const caf::SRSliceProxy* slc) {
     int id = kNuMIMuonCandidateIdx(slc);
     if (id < 0) return false;
-    return (slc->reco.pfp.at(id).trackScore > 0.45 && slc->reco.pfp.at(id).parent_is_primary && slc->reco.pfp.at(id).trk.len > 50.0);
+    return (slc->reco.pfp.at(id).parent_is_primary && slc->reco.pfp.at(id).trk.len > 50.0);
   });
 
   // Proton candidate
@@ -120,15 +120,20 @@ namespace ana {
     if ( primaryInd < 0 ) return false;
 
     std::vector<double> chargedpion_indices = kNuMIChargedPionCandidateIdxs(slc);
-    if(chargedpion_indices.size()==0) return true;
-    else return false;
+    if(chargedpion_indices.size() > 0) return false;
+    return true;
 
   });
 
-  const Cut kBaryCenterCut([](const caf::SRSliceProxy* slc) {
-    double bary = kBaryRadius(slc);
+  const Cut kBaryCFM_radius_TriggerCut([](const caf::SRSliceProxy* slc) {
+    //double bary = kBaryCFM_radius_Trigger(slc);
+    double bary = kBaryCFM_deltaZ_Trigger(slc);
     if (bary > 100 || bary < 0) return false;
     return true;
+  });
+
+  const Cut kTrigFlashMatch([](const caf::SRSliceProxy* slc) {
+    return (slc->barycenterFM.deltaZ_Trigger >= 0 && slc->barycenterFM.deltaZ_Trigger <= 100);
   });
 
   // Cut on showers aiming at rejecting pi0
@@ -150,19 +155,29 @@ namespace ana {
   const Cut kHasPhotonCandidates([](const caf::SRSliceProxy* slc) {
     int leadingPhotonIdx = kNuMILeadingPhotonCandidateIdx(slc);
     int subleadingPhotonIdx = kNuMISubLeadingPhotonCandidateIdx(slc);
-    if ( leadingPhotonIdx >= 0 && subleadingPhotonIdx >= 0 ) return true;
+    if ( leadingPhotonIdx > 0 && subleadingPhotonIdx > 0 ) return true;
+    return false;
+  });
+
+ const Cut kHasLeadingPhotonCandidate([](const caf::SRSliceProxy* slc) {
+    int leadingPhotonIdx = kNuMILeadingPhotonCandidateIdx(slc);
+    if ( leadingPhotonIdx > 0 ) return true;
     return false;
   });
 
   // Base selection common to side-bands (cuts back on number of entries one needs to carry):
   //
 
-  const Cut kPi0Sel_AllCuts = kNuMINotClearCosmic
-                           && kNuMIVertexInFV
-                           && kNuMIHasMuonCandidate
-                           && kNuMINoSecondPrimaryMuonlikeTracks
-                           && kBaryCenterCut
-                           && kHasPhotonCandidates;
+  const Cut kPi0Sel_PreSelCuts = kNuMINotClearCosmic
+                              && kNuMIVertexInFV
+                              && kTrigFlashMatch;
+  
+  const Cut kPi0Sel_FullSelCuts = kPi0Sel_PreSelCuts
+                               && kNuMIHasMuonCandidate
+                               //&& kNuMINoSecondPrimaryMuonlikeTracks
+                               //&& kBaryCenterCut
+                               && kHasPhotonCandidates;
+                               //&& kHasLeadingPhotonCandidate;
 
   const Cut kNuMISelection_1muXpi0_Base = kNuMIVertexIsContained
                                           && kNuMIHasMuonCandidate
