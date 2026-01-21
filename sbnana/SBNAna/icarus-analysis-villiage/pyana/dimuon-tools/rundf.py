@@ -15,6 +15,7 @@ def main(output, inputs):
     dfs = ntuples.dataframes(nproc="auto", fs=DFS)
     with pd.HDFStore(output) as hdf:
         for k,df in zip(reversed(NAMES), reversed(dfs)): # go in reverse order so we can delete along the way
+            print('dataframe name: ', k)
             try:
                 hdf.put(key=k, value=df, format="fixed")
             except Exception as e:
@@ -27,8 +28,8 @@ if __name__ == "__main__":
     if printhelp:
         print("Usage: python rundf.py [config.py] [output.df] [inputs.root,]")
     else:
-        # Don't clog up the server you're running on -- let other processes take priority
-        os.nice(10)
+        ## Don't clog up the server you're running on -- let other processes take priority
+        #os.nice(10)
 
 
         exec(open(sys.argv[1]).read())

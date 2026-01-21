@@ -11,6 +11,7 @@ from unc_funcs import *
 NuMI_angle_thresh = 3
 open_angle_thresh = 15
 max_shw_len_thresh = 0.
+max_other_trk_len_thresh = 13.
 
 trk_len_thresh = 140. # cm
 
@@ -21,6 +22,7 @@ stub_dedx_l3cm_thresh = 10
 
 chi2_mu_forMuons = 13
 chi2_p_forMuons = 90 
+chi2_mu_forContained = 8
 
 printstuff = False
 if printstuff == True:
@@ -58,11 +60,41 @@ def ok_chi2mu(df, thresh = chi2_mu_forMuons):
     return( (df.trunk.trk.chi2pid.I2.chi2_muon < thresh) & (df.branch.trk.chi2pid.I2.chi2_muon < thresh) ), 'both chi2mu < %a' % chi2_mu_forMuons
 def ok_chi2p(df, thresh = chi2_p_forMuons):
     return( (df.trunk.trk.chi2pid.I2.chi2_proton > thresh) & (df.branch.trk.chi2pid.I2.chi2_proton > thresh) ), 'both chi2p > %a' % chi2_p_forMuons
+#def ok_chi2mu_contained(df, thresh = chi2_mu_forContained):
+#    mask = ((~TrkInFV(df.trunk.trk.end) & ~TrkInFV(df.branch.trk.end)) | (TrkInFV(df.trunk.trk.end) & (df.trunk.trk.chi2pid.I2.chi2_muon < thresh)) | (TrkInFV(df.branch.trk.end) & (df.branch.trk.chi2pid.I2.chi2_muon < thresh)))
+#    return mask, 'contained trk chi2mu < %a' % chi2_mu_forContained
+def ok_chi2mu_contained(df, thresh = chi2_mu_forContained):
+    mask = df.conTrk_chi2pid_I2_chi2_muon < thresh
+    return mask, 'contained trk chi2mu < %a' % thresh
+
+# DAUGHTERS:
+
+#def ndaughters_per_conTrk(df, thresh = 0): # 'thresh' is max_allowed per contained track
+#    mask = ((~TrkInFV(df.trunk.trk.end) & ~TrkInFV(df.branch.trk.end)) | (TrkInFV(df.trunk.trk.end) & (df.trunk.ndaughters <= thresh)) | (TrkInFV(df.branch.trk.end) & (df.branch.ndaughters <= thresh)))
+#    return mask, 'contained trk ndaughters <= %a' % thresh
+
+def ndaughters_per_conTrk(df, thresh = 0): # 'thresh' is max_allowed per contained track
+    mask = df.conTrk_nDaughters <= thresh
+    return mask, 'contained trk ndaughters <= %a' % thresh
 
 # KINEMATICS:
 
 def numi_angle_mask(df, thresh = NuMI_angle_thresh, flip=False): # provide thresh in deg, but df has radians
     mask = df.Snumi_angle_wgtByLen < thresh*math.pi/180.
+    if flip:
+        return ~mask, 'S_NuMI_angle >= '+str(thresh)+' deg'#'\u00B0'
+    else: 
+        return mask, 'S_NuMI_angle < '+str(thresh)+' deg'#'\u00B0'
+
+def numi_angle_mcsCorr_mask(df, thresh = NuMI_angle_thresh, flip=False): # provide thresh in deg, but df has radians
+    mask = df.Snumi_angle_mcs_corrected < thresh*math.pi/180.
+    if flip:
+        return ~mask, 'S_NuMI_angle >= '+str(thresh)+' deg'#'\u00B0'
+    else: 
+        return mask, 'S_NuMI_angle < '+str(thresh)+' deg'#'\u00B0'
+
+def numi_angle_hybrid_mcsCorr_mask(df, thresh = NuMI_angle_thresh, flip=False): # provide thresh in deg, but df has radians
+    mask = df.Snumi_angle_hybrid_rangeCorrectedMCS < thresh*math.pi/180.
     if flip:
         return ~mask, 'S_NuMI_angle >= '+str(thresh)+' deg'#'\u00B0'
     else: 
@@ -106,8 +138,16 @@ def not_stub_3(df, thresh = stub_dedx_l3cm_thresh):
 def max_shw_len_mask(df, thresh = max_shw_len_thresh):
     #var = df.max_shw_len.copy()
     #var[np.isnan(var) | (var < 0)] = -10 
-    has_long_shw = df.max_shw_len >= thresh
+    #has_long_shw = df.max_shw_len >= thresh
+    has_long_shw = df.max_shw_len_all >= thresh
     return ~has_long_shw, 'max shower len < %a cm' % thresh
+
+def max_other_trk_len_mask(df, thresh = max_other_trk_len_thresh):
+    has_long_oth_trk = df.max_othr_trk_len_primary >= thresh
+    return ~has_long_oth_trk, 'max other primary trk len < %a cm' % thresh
+
+
+# TRACK LENGTH CUT:
 
 def longTrk_len_mask(df, thresh = trk_len_thresh):
     return var > thresh, 'longer of tracks > %a cm' % thresh
@@ -127,12 +167,18 @@ def shortTrk_len_mask(df, thresh = trk_len_thresh):
 
 # FUNCTION TO APPLY THE CUTS DEFINED ABOVE:
 
-def apply_cuts(df, cuts, thresholds=None, sneaky_BG_cats=False, detailed_bsm=False, detailed_nu='none', hps_final_state=False, 
-               flip_last_cut=False):
+def apply_cuts(df, cuts, thresholds=None, 
+               sneaky_BG_cats=False, detailed_bsm=False, detailed_nu='none', hps_final_state=False,
+               apply_cv_weights = True,
+               flip_last_cut=False, 
+               print_cuts=False
+              ):
     
     #new_df = df.copy()
     if sneaky_BG_cats: categories = make_sneakyBG_categories(df)
     else: categories = make_categories(df, detailed_bsm=detailed_bsm, detailed_nu=detailed_nu, hps_final_state=hps_final_state)
+    
+    #print("len(categories): ", len(categories))
     
     # initialze data frames
     cut_results_df = pd.DataFrame(
@@ -149,11 +195,16 @@ def apply_cuts(df, cuts, thresholds=None, sneaky_BG_cats=False, detailed_bsm=Fal
     for c in categories:
         #print(sum(df[c].scale))
         row_mc.append(df[c].shape[0])
-        row_pot.append(round(100*sum(df[c].scale))/100.)
+        if apply_cv_weights:
+            row_pot.append(round(100*sum(df[c].scale*df[c].wgt.cv.tot))/100.)
+        else:
+            row_pot.append(round(100*sum(df[c].scale))/100.)
     cut_results_df_mc.loc["preselection"] = row_mc 
     first_row_mc = row_mc
     cut_results_df_pot.loc["preselection"] = row_pot
     cut_results_df_percent.loc["preselection"] = [1.] * len(row_pot)
+    
+    print("cut_results_df_percent.shape: ", cut_results_df_percent.shape)
     
     # Loop through cuts to make rows for data frame and to make master_mask
     master_mask = None
@@ -169,6 +220,8 @@ def apply_cuts(df, cuts, thresholds=None, sneaky_BG_cats=False, detailed_bsm=Fal
             master_mask = func_output[0]
         else:
             master_mask = master_mask & func_output[0]
+        if print_cuts:
+            print(func_output[1])
         new_df = df[master_mask]
         if sneaky_BG_cats: new_categories = make_sneakyBG_categories(new_df)
         else: new_categories = make_categories(new_df, detailed_bsm=detailed_bsm, detailed_nu=detailed_nu, hps_final_state=hps_final_state)
@@ -177,7 +230,10 @@ def apply_cuts(df, cuts, thresholds=None, sneaky_BG_cats=False, detailed_bsm=Fal
         row_pot = []
         for c in new_categories:
             row_mc.append(new_df[c].shape[0])
-            row_pot.append(round(100*sum(new_df[c].scale))/100.)
+            if apply_cv_weights:
+                row_pot.append(round(100*sum(new_df[c].scale*new_df[c].wgt.cv.tot))/100.)
+            else:
+                row_pot.append(round(100*sum(new_df[c].scale))/100.)
         cut_results_df_mc.loc[func_output[1]] = row_mc
         cut_results_df_pot.loc[func_output[1]] = row_pot
         cut_results_df_percent.loc[func_output[1]] = np.array(row_mc)/np.array(first_row_mc)
@@ -347,7 +403,7 @@ evtSel_dict = dict([
             not_stub_05, not_stub_1, not_stub_2, not_stub_3,
             max_shw_len_mask,
             ok_chi2mu,
-            numi_angle_mask, open_angle_mask,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask,
             shortTrk_len_mask
         ],
         [ # thresholds
@@ -367,22 +423,40 @@ evtSel_dict = dict([
     ###
     
     # check mc sideband in theta_NuMI:
-    ( "J",
+    ( "J", # n-1 cuts for DD.
      ( # tuple of cut list and thresholds
         [ # cut list
             not_stub_05, not_stub_1, not_stub_2, not_stub_3,
             max_shw_len_mask,
-            ok_chi2mu,
-            open_angle_mask
+            ok_chi2mu_contained,
+            open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
         ],
         [ # thresholds
             50, 35, 15, 10,
-            10.0,
-            13,
-            15
+            0.0,
+            8,
+            25,
+            100.0
         ]
      )
     ),
+    #( "J",
+    # ( # tuple of cut list and thresholds
+    #    [ # cut list
+    #        not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+    #        max_shw_len_mask,
+    #        ok_chi2mu,
+    #        open_angle_mask
+    #    ],
+    #    [ # thresholds
+    #        50, 35, 15, 10,
+    #        10.0,
+    #        13,
+    #        15
+    #    ]
+    # )
+    #),
     
     # check mc sideband in theta_mumu:
     ( "K",
@@ -416,6 +490,414 @@ evtSel_dict = dict([
             10.0,
             13,
             3, 15
+        ]
+     )
+    ),
+    
+    # October 8, 2025: try a few more evt sel variations now that I have more stuff from CAFs.
+    
+    ( "M",# same as R, but change ch2mu_both to ch2mu_contained_trk_only w/ more aggressive cut.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask,
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            3, 15,
+            140.0
+        ]
+     )
+    ), 
+    
+    ( "N",# same as R, and add a restriction that contained tracks have zero daughters. 
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask,
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            13,
+            0,
+            3, 15,
+            140.0
+        ]
+     )
+    ), 
+    
+    ( "O",# same as N, but loosen both kinematic cuts. 
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask,
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            13,
+            0,
+            5, 25,
+            140.0
+        ]
+     )
+    ), 
+    
+    ( "P",# same as R, but change ch2mu_both to ch2mu_contained_trk_only w/ more aggressive cut, and include ndaughters cut.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            0,
+            3, 15,
+            140.0
+        ]
+     )
+    ),
+    
+    ( "Q",# same as P, with looser kinematic cuts.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask,
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            0,
+            5, 20,
+            140.0
+        ]
+     )
+    ),
+    
+    ( "R",# same as H, but theta_NuMI uses corrected MCS.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask,
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            13,
+            3, 15,
+            140.0
+        ]
+     )
+    ), 
+    
+    ( "S",# same as P, but also requires no other long primary tracks.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask, max_other_trk_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0, 13,
+            8,
+            0,
+            3, 15,
+            140.0
+        ]
+     )
+    ), 
+    
+    ( "T",# same as S, but vary trk len cut
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask, max_other_trk_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0, 13,
+            8,
+            0,
+            3, 15,
+            80.0
+        ]
+     )
+    ), 
+    
+    ( "U",# same as S, but vary trk len cut
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask, max_other_trk_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0, 13,
+            8,
+            0,
+            3, 15,
+            100.0
+        ]
+     )
+    ), 
+    
+    ( "V",# same as S, but vary trk len cut
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask, max_other_trk_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0, 13,
+            8,
+            0,
+            3, 15,
+            120.0
+        ]
+     )
+    ), 
+    
+    ( "W",# same as S, but vary trk len cut
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask, max_other_trk_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0, 13,
+            8,
+            0,
+            3, 15,
+            160.0
+        ]
+     )
+    ), 
+    
+    ( "X",# same as S, but vary trk len cut
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask, max_other_trk_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0, 13,
+            8,
+            0,
+            3, 15,
+            180.0
+        ]
+     )
+    ), 
+    
+    ( "Y",# same as S, but vary trk len cut
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask, max_other_trk_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0, 13,
+            8,
+            0,
+            3, 15,
+            200.0
+        ]
+     )
+    ), 
+    
+    ( "Z",# same as Y, but remove opening angle cut
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask, max_other_trk_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0, 13,
+            8,
+            0,
+            3,
+            200.0
+        ]
+     )
+    ),
+    
+    ( "AA",# Event selection constructed based on results of EvtSel study Nov. 2025.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            3, 15,
+            100.0
+        ]
+     )
+    ),
+    
+    ( "BB",# same as AA, but get rid of events where a contained track has more than 1 reconstructed daughter.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            ndaughters_per_conTrk,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            1,
+            3, 15,
+            100.0
+        ]
+     )
+    ),
+    
+    ( "CC", # Same as AA, but loosen opening angle cut.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            3, 20,
+            100.0
+        ]
+     )
+    ),
+    
+    ( "DD", # Same as AA, but loosen opening angle cut.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            3, 25,
+            100.0
+        ]
+     )
+    ),
+    
+    ( "EE", # Same as DD, but enforce longer trk len.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            3, 25,
+            120.0
+        ]
+     )
+    ),
+    
+    ( "FF", # Same as DD, but enforce longer trk len.
+     ( # tuple of cut list and thresholds
+        [ # cut list
+            not_stub_05, not_stub_1, not_stub_2, not_stub_3,
+            max_shw_len_mask,
+            ok_chi2mu_contained,
+            numi_angle_hybrid_mcsCorr_mask, open_angle_mask, # corrected this from numi_angle_mcsCorr_mask October 31, 2025
+            shortTrk_len_mask
+        ],
+        [ # thresholds
+            50, 35, 15, 10,
+            0.0,
+            8,
+            3, 25,
+            140.0
         ]
      )
     )

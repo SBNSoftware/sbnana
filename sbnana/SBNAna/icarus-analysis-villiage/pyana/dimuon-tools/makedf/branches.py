@@ -79,7 +79,7 @@ pfpbranches = [
     pfpbranch + "parent",
     pfpbranch + "id",
     pfpbranch + "t0",
-    pfpbranch + "ndaughters" # added by JD 100325
+    pfpbranch + "ndaughters" # added by JD 250701 # added by JD 100325
 ] + pfobranches
 
 pfp_daughter_branch = [
@@ -104,7 +104,13 @@ trkbranches = [
     trkbranch + "chi2pid.2.pid_ndof",
     trkbranch + "chi2pid.2.chi2_muon",
     trkbranch + "chi2pid.2.chi2_proton",
+    trkbranch + "chi2pid.2.chi2_pion",
+    trkbranch + "chi2pid.2.chi2_kaon",
     trkbranch + "chi2pid.2.pida",
+    trkbranch + "truth.p.crosses_tpc",
+    trkbranch + "truth.p.startT",
+    # trkbranch + "truth.p.start_process"
+    # trkbranch + "truth.p.end_process",
 ] + pfpbranches
 
 trkmcsbranches = [
@@ -158,7 +164,10 @@ slcbranches = [
     "rec.slc.tmatch.pur",
     "rec.slc.tmatch.index",
     "rec.slc.producer",
-    "rec.slc.nuid.crlongtrkdiry"
+    "rec.slc.nuid.crlongtrkdiry",
+    "rec.slc.reco.nstub", # added by Jamie July 7, 2025
+    "rec.slc.reco.npfp", # added by Jamie July 7, 2025
+    "rec.slc.fmatch.time" # added by Jamie July 7, 2025
 ]
 
 mcbranches = [

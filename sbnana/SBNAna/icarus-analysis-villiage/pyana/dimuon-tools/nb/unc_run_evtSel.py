@@ -2,10 +2,13 @@
 
 # $ python unc_run_evtSel.py [selection_keys] CL pc_uncertainty_sig pc_uncertainty_bg
 #selection_key is just the letter representing the key in evtSel_dict, defined in unc_cuts.py
+#   if passing more than one selection_key, format as you would a python list, i.e.: [A,B,C]
+#   (^this notation works, but is probably not the only notation that would work)
 #CL is confidence level passed as a decimal (default is 0.9)
-#pc_uncertainty_sig is total signal uncertainty passed as a decimal (default is 0.5)
-#pc_uncertainty_bg is total background uncertainty passed as a decimal (default is 0.5)
+#pc_uncertainty_sig is total signal uncertainty passed as a decimal (default is 0.3)
+#pc_uncertainty_bg is total background uncertainty passed as a decimal (default is 0.6)
 
+# ------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------
 
@@ -38,6 +41,9 @@ from unc_MC_overhead import *
 from unc_other_limits import *
 from unc_cuts import *
 
+#for c in evtdf.columns:
+#    print(c)
+
 # ------------------------------------------------------------------------
 # HPS Specifics
 
@@ -47,13 +53,14 @@ def expected_hps_events(selected_evtdf, mass, new_theta): # HPS
     categories = make_categories(selected_evtdf, detailed_bsm=True)
     i = mass_to_hpsSampleIndex[mass]
     df = selected_evtdf[categories[i]]
+    #print('selected_evtdf category and shape: ', categories[i].name, df.shape) 
     old_th = float(higgs_mcdfs[i].iloc[[0]].C1)
     rescale_new_mixing = []
     for idx in df.index:
         row = higgs_mcdfs[i].loc[(idx[1],idx[2], 0)]
         factor = float(reweight_mixing(new_theta, row.start, row.enter, row.exit, row.decay_length, old_th))
         rescale_new_mixing.append(factor)
-    x = sum(np.array(df.scale)*np.array(rescale_new_mixing))
+    x = sum(np.array(df.scale)*np.array(df.wgt.cv.tot)*np.array(rescale_new_mixing))
     return(x)
 
 # ------------------------------------------------------------------------
@@ -103,7 +110,7 @@ def expected_alp_events(selected_evtdf, mass, new_fa, new_cl, print_stuff=False,
                                   row.decay_length, old_alp_f)
                 )
                 reweigts_psuedomixed_alps.append(factor_rwgt_producedAlps)
-            alps_from_mixing = sum(np.array(df_alp.scale)*np.array(reweigts_psuedomixed_alps))
+            alps_from_mixing = sum(np.array(df_alp.scale)*np.array(df_alp.wgt.cv.tot)*np.array(reweigts_psuedomixed_alps))
         else: 
             print('We cannot perform a reweighting from ALPs -> ALPs for that mass, because we did not generate meson-mixing-produced ALPs for that mass.')
             alps_from_mixing = -1.
@@ -141,7 +148,7 @@ def expected_alp_events(selected_evtdf, mass, new_fa, new_cl, print_stuff=False,
                         )
                     )
                     reweigts_kdecay_alps.append(factor_rwgt_hps)
-                alps_from_kdecay = sum(np.array(df_hps.scale)*np.array(reweigts_kdecay_alps))
+                alps_from_kdecay = sum(np.array(df_hps.scale)*np.array(df_hps.wgt.cv.tot)*np.array(reweigts_kdecay_alps))
             else:
                 print('input mass: %a' % mass, klong_mass-pizero_mass)
                 print('Production via kaon decay IS possible, but we did not generate HPSs at the desired alp mass, so we cannot perform the needed rescaling.' )
@@ -192,35 +199,88 @@ def return_modelspec(mc_signal, pc_uncertainty_sig, total_selected_bg, pc_uncert
     }
     return modelspec
 
+def plot_evtSel_performance(percent_res, pot_res, mc_res, samples, output_path, combine_stub_cuts=False, title=''):
+    df = percent_res.copy()
+    if combine_stub_cuts:
+        #df.drop([percent_res.index[1], percent_res.index[2], percent_res.index[3]],
+        df.drop(['dE/dx <= %a MeV/cm up to 0_5 cm' % stub_dedx_l0_5cm_thresh, 
+                 'dE/dx <= %a MeV/cm 0_5-1 cm' % stub_dedx_l1cm_thresh, 
+                 'dE/dx <= %a MeV/cm 1-2 cm' % stub_dedx_l2cm_thresh],
+                inplace=True)
+        df = df.rename(index={df.index[1] : 'no proton stub found'})
+    
+    cut_labels = (df.T).columns
+    xnotches = np.arange(len(cut_labels))+1
+    colors = ['C0','C1','C2','C3','C4','C5','C6']
+
+    # PERCENT OF SLICES REMAINING AFTER EACH CUT
+
+    f, ax = plt.subplots()
+    color_ind = 0
+    for sample in samples:
+        #label = label=sample.split(',')[0]
+        #if len(sample.split(',')) == 1:
+            #label = label + '\n(%a evts / %a POT; %a MC evts)' % ( pot_res.loc[cut_labels[-1],sample], GOAL_POT, mc_res.loc[cut_labels[-1],sample])
+        label = label=sample.split(',')[0] + '(%a MC evts)' % mc_res.loc[cut_labels[-1],sample]
+        ax.plot(xnotches, df.loc[cut_labels,sample], marker='o', label=label)
+    cuts = df.index.to_list()
+    ax.set_xticks(list(range(1, 1+len(cuts))))
+    #if combine_stub_cuts:
+    #    ax.set_xticks(list(range(1, 1+len(cuts)))) # ([1,2,3,4,5,6,7])
+    #else:
+    #    ax.set_xticks(list(range(1, 1+len(cuts)))) # ([1,2,3,4,5,6,7,8,9,10,11])
+    ax.set_xticklabels(cuts)
+    ax.set_yscale('log')
+    plt.ylim([-0.1,2.])
+    plt.ylabel('Percentage of events \n remaining after each cut')
+    plt.xticks(rotation=35, ha='right')
+    plt.legend(loc='lower left', fontsize='x-small')
+    plt.title(title)
+    #plt.title('Percentage of Events Remaining After Each Cut')
+    #plt.savefig('plots/survived_percentage.pdf', format='pdf', bbox_inches='tight', pad_inches=1)
+    #plt.show()
+    plt.savefig(output_path, format='png', bbox_inches='tight')
+    plt.close()
+
 # ------------------------------------------------------------------------
 # Main function:
-def pushEventSel(evtdf, selection_key, CL=0.9, pc_uncertainty_sig=0.5, pc_uncertainty_bg=0.5):#, obs_data=2):
+def pushEventSel(evtdf, selection_key, CL=0.9, pc_uncertainty_sig=0.3, pc_uncertainty_bg=0.6, 
+                 make_contours=True, doHPS=True, doALP=True):#, obs_data=2):
     # selection_key should be a string - it's the key to evtSel_dict defined in unc_cuts.py
 
     selection_name = selection_key
     cut_list = evtSel_dict[selection_key][0]
     thresholds = evtSel_dict[selection_key][1]
     selection_has_been_run = False
-    output_path = '/exp/icarus/data/users/jdyer/muons_selections_study_2501/Selection_'+selection_name+'/'
+    #output_path = '/exp/icarus/data/users/jdyer/muons_selections_study_2501/Selection_'+selection_name+'/'
+    #output_path = '/exp/icarus/data/users/jdyer/muons_selections_study_2507/Selection_'+selection_name+'/'
+    #output_path = '/exp/icarus/data/users/jdyer/muons_selections_study_2510/wCVwgts/Selection_'+selection_name+'/'
+    #output_path = '/exp/icarus/data/users/jdyer/plot_for_Josh_250919/' #250919
+    
+    output_path = '/exp/icarus/data/users/jdyer/muons_selections_study_2511/wCVwgts/Selection_'+selection_name+'/'
+    output_path = '/exp/icarus/data/users/jdyer/muons_contours_result/'
+
     try:
-        result = subprocess.run(['ls', output_path], capture_output=True, text=True, check=True)
+        result = subprocess.run(['ls', output_path+'selected_evtdf'], capture_output=True, text=True, check=True)
+        #result = subprocess.run(['ls', '/exp/icarus/data/users/jdyer/muons_selections_study_2501/Selection_'+selection_name+'/selected_evtdf'], capture_output=True, text=True, check=True) #250919
         selection_has_been_run = True
-        #print(result.stdout)
+        print(result.stdout)
         selected_evtdf = pd.read_pickle(output_path + 'selected_evtdf')
         res_pot = pd.read_pickle(output_path + 'res_pot')
         res_mc = pd.read_pickle(output_path + 'res_mc')
         res_pc = pd.read_pickle(output_path + 'res_percent')
+        print('We got the dataframe!')
 
     except subprocess.CalledProcessError as e:
         subprocess.run(['mkdir', output_path])
         #print(f"Error: {e}", f"Return code: {e.returncode}", f"Output: {e.stdout}", f"Error output: {e.stderr}", sep='\n')
 
-        # Impose that one or both tracks are uncontained:
-        when_uncontained = ~TrkInFV(evtdf.trunk.trk.end) | ~TrkInFV(evtdf.branch.trk.end)
-        evtdf = evtdf[when_uncontained]
+        ## Impose that one or both tracks are uncontained: ALREADY DONE IN UNC_OVERHEAD
+        #when_uncontained = ~TrkInFV(evtdf.trunk.trk.end) | ~TrkInFV(evtdf.branch.trk.end)
+        #evtdf = evtdf[when_uncontained]
 
         # Apply the event selection
-        cut_results = apply_cuts(evtdf, cut_list, thresholds=thresholds, detailed_nu='none')
+        cut_results = apply_cuts(evtdf, cut_list, thresholds=thresholds, detailed_nu='none', detailed_bsm=True)
         mask = cut_results[-1]
         res_mc = cut_results[0]
         res_pot = cut_results[1]
@@ -231,170 +291,222 @@ def pushEventSel(evtdf, selection_key, CL=0.9, pc_uncertainty_sig=0.5, pc_uncert
         res_mc.to_pickle(output_path + 'res_mc')
         res_pot.to_pickle(output_path + 'res_pot')
         res_pc.to_pickle(output_path + 'res_percent')
-          
-# Model-Independent Sensitivity Stuff:
-    # depends on CL, and uncertainties, but not models.
-    # Does need total_selected_bg, which is event selection dependent.
-    # Note: in real analysis, the signal uncertainties for HPS and ALP will probs differ.
+        
+    print('Shape of selected_evtdf: ', selected_evtdf.shape)
+    plot_evtSel_performance(res_pc, 
+                            res_pot,
+                            res_mc,
+                            [res_pc.columns[-12], res_pc.columns[-9], res_pc.columns[-7], res_pc.columns[-5], res_pc.columns[-2], res_pc.columns[-1]],
+                            output_path+selection_key+'_performance_line_plot.png',
+                            combine_stub_cuts=True,
+                            title='Selection '+selection_name
+                            )
+
+    if make_contours:
     
-    cats = make_categories(selected_evtdf)
-    total_selected_bg = np.sum(selected_evtdf[cats[1]].scale) + np.sum(selected_evtdf[cats[2]].scale) # selected nus and cosmics
-    observed_data_events = math.ceil(total_selected_bg) # pretend for now
-    mc_signal = 11 # should be in ballpark of number of signal events you expect to exclude with the desired exclusion limit.
-    confidence = 1-CL # Desired Confidence Level: The confidence level is 1 minus this value.
-    limitname = "pyhf_ExpLim_%a CL_ %a uncSig_ %a uncBg" % (int(CL*100), int(pc_uncertainty_sig*100), int(pc_uncertainty_bg*100))
-    limitname = limitname.replace(' ','')
-    try:
-        exp_limits = np.load(output_path+limitname+'.npy')
-    except:
-        model = pyhf.Model( return_modelspec(mc_signal, pc_uncertainty_sig, total_selected_bg, pc_uncertainty_bg) )
-        poi_values = np.linspace(0.1, 10.0, 200)
-        obs_limit, exp_limits, (scan, results) = pyhf.infer.intervals.upper_limits.upper_limit(
-            [observed_data_events] + model.config.auxdata,
-            model,
-            poi_values,
-            level=confidence,
-            return_results=True
-        )
-        np.save(output_path+limitname, exp_limits)
-
-# HPS SENSITIVITY
-    hps_plotname = "HPS_"+selection_key+"_ %a CL_ %a uncSig_ %a uncBg.png" % (int(CL*100), int(pc_uncertainty_sig*100), int(pc_uncertainty_bg*100))
-    hps_plotname = hps_plotname.replace(' ','')
-    try:
-        result = subprocess.run(["ls", output_path+hps_plotname], capture_output=True, text=True, check=True)
-    except subprocess.CalledProcessError as e:
-        # Find new expected number of events as function of model parameters:
-        X = np.array(higgs_masses).astype(float)
-        Y = np.logspace(-6,-1,40)
-        try: # if selection_has_been_run:
-            Z = np.load(output_path+'hps_Z.npy')
-        except: # else:
-            Z = np.reshape([expected_hps_events(selected_evtdf, m/1000., theta) for theta in Y  for m in X ],(40,8))
-            np.save(output_path+'hps_Z', Z)
-        
-        # Make plot
-        plt.plot(hps_na62_x, hps_na62_y, label='NA62', color='purple')
-        plt.plot(hps_uB_x, hps_uB_y, label='uBooNE', color='#FFDB58')
-        plt.plot(hps_E949_x, hps_E949_y, label='E949', color='red')
-        plt.plot(hps_LHCb_x, hps_LHCb_y, label='LHCb', color='C1')
-        plt.plot(hps_Gray_x, hps_Gray_y, label='ICARUS cont. $\mu\mu$ search', color='C0')
-        mycolor = 'black'
-        plt.contourf(X,Y*Y,np.log(Z),levels=[np.log(exp_limits[0]*mc_signal),np.log(exp_limits[4]*mc_signal)],colors=mycolor, alpha=0.2)
-        plt.contourf(X,Y*Y,np.log(Z),levels=[np.log(exp_limits[1]*mc_signal),np.log(exp_limits[3]*mc_signal)],colors=mycolor, alpha=0.4)
-        plt.contour(X,Y*Y,np.log(Z),levels=[np.log(exp_limits[2]*mc_signal)],colors=mycolor)
-        plt.plot([500, 600],[1,2], label='ICARUS w/ uncont. $\mu\mu$ \nexpectation $\pm 1,2\sigma$', color=mycolor)
-        
-        # General formatting
-        plt.title('Selection '+selection_name+'\n%a%% CL \nassuming $\\delta_{sig}$=%a%%, $\\delta_{bg}$=%a%%' % (CL*100, pc_uncertainty_sig*100, pc_uncertainty_bg*100) )
-        plt.yscale('log')
-        plt.xlabel('$m_S$ (MeV)')
-        plt.ylabel('$\\theta^2$')#_S$')
-        plt.legend()
-        plt.xlim((220, 340))
-        plt.ylim((1e-10,2e-6))
-        plt.savefig(output_path + hps_plotname, format='png', bbox_inches='tight')
-        plt.close()
-          
-# ALP SENSITIVITY (assuming running coupling between cmu and fa.)
-
-    alp_plotname = "ALP_"+selection_key+"_ %a CL_ %a uncSig_ %a uncBg.png" % (int(CL*100), int(pc_uncertainty_sig*100), int(pc_uncertainty_bg*100))
-    alp_plotname = alp_plotname.replace(' ','')
-    try:
-        result = subprocess.run(["ls", output_path+alp_plotname], capture_output=True, text=True, check=True)
-    except subprocess.CalledProcessError as e:
-        # Find new expected number of events as function of model parameters:
-        
-        # From P0:
+    # Model-Independent Sensitivity Stuff:
+        # depends on CL, and uncertainties, but not models.
+        # Does need total_selected_bg, which is event selection dependent.
+        # Note: in real analysis, the signal uncertainties for HPS and ALP will probs differ.
+    
+        cats = make_categories(selected_evtdf)
+        print('')
+        print('Total number of selected bg events, not considering cv weights: ', 
+              np.sum(selected_evtdf[cats[1]].scale) + np.sum(selected_evtdf[cats[2]].scale)
+             )
+        total_selected_bg = np.sum(selected_evtdf[cats[1]].scale*selected_evtdf[cats[1]].wgt.cv.tot) + np.sum(selected_evtdf[cats[2]].scale*selected_evtdf[cats[2]].wgt.cv.tot) # selected nus and cosmics
+        print('Total number of selected bg events CONSIDERING cv weights: ', total_selected_bg)
+        print('')
+        observed_data_events = math.ceil(total_selected_bg) # pretend for now
+        mc_signal = 11 # should be in ballpark of number of signal events you expect to exclude with the desired exclusion limit.
+        confidence = 1-CL # Desired Confidence Level: The confidence level is 1 minus this value.
+        limitname = "pyhf_ExpLim_%a CL_ %a uncSig_ %a uncBg" % (int(CL*100), int(pc_uncertainty_sig*100), int(pc_uncertainty_bg*100))
+        limitname = limitname.replace(' ','')
         try:
-            Z_alp_fromP0 = np.load(output_path+'alp_Z_fromP0')
-        except: # else:
-            Z_alp_fromP0 = [expected_alp_events(selected_evtdf, m, pair[0], pair[1], do_Kprod=False) for pair in fa_and_running_cmu_pairs_codominance for m in X_alp_fromP0]
-            Z_alp_fromP0 = np.array(Z_alp_fromP0)
-            np.save(output_path+'alp_Z_fromP0', Z_alp_fromP0)
-        Z_inds_fromP0 = np.arange(len(Z_alp_fromP0))
-        Z_outputs_per_mass_fromP0 = []
-        Z_mixProd_fromP0 = []
-        for nm in range(len(X_alp_fromP0)):
-            Z_of_this_mass = Z_alp_fromP0[ np.where(Z_inds_fromP0%len(X_alp_fromP0) == nm) ]
-            Z_outputs_per_mass_fromP0.append( Z_of_this_mass )
-            Z_mixProd_fromP0.append(Z_of_this_mass[:,0])
-        Z_mixProd_fromP0 = np.transpose( np.array(Z_mixProd_fromP0) )
+            exp_limits = np.load(output_path+limitname+'.npy')
+            print('FOUND THE %a FILE!' % output_path+limitname+'.npy')
+        except:
+            model = pyhf.Model( return_modelspec(mc_signal, pc_uncertainty_sig, total_selected_bg, pc_uncertainty_bg) )
+            poi_values = np.linspace(0.1, 10.0, 200)
+            obs_limit, exp_limits, (scan, results) = pyhf.infer.intervals.upper_limits.upper_limit(
+                [observed_data_events] + model.config.auxdata,
+                model,
+                poi_values,
+                level=confidence,
+                return_results=True
+            )
+            np.save(output_path+limitname, exp_limits)
+
+    
+    # HPS SENSITIVITY
+        if doHPS:
+            hps_plotname = "HPS_"+selection_key+"_ %a CL_ %a uncSig_ %a uncBg.png" % (int(CL*100), int(pc_uncertainty_sig*100), int(pc_uncertainty_bg*100))
+            hps_plotname = hps_plotname.replace(' ','')
+            try:
+                result = subprocess.run(["ls", output_path+hps_plotname], capture_output=True, text=True, check=True)
+            except subprocess.CalledProcessError as e:
+                # Find new expected number of events as function of model parameters:
+                X = np.array(higgs_masses).astype(float)
+                Y = np.logspace(-6,-1,40)
+                try: # if selection_has_been_run:
+                    Z = np.load(output_path+'hps_Z.npy')
+                except: # else:
+                    Z = np.reshape([expected_hps_events(selected_evtdf, m/1000., theta) for theta in Y  for m in X ],(40,len(higgs_masses)))
+                    np.save(output_path+'hps_Z', Z)
+        
+                # Make plot
+                plt.plot(hps_na62_x, hps_na62_y, label='NA62', color='purple')
+                plt.plot(hps_uB_x, hps_uB_y, label='uBooNE', color='#FFDB58')
+                plt.plot(hps_E949_x, hps_E949_y, label='E949', color='red')
+                plt.plot(hps_LHCb_x, hps_LHCb_y, label='LHCb', color='C1')
+                plt.plot(hps_Gray_x, hps_Gray_y, label='ICARUS cont. $\mu\mu$ search', color='C0')
+                mycolor = 'black'
+                plt.contourf(X,Y*Y,np.log(Z),levels=[np.log(exp_limits[0]*mc_signal),np.log(exp_limits[4]*mc_signal)],colors=mycolor, alpha=0.2) # 
+                plt.contourf(X,Y*Y,np.log(Z),levels=[np.log(exp_limits[1]*mc_signal),np.log(exp_limits[3]*mc_signal)],colors=mycolor, alpha=0.4) # 
+                plt.contour(X,Y*Y,np.log(Z),levels=[np.log(exp_limits[2]*mc_signal)],colors=mycolor) # 
+                plt.plot([500, 600],[1,2], label='ICARUS w/ uncont. $\mu\mu$ \nexpectation $\pm 1,2\sigma$', color=mycolor)
+        
+                # General formatting
+                plt.title('Selection '+selection_name+'\n%a%% CL \nassuming $\\delta_{sig}$=%a%%, $\\delta_{bg}$=%a%%' % (CL*100, pc_uncertainty_sig*100, pc_uncertainty_bg*100) )
+                plt.yscale('log')
+                plt.xlabel('$m_S$ (MeV)')
+                plt.ylabel('$\\theta^2$')#_S$')
+                plt.legend()
+                plt.xlim((220, 340))
+                plt.ylim((1e-10,2e-6))
+                plt.savefig(output_path + hps_plotname, format='png', bbox_inches='tight')
+                plt.close()
+          
+    # ALP SENSITIVITY (assuming running coupling between cmu and fa.)
+        if doALP:
+        
+            for icl, cl_reweight in enumerate([-1,'1/100']):
+                if icl==0:
+                    clstr = 'running $c_\mu$' 
+                    clstr_for_filename = 'cmuRunning'
+                else:
+                    clstr = '$c_\mu$='+cl_reweight
+                    clstr_for_filename = 'cmu'+cl_reweight.replace('/','over')
+                print(clstr)
+
+                alp_plotname = ("ALP_"+selection_key+"_ %a CL_ %a uncSig_ %a uncBg_"+clstr_for_filename+".png") % (int(CL*100), int(pc_uncertainty_sig*100), int(pc_uncertainty_bg*100))
+                alp_plotname = alp_plotname.replace(' ','')
+            
+                try:
+                    result = subprocess.run(["ls", output_path+alp_plotname], capture_output=True, text=True, check=True)
+                except subprocess.CalledProcessError as e:
+                    # Find new expected number of events as function of model parameters:
+        
+                    # From P0:
+                    try:
+                        Z_alp_fromP0 = np.load(output_path+'alp_Z_fromP0_'+clstr_for_filename)
+                    except: # else:
+                        if icl==0:
+                            Z_alp_fromP0 = [expected_alp_events(selected_evtdf, m, pair[0], pair[1], do_Kprod=False) for pair in fa_and_running_cmu_pairs_codominance for m in X_alp_fromP0]
+                        else:
+                            Z_alp_fromP0 = [expected_alp_events(selected_evtdf, m, pair[0], float(eval(cl_reweight)), do_Kprod=False) for pair in fa_and_running_cmu_pairs_codominance for m in X_alp_fromP0]
+                        Z_alp_fromP0 = np.array(Z_alp_fromP0)
+                        np.save(output_path+'alp_Z_fromP0_'+clstr_for_filename, Z_alp_fromP0)
+                    Z_inds_fromP0 = np.arange(len(Z_alp_fromP0))
+                    Z_outputs_per_mass_fromP0 = []
+                    Z_mixProd_fromP0 = []
+                    for nm in range(len(X_alp_fromP0)):
+                        Z_of_this_mass = Z_alp_fromP0[ np.where(Z_inds_fromP0%len(X_alp_fromP0) == nm) ]
+                        Z_outputs_per_mass_fromP0.append( Z_of_this_mass )
+                        Z_mixProd_fromP0.append(Z_of_this_mass[:,0])
+                    Z_mixProd_fromP0 = np.transpose( np.array(Z_mixProd_fromP0) )
    
 
-        # From K: 
-        try:
-            Z_alp_fromK = np.load(output_path+'alp_Z_fromK')
-        except:
-            Z_alp_fromK = [expected_alp_events(selected_evtdf, m, pair[0], pair[1], do_P0prod=False) for pair in fa_and_running_cmu_pairs_codominance for m in X_alp_fromK]
-            Z_alp_fromK = np.array(Z_alp_fromK)
-            np.save(output_path+'alp_Z_fromK', Z_alp_fromK)
+                    # From K: 
+                    try:
+                        Z_alp_fromK = np.load(output_path+'alp_Z_fromK_'+clstr_for_filename)
+                    except:
+                        if icl==0:
+                            Z_alp_fromK = [expected_alp_events(selected_evtdf, m, pair[0], pair[1], do_P0prod=False) for pair in fa_and_running_cmu_pairs_codominance for m in X_alp_fromK]
+                        else:
+                            Z_alp_fromK = [expected_alp_events(selected_evtdf, m, pair[0], float(eval(cl_reweight)), do_P0prod=False) for pair in fa_and_running_cmu_pairs_codominance for m in X_alp_fromK]
+                        Z_alp_fromK = np.array(Z_alp_fromK)
+                        np.save(output_path+'alp_Z_fromK_'+clstr_for_filename, Z_alp_fromK)
             
-        Z_inds_fromK = np.arange(len(Z_alp_fromK))
-        Z_outputs_per_mass_fromK = []
-        Z_KdecayProd_fromK = []
-        for nm in range(len(X_alp_fromK)):
-            Z_of_this_mass = Z_alp_fromK[ np.where(Z_inds_fromK%len(X_alp_fromK) == nm) ]
-            Z_outputs_per_mass_fromK.append( Z_of_this_mass )
-            Z_KdecayProd_fromK.append(Z_of_this_mass[:,1])
-        Z_KdecayProd_fromK = np.transpose( np.array(Z_KdecayProd_fromK) )
+                    Z_inds_fromK = np.arange(len(Z_alp_fromK))
+                    Z_outputs_per_mass_fromK = []
+                    Z_KdecayProd_fromK = []
+                    for nm in range(len(X_alp_fromK)):
+                        Z_of_this_mass = Z_alp_fromK[ np.where(Z_inds_fromK%len(X_alp_fromK) == nm) ]
+                        Z_outputs_per_mass_fromK.append( Z_of_this_mass )
+                        Z_KdecayProd_fromK.append(Z_of_this_mass[:,1])
+                    Z_KdecayProd_fromK = np.transpose( np.array(Z_KdecayProd_fromK) )
 
-        # Make plot:
+                    # Make plot:
         
-        fig = plt.figure()
-        ax = plt.subplot(111)
+                    fig = plt.figure()
+                    ax = plt.subplot(111)
         
-        # Vertical lines:
-        myalpha = 0.5
-        mylinestyle = ':'
-        vcolor = 'brown'
-        ## plt.axvline([klong_mass-pizero_mass], linestyle=mylinestyle, color=vcolor, linewidth=2, alpha=myalpha) # where kaon-decay production mode becomes impossible. # Nix -- this mode is CP suppressed.
-        plt.axvline([kplus_mass-piplus_mass], linestyle=mylinestyle, color=vcolor, linewidth=2, alpha=myalpha) # where kaon-decay production mode becomes impossible.
-        plt.axvline([0.548], linestyle=mylinestyle, color=vcolor, linewidth=2, alpha=myalpha) # eta mass
-        plt.axvline([3*pizero_mass], linestyle=mylinestyle, color=vcolor, linewidth=2, alpha=myalpha) # axion mass where hadronic decays start to matter
+                    # Vertical lines:
+                    myalpha = 0.5
+                    mylinestyle = ':'
+                    vcolor = 'brown'
+                    ## plt.axvline([klong_mass-pizero_mass], linestyle=mylinestyle, color=vcolor, linewidth=2, alpha=myalpha) # where kaon-decay production mode becomes impossible. # Nix -- this mode is CP suppressed.
+                    #plt.axvline([kplus_mass-piplus_mass], linestyle=mylinestyle, color=vcolor, linewidth=2, alpha=myalpha) # where kaon-decay production mode becomes impossible.
+                    #plt.axvline([0.548], linestyle=mylinestyle, color=vcolor, linewidth=2, alpha=myalpha) # eta mass
+                    #plt.axvline([3*pizero_mass], linestyle=mylinestyle, color=vcolor, linewidth=2, alpha=myalpha) # axion mass where hadronic decays start to matter
 
-        # Other limits:
-        plt.plot(alp_NA62_x, alp_NA62_y, color='purple', label='NA62') # 
-        plt.plot(alp_uB_x, alp_uB_y, color='#FFDB58', label='uBooNE') # 
-        plt.plot(alp_charm_uu_x, alp_charm_uu_y, color='green', label='CHARM uu, from K')
-        plt.plot(alp_charm_gg_x, alp_charm_gg_y, color='cyan', label='CHARM gg, from K')
-        #plt.plot(charmP0_uu_x, charmP0_uu_y, color='orange', label='CHARM uu, from P0')
-        plt.plot(charmP0_uu_x_1, charmP0_uu_y_1, color='orange', label='CHARM uu, from P0')
-        plt.plot(charmP0_uu_x_2, charmP0_uu_y_2, color='orange')
-        #plt.plot(charmP0_gg_x, charmP0_gg_y, color='red', label='CHARM gg, from P0')
-        plt.plot(charmP0_gg_x_1, charmP0_gg_y_1, color='red', label='CHARM gg, from P0')
-        plt.plot(charmP0_gg_x_2, charmP0_gg_y_2, color='red')
-        plt.plot(alp_Gray_x/1000., alp_Gray_y, label='ICARUS cont. $\mu\mu$ search', color='C0')
+                    # Other limits:
+                    if icl==0:
+                        plt.plot(alp_NA62_x, alp_NA62_y, color='purple', label='NA62') # 
+                        plt.plot(alp_uB_x, alp_uB_y, color='#FFDB58', label='uBooNE') # 
+                        plt.plot(alp_charm_uu_x, alp_charm_uu_y, color='green', label='CHARM uu, from K')
+                        plt.plot(alp_charm_gg_x, alp_charm_gg_y, color='cyan', label='CHARM gg, from K')
+                        #plt.plot(charmP0_uu_x, charmP0_uu_y, color='orange', label='CHARM uu, from P0')
+                        plt.plot(charmP0_uu_x_1, charmP0_uu_y_1, color='orange', label='CHARM uu, from P0 \n(reinterpreted results)', linestyle='-.')
+                        plt.plot(charmP0_uu_x_2, charmP0_uu_y_2, color='orange', linestyle='-.')
+                        #plt.plot(charmP0_gg_x, charmP0_gg_y, color='red', label='CHARM gg, from P0')
+                        plt.plot(charmP0_gg_x_1, charmP0_gg_y_1, color='red', label='CHARM gg, from P0 \n(reinterpreted results)', linestyle='-.')
+                        plt.plot(charmP0_gg_x_2, charmP0_gg_y_2, color='red', linestyle='-.')
+                        plt.plot(alp_Gray_x/1000., alp_Gray_y, label='ICARUS cont. $\mu\mu$ search', color='C0')#, linestyle='--')
         
-        # My limits:
-        mycolor = 'black'
+                    # n-event lines
+                    plt.contour(X_alp_fromP0, 1./np.array(Y_alp), Z_mixProd_fromP0, levels=[5], label='5 events', colors='pink')
+                    plt.contour(X_alp_fromP0, 1./np.array(Y_alp), Z_mixProd_fromP0, levels=[10], label='10 events', colors='aquamarine')
+                    plt.contour(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(5)], label='5 events', colors='pink')
+                    plt.contour(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(10)], label='10 events', colors='aquamarine')
+                    plt.plot([X_alp_fromP0[0], X_alp_fromP0[1]],[1,2], label="5 events", color='pink')
+                    plt.plot([X_alp_fromP0[0], X_alp_fromP0[1]],[1,2], label="10 events", color='aquamarine')
+            
+                    # My limits:
+                    mycolor = 'black'
         
-        # from mixing
-        plt.contourf(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[0]*mc_signal),np.log(exp_limits[4]*mc_signal)],colors=mycolor, alpha=0.2)
-        plt.contourf(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[1]*mc_signal),np.log(exp_limits[3]*mc_signal)],colors=mycolor, alpha=0.4)
-        plt.contour(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[2]*mc_signal)],colors=mycolor, linestyles='dotted')
-        plt.plot([X_alp_fromP0[0], X_alp_fromP0[1]],[1,2], label="This analysis, from mixing", color=mycolor, linestyle=':', alpha=1)
+                    # from mixing
+                    plt.contourf(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[0]*mc_signal),np.log(exp_limits[4]*mc_signal)],colors=mycolor, alpha=0.2) #  
+                    plt.contourf(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[1]*mc_signal),np.log(exp_limits[3]*mc_signal)],colors=mycolor, alpha=0.4)  # 
+                    plt.contour(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[2]*mc_signal)],colors=mycolor, linestyles='dotted')  #  
+                    plt.contour(X_alp_fromP0, 1./np.array(Y_alp), Z_mixProd_fromP0, levels=[exp_limits[2]*mc_signal],colors='blue', linestyles='dotted')
+                    plt.plot([X_alp_fromP0[0], X_alp_fromP0[1]],[1,2], label="This analysis, from mixing", color=mycolor, linestyle=':', alpha=1)
+                    #plt.contourf(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[0]*mc_signal),np.log(exp_limits[1]*mc_signal)],colors='pink') # Test 251114. I expect this to be on the outer edge of the contour. I was right!
 
-        # from K-decay
-        plt.contourf(X_alp_fromK, 1./np.array(Y_alp), np.log(Z_KdecayProd_fromK), levels=[np.log(exp_limits[0]*mc_signal),np.log(exp_limits[4]*mc_signal)],colors=mycolor, alpha=0.2)
-        plt.contourf(X_alp_fromK, 1./np.array(Y_alp), np.log(Z_KdecayProd_fromK), levels=[np.log(exp_limits[1]*mc_signal),np.log(exp_limits[3]*mc_signal)],colors=mycolor, alpha=0.4)
-        plt.contour(X_alp_fromK, 1./np.array(Y_alp), np.log(Z_KdecayProd_fromK), levels=[np.log(exp_limits[2]*mc_signal)],colors=mycolor, linestyles='dashed')
-        plt.plot([X_alp_fromK[0], X_alp_fromK[1]],[1,2], label="This analysis, from K-decay", color='black', linestyle='--', alpha=1)
+                    # from K-decay
+                    plt.contourf(X_alp_fromK, 1./np.array(Y_alp), np.log(Z_KdecayProd_fromK), levels=[np.log(exp_limits[0]*mc_signal),np.log(exp_limits[4]*mc_signal)],colors=mycolor, alpha=0.2) # 
+                    plt.contourf(X_alp_fromK, 1./np.array(Y_alp), np.log(Z_KdecayProd_fromK), levels=[np.log(exp_limits[1]*mc_signal),np.log(exp_limits[3]*mc_signal)],colors=mycolor, alpha=0.4) # 
+                    plt.contour(X_alp_fromK, 1./np.array(Y_alp), np.log(Z_KdecayProd_fromK), levels=[np.log(exp_limits[2]*mc_signal)],colors=mycolor, linestyles='dashed') # 
+                    plt.plot([X_alp_fromK[0], X_alp_fromK[1]],[1,2], label="This analysis, from K-decay", color='black', linestyle='--', alpha=1)
         
-        # general formatting
-        plt.title('Selection '+selection_name+'\n%a%% CL \nassuming $\\delta_{sig}$=%a%%, $\\delta_{bg}$=%a%%' % (CL*100, pc_uncertainty_sig*100, pc_uncertainty_bg*100) )
-        plt.yscale('log')
-        plt.xlabel('$m_S$ (GeV)')
-        plt.ylabel('$1/f_a$')
-        plt.xlim((0.22, 0.45))
-        plt.ylim((1e-6, max(1./np.array(Y_alp))))
-        #plt.legend(loc='lower right')
-        box = ax.get_position()
-        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-        plt.legend(loc='lower center', bbox_to_anchor=(0.5, 1.2), ncol=3, fontsize='small')
-        plt.savefig(output_path + alp_plotname, format='png', bbox_inches='tight')
-        plt.close()
+                    # general formatting
+                    #plt.title('Selection '+selection_name+'\n%a%% CL \nassuming $\\delta_{sig}$=%a%%, $\\delta_{bg}$=%a%%' % (CL*100, pc_uncertainty_sig*100, pc_uncertainty_bg*100) )
+                    plt.title(('(WORK IN PROGRESS) \n %a%% CL projected sensitivity for 2.41x10$^{20}$ POT, \n'+clstr+', $c_1 = c_2 = c_3 = 1$, \nassuming $\\delta_{sig}$=%a%%, $\\delta_{bg}$=%a%%, \n (%a%% CL drawn on ~%a events contour)') % (CL*100, pc_uncertainty_sig*100, pc_uncertainty_bg*100, CL*100, round(exp_limits[2]*mc_signal)) ) #250919
+                    plt.yscale('log')
+                    plt.xlabel('$m_a$ (GeV)')
+                    plt.ylabel('$1/f_a$')
+                    plt.xlim((0.22, 0.45))
+                    plt.ylim((1e-6, max(1./np.array(Y_alp))))
+                    #plt.legend(loc='lower right')
+                    box = ax.get_position()
+                    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+                    plt.legend(loc='lower center', bbox_to_anchor=(0.5, 1.4), ncol=3, fontsize='small')
+                    plt.savefig(output_path + alp_plotname, format='png', bbox_inches='tight', dpi=350)#, bbox_to_anchor=(0.5, 1.2)
+                    plt.close()
 
+        else:
+            print('Skipping the contour plots. \n')
 # end of main function.
         
 selection_keys = sys.argv[1]
@@ -409,14 +521,15 @@ selection_keys = eval(selection_keys)
 #str_to_eval = 're.findall(r"\w+","'+selection_keys+'")'
 #selection_keys = eval('re.findall(r"\w+", '+selection_keys+')')
 if __name__ == "__main__":
+    print('evtdf.shape: ', evtdf.shape)
     for key in selection_keys:
         if len(sys.argv) > 2:
             CL = float(sys.argv[2])
             pc_uncertainty_sig = float(sys.argv[3])
             pc_uncertainty_bg = float(sys.argv[4])
-            pushEventSel(evtdf, key, CL=CL, pc_uncertainty_sig=pc_uncertainty_sig, pc_uncertainty_bg=pc_uncertainty_bg)
+            pushEventSel(evtdf, key, CL=CL, pc_uncertainty_sig=pc_uncertainty_sig, pc_uncertainty_bg=pc_uncertainty_bg, make_contours=True, doHPS=False)
         else:
-            pushEventSel(evtdf, key)
+            pushEventSel(evtdf, key, make_contours=True)
 
             
             

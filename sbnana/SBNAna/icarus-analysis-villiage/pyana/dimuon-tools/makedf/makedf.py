@@ -4,6 +4,7 @@ from .util import *
 from . import numisyst, g4syst, geniesyst_regen
 import uproot
 from scipy import interpolate
+import math
 
 def make_hdrdf(f):
     hdr = loadbranches(f["recTree"], hdrbranches).rec.hdr
@@ -225,7 +226,7 @@ recombination_data = lambda dEdx: recombination(dEdx, MODA_data, MODB_data, Efie
 KEs, Qs = Calc_Q2KE_points(1000, recombination_data) 
 Q2KE_data = make_interp(Qs, KEs)
 
-def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=True, mcs=True):
+def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=True, mcs=True, daughter_info=True):
     trkdf = loadbranches(f["recTree"], trkbranches + shwbranches)
     if scoreCut:
         trkdf = trkdf.rec.slc.reco[trkdf.rec.slc.reco.pfp.trackScore > 0.5]
@@ -248,6 +249,16 @@ def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=T
         cumlen = mcsdf.seg_length.groupby(level=mcsgroup).cumsum()*14 # convert rad length to cm
         maxlen = (cumlen*(mcsdf.seg_scatter_angles >= 0)).groupby(level=mcsgroup).max()
         trkdf[("pfp", "trk", "mcsP", "len", "", "")] = maxlen
+        
+        # Jamie added this stuff July 2, 2025:
+        
+        physical_angles = ((mcsdf_angle.seg_scatter_angles*180./(1000.*math.pi) >= 0) & (mcsdf_angle.seg_scatter_angles*180./(1000.*math.pi) <= 180.))
+        mean_angle = mcsdf_angle[physical_angles].seg_scatter_angles.groupby(level=mcsgroup).mean()*180./(1000.*math.pi)
+        trkdf[("pfp", "trk", "mcsP", "mean_angle", "", "")] = mean_angle
+        max_angle = mcsdf_angle[physical_angles].seg_scatter_angles.groupby(level=mcsgroup).max()*180./(1000.*math.pi)
+        trkdf[("pfp", "trk", "mcsP", "max_angle", "", "")] = max_angle
+        std_angle = mcsdf_angle[physical_angles].seg_scatter_angles.groupby(level=mcsgroup).std()*180./(1000.*math.pi)
+        trkdf[("pfp", "trk", "mcsP", "std_angle", "", "")] = std_angle
 
     if recalo:
         # determine MC or data
@@ -306,6 +317,35 @@ def make_trkdf(f, scoreCut=False, requiret0=False, requireCosmic=False, recalo=T
             trkdf[("pfp", "trk", "mcsP_hi", "fwdP_muon", "", "")] = trkdf.pfp.trk.mcsP.fwdP_muon + true_p*1.03 # bias-hi
             trkdf[("pfp", "trk", "mcsP_lo", "fwdP_muon", "", "")] = trkdf.pfp.trk.mcsP.fwdP_muon - true_p*0.97 # bias-lo
 
+    # add information about the daughter tracks:
+    
+    if daughter_info:
+        ddf  = loadbranches(f["recTree"], pfp_daughter_branch).rec.slc.reco.pfp
+        trkmerge = trkdf[[("pfp", "id", "", "", "", ""),("pfp", "trk", "len", "", "", ""),("pfp", "trackScore", "", "", "", ""),("pfp", "trk", "start", "x", "", ""),("pfp", "trk", "start", "y", "", ""),("pfp", "trk", "start", "z", "", "")]]
+        trkmerge.columns = ["id", "len","trackScore","start_x","start_y","start_z"]
+        
+        # Get the length of each daughter track. Maintain the index
+        ddf_index = ddf.index.names
+        ddf = ddf.reset_index().merge(trkmerge.reset_index(), how="left", suffixes=("", "_t"), left_on=["entry", "rec.slc..index", "daughters"],right_on=["entry", "rec.slc..index", "id"]).set_index(ddf_index)
+        
+        # Forget about daughter tracks that have "NaN" lengths:
+        ddf = ddf[~pd.isna(ddf.len)]
+
+        # select the longest daughter
+        # Get the ID of the longest daughter
+        longest_idx = ddf.len.groupby(level=[0,1,2]).idxmax()
+        longest_ddf = ddf.loc[longest_idx].droplevel(-1)
+        
+        # Put information back into the trkdf
+        # Put the "longest daughter track length" into trkdf
+        # You could also now put in other variables from the longest daughter. Just put them into "trkmerge" above first.
+        # Note: in the case of no daughters, these varariables will be NaN
+        trkdf[("pfp", "longest_daughter_length", "", "", "", "")] = longest_ddf.len
+        trkdf[("pfp", "longest_daughter_trkScore", "", "", "", "")] = longest_ddf.trackScore
+        trkdf[("pfp", "longest_daughter_start_x", "", "", "", "")] = longest_ddf.start_x
+        trkdf[("pfp", "longest_daughter_start_y", "", "", "", "")] = longest_ddf.start_y
+        trkdf[("pfp", "longest_daughter_start_z", "", "", "", "")] = longest_ddf.start_z
+    
     trkdf[("pfp", "tindex", "", "", "", "")] = trkdf.index.get_level_values(2)
 
     # trk_daughterdf = loadbranches(f["recTree"], pfp_daughter_branch).rec.slc.reco.pfp
@@ -743,7 +783,7 @@ def make_evtdf(f, load_hits=False, apply_preselection=True):
     evtdf["min_othr_chi2_proton"] = othrdf[(othrdf.pfp.dist_to_vertex < 10) & chi2_ok].pfp.trk.chi2pid.I2.chi2_proton.groupby(level=trklevel).min()
     evtdf["max_othr_chi2_muon"] = othrdf[(othrdf.pfp.dist_to_vertex < 10) & chi2_ok].pfp.trk.chi2pid.I2.chi2_muon.groupby(level=trklevel).max()
 
-    # lengths
+    # lengths 
     evtdf["max_shw_len"] = shwdf[shwdf.pfp.dist_to_vertex < 10].pfp.shw.len.groupby(level=trklevel).max()
     evtdf["max_othr_trk_len"] = trkdf[trkdf.pfp.dist_to_vertex < 10].pfp.trk.len.groupby(level=trklevel).max()
 

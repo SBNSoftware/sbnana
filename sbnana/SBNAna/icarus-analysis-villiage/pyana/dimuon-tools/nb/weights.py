@@ -2,14 +2,28 @@ cv = [
   ("ppfx", "cv")
 ]
 
-beam_systematics = [
-  "beam_div",
-  "beam_shift_x",
-  "beam_spot",
-  "horn1_x",
-  "horn1_y",
-  "horn_current_plus",
-  "water_layer",
+#beam_systematics = [
+#  "beam_div",
+#  "beam_shift_x",
+#  "beam_spot",
+#  "horn1_x",
+#  "horn1_y",
+#  "horn_current_plus",
+#  "water_layer",
+#] + ["pca%i" % i for i in range(20)]
+
+# JD updated June 30, 2025:
+beam_systematics = [ # the +1 sigma variations.
+    "Beam_shift_x",
+    "Beam_shift_y",
+    "Beam_spot",
+    "Horn1_x",
+    "Horn1_y",
+    "Horn2_x",
+    "Horn2_y",
+    "Horn_current",
+    "Horn_water",
+    "Target_z"
 ] + ["pca%i" % i for i in range(20)]
 
 genie_systematics = [

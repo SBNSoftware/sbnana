@@ -2,12 +2,14 @@ import numpy as np
 import pandas as pd
 import math
 import uproot
+import random
 
 from pyanalib.dataset import Dataset
 from pyanalib.panda_helpers import *
 import weights
 import reweight_coh
 import numiweight
+from alp_flux_weights import *
 
 def simple_dataset(f, key):
     df = pd.read_hdf(f, key=key)
@@ -29,7 +31,7 @@ def add_weights(df, wgtdf, tmatch_col=("slc", "tmatch", "idx")):
 
     return multicol_merge(df, wgtdf, how="left", left_on=wgtdf.index.names[:2] + [tmatch_col], right_index=True).fillna(na_set)
 
-def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut=None, mccut_any=True, isscalar=False):
+def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut=None, mccut_any=True, isscalar=False, alp=False):
     hdrdf = pd.read_hdf(f, key=hdrkey)
     livetime = 0.
     pot = hdrdf.pot.sum()
@@ -51,13 +53,14 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
     # Central-Value (just the ppfx), if we can
     try: 
         cv = math.prod([mcdf[w] for w in weights.cv])
-        cv.name = ("wgt", "cv") # just ppfx here, but will get multiplied by the other cv reweight below.
+        cv.name = ("wgt", "cv", "tot") # just ppfx so far, but will get multiplied by the other cv reweight below.
         df = add_weights(df, pd.DataFrame(cv))
+        df[("wgt", "cv", "ppfx", "", "", "")] = df[("wgt", "cv", "tot", "", "", "")]
     except:
         if syst_weights:
             raise
         else:
-            df = multicol_add(df, pd.Series(1, index=df.index, name=("wgt", "cv")))
+            df = multicol_add(df, pd.Series(1, index=df.index, name=("wgt", "cv", "tot")))
 
     # load other corrections (i.e. concrete, correction for horn 1 and 2 mother volume overlap, and reweighting to a 1.5mm beam spot size -- collectively call this "cv other" (as in not ppfx.)) 
     nuE = mcdf.E
@@ -73,17 +76,29 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
     #df = add_weights(df, pd.DataFrame(fluxcorr_wgt)) # JD 6/12/25
     #df[("wgt", "cv", "", "", "", "")] *= df[("wgt", "concrete", "cv", "", "", "")] # JD 6/12/25
     fluxcorr_wgt = numiweight.update_flux_version(nupdg, nuE) # JD 6/12/25
-    fluxcorr_wgt.name = ("wgt", "cv", "other_than_ppfx", "", "", "") # JD 6/12/25
+    fluxcorr_wgt.name = ("wgt", "cv", "flux_other_than_ppfx", "", "", "") # JD 6/12/25
     df = add_weights(df, pd.DataFrame(fluxcorr_wgt)) # JD 6/12/25
-    df[("wgt", "cv", "", "", "", "")] *= df[("wgt", "cv", "other_than_ppfx", "", "", "")]
+    df[("wgt", "cv", "tot", "", "", "")] *= df[("wgt", "cv", "flux_other_than_ppfx", "", "", "")]
+    
+    # 12/17/25: Include a reweight for consideration of secondaries for ALP flux
+    if alp:
+        mch_df = pd.read_hdf(f, key="mch")
+        bsm_E = np.array(pd.merge(df, mch_df.E, on=['__ntuple', 'entry'], how='left').E)
+        bsm_M = np.array(pd.merge(df, mch_df.M, on=['__ntuple', 'entry'], how='left').M)
+        alp_rw = [ALP_flux_rw_for_secondaries(alp_E, (m)) for alp_E, m in zip(bsm_E, bsm_M)]
+    else:
+        alp_rw = [1]*df.shape[0]
+    df[("wgt", "cv", "flux_alp_secondaries", "", "", "")] = alp_rw
+    df[("wgt", "cv", "tot", "", "", "")] *= df[("wgt", "cv", "flux_alp_secondaries", "", "", "")]
+
 
     print("Generating Coh-weights!")
     # generate coherent pion weights
     cohweight = reweight_coh.cohweight(mcdf, douniv=syst_weights)
-    cohweight.columns = pd.MultiIndex.from_tuples([("wgt", "coh", "cv", "", "", "")] + 
+    cohweight.columns = pd.MultiIndex.from_tuples([("wgt", "cv", "coh", "", "", "")] + 
                                                   [("wgt", "coh", "univ_%i" % i, "", "", "") for i in range(len(cohweight.columns) - 1)])
     df = add_weights(df, cohweight)
-    df[("wgt", "cv", "", "", "", "")] *= df[("wgt", "coh", "cv", "", "", "")]
+    df[("wgt", "cv", "tot", "", "", "")] *= df[("wgt", "cv", "coh", "", "", "")]
     print("Generated")
 
     if not syst_weights:
@@ -98,20 +113,34 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
         unidf = pd.DataFrame(1, index=mcdf.index, columns=uni_columns)
         for s in systematics:
             print(s)
-            if s not in mcdf.columns: continue
+            if s not in mcdf.columns: 
+                print('Cant find systematic called %a in df. Fix this!!' %s)
+                continue
 
             # +/-1 sigma
-            if mcdf[s].columns[0][0].startswith("ps"):
-                ps = mcdf[s].columns[0][0]
-                # ps = "ps1"
+            if 'ps' in mcdf[s].columns[0][0]: #.startswith("ps"): # JD October 30, 2025
+                #ps = mcdf[s].columns[0][0]
+                ## ps = "ps1"
+                #shift = np.random.normal(size=NUNI) # mean=0, sd=1
+                #w = 1 + pd.DataFrame(np.outer((mcdf[s][ps]-1), shift), index=mcdf.index, columns=uni_columns)
+                ## JD Todo: average ps and ms using the absolute value difference from one. Done: I did this in numisyst. Okay as long as not super lop-sided.
+                ## This seems reasonable if the knob turns affect the event rate in opposite directions.
+                ## check how often this is true.
+                ## when this is not true, consider treating those with the "morph" treatment below, or some other way of handling the asymmetry.
                 
+                # November 13, 2025 TODO: 
+                #   Change the method. Instead: For +- 1 sigma, randomly choose whether to apply the ps1 or ms1 effect, and apply the chosen one as a one-sided shift. The sign of the chosen one will affect the CV in the correct direction, and the +- effect should average out correctly over the many events. 
+                ms1_or_ps1 = random.randint(0,1)
+                ps = mcdf[s].columns[ms1_or_ps1][0]
                 shift = np.random.normal(size=NUNI)
-                w = 1 + pd.DataFrame(np.outer((mcdf[s][ps]-1), shift), index=mcdf.index, columns=uni_columns)
+                w = 1 + pd.DataFrame(np.outer((mcdf[s][ps]-1), np.abs(shift)), index=mcdf.index, columns=uni_columns)
+            
         
             # One-sided
             elif mcdf[s].columns[0][0] == "morph":
                 shift = np.random.normal(size=NUNI)
-                w = 1 + pd.DataFrame(np.outer((mcdf[s].morph-1)*2, np.abs(shift)), index=mcdf.index, columns=uni_columns)                    
+                #w = 1 + pd.DataFrame(np.outer((mcdf[s].morph-1)*2, np.abs(shift)), index=mcdf.index, columns=uni_columns)  # I got rid the of the factor of 2 on November 13, 2025. Why should it be there?? I don't think it should be!
+                w = 1 + pd.DataFrame(np.outer((mcdf[s].morph-1), np.abs(shift)), index=mcdf.index, columns=uni_columns) 
         
             # Universe uncertainties
             elif mcdf[s].columns[0][0] == "univ_0":

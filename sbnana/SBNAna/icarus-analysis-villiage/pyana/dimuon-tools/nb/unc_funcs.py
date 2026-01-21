@@ -210,11 +210,11 @@ def make_categories(df, detailed_bsm=False, detailed_nu='none', hps_final_state=
     
     if detailed_bsm:
         
-        is_higgs = ( (df.slc.tmatch.idx >= 0) & df.higgs & (df.slc.truth.npi == 0) & (df.slc.truth.npi0 == 0) )# Only consider muon channel, exclude any Higgs that decayed to pions.
+        is_higgs = ( (df.slc.tmatch.idx >= 0) & df.hps & (df.slc.truth.npi == 0) & (df.slc.truth.npi0 == 0) )# Only consider muon channel, exclude any Higgs that decayed to pions. #250919
+        #is_higgs = ( (df.slc.tmatch.idx >= 0) & df.higgs & (df.slc.truth.npi == 0) & (df.slc.truth.npi0 == 0) )# Only consider muon channel, exclude any Higgs that decayed to pions. #250919
         #is_higgs.name = "Scalar"
         higgs_benchmarks = []
         cat_hdrs = []
-        #higgs_benchmark_names = df[is_higgs]["sample"].unique()
         higgs_benchmark_names = df[is_higgs]["sample"].unique() # Made this change June 3 to avoid bug when applying cuts, where you eliminate all of one category so your results dataframe shape gets messed up. Hopefully this doesn't cause other problems.
         for l in range(len(higgs_benchmark_names)):
             if hps_final_state:
@@ -250,7 +250,7 @@ def make_categories(df, detailed_bsm=False, detailed_nu='none', hps_final_state=
         bsm_cats = higgs_benchmarks + alp_benchmarks
             
     else:
-        is_bsm = (df.slc.tmatch.idx >= 0) & (df.slc.truth.npi == 0) & (df.slc.truth.npi0 == 0) & ( df.higgs | df.alp ) # ( df.higgs | df.alp_withsup | df.alp_nosup )
+        is_bsm = (df.slc.tmatch.idx >= 0) & (df.slc.truth.npi == 0) & (df.slc.truth.npi0 == 0) & ( df.hps | df.alp ) # ( df.higgs | df.alp ) #  #250919
         is_bsm.name = "BSM"
         is_bsm.color = "#191970" #, "#00FF7F" #"#000000"
         bsm_cats = [is_bsm]
@@ -258,7 +258,7 @@ def make_categories(df, detailed_bsm=False, detailed_nu='none', hps_final_state=
       
     # NEUTRINOS
     
-    is_nu = (df.slc.tmatch.idx >= 0) & df.nu
+    is_nu = (df.slc.tmatch.idx >= 0) & ( df.mc_incoh | df.mccoh ) # df.nu
 
     if detailed_nu == 'int_type':
         
@@ -461,7 +461,7 @@ def apply_cuts(df, cuts, detailed_hps=False, flip_last_cut=False):
     for c in categories:
         #print(sum(df[c].scale))
         row_mc.append(df[c].shape[0])
-        row_pot.append(sum(df[c].scale))
+        row_pot.append(sum(df[c].scale*df[c].wgt.cv.tot))
     cut_results_df_mc.loc["preselection"] = row_mc 
     first_row_mc = row_mc
     cut_results_df_pot.loc["preselection"] = row_pot
@@ -485,7 +485,7 @@ def apply_cuts(df, cuts, detailed_hps=False, flip_last_cut=False):
         row_pot = []
         for c in new_categories:
             row_mc.append(new_df[c].shape[0])
-            row_pot.append(sum(new_df[c].scale))
+            row_pot.append(sum(new_df[c].scale*df[c].wgt.cv.tot))
         cut_results_df_mc.loc[func_output[1]] = row_mc   
         cut_results_df_pot.loc[func_output[1]] = row_pot
         cut_results_df_percent.loc[func_output[1]] = np.array(row_mc)/np.array(first_row_mc)
@@ -502,6 +502,15 @@ def angle_between_vecs(a,b, deg=False): #a and b need to be numpy arrays of same
     else:
         return rad
 
+def MCS_correction(p_MCS_measured):
+    #return 0.8277876449995342*p_MCS_measured + 0.04173174632878234 # contained tracks, weighted hottest bins
+    #return 0.9600208943289945*p_MCS_measured + -0.03564428674221505 # exiting tracks, weighted hottest bins
+    #return 0.8669557179117761*p_MCS_measured + 0.027342182624008917 # contained and exiting combined, weighted hottest bins
+    return 0.8459842033587391*p_MCS_measured + 0.03598020127112985 # contained and exiting combined, weighted hottest bins, updated 10/14/25
+
+    #return (1./1.19)*p_MCS_measured + 0.05/1.19 # contained and exiting combined, Gaussian kde weighting
+
+    
 # NuMI Angle stuff:
 # Geometry stuff is copied from here:
 # https://github.com/SBNSoftware/sbncode/blob/develop/sbncode/EventGenerator/MeVPrtl/config/numi_kaon_common.fcl#L7C15-L7C101
@@ -558,6 +567,14 @@ def Sbeamangle(trunk_track, branch_track, beamdir, method): # This is what I cal
             trunk_mom = trunk_track.mcsP.fwdP_muon
             trunk_mom[TrkInFV(trunk_track.end)] = trunk_track[TrkInFV(trunk_track.end)].rangeP.p_muon
             branch_mom = branch_track.mcsP.fwdP_muon
+            branch_mom[TrkInFV(branch_track.end)] = branch_track[TrkInFV(branch_track.end)].rangeP.p_muon
+        if method == 'corrected_mcs':
+            trunk_mom = MCS_correction(trunk_track.mcsP.fwdP_muon)
+            branch_mom = MCS_correction(branch_track.mcsP.fwdP_muon)
+        if method == 'corrected_hybrid':
+            trunk_mom = MCS_correction(trunk_track.mcsP.fwdP_muon)
+            trunk_mom[TrkInFV(trunk_track.end)] = trunk_track[TrkInFV(trunk_track.end)].rangeP.p_muon
+            branch_mom = MCS_correction(branch_track.mcsP.fwdP_muon)
             branch_mom[TrkInFV(branch_track.end)] = branch_track[TrkInFV(branch_track.end)].rangeP.p_muon
         if method == 'weight_by_len': # Instead of weighting by track momentum which would be most correct, just weight by track length.
             trunk_mom = trunk_track.len
@@ -642,8 +659,10 @@ def add_calculated_evtdf_cols(df, newcol_name=None, newcol_val=None):
     # NOTE: Here, "trueTrk" refers to true momentum of trunk/branch TRACK (not neccessarily the muon's)
 #       "trueParticle" uses the tracks' truth-matched particle truth information.
     evtdf["Snumi_angle_mcs"] = Sbeamangle(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'mcs')
+    evtdf["Snumi_angle_mcs_corrected"] = Sbeamangle(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'corrected_mcs')
     evtdf["Snumi_angle_rangeBased"] = Sbeamangle(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'range')
     evtdf["Snumi_angle_hybrid_rangeMCS"] = Sbeamangle(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'hybrid')
+    evtdf["Snumi_angle_hybrid_rangeCorrectedMCS"] = Sbeamangle(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'corrected_hybrid')
     evtdf["Snumi_angle_trkDirOnly"] = Sbeamangle(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'dir_only')
     evtdf["Snumi_angle_planar"] = Sbeamangle(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'planar')
     evtdf["Snumi_angle_wgtByLen"] = Sbeamangle(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'weight_by_len')
@@ -651,10 +670,6 @@ def add_calculated_evtdf_cols(df, newcol_name=None, newcol_val=None):
     evtdf["Snumi_angle_trueParticle"] = Sbeamangle(evtdf.slc.truth.p0, evtdf.slc.truth.p1, BEAMDIR, 'p0_p1_truth')   
     ## Note: NaN for Cosmics b/c p0 and p1 don't mean anything.
     #print(min(evtdf["Snumi_angle_planar"]*180/math.pi), max(evtdf["Snumi_angle_planar"]*180/math.pi), sep=', ')
-    evtdf["phi_NuMI_mcs"] = phi_NuMI(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'mcs')[1]
-    evtdf["phi_NuMI_rangeBased"] = phi_NuMI(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'range')[1]
-    evtdf["phi_NuMI_trueTrk"] = phi_NuMI(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'track_truth')[1]
-    evtdf["phi_NuMI_trueParticle"] = phi_NuMI(evtdf.slc.truth.p0, evtdf.slc.truth.p1, BEAMDIR, 'p0_p1_truth')[1]
     
     # add phi_NuMI to evtdf:
     evtdf["phi_NuMI_mcs"] = phi_NuMI(evtdf.trunk.trk, evtdf.branch.trk, BEAMDIR, 'mcs')[1]
@@ -695,7 +710,26 @@ def add_calculated_evtdf_cols(df, newcol_name=None, newcol_val=None):
             short_is_branch = short_is_branch + 1
     evtdf["longer_track_length"] = longer_track_length
     evtdf["shorter_track_length"] = shorter_track_length
+    
+    # Add number of daughters for contained tracks, and the chi2_mu score for contained tracks (these are per-slice variables!)
+    # when there is no contained track, set the values to -1.
+    # For my sample, the trunk and branch are never both contained. (This must be enforced before calling this function, so that this variable is correct!)
 
+    conTrk_nDaughters = evtdf.trunk.ndaughters
+    conTrk_chi2pid_I2_chi2_muon = evtdf.trunk.trk.chi2pid.I2.chi2_muon
+
+    both_exit = ~TrkInFV(evtdf.trunk.trk.end) & ~TrkInFV(evtdf.branch.trk.end)
+    conTrk_nDaughters[both_exit] = -1
+    conTrk_chi2pid_I2_chi2_muon[both_exit] = -1
+
+    branch_con = TrkInFV(evtdf.branch.trk.end)
+    conTrk_nDaughters[branch_con] = evtdf[branch_con].branch.ndaughters
+    conTrk_chi2pid_I2_chi2_muon[branch_con] = evtdf[branch_con].branch.trk.chi2pid.I2.chi2_muon
+
+    evtdf["conTrk_nDaughters"] = conTrk_nDaughters
+    evtdf["conTrk_chi2pid_I2_chi2_muon"] = conTrk_chi2pid_I2_chi2_muon
+
+    
     # Add columns to dataframe as needed:
     if newcol_name is not None:
         for c, col_name in enumerate(newcol_name):
@@ -704,11 +738,13 @@ def add_calculated_evtdf_cols(df, newcol_name=None, newcol_val=None):
     
     return evtdf
 
-def getp(track, method): # returns a momentum mabnitude.
+def getp(track, method): # returns a momentum magnitude.
     if method == 'range': # input would be eg evtdf.trunk.trk
         mom = track.rangeP.p_muon
     if method == 'mcs':
         mom = track.mcsP.fwdP_muon
+    if method == 'mcs_corrected':
+        mom = MCS_correction(track.mcsP.fwdP_muon)
     if method == 'track_truth':
         mom = np.sqrt(track.truth.p.genp.x*track.truth.p.genp.x +
                       track.truth.p.genp.y*track.truth.p.genp.y +
