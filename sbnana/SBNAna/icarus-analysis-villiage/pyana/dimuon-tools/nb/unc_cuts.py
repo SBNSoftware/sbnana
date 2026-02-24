@@ -183,7 +183,7 @@ def apply_cuts(df, cuts, thresholds=None,
     # initialze data frames
     cut_results_df = pd.DataFrame(
         np.zeros((0,len(categories)), dtype=int), # start w/ zero rows (cuts), fill later
-        columns = [c.name for c in categories]
+        columns = [c.name.replace(',',',\n').replace('M_{ALP}', 'M_a') for c in categories]
     )
     cut_results_df_mc = cut_results_df.copy() #deep=True
     cut_results_df_pot = cut_results_df.copy() #deep=True
@@ -234,9 +234,9 @@ def apply_cuts(df, cuts, thresholds=None,
                 row_pot.append(round(100*sum(new_df[c].scale*new_df[c].wgt.cv.tot))/100.)
             else:
                 row_pot.append(round(100*sum(new_df[c].scale))/100.)
-        cut_results_df_mc.loc[func_output[1]] = row_mc
-        cut_results_df_pot.loc[func_output[1]] = row_pot
-        cut_results_df_percent.loc[func_output[1]] = np.array(row_mc)/np.array(first_row_mc)
+        cut_results_df_mc.loc[func_output[1].replace('<=','$<=$')] = row_mc
+        cut_results_df_pot.loc[func_output[1].replace('<=','$<=$')] = row_pot
+        cut_results_df_percent.loc[func_output[1].replace('<=','$<=$')] = np.array(row_mc)/np.array(first_row_mc)
     
     return cut_results_df_mc, cut_results_df_pot, cut_results_df_percent, master_mask 
 
