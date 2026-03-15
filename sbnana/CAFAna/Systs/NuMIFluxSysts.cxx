@@ -31,8 +31,10 @@ namespace ana {
         std::abort();
       }
 
+      // fFluxFilePath = std::string(sbndata) +
+      //                "beamData/NuMIdata/2023-07-31_out_450.37_7991.98_79512.66_QEL11.root";
       fFluxFilePath = std::string(sbndata) +
-                     "beamData/NuMIdata/2023-07-31_out_450.37_7991.98_79512.66_QEL11.root";
+                     "beamData/NuMIdata/2025-04-08_out_450.37_7991.98_79512.66.root";
     }
   }
 
