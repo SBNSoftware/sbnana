@@ -1,8 +1,8 @@
 //! ////////////////////////////////////////////////////////////////////////////
 //! @file: auxTools.h                                                            //
 //! @author: Jacob Smith (smithja)                                            //
-//! Last edited: October 15th, 2025                                           //   
-//!                                                                           // 
+//! Last edited: October 15th, 2025                                           //
+//!                                                                           //
 //! @details: As I've done more HEP research, I've compilied these functions  //
 //! that I've found myself routinely writing. If you're reading this and have //
 //! found the functions in this file useful, please share them with           //
@@ -12,7 +12,7 @@
 //!          `````````````````````````````      ```````````         ````````` //
 //! ``````` ```````````````  `````````` ````````````````       ``` ```` ````` //
 //! ```````` ```       ````` ++.   .#@@@@  ````````   ````` ``  ```   ``````` //
-//! ``` `````   ```````   :@@@@@@@@@@@@@@@@@@@@@@::::::,:,,::::   `````` .@@: //  
+//! ``` `````   ```````   :@@@@@@@@@@@@@@@@@@@@@@::::::,:,,::::   `````` .@@: //
 //! ` ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@##@@@@@@@ //
 //! @@@@@@@@@@@@@@@@@@@@@@@@@#';,,@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
 //! @@@@@@@@                      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
@@ -52,12 +52,12 @@
 //! This code is available for non-commercial use under the Creative Commons  //
 //! Attribution-NonCommercial (CC BY-NC) 4.0. You must continue to use this   //
 //! Creative Commons license if you copy, repurpose, make additions to, or    //
-//! otherwise use any of the contents of this file.                           //             
+//! otherwise use any of the contents of this file.                           //
 //! ////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
-#include <string>     
+#include <string>
 #include <vector>
 #include <sstream>    //! to treat strings as streams
 #include <fstream>    //! to work with files
@@ -85,7 +85,7 @@
 void createDir(const std::string* dirname) {
     const char* char_dirname = dirname->c_str();
     int status = mkdir(char_dirname, 0777);
-    
+
     if (status == 0) {
         std::cout << "Directory " << *dirname << " created using mkdir." << std::endl;
     } else if (errno == EEXIST) {
@@ -139,21 +139,28 @@ void DrawPurLegend(TH1* hist, const std::string& name) {
  *  @param hBackground Background histogram.
  *  @param POTTag String label for POT.
  *  @param textSize Size of text drawn on canvas.
+ *  @param x1 X-position of bottom left of text
+ *  @param y1 Y-position of bottom left of text
+ *  @param x2 X-position of top right of text
+ *  @param y2 Y-position of top right of text
  */
-void DrawSigBkgIntText(TH1* hSignal, TH1* hBackground, std::string POTTag, float textSize) {
+void DrawSigBkgIntText(TH1* hSignal, TH1* hBackground, std::string POTTag,
+  float textSize, float potX1 = 0.45, float potY1 = 0.825, float potX2 = 0.55,
+  float potY2 = 0.875, float sigBkgX1 = 0.15, float sigBkgY1 = 0.725,
+  float sigBkgX2 = 0.25, float sigBkgY2 = 0.80) {
     float iSignal = hSignal->Integral();
     float iBackground = hBackground->Integral();
     float pSignal = 100. * iSignal / (iSignal + iBackground);
     float pBackground = 100. * iBackground / (iSignal + iBackground);
 
-    TPaveText* pText1 = new TPaveText(0.45, 0.825, 0.55, 0.875, "brNDC");
+    TPaveText* pText1 = new TPaveText(potX1, potY1, potX2, potY2, "brNDC");
     TText* text1 = pText1->AddText(POTTag.c_str());
     text1->SetTextSize(textSize);
     pText1->SetBorderSize(0);
     pText1->SetFillStyle(0);
     pText1->Draw();
 
-    TPaveText* pText2 = new TPaveText(0.15, 0.725, 0.25, 0.80, "brNDC");
+    TPaveText* pText2 = new TPaveText(sigBkgX1, sigBkgY1, sigBkgX2, sigBkgY2, "brNDC");
     TText* text2 = pText2->AddText(Form("Signal: %2.f = %2.f %%", iSignal, pSignal));
     text2->SetTextAlign(11);
     text2->SetTextSize(textSize);
@@ -297,9 +304,11 @@ void formatHist(TH1* hist, Color_t color, Style_t lineStyle, int lineWidth,
 
 /** @brief Display "ICARUS Sim." or "ICARUS Data" tag on canvas.
  *  @param isSim If true, label as simulation.
+ *  @param exp Name of the experiment as an std::string
  */
-void isSimulation(bool isSim = true) {
-    TLatex* prelim = new TLatex(0.95, 0.975, isSim ? "ICARUS Sim." : "ICARUS Data");
+void isSimulation(bool isSim = true, std::string exp = "ICARUS") {
+    TLatex* prelim = new TLatex(0.95, 0.975,
+        (isSim ? exp+" Sim." : exp+" Data").c_str());
     prelim->SetTextColor(kGray + 1);
     prelim->SetNDC();
     prelim->SetTextSize(1 / 20.);
@@ -317,6 +326,16 @@ void myCornerLabel(const std::string& str) {
     CornLab->SetTextSize(1 / 20.);
     CornLab->SetTextAlign(11);
     CornLab->Draw();
+}
+
+/** @brief Center the title and axis titles of an input ROOT histogram
+    @param TH1* Histogram whose titles you want to center
+ */
+void CenterTitles(TH1* h) {
+    h->GetXaxis()->CenterTitle();
+    h->GetYaxis()->CenterTitle();
+    h->GetZaxis()->CenterTitle();
+    h->SetTitleAlign(23); // center, top
 }
 
 /** @brief Create a POT string tag with scientific notation.
@@ -371,7 +390,6 @@ TitleInfo parseTitle(const std::string& title) {
     if (tpos != std::string::npos)
         info.type = title.substr(tpos + 6, epos - (tpos + 6));
 
-        
     return info;
 }
 
