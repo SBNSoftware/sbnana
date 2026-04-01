@@ -19,7 +19,6 @@ namespace ana {
     namespace slc {
         // parameters
         bool print = false;   // print on terminal
-        bool EHcomp = false;  // enable quality cut on hit_comp and E_comp
         bool DvCut = false;   // enable cut on the distance between mc vtx and reco vtx
         float mcLmin = 50.;   // minimal length of the track on mc
         float trkLmin = 20.;  // minimal length of the reconstructed track
@@ -88,17 +87,13 @@ namespace ana {
             if(mc) {
                 P.G4ID = slc.reco.pfp.at(i).trk.truth.bestmatch.G4ID;
                 P.pdg = slc.reco.pfp.at(i).trk.truth.p.pdg;
-                P.energy_comp = slc.reco.pfp.at(i).trk.truth.bestmatch.energy_completeness;
-                P.hit_comp = slc.reco.pfp.at(i).trk.truth.bestmatch.hit_completeness;
                 if(muG4ID == P.G4ID) {
-                    if(P.energy_comp >= 0.1 && P.hit_comp >= 0.1) counter++;
+                    counter++;
                     nsegments++;
                 }
             }
             pfp.push_back(P);
         }
-        // quality cut on hit_comp and E_comp
-        if(slc::EHcomp && (counter < 2 || nsegments != 2)) return stitch;
         // order the pfp according to the length
         std::sort(pfp.begin(), pfp.end(), [](const PFP a, const PFP b) {return a.len > b.len;});
         // stitching

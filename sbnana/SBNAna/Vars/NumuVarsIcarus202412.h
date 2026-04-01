@@ -15,33 +15,37 @@ namespace ana {
         caf::SRVector3D vertex;      ///< Vertex of slice
         caf::SRVector3D start;       ///< Start point of track
         caf::SRVector3D end;         ///< End point of track
-        float len;                   ///< Track length
+        float MClen;                 ///< True length of the track (MC only)
+        float MCp_muon;              ///< True momentum of the track (MC only)
+        float len;                   ///< Reconstructed track length
         float p_muon;                ///< Momentum estimate from trk range (muon hypothesis)
-        float slcID;                 ///< Slice ID of the track
-        float id;                    ///< PFP ID of the track
-        bool muon_1muNp = false;     ///< Muon passing the 1muNp selection (data only)
-        bool nuMuCC = false;         ///< Muon from a numuCC interaction (MC only)
+        int slcID;                   ///< Slice ID of the track
+        int id;                      ///< PFP ID of the track
         int G4ID;                    ///< G4ID of the track (MC only)
         int pdg;                     ///< PDG of the track (MC only)
-        float energy_comp;           ///< Energy completeness of the track (MC only)
-        float hit_comp;              ///< Hit completeness of the track (MC only)
+        bool muon_1muNp = false;     ///< Muon passing the 1muNp selection (data only)
+        bool nuMuCC = false;         ///< Muon from a numuCC interaction correctly stitched (MC only)
 
         // second track
         caf::SRVector3D start2;      ///< Start point of track
         caf::SRVector3D end2;        ///< End point of track
-        float len2;                  ///< Track length
+        float len2;                  ///< Reconstructed track length
         float p_muon2;               ///< Momentum estimate from trk range (muon hypothesis)
-        float slcID2;                ///< Slice ID of the track
-        float id2;                   ///< PFP ID of the track
+        int slcID2;                  ///< Slice ID of the track
+        int id2;                     ///< PFP ID of the track
         int G4ID2;                   ///< G4ID of the track (MC only)
         int pdg2;                    ///< PDG of the track (MC only)
-        float energy_comp2;          ///< Energy completeness of the track (MC only)
-        float hit_comp2;             ///< Hit completeness of the track (MC only)
 
         // stitching
         size_t nStitch = 0;          ///< Number of stitching in the same event
+        float hole;                  ///< Distance between the two track edges to be stitched (0 if overlapping)
         float Len;                   ///< Length of the track after the stitching
         float P_muon;                ///< Momentum estimate from the track range (muon hypothesis) after the stitching
+
+        // event
+        unsigned int   run;       ///< run number
+        unsigned int   subrun;    ///< subrun number
+        unsigned int   evt;       ///< ART event number, indexes trigger windows.
     };
 
     bool kIcarus202401BaryFMCut(const caf::SRSliceProxy &slc) {
