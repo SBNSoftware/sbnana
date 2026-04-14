@@ -21,7 +21,8 @@ import h5py
 import math
 import subprocess
 import sys
-import pyhf
+#import pyhf
+import hepstats_jb
 import re
 import io
 
@@ -40,6 +41,7 @@ from unc_samples import *
 from unc_MC_overhead import *
 from unc_other_limits import *
 from unc_cuts import *
+from scipy.interpolate import interp1d
 
 #for c in evtdf.columns:
 #    print(c)
@@ -73,7 +75,8 @@ mass_to_alpSampleIndex = dict(zip(
 mass_to_alp_mcdf_SampleIndex = dict(zip(np.array(alp_nosup_masses)/1000., range(len(alp_nosup_masses)))) # mchdf
 
 # get the X,Y pairs for running coupling for cmu with fa:
-running_cmu_codominance_file = '/exp/icarus/data/users/jdyer/muon_selection/tabulated_running_alp_cmu_vals_fromJosh/cl_c3_1_c12_1.csv' 
+#running_cmu_codominance_file = '/exp/icarus/data/users/jdyer/muon_selection/tabulated_running_alp_cmu_vals_fromJosh/cl_c3_1_c12_1.csv'
+running_cmu_codominance_file = '/exp/icarus/data/users/jberger/dimuon_analysis_031026/input/running_couplings/cl_c3_1_c12_1.csv'
 Y_alp = [] # fa values
 fa_strings = []
 param_pair_strings = []
@@ -170,42 +173,43 @@ def expected_alp_events(selected_evtdf, mass, new_fa, new_cl, print_stuff=False,
 
 # ------------------------------------------------------------------------
 # pyhf
-def return_modelspec(mc_signal, pc_uncertainty_sig, total_selected_bg, pc_uncertainty_bg):
-    modelspec = {
-    "channels": [
-        {
-        "name": "singlechannel",
-        "samples": [
-            {
-            "name": "signal",
-            "data": [ mc_signal ],
-            "modifiers": [
-                {"name": "mu", "type": "normfactor", "data": None },
-                {"name": "uncorr_siguncrt", "type": "shapesys", "data": [mc_signal*pc_uncertainty_sig]}
-                ]
-            },
-            {
-                "name": "background",
-                "data": [ total_selected_bg ],       # total_selected_bg
-                "modifiers": [
-                { "name": "uncorr_bkguncrt", "type": "shapesys", "data": [total_selected_bg*pc_uncertainty_bg] }
-                                     # if equal to data, then 100% uncertainty.
+# def return_modelspec(mc_signal, pc_uncertainty_sig, total_selected_bg, pc_uncertainty_bg):
+#     modelspec = {
+#     "channels": [
+#         {
+#         "name": "singlechannel",
+#         "samples": [
+#             {
+#             "name": "signal",
+#             "data": [ mc_signal ],
+#             "modifiers": [
+#                 {"name": "mu", "type": "normfactor", "data": None },
+#                 {"name": "uncorr_siguncrt", "type": "shapesys", "data": [mc_signal*pc_uncertainty_sig]}
+#                 ]
+#             },
+#             {
+#                 "name": "background",
+#                 "data": [ total_selected_bg ],       # total_selected_bg
+#                 "modifiers": [
+#                 { "name": "uncorr_bkguncrt", "type": "shapesys", "data": [total_selected_bg*pc_uncertainty_bg] }
+#                                      # if equal to data, then 100% uncertainty.
 
-                ]
-          }
-        ]
-      }
-    ]
-    }
-    return modelspec
+#                 ]
+#           }
+#         ]
+#       }
+#     ]
+#     }
+#     return modelspec
 
 def plot_evtSel_performance(percent_res, pot_res, mc_res, samples, output_path, combine_stub_cuts=False, title=''):
     df = percent_res.copy()
     if combine_stub_cuts:
         #df.drop([percent_res.index[1], percent_res.index[2], percent_res.index[3]],
-        df.drop(['dE/dx <= %a MeV/cm up to 0_5 cm' % stub_dedx_l0_5cm_thresh, 
-                 'dE/dx <= %a MeV/cm 0_5-1 cm' % stub_dedx_l1cm_thresh, 
-                 'dE/dx <= %a MeV/cm 1-2 cm' % stub_dedx_l2cm_thresh],
+        print(df.index)
+        df.drop(['dE/dx $<=$ %a MeV/cm up to 0_5 cm' % stub_dedx_l0_5cm_thresh, 
+                 'dE/dx $<=$ %a MeV/cm 0_5-1 cm' % stub_dedx_l1cm_thresh, 
+                 'dE/dx $<=$ %a MeV/cm 1-2 cm' % stub_dedx_l2cm_thresh],
                 inplace=True)
         df = df.rename(index={df.index[1] : 'no proton stub found'})
     
@@ -257,8 +261,11 @@ def pushEventSel(evtdf, selection_key, CL=0.9, pc_uncertainty_sig=0.3, pc_uncert
     #output_path = '/exp/icarus/data/users/jdyer/muons_selections_study_2510/wCVwgts/Selection_'+selection_name+'/'
     #output_path = '/exp/icarus/data/users/jdyer/plot_for_Josh_250919/' #250919
     
-    output_path = '/exp/icarus/data/users/jdyer/muons_selections_study_2511/wCVwgts/Selection_'+selection_name+'/'
-    output_path = '/exp/icarus/data/users/jdyer/muons_contours_result/'
+    #output_path = '/exp/icarus/data/users/jdyer/muons_selections_study_2511/wCVwgts/Selection_'+selection_name+'/'
+    #output_path = '/exp/icarus/data/users/jdyer/muons_contours_result/'
+
+    #output_path = '/exp/icarus/data/users/jberger/dimuon_analysis_031026/results_output/Selection_'+selection_name+'/'   
+    output_path = '/exp/icarus/data/users/jberger/dimuon_analysis_031026/results_output/'
 
     try:
         result = subprocess.run(['ls', output_path+'selected_evtdf'], capture_output=True, text=True, check=True)
@@ -318,7 +325,7 @@ def pushEventSel(evtdf, selection_key, CL=0.9, pc_uncertainty_sig=0.3, pc_uncert
         print('Total number of selected bg events CONSIDERING cv weights: ', total_selected_bg)
         print('')
         observed_data_events = math.ceil(total_selected_bg) # pretend for now
-        mc_signal = 11 # should be in ballpark of number of signal events you expect to exclude with the desired exclusion limit.
+        mc_signal = 1.0 # should be in ballpark of number of signal events you expect to exclude with the desired exclusion limit.
         confidence = 1-CL # Desired Confidence Level: The confidence level is 1 minus this value.
         limitname = "pyhf_ExpLim_%a CL_ %a uncSig_ %a uncBg" % (int(CL*100), int(pc_uncertainty_sig*100), int(pc_uncertainty_bg*100))
         limitname = limitname.replace(' ','')
@@ -326,18 +333,27 @@ def pushEventSel(evtdf, selection_key, CL=0.9, pc_uncertainty_sig=0.3, pc_uncert
             exp_limits = np.load(output_path+limitname+'.npy')
             print('FOUND THE %a FILE!' % output_path+limitname+'.npy')
         except:
-            model = pyhf.Model( return_modelspec(mc_signal, pc_uncertainty_sig, total_selected_bg, pc_uncertainty_bg) )
-            poi_values = np.linspace(0.1, 10.0, 200)
-            obs_limit, exp_limits, (scan, results) = pyhf.infer.intervals.upper_limits.upper_limit(
-                [observed_data_events] + model.config.auxdata,
-                model,
-                poi_values,
-                level=confidence,
-                return_results=True
-            )
+            #            model = pyhf.Model( return_modelspec(mc_signal, pc_uncertainty_sig, total_selected_bg, pc_uncertainty_bg) )
+            print("Running stats with : ",mc_signal," , ",pc_uncertainty_sig," , ",total_selected_bg," , ",pc_uncertainty_bg)
+            model = hepstats_jb.Model(mc_signal,total_selected_bg,pc_uncertainty_sig,pc_uncertainty_bg)
+            #            poi_values = np.linspace(0.1, 10.0, 200)
+            mu_list = np.linspace(0.0,20.0,41)
+            #            obs_limit, exp_limits, (scan, results) = pyhf.infer.intervals.upper_limits.upper_limit(
+            #                [observed_data_events] + model.config.auxdata,
+            #                model,
+            #                poi_values,
+            #                level=confidence,
+            #                return_results=True
+            #            )
+            CLs_exp_list = np.asarray([model.CLs_exp(mu) for mu in mu_list])
+            exp_limits = []
+            for i in range(5):
+                exp_limit_func = interp1d(CLs_exp_list[:,i],mu_list)
+                exp_limits.append(exp_limit_func(confidence))
             np.save(output_path+limitname, exp_limits)
 
-    
+        print('EXPECTED LIMITS: ',exp_limits)
+
     # HPS SENSITIVITY
         if doHPS:
             hps_plotname = "HPS_"+selection_key+"_ %a CL_ %a uncSig_ %a uncBg.png" % (int(CL*100), int(pc_uncertainty_sig*100), int(pc_uncertainty_bg*100))
@@ -476,6 +492,8 @@ def pushEventSel(evtdf, selection_key, CL=0.9, pc_uncertainty_sig=0.3, pc_uncert
                     # My limits:
                     mycolor = 'black'
         
+                    print('NOTE: Plotting expected limits at ',exp_limits)
+                    print('The normalization is ',mc_signal)
                     # from mixing
                     plt.contourf(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[0]*mc_signal),np.log(exp_limits[4]*mc_signal)],colors=mycolor, alpha=0.2) #  
                     plt.contourf(X_alp_fromP0, 1./np.array(Y_alp), np.log(Z_mixProd_fromP0), levels=[np.log(exp_limits[1]*mc_signal),np.log(exp_limits[3]*mc_signal)],colors=mycolor, alpha=0.4)  # 

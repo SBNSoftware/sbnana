@@ -4,7 +4,8 @@ import numpy as np
 
 ### EXISTING HPS LIMITS:
 
-other_limits_dir = '/exp/icarus/data/users/jdyer/muon_selection/other_limits/hps/'
+#other_limits_dir = '/exp/icarus/data/users/jdyer/muon_selection/other_limits/hps/'
+other_limits_dir = '/exp/icarus/data/users/jberger/dimuon_analysis_031026/input/other_limits/hps/'
 # ICARUS Contained dimuon search
 hps_Gray_x = [] # MeV
 hps_Gray_y = [] # theta^2
@@ -85,7 +86,8 @@ with open(other_limits_dir+'LHCbSensitivity.txt', 'r') as file:
 
 # CODOMINANCE, RUNNING COUPLING for c_mu
 
-otherLims_runningCmu_dir = '/exp/icarus/data/users/jdyer/muon_selection/other_limits/alps/'
+#otherLims_runningCmu_dir = '/exp/icarus/data/users/jdyer/muon_selection/other_limits/alps/'
+otherLims_runningCmu_dir = '/exp/icarus/data/users/jberger/dimuon_analysis_031026/input/other_limits/alp/'
 
 # ICARUS Contained search
 masses_lowlim = [] # save it as MeV

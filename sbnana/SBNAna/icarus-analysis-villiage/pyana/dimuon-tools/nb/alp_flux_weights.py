@@ -2,7 +2,8 @@ import numpy as np
 
 # Load in the relative ALP fluxes Josh made w/ pythia, g4 primaries only, and g4 w secondaries:
 
-rate_file = "/exp/icarus/data/users/jdyer/muon_selection/alp_flux_uncertainty/rate_table_logbin.txt"
+rate_file = "/exp/icarus/data/users/jberger/dimuon_analysis_031026/alp_flux_uncertainty/rate_table_logbin.txt"
+#rate_file = "/exp/icarus/data/users/jdyer/muon_selection/alp_flux_uncertainty/rate_table_logbin.txt"
 #rate_file = "/exp/icarus/data/users/jdyer/muon_selection/alp_flux_uncertainty/rate_table_pctbin.txt"
 #rate_file = "/exp/icarus/data/users/jdyer/muon_selection/alp_flux_uncertainty/rate_table.txt"
 file_mass = []
