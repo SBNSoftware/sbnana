@@ -105,7 +105,7 @@ def numisyst(nupdg, nuE, fsyst=FSYST, symmetrize_errBars=True):
     for iuc, uc in enumerate(focusing_uncertainties_names):
         uncdf_p = getallpdg_histdf(flux_f["beam_focusing_uncertainties"]["fhc"], "hsyst_beam_" + ps1_focusing_uncertainties[iuc] + "_fhc_")
         uncdf_m = getallpdg_histdf(flux_f["beam_focusing_uncertainties"]["fhc"], "hsyst_beam_" + ms1_focusing_uncertainties[iuc] + "_fhc_")
-        if symmetrize_errBars:
+        if symmetrize_errBars: 
             uncdf = (np.abs(uncdf_p) + np.abs(uncdf_m))/2. # take the average b/c the covariance matrix requires symmetric uncertainties.
             #(Note: the "plus" and "minus" refer to the knobs, not the direction of event rate change. So distinguising between plus and minus is arbitrary anyway -- average should be totally fine.)
             wgtdf_p = 1 + uncdf

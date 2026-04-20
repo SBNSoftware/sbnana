@@ -10,7 +10,7 @@ from numpy import sqrt, cos, sin
 import var
 
 GOAL_POT = 2.41e20 # combined R1 and R2.
-POTSTR = "2.41e20 POT"
+POTSTR = "2.41 $\\times 10^{20}$ POT"
 
 nmu = var.DF.iscc & ((var.DF.pdg == 14) | (var.DF.pdg == -14))
 npi = var.DF.npi
@@ -202,7 +202,8 @@ def make_categories(df, detailed_bsm=False, detailed_nu='none', hps_final_state=
     
     # COSMICS
     
-    is_cosmic = df.slc.tmatch.idx < 0 # from any file, so I'm assuming both samples include cosmics.
+    #is_cosmic = df.slc.tmatch.idx < 0 # from any file
+    is_cosmic = ( (df.slc.tmatch.idx < 0) & (df.bsm==False) ) # don't consider the ones from BSM files. (POT accounting for those gets weird.)
     is_cosmic.name = "Cosmic"
     is_cosmic.color = soladero_lime[6] #"C3"
     
@@ -652,7 +653,7 @@ def phi_NuMI(trunk_track, branch_track, beamdir, method): # azimuthal angle arou
     
     return ppdf, phi_NuMI
 
-def add_calculated_evtdf_cols(df, newcol_name=None, newcol_val=None):
+def add_calculated_evtdf_cols(df, newcol_name=None, newcol_val=None, mc=True):
     # Stuff in this function does not have to cross-talk with other dataframes.
     evtdf = df.copy()
     
@@ -711,25 +712,25 @@ def add_calculated_evtdf_cols(df, newcol_name=None, newcol_val=None):
     evtdf["longer_track_length"] = longer_track_length
     evtdf["shorter_track_length"] = shorter_track_length
     
-    # Add number of daughters for contained tracks, and the chi2_mu score for contained tracks (these are per-slice variables!)
-    # when there is no contained track, set the values to -1.
-    # For my sample, the trunk and branch are never both contained. (This must be enforced before calling this function, so that this variable is correct!)
-
-    conTrk_nDaughters = evtdf.trunk.ndaughters
-    conTrk_chi2pid_I2_chi2_muon = evtdf.trunk.trk.chi2pid.I2.chi2_muon
-
     both_exit = ~TrkInFV(evtdf.trunk.trk.end) & ~TrkInFV(evtdf.branch.trk.end)
-    conTrk_nDaughters[both_exit] = -1
-    conTrk_chi2pid_I2_chi2_muon[both_exit] = -1
-
     branch_con = TrkInFV(evtdf.branch.trk.end)
-    conTrk_nDaughters[branch_con] = evtdf[branch_con].branch.ndaughters
-    conTrk_chi2pid_I2_chi2_muon[branch_con] = evtdf[branch_con].branch.trk.chi2pid.I2.chi2_muon
-
-    evtdf["conTrk_nDaughters"] = conTrk_nDaughters
-    evtdf["conTrk_chi2pid_I2_chi2_muon"] = conTrk_chi2pid_I2_chi2_muon
-
     
+    conTrk_chi2pid_I2_chi2_muon = evtdf.trunk.trk.chi2pid.I2.chi2_muon
+    conTrk_chi2pid_I2_chi2_muon[both_exit] = -1
+    conTrk_chi2pid_I2_chi2_muon[branch_con] = evtdf[branch_con].branch.trk.chi2pid.I2.chi2_muon
+    evtdf["conTrk_chi2pid_I2_chi2_muon"] = conTrk_chi2pid_I2_chi2_muon
+    
+    if mc: # Note: I'm only skipping this for data so that I dno't need to remake the data dataframes 
+             # (ndaughters not used in final event selection, and all the other updates to dataframes I made since 2024 are only needed for the simulated datasets.)
+        # Add number of daughters for contained tracks, and the chi2_mu score for contained tracks (these are per-slice variables!)
+        # when there is no contained track, set the values to -1.
+        # For my sample, the trunk and branch are never both contained. (This must be enforced before calling this function, so that this variable is correct!)
+
+        conTrk_nDaughters = evtdf.trunk.ndaughters
+        conTrk_nDaughters[both_exit] = -1
+        conTrk_nDaughters[branch_con] = evtdf[branch_con].branch.ndaughters
+        evtdf["conTrk_nDaughters"] = conTrk_nDaughters
+
     # Add columns to dataframe as needed:
     if newcol_name is not None:
         for c, col_name in enumerate(newcol_name):

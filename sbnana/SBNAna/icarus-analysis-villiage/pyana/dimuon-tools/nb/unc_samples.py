@@ -12,17 +12,6 @@ updated_df_dir = "/exp/icarus/data/users/jdyer/dimuon-data/2507_remake/"
 # DATAFRAME FILES:
 
 gray_df_dir = "/exp/icarus/data/users/gputnam/thesis-work/DMCP2023G/mc-F/"
-detVar_labels = [
-    ##"Middle Ind. Opaque",
-    ##"Middle Ind. Transparent",
-    "Middle Ind. Opacity",
-    ##"Front Ind. Gain Low",
-    ##"Front Ind. Gain High",
-    #"Front Ind. Gain", # Uncomment later once I have it.
-    "Noise 1.2x", 
-    "Space Charge 2x",
-    "Ind0 Nom" # ??
-]
 
 # Higgs Files
 # Note: Gray made these. They exclude final state pions.
@@ -159,15 +148,25 @@ cohlike_2 = updated_df_dir+"cohlike-F-2.df"
 
 cohlike_nu_detVar_files = [
     updated_df_dir + "cohlike_ind1bin0-1.df", updated_df_dir + "cohlike_ind1bin0-2.df", # "Middle Ind. Opaque"
-    #updated_df_dir + "cohlike_ind1bin14.df", # "Middle Ind. Transparent"
-    #updated_df_dir + "cohlike_ind0glo.df", # "Front Ind. Gain Low"
-    #updated_df_dir + "cohlike_ind0ghi.df", # "Front Ind. Gain Hi"
+    updated_df_dir + "cohlike_ind1bin14.df", # "Middle Ind. Transparent"
     updated_df_dir + "cohlike_noiselhi-1.df", updated_df_dir + "cohlike_noiselhi-2.df", # "Noise 1.2x"
     updated_df_dir + "cohlike_sce2x-1.df", updated_df_dir + "cohlike_sce2x-2.df", # "Space Charge 2x"
-    updated_df_dir + "cohlike_ind0nom-1.df", updated_df_dir + "cohlike_ind0nom-2.df" # "Ind 0 Nom"
+    updated_df_dir + "cohlike_ind0nom-1.df", updated_df_dir + "cohlike_ind0nom-2.df", # "Ind 0 Nom"
+    updated_df_dir + "cohlike_ind0glo.df", # "Front Ind. Gain Low"
+    updated_df_dir + "cohlike_ind0ghi.df" # "Front Ind. Gain Hi"
 
                           ]
-
+detVar_labels = [
+    "Middle Ind. Opaque",
+    "Middle Ind. Transparent",
+    #"Middle Ind. Opacity",
+    "Noise 1.2x", 
+    "Space Charge 2x",
+    "Ind0 Nom", # ??
+    "Front Ind. Gain Low",
+    "Front Ind. Gain High"
+    #"Front Ind. Gain", # Uncomment later once I have it.
+]
 
 # Data Files
 
