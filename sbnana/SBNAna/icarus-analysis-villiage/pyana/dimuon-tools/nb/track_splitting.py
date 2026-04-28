@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 
 # CATHODE CROSSING
-correction_file = "/exp/icarus/app/users/jzettle/BSM_Systs/Weights_Output/dir_x_weights_cathode.txt"
+correction_file = "/exp/icarus/data/users/jberger/dimuon_analysis_031026/input/track_splitting/dir_x_weights_cathode.txt"
 cathode_corrections = np.loadtxt(correction_file).T
 cathode_correction_W_split = cathode_corrections[1]
-cathode_correction_W_reco = cathode_corrections[3]
-cathode_correction_E_split = cathode_corrections[9]
-cathode_correction_E_reco = cathode_corrections[11]
+cathode_correction_W_reco = cathode_corrections[2]
+cathode_correction_E_split = cathode_corrections[3]
+cathode_correction_E_reco = cathode_corrections[4]
 cathode_correction_bins = np.linspace(-1, 1, cathode_corrections.shape[1]+1)
 cathode_correction_err_W = 0.3
 cathode_correction_err_E = 0.2
@@ -19,7 +19,7 @@ def tpc_index(x):
     return itpc
 
 # Z=0 INDUCTION GAP
-correction_file = "/exp/icarus/app/users/jzettle/BSM_Systs/Weights_Output/dir_z_weights_across_z.txt"
+correction_file = "/exp/icarus/data/users/jberger/dimuon_analysis_031026/input/track_splitting/dir_z_weights_across_z.txt"
 gap_corrections = np.loadtxt(correction_file).T
 gap_correction_W_split = gap_corrections[1]
 gap_correction_W_reco = gap_corrections[2]

@@ -10,6 +10,7 @@ import weights
 import reweight_coh
 import numiweight
 from alp_flux_weights import *
+import track_splitting
 
 def simple_dataset(f, key):
     df = pd.read_hdf(f, key=key)
@@ -78,7 +79,15 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
     fluxcorr_wgt = numiweight.update_flux_version(nupdg, nuE) # JD 6/12/25
     fluxcorr_wgt.name = ("wgt", "cv", "flux_other_than_ppfx", "", "", "") # JD 6/12/25
     df = add_weights(df, pd.DataFrame(fluxcorr_wgt)) # JD 6/12/25
+    # JB 04/27/26: Adding calculation of track splitting reweighting here
+    cathode_cross_weight, cathode_cross_weight_err, gap_cross_weight, gap_cross_weight_err = track_splitting.correct(evtdf)
+    cathode_cross_weight.name = ("wgt", "cv", "cathode_crossing", "", "", "")
+    gap_cross_weight.name = ("wgt", "cv", "z_crossing", "", "", "")
+    df = add_weights(df, pd.DataFrame(cathode_cross_weight))
+    df = add_weights(df, pd.DataFrame(gap_cross_weight))
     df[("wgt", "cv", "tot", "", "", "")] *= df[("wgt", "cv", "flux_other_than_ppfx", "", "", "")]
+    df[("wgt", "cv", "tot", "", "", "")] *= df[("wgt", "cv", "cathode_crossing", "", "", "")]
+    df[("wgt", "cv", "tot", "", "", "")] *= df[("wgt", "cv", "z_crossing", "", "", "")]
     
     # 12/17/25: Include a reweight for consideration of secondaries for ALP flux
     if alp:
@@ -159,12 +168,22 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
     df = add_weights(df, make_unidf(weights.beam_systematics, "flux"))
     df = add_weights(df, make_unidf(weights.g4_systematics, "g4"))
 
+    # JB added 4/27/26
+    # Do the cathode and gap universes by hand here
+    cathode_univ = np.random.normal(size=NUNI)
+    gap_univ = np.random.normal(size=NUNI)
+
     # Multiply together to get total
     for i in range(NUNI):
+        cathode_err_wgt = np.maximum(1 + cathode_univ[i]*cathode_cross_weight_err, 0)
+        gap_err_wgt = np.maximum(1 + gap_univ[i]*gap_cross_weight_err, 0)
+        df[("wgt", "trk_split", "univ_%i" % i, "", "", "")] = np.maximum(cathode_err_wgt*gap_err_wgt, 0)
+
         df[("wgt", "all", "univ_%i" % i, "", "", "")] = df[("wgt", "xsec", "univ_%i" % i, "", "", "")]*\
                                                    df[("wgt", "flux", "univ_%i" % i, "", "", "")]*\
                                                    df[("wgt", "g4", "univ_%i" % i, "", "", "")]*\
-                                                   df[("wgt", "coh", "univ_%i" % i, "", "", "")]
+                                                   df[("wgt", "coh", "univ_%i" % i, "", "", "")]*\
+                                                   df[("wgt", "track_split", "univ_%i" % i, "", "", "")]
 
     return Dataset(df, livetime, pot, hdrdf)
 
