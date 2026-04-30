@@ -177,7 +177,7 @@ def mc_dataset(f, key, hdrkey="hdr", mcnukey="mcnuwgt", syst_weights=True, mccut
     for i in range(NUNI):
         cathode_err_wgt = np.maximum(1 + cathode_univ[i]*cathode_cross_weight_err, 0)
         gap_err_wgt = np.maximum(1 + gap_univ[i]*gap_cross_weight_err, 0)
-        df[("wgt", "trk_split", "univ_%i" % i, "", "", "")] = np.maximum(cathode_err_wgt*gap_err_wgt, 0)
+        df[("wgt", "track_split", "univ_%i" % i, "", "", "")] = np.maximum(cathode_err_wgt*gap_err_wgt, 0)
 
         df[("wgt", "all", "univ_%i" % i, "", "", "")] = df[("wgt", "xsec", "univ_%i" % i, "", "", "")]*\
                                                    df[("wgt", "flux", "univ_%i" % i, "", "", "")]*\
