@@ -169,7 +169,7 @@ def add_cv_weights(file, mccut=None,
                    bsm=False, hps=False, alp=False,
                    onbeam=False, offbeam=False, Run1=False, Run2=False,
                   ):
-    evt = mc_dataset(file, "evt", mcnukey="mcnuwgt", syst_weights=False, isscalar=bsm, alp=alp)
+    evt = mc_dataset(file, "evt", mcnukey="mcnuwgt", syst_weights=True, isscalar=bsm, alp=alp)
     #evt = mc_dataset(file, "evt", mcnukey="mcnuwgt", syst_weights=False)#, mccut=mccut)
     evt_df = evt.df
     if mccut is not None:

@@ -22,9 +22,12 @@ except FileNotFoundError:
 def print_df(df,name):
     tot_evt = (df.scale *df.wgt.cv.tot).sum()
     df_trkrwt = np.maximum(df[('wgt','cv','cathode_crossing','','','')] * df[('wgt','cv','z_crossing','','','')],0)
-    univ_tot = [(df.scale * df.wgt.cv.tot * np.divide(df[("wgt","track_split","univ_" + str(i),"","","")],df_trkrwt)).sum() for i in range(100)]
-    tot_err = np.std(univ_tot)
-    tot_rel = tot_err / tot_evt
+    univ_tot = np.array([(df.scale * df.wgt.cv.tot * df[("wgt","track_split","univ_" + str(i),"","","")]).sum() for i in range(100)])
+    tot_var = ((univ_tot - tot_evt)**2).sum() / 100
+    tot_err = np.sqrt(tot_var)
+    tot_rel = 0.
+    if tot_evt > 0.:
+        tot_rel = tot_err / tot_evt
     row = [name, len(df), np.round(tot_evt,3), np.round(tot_err,3), np.round(tot_rel,3)]
     print('{: <65} {: >8} {: >8} {: >8} {: >8}'.format(*row))
 
@@ -41,17 +44,19 @@ for bench in alp_benchmark_names:
     bench_df = selected_evtdf[is_alp][selected_evtdf[is_alp]["sample"] == bench]
     print_df(bench_df,bench)
 
-is_incoh = (selected_evtdf.slc.tmatch.idx >= 0) & (selected_evtdf.mc_incoh)
+is_nu = (selected_evtdf.slc.tmatch.idx >= 0) & ( selected_evtdf.mc_incoh | selected_evtdf.mccoh )
+numu_cc_coh = is_nu & (selected_evtdf.slc.truth.genie_mode == 3) & (np.abs(selected_evtdf.slc.truth.pdg) == 14) & (selected_evtdf.slc.truth.iscc.astype('bool'))
+
+bench = "nu coherent"
+bench_df = selected_evtdf[numu_cc_coh]
+print_df(bench_df,bench)
+
+is_incoh = is_nu & ~numu_cc_coh
 bench = "nu except coherent"
 bench_df = selected_evtdf[is_incoh]
 print_df(bench_df,bench)
 
-is_coh = (selected_evtdf.slc.tmatch.idx >= 0) & (selected_evtdf.mccoh)
-bench = "nu coherent"
-bench_df = selected_evtdf[is_coh]
-print_df(bench_df,bench)
-
-is_cosmic = (selected_evtdf.slc.tmatch.idx < 0)
+is_cosmic = ((selected_evtdf.slc.tmatch.idx < 0) & (~selected_evtdf.bsm) )
 bench = "Cosmic"
 bench_df = selected_evtdf[is_cosmic]
 print_df(bench_df,bench)
