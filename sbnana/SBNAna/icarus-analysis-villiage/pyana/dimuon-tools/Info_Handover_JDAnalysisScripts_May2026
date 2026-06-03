@@ -1,0 +1,49 @@
+Documentation of Jamie's Analysis Scripts at Time of Finishing PhD
+Jamie Dyer
+June 3, 2026
+
+---------------------------------------
+
+ANALYSIS SCRIPTS
+
+Workflow to Run analysis scripts (at least for me):
+- Code Gray developed: https://github.com/SBNSoftware/sbnana/tree/develop/sbnana/SBNAna/icarus-analysis-villiage/pyana/dimuon-tools
+- terminal 1:
+  > ssh icarusbuild02 # The gpvm machines may be too slow for analyzing large datasets.
+  > source SL7.sh
+  > source setup_env_4muon_notebooks.sh
+  This will take you to my analysis aread (where my feature branch is), and set up a port forwarding so that you can use jupyter notebooks in the browser.
+- terminal 2:
+  > ssh -L localhost:8888:localhost:8888 icarusbuild02 # Or replace 8888 with whatever port number the other terminal tells you its running the notebook from.
+Note1: The code is messy - sorry about that! I have defined different functions with the same name across my analysis scripts, so if you ever need to run a function, make sure you are running the correct version of it as defined most recently in the notebook or script you are running. Same may go for dataframes too.
+Note2: The "unc" prefixes stand for "uncontained."
+Note3: I've pushed the current snapshot of my analysis area (feature branch [] here) to GitHub today, June 3, 2026. There MAY be files you need in other areas of mine in the icarusmachines too (e.g. text files with running coupling conversions for alps, other experiments' limits, and shell scripts used for data management) (in the areas \app, \data, \persistent) -- I would strongly recommend asking the collaboration not to delete any of my stuff in those areas until the analysis is completed, as stuff there is not backed up anywhere else.
+Note4: Scripts with dates at end of title (YYMMDD) are just old snapshots of the scripts - should be fine to ignore.
+
+The "Main Character Scripts" Are:
+
+unc_requestNearSB.ipynb
+- I have used this notebook for calculating uncertainties, making the uncertainties table, and comparing data and monte carlo in the near sideband. This script also manipulates ALPs to apply needed flux weights (both CV and uncertainty), and calculate the reweighting to get to ALP benchmarks near the edge of the sensitivity, and ones that would lead to very high rates of alps.
+
+unc_run_evtSel.py
+- used to make exclusion curves (projected and "real" (i.e. for mock data tests))
+- need to activate boolean near top of script if you want to run a real exclusion.
+- instructions for running are at top of script.
+- This script uses pyhf for model implementation, and just applies a flat uncertainty across all signal benchmarks (both of these characteristics need to be updated).
+
+unc_mcData.ipynb
+- recently used for comparisons in far sideband.
+- handling of data before actually making the plots in this nb is the same as in unc_requestNearSB.ipynb.
+- The notebook "unc_VeryFarSB_McData_w_cohlike.ipynb" was initially used for data/MC comparisons when I first did them in spring 2024(?), but should not be used anymore. Dataframes were reprocessed since then. The new notebook unc_mcData.ipynb does everything right.
+
+unc_cuts.py
+- defines cuts and sets of cuts
+- When Jamie leaving off, the finalized event selection for analysis is DD
+
+unc_MC_studies.ipynb
+- miscellaneous studies on the MC data, both truth and reco
+
+unc_MC Event Selection.ipynb (sorry for the spaces!)
+- used for developing the event Selection
+- used for the parameter and n-1 parameter plots
+- contains old optimization exercise for statistical significance at the bottom.
